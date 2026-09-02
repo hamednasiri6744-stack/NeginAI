@@ -1,0 +1,270 @@
+openapi: 3.1.0
+info:
+  title: NeginAI Secure SQL Gateway
+  version: 1.3.0
+  description: Secure NeginPakhsh business assistant for live reports, recurring automations, conditional alerts, and Admin planning scenarios.
+servers:
+  - url: https://ai.neginpakhsh.com
+    description: Stable HTTPS endpoint for NeginAI.
+components:
+  securitySchemes:
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    neginOAuth:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://ai.neginpakhsh.com/oauth/authorize
+          tokenUrl: https://ai.neginpakhsh.com/oauth/token
+          scopes:
+            company.read: Read authorized NeginPakhsh company reports
+  schemas:
+    ChatRequest:
+      type: object
+      required: [message]
+      additionalProperties: false
+      properties:
+        message:
+          type: string
+          minLength: 1
+          maxLength: 4000
+          description: >-
+            The user's complete Persian request. This includes internal reports and every
+            automation request such as every day, every hour, at a specific time, remind me,
+            run automatically, or notify me when a condition becomes true. Send the original
+            request without rewriting or dropping its schedule or condition.
+            Admin requests about budgets, forecasts, planning scenarios, assumptions,
+            targets, approvals, locks, or variance analysis must also be sent unchanged.
+        conversation_id:
+          type: [string, 'null']
+          maxLength: 100
+          description: >-
+            Stable id for this ChatGPT thread. On the first call generate one UUID and send it.
+            On every later call in the same ChatGPT conversation, reuse the exact
+            conversation_id returned by the previous call. Never generate a new id for a follow-up.
+    ChatResponse:
+      type: object
+      required: [conversation_id, answer]
+      properties:
+        conversation_id: {type: string}
+        answer:
+          type: string
+          description: Final, user-facing Persian answer produced from authorized company data.
+        columns:
+          type: array
+          items: {type: string}
+        rows:
+          type: array
+          items:
+            type: array
+            items: {}
+        row_count: {type: integer}
+        execution_time: {type: [number, 'null']}
+        truncated: {type: boolean}
+        sources:
+          type: array
+          items: {type: string}
+        sql: {type: [string, 'null']}
+        clarification_required: {type: boolean}
+    SqlRequest:
+      type: object
+      required: [sql]
+      properties:
+        sql:
+          type: string
+          description: One read-only SELECT or WITH...SELECT statement.
+    Definition:
+      type: object
+      required: [term, definition]
+      properties:
+        term: {type: string}
+        definition: {type: string}
+        rules: {type: string, default: ''}
+        approved_sql: {type: [string, 'null']}
+        related_objects:
+          type: array
+          items: {type: string}
+    ContextRequest:
+      type: object
+      required: [question]
+      properties:
+        question: {type: string}
+        limit: {type: integer, minimum: 1, maximum: 50, default: 10}
+security:
+  - neginOAuth: [company.read]
+  - apiKeyAuth: []
+paths:
+  /chat:
+    post:
+      operationId: chatWithNeginAI
+      x-openai-isConsequential: false
+      summary: Answer company questions and manage automations plus Admin planning scenarios
+      description: >-
+        Mandatory primary action for every request about company sales, branches,
+        customers, products, inventory, finance, treasury, reports, definitions,
+        budgets, forecasts, planning scenarios, targets, assumptions, approvals and variance analysis,
+        database information, recurring work, scheduled reports, reminders, or
+        condition-based alerts. If the user says every day, every hour, periodically,
+        automatically, at a specific time, remind me, or notify me when something
+        happens, call this action immediately. Never claim that scheduling is unavailable
+        and never tell the user to return and ask again at the scheduled time: NeginAI's
+        backend owns scheduling and execution. Send the user's complete original request
+        before answering. Each user should authenticate with NeginAI OAuth. Never request
+        a password in chat and never replace this action with web search. Keep one stable
+        conversation_id across all calls in the same ChatGPT conversation so follow-up
+        filters, dates, and automation references are inherited correctly. Phrases such as
+        "همین فروش", "همین گزارش", or "همان نتیجه" must reuse that id and the backend answer
+        must be returned without recalculating or inventing figures in the GPT layer.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ChatRequest'}
+      responses:
+        '200':
+          description: Final answer and optional structured report data
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ChatResponse'}
+        '401': {description: Action authentication failed}
+        '502': {description: Internal report generation failed}
+  /entities/search:
+    get:
+      operationId: resolveBusinessEntity
+      x-openai-isConsequential: false
+      summary: Resolve a brand or manufacturer name; always use this before composing sales SQL
+      description: Distinguishes brands from manufacturers and returns canonical IDs plus correct join guidance.
+      parameters:
+        - {name: q, in: query, required: true, schema: {type: string}}
+        - {name: limit, in: query, schema: {type: integer, minimum: 1, maximum: 50, default: 10}}
+      responses:
+        '200': {description: Matching brands/manufacturers and technical join guidance}
+  /entities/stats:
+    get:
+      operationId: getBusinessEntityStats
+      x-openai-isConsequential: false
+      summary: Get automatic brand and manufacturer catalog synchronization status
+      responses:
+        '200': {description: Entity counts and last synchronization status}
+  /entities/sync:
+    post:
+      operationId: syncBusinessEntities
+      summary: Refresh brand and manufacturer catalog from read-only SQL sources
+      responses:
+        '200': {description: Synchronization result and counts}
+  /schema/stats:
+    get:
+      operationId: getDatabaseSchemaStats
+      x-openai-isConsequential: false
+      summary: Get cached counts of tables, views, and all database objects without rescanning
+      responses:
+        '200': {description: Table and view counts plus last scan time}
+  /health:
+    get:
+      operationId: getHealth
+      x-openai-isConsequential: false
+      summary: Check service health
+      security: []
+      responses:
+        '200': {description: Service health}
+  /schema/scan:
+    post:
+      operationId: scanDatabaseSchema
+      summary: Scan and cache all SQL Server metadata
+      responses:
+        '200': {description: Scan statistics}
+  /schema/search:
+    get:
+      operationId: searchDatabaseSchema
+      x-openai-isConsequential: false
+      summary: Search tables, views, and columns
+      parameters:
+        - {name: q, in: query, required: true, schema: {type: string}}
+      responses:
+        '200': {description: Matching schema objects}
+  /schema/object:
+    get:
+      operationId: getDatabaseObject
+      x-openai-isConsequential: false
+      summary: Get columns, keys, and relationships for an object
+      parameters:
+        - {name: schema, in: query, required: true, schema: {type: string}}
+        - {name: name, in: query, required: true, schema: {type: string}}
+      responses:
+        '200': {description: Object details}
+  /sql/query:
+    post:
+      operationId: executeReadOnlyQuery
+      x-openai-isConsequential: false
+      summary: Execute one validated read-only SQL query
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/SqlRequest'}
+      responses:
+        '200': {description: Columns, rows, timing, truncation, and sources}
+  /definitions:
+    get:
+      operationId: listDefinitions
+      x-openai-isConsequential: false
+      summary: List business definitions
+      parameters:
+        - {name: limit, in: query, schema: {type: integer, default: 100}}
+        - {name: offset, in: query, schema: {type: integer, default: 0}}
+      responses:
+        '200': {description: Definitions}
+    post:
+      operationId: createDefinition
+      summary: Create a business definition
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/Definition'}
+      responses:
+        '201': {description: Created definition}
+  /definitions/search:
+    get:
+      operationId: searchDefinitions
+      x-openai-isConsequential: false
+      summary: Search business definitions
+      parameters:
+        - {name: q, in: query, required: true, schema: {type: string}}
+        - {name: limit, in: query, schema: {type: integer, default: 20}}
+      responses:
+        '200': {description: Matching definitions}
+  /definitions/{id}:
+    put:
+      operationId: updateDefinition
+      summary: Update a business definition
+      parameters:
+        - {name: id, in: path, required: true, schema: {type: integer}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/Definition'}
+      responses:
+        '200': {description: Updated definition}
+    delete:
+      operationId: deleteDefinition
+      summary: Delete a business definition
+      parameters:
+        - {name: id, in: path, required: true, schema: {type: integer}}
+      responses:
+        '204': {description: Deleted}
+  /context/search:
+    post:
+      operationId: searchBusinessAndTechnicalContext
+      x-openai-isConsequential: false
+      summary: Search business definitions and technical schema together
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ContextRequest'}
+      responses:
+        '200': {description: Combined context}

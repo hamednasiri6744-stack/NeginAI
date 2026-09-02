@@ -1,0 +1,9 @@
+import copy,importlib.util
+from pathlib import Path
+P=Path(__file__).resolve().parents[1]/"scripts/windows/varanegar_tax_fiscalization_reference.py";S=importlib.util.spec_from_file_location("ref",P);M=importlib.util.module_from_spec(S);S.loader.exec_module(M)
+def test_draft_and_provider_outcomes():assert M.evaluate(M.baseline())=="FISCAL_DOCUMENT_ACCEPTED_SCHEMA_CALCULATION_AND_IDENTITY";assert M.evaluate(dict(M.baseline(),submission_state="ACK"))=="SUBMISSION_CLEARED_ACKNOWLEDGED_AND_RECONCILED";assert M.evaluate(dict(M.baseline(),submission_state="UNKNOWN"))=="SUBMISSION_UNKNOWN_RECONCILIATION_REQUIRED"
+def test_calculation_identity_and_signature_fail_closed():assert M.evaluate(dict(M.baseline(),tax_calculation_current=False))=="FISCAL_DOCUMENT_REJECTED_TAX_CALCULATION_OR_ROUNDING";assert M.evaluate(dict(M.baseline(),fiscal_identity_current=False))=="FISCAL_DOCUMENT_REJECTED_NUMBER_UUID_TIMESTAMP_OR_DUPLICATE";assert M.evaluate(dict(M.baseline(),certificate_current=False))=="FISCAL_DOCUMENT_REJECTED_DIGEST_SIGNATURE_OR_CERTIFICATE"
+def test_contingency_is_bounded():assert M.evaluate(dict(M.baseline(),submission_state="CONTINGENCY",contingency_expiry_current=False))=="CONTINGENCY_REJECTED_SCOPE_EXPIRY_OR_RECONCILIATION"
+def test_correction_keeps_lineage_and_state():assert M.evaluate(dict(M.baseline(),submission_state="CORRECT",original_lineage_current=False))=="CORRECTION_REJECTED_LINEAGE_PERIOD_OR_PROVIDER_STATE";assert M.evaluate(dict(M.baseline(),submission_state="CANCEL",provider_state_current=False))=="CORRECTION_REJECTED_LINEAGE_PERIOD_OR_PROVIDER_STATE"
+def test_human_machine_parity_required():assert M.evaluate(dict(M.baseline(),human_machine_parity=False))=="OUTPUT_REJECTED_HUMAN_MACHINE_OR_ARCHIVAL_PARITY"
+def test_schema_exact():e=copy.deepcopy(M.baseline());e["extra"]=True;assert M.evaluate(e)=="SCHEMA_INVALID"

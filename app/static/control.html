@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#173f5f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="کنترل نگین">
+  <link rel="manifest" href="/static/manifest.webmanifest">
+  <link rel="icon" href="/static/neginai-icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/static/negin-brand-icon-192.png">
+  <link rel="stylesheet" href="/static/control.css?v=4">
+  <title>کنترل سازمانی نگین پخش</title>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/assistant" aria-label="بازگشت به دستیار"><span>ن</span><div><strong>کنترل سازمانی</strong><small>نگین پخش</small></div></a>
+    <div class="top-actions">
+      <span id="connectionState" class="connection pending"><i></i><b>در حال بررسی</b></span>
+      <button id="syncButton" class="secondary" type="button">همگام‌سازی <em id="pendingCount">۰</em></button>
+      <a class="secondary" href="/assistant">دستیار نگین</a>
+    </div>
+  </header>
+
+  <main>
+    <section id="accessGate" class="gate" hidden>
+      <div class="gate-icon">⚿</div>
+      <h1>ورود مدیریتی لازم است</h1>
+      <p id="accessGateMessage">برای استفاده از کنسول کنترل، با حساب مدیر وارد دستیار نگین شوید.</p>
+      <a class="primary" href="/assistant">ورود از دستیار نگین</a>
+    </section>
+
+    <div id="controlApp" hidden>
+      <section class="intro">
+        <div><span class="eyebrow">مدیریت داخلی NeginAI</span><h1>پرسنل، سمت‌ها و دسترسی‌ها</h1><p>فهرست پرسنل مستقیماً و فقط‌خواندنی از ورانگر دریافت می‌شود و آخرین نسخه برای مشاهده آفلاین روی دستگاه می‌ماند.</p></div>
+        <div class="safe-note"><b>فقط‌خواندنی</b><span>اطلاعات پرسنل از ورانگر خوانده می‌شود؛ هیچ درج، ویرایش یا حذفی در ورانگر انجام نمی‌گیرد.</span></div>
+      </section>
+
+      <section class="stats" aria-label="خلاصه کنترل سازمانی">
+        <article><span>پرسنل فعال ورانگر</span><strong id="activePersonnelCount">۰</strong><small id="personnelCount">از ۰ نفر</small></article>
+        <article><span>سمت‌های فعال</span><strong id="activePositionCount">۰</strong><small id="positionCount">از ۰ سمت</small></article>
+        <article><span>مجوزهای تعریف‌شده</span><strong id="permissionCount">۰</strong><small>دسترسی قابل تخصیص</small></article>
+        <article><span>صف این دستگاه</span><strong id="queueCount">۰</strong><small id="lastSyncText">هنوز همگام نشده</small></article>
+      </section>
+
+      <section id="syncIssues" class="sync-issues" hidden>
+        <div><strong>برخی تغییرات نیاز به بررسی دارند</strong><p id="syncIssueText"></p></div>
+        <div><button id="retryIssues" class="primary" type="button">اعمال روی نسخه تازه</button><button id="discardIssues" class="danger-button" type="button">کنارگذاشتن تغییرات مشکل‌دار</button></div>
+      </section>
+
+      <nav class="tabs" aria-label="بخش‌های کنترل">
+        <button class="active" type="button" data-tab="personnel">پرسنل</button>
+        <button type="button" data-tab="branches">پرسنل شعب</button>
+        <button type="button" data-tab="positions">سمت‌ها</button>
+        <button type="button" data-tab="permissions">دسترسی‌ها</button>
+      </nav>
+
+      <section id="tab-personnel" class="tab-panel active">
+        <div class="panel-head directory-head">
+          <div><h2>فهرست پرسنل ورانگر</h2><p>هر فیلد دریافتی در ستون جداگانه نمایش داده می‌شود. این جدول قابل ویرایش نیست.</p></div>
+          <div class="panel-actions directory-tools">
+            <input id="personnelSearch" type="search" placeholder="جست‌وجو در تمام ستون‌ها">
+            <select id="personnelStatusFilter" aria-label="فیلتر وضعیت پرسنل">
+              <option value="all">همه وضعیت‌ها</option>
+              <option value="active">فعال در ورانگر</option>
+              <option value="inactive">غیرفعال در ورانگر</option>
+            </select>
+            <select id="personnelPageSize" aria-label="تعداد نمایش در صفحه">
+              <option value="50">۵۰ ردیف</option>
+              <option value="100">۱۰۰ ردیف</option>
+              <option value="500">۵۰۰ ردیف</option>
+              <option value="1000">۱۰۰۰ ردیف</option>
+            </select>
+            <button id="exportPersonnelExcel" class="secondary" type="button">خروجی Excel</button>
+            <button id="refreshPersonnel" class="secondary" type="button">دریافت از ورانگر</button>
+          </div>
+        </div>
+        <div class="directory-meta">
+          <span id="directorySourceState">منبع: GNR.vwPersonnel</span>
+          <span id="directoryFreshness">هنوز دریافت نشده</span>
+        </div>
+        <div class="personnel-view-toolbar">
+          <label><span>طرح نمایش</span><select id="personnelViewSelect" aria-label="انتخاب طرح نمایش"></select></label>
+          <button id="newPersonnelView" class="primary" type="button">ذخیره طرح جدید</button>
+          <button id="editPersonnelView" class="secondary" type="button" disabled>ویرایش طرح</button>
+          <button id="clearPersonnelFilters" class="secondary" type="button">پاک‌کردن فیلترها</button>
+          <small>زیر هر سرستون تایپ کنید یا یک مقدار دقیق از پیشنهادها انتخاب کنید.</small>
+        </div>
+        <div id="personnelList" class="personnel-table-wrap" aria-live="polite"></div>
+        <footer class="table-footer">
+          <span id="directorySummary">۰ رکورد</span>
+          <div class="pagination">
+            <button id="personnelPrevPage" class="secondary" type="button">صفحه قبل</button>
+            <span id="personnelPageState">صفحه ۰ از ۰</span>
+            <button id="personnelNextPage" class="secondary" type="button">صفحه بعد</button>
+          </div>
+        </footer>
+      </section>
+
+      <section id="tab-branches" class="tab-panel">
+        <div class="panel-head branch-panel-head">
+          <div><h2>پرسنل شعب</h2><p>یک شعبه را باز کنید و پرسنل آن را از فهرست ورانگر انتخاب کنید. هر نفر فقط می‌تواند عضو یک شعبه باشد.</p></div>
+          <div class="panel-actions"><input id="branchPersonnelSearch" type="search" placeholder="جست‌وجوی نام، کد پرسنلی یا موبایل"></div>
+        </div>
+        <div id="branchSelector" class="branch-selector" aria-label="انتخاب شعبه"></div>
+        <div class="branch-roster-tools">
+          <div><strong id="branchRosterTitle">پرسنل شعبه</strong><small id="branchRosterSummary">۰ نفر انتخاب شده</small></div>
+          <div><button id="selectAllBranchPersonnel" class="secondary" type="button">انتخاب نتایج</button><button id="clearBranchPersonnel" class="secondary" type="button">پاک‌کردن انتخاب شعبه</button><button id="saveBranchRoster" class="primary" type="button">ثبت پرسنل شعبه</button></div>
+        </div>
+        <div id="branchRosterList" class="branch-roster-list" aria-live="polite"></div>
+        <p class="branch-safe-note">این تخصیص داخل NeginAI ذخیره می‌شود و در حالت آفلاین در صف امن دستگاه می‌ماند؛ هیچ تغییری در ورانگر ایجاد نمی‌شود.</p>
+      </section>
+
+      <section id="tab-positions" class="tab-panel">
+        <div class="panel-head"><div><h2>سمت‌های سازمانی</h2><p>عنوان سمت و وضعیت قابل استفاده‌بودن آن را نگهداری کنید.</p></div><button id="newPosition" class="primary" type="button">سمت جدید</button></div>
+        <div id="positionList" class="position-grid"></div>
+      </section>
+
+      <section id="tab-permissions" class="tab-panel">
+        <div class="panel-head"><div><h2>ماتریس دسترسی سمت‌ها</h2><p>مجوزهای هر سمت را انتخاب و مستقل از اشخاص مدیریت کنید.</p></div></div>
+        <div id="permissionMatrix" class="permission-matrix"></div>
+      </section>
+    </div>
+  </main>
+
+  <dialog id="personnelViewDialog">
+    <form id="personnelViewForm">
+      <div class="dialog-head"><div><h2 id="personnelViewDialogTitle">طرح نمایش جدید</h2><p>می‌توانید تنظیمات را فقط همین بار اجرا کنید یا با نام برای دفعات بعد ذخیره کنید.</p></div><button class="close" type="button" data-close="personnelViewDialog">×</button></div>
+      <input id="personnelViewId" type="hidden"><input id="personnelViewRevision" type="hidden" value="0">
+      <div class="form-grid view-form-grid">
+        <label>نام طرح<input id="personnelViewName" required maxlength="100" placeholder="مثلاً پرسنل فعال شعبه تهران"></label>
+        <label>تعداد نمایش در صفحه<select id="personnelViewPageSize"><option value="50">۵۰</option><option value="100">۱۰۰</option><option value="500">۵۰۰</option><option value="1000">۱۰۰۰</option></select></label>
+        <label>وضعیت در ورانگر<select id="personnelViewStatusFilter"><option value="all">همه وضعیت‌ها</option><option value="active">فقط فعال</option><option value="inactive">فقط غیرفعال</option></select></label>
+        <label class="check-label"><input id="personnelViewDefault" type="checkbox"> طرح پیش‌فرض این کاربر باشد</label>
+        <fieldset class="wide view-columns"><legend>ستون‌های قابل نمایش</legend><div id="personnelViewColumns"></div></fieldset>
+      </div>
+      <p class="form-hint">فیلترهای فعلی سرستون‌ها نیز همراه طرح ذخیره می‌شوند. حداقل یک ستون باید باقی بماند.</p>
+      <div class="dialog-actions"><button id="deletePersonnelView" class="danger-button" type="button" hidden>حذف طرح</button><button id="applyTemporaryPersonnelView" class="secondary" type="button">اجرای موقت بدون ذخیره</button><button class="primary" type="submit">ذخیره طرح نمایش</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="positionDialog">
+    <form id="positionForm">
+      <div class="dialog-head"><div><h2 id="positionDialogTitle">سمت جدید</h2><p>پس از ذخیره، دسترسی‌های سمت را از ماتریس تعیین کنید.</p></div><button class="close" type="button" data-close="positionDialog">×</button></div>
+      <input id="positionId" type="hidden"><input id="positionRevision" type="hidden" value="0">
+      <div class="form-grid">
+        <label>کد لاتین سمت<input id="positionCode" required maxlength="80" dir="ltr" pattern="[A-Za-z0-9._-]+"></label>
+        <label>عنوان سمت<input id="positionTitle" required maxlength="200"></label>
+        <label class="wide">شرح<textarea id="positionDescription" rows="3" maxlength="1000"></textarea></label>
+        <label class="check-label wide"><input id="positionActive" type="checkbox" checked> این سمت فعال است</label>
+      </div>
+      <button class="primary full" type="submit">ذخیره سمت</button>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="/static/control.js?v=4" defer></script>
+</body>
+</html>

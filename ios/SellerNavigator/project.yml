@@ -1,0 +1,25 @@
+name: SellerNavigator
+options:
+  bundleIdPrefix: ir.neginpakhsh
+  deploymentTarget:
+    iOS: "17.0"
+targets:
+  SellerNavigator:
+    type: application
+    platform: iOS
+    sources:
+      - path: App
+      - path: Resources
+    info:
+      properties:
+        CFBundleDisplayName: نگین فروش
+        NSLocationWhenInUseUsageDescription: موقعیت شما برای نمایش مسیر و راهنمایی تا پایگاه فعال استفاده می‌شود.
+        NSLocationAlwaysAndWhenInUseUsageDescription: برای ادامهٔ راهنمایی مسیر در زمان قفل‌بودن گوشی، دسترسی همیشگی به موقعیت لازم است.
+        UIBackgroundModes:
+          - location
+          - audio
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: ir.neginpakhsh.seller
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1"

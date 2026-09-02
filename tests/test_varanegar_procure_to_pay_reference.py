@@ -1,0 +1,9 @@
+import copy,importlib.util
+from pathlib import Path
+P=Path(__file__).resolve().parents[1]/"scripts/windows/varanegar_procure_to_pay_reference.py";S=importlib.util.spec_from_file_location("ref",P);M=importlib.util.module_from_spec(S);S.loader.exec_module(M)
+def test_order_and_unknown():assert M.evaluate(M.baseline())=="PURCHASE_ORDER_ACCEPTED_SCOPED_VERSIONED_AND_APPROVED";assert M.evaluate(dict(M.baseline(),unknown_commit=True))=="P2P_UNKNOWN_RECONCILIATION_REQUIRED"
+def test_receive_and_service_fail_closed():assert M.evaluate(dict(M.baseline(),operation="RECEIVE",receipt_acceptance_current=False))=="RECEIPT_REJECTED_ACCEPTANCE_SCOPE_OR_LINEAGE";assert M.evaluate(dict(M.baseline(),operation="SERVICE",service_acceptance_current=False))=="SERVICE_ENTRY_REJECTED_ACCEPTANCE_OR_EVIDENCE"
+def test_match_identity_and_tolerance_fail_closed():assert M.evaluate(dict(M.baseline(),operation="MATCH",line_identity_current=False))=="THREE_WAY_MATCH_REJECTED_LINE_IDENTITY_OR_QUANTITY";assert M.evaluate(dict(M.baseline(),operation="MATCH",quantity_tolerance_current=False))=="THREE_WAY_MATCH_HELD_QUANTITY_OR_PARTIAL_EXCEPTION"
+def test_return_and_release_require_lineage_approval():assert M.evaluate(dict(M.baseline(),operation="RETURN",return_lineage_current=False))=="RETURN_REJECTED_ORIGINAL_LINEAGE";assert M.evaluate(dict(M.baseline(),operation="RELEASE",release_approved=False))=="HOLD_RELEASE_REJECTED_UNRESOLVED_OR_UNAPPROVED"
+def test_payment_and_reconciliation_fail_closed():assert M.evaluate(dict(M.baseline(),operation="PAYMENT",period_current=False))=="PAYMENT_BLOCKED_HOLD_GATE_OR_PERIOD";assert M.evaluate(dict(M.baseline(),operation="RECONCILE",accrual_ap_gl_reconciled=False))=="P2P_RECONCILIATION_REJECTED_ACCRUAL_SUBLEDGER_OR_GL"
+def test_schema_exact():e=copy.deepcopy(M.baseline());e["extra"]=True;assert M.evaluate(e)=="SCHEMA_INVALID"

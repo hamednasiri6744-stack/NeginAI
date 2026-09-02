@@ -1,0 +1,15 @@
+"""Chain the portable ten-hour continuation handoff capsule."""
+from __future__ import annotations
+import argparse,hashlib,json
+from datetime import datetime
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[2]
+S={"capsule":"artifacts/varanegar_analysis/varanegar_10h_continuation_handoff_capsule_20260901.json","previous":"artifacts/varanegar_analysis/varanegar_target_erp_contract_portfolio_invariant_audit_checkpoint_20260901.json","builder":"scripts/windows/build_varanegar_10h_continuation_handoff_capsule_20260901.py","checkpoint_builder":"scripts/windows/build_varanegar_10h_continuation_handoff_checkpoint_20260901.py","test":"tests/test_varanegar_10h_continuation_handoff_capsule.py","checkpoint_test":"tests/test_varanegar_10h_continuation_handoff_checkpoint.py","doc":"docs/varanegar_reconstruction/VARANEGAR_10H_CONTINUATION_HANDOFF_20260901_FA.md"}
+def load(p):return json.loads(p.read_text(encoding="utf-8-sig"))
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def main():
+ p=argparse.ArgumentParser();p.add_argument("--output",required=True,type=Path);a=p.parse_args();paths={k:ROOT/v for k,v in S.items()};c=load(paths["capsule"]);prev=load(paths["previous"]);s=c["summary"]
+ checks={"sources_pass":c["validation"]==prev["validation"]=="PASS","graph_fresh":s["stale_reference_count"]==s["invalid_json_count"]==0 and s["reachable_checkpoint_count"]==s["passing_checkpoint_count"],"official_tests_pass_no_exclusion":s["official_test_file_count"]>0 and s["official_passed_test_count"]>0 and s["official_bootstrap_exclusion_count"]==0,"baseline_stable":(s["risk_count"],s["mapped_risk_assignment_count"],s["design_lower_bound"])==(84,343,1404),"runtime_and_readiness_zero":all(s[k]==0 for k in ("runtime_result_parity_proven_count","command_ready_module_count","pilot_ready_module_count","database_connection_count","network_read_or_write_count","operational_execution_count","data_mutation_count","assembly_load_or_execution_count","sensitive_value_persisted_count")),"safety_zero":set(c["safety"].values())=={0}};failed=sorted(k for k,v in checks.items() if not v)
+ out={"artifact":"varanegar_10h_continuation_handoff_checkpoint_20260901","schema_version":1,"generated_at":datetime.now().astimezone().isoformat(),"validation":"PASS" if not failed else "FAIL","previous_checkpoint":{"path":S["previous"],"sha256":sha(paths["previous"])},"checks":checks,"failed_checks":failed,"source_manifest":[{"name":k,"path":S[k],"size_bytes":v.stat().st_size,"sha256":sha(v)} for k,v in sorted(paths.items())],"safety":{"database_connections":0,"network_reads_or_writes":0,"operational_records_or_business_values_read":0,"operational_forms_reports_queries_or_procedures_executed":0,"assemblies_loaded_or_executed":0,"data_mutations":0,"credentials_pii_or_raw_business_values_persisted":0}}
+ a.output.parent.mkdir(parents=True,exist_ok=True);a.output.write_text(json.dumps(out,ensure_ascii=False,indent=2)+"\n",encoding="utf-8");print(a.output.resolve());print(out["validation"]);return 0 if not failed else 1
+if __name__=="__main__":raise SystemExit(main())

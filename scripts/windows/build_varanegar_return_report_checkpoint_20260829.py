@@ -1,0 +1,12 @@
+"""Build chained checkpoint for the RPT-11 return-report template boundary."""
+from __future__ import annotations
+import argparse,hashlib,json
+from datetime import datetime
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[2]
+S={"artifact":"artifacts/varanegar_analysis/domains/return_report_template_boundary_20260829.json","previous":"artifacts/varanegar_analysis/varanegar_stock_report_checkpoint_20260829.json","builder":"scripts/windows/build_varanegar_return_report_template_boundary_20260829.py","checkpoint_builder":"scripts/windows/build_varanegar_return_report_checkpoint_20260829.py","test":"tests/test_varanegar_return_report_template_boundary.py","doc":"docs/varanegar_reconstruction/RETURN_REPORT_EXTERNAL_TEMPLATE_BOUNDARY_20260829_FA.md"}
+def load(p):return json.loads(p.read_text(encoding="utf-8-sig"))
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def main():
+ q=argparse.ArgumentParser();q.add_argument("--output",required=True,type=Path);a=q.parse_args();paths={k:ROOT/v for k,v in S.items()};x=load(paths["artifact"]);prev=load(paths["previous"]);checks={"artifact_pass":x["validation"]=="PASS","previous_pass":prev["validation"]=="PASS","template_owned":x["corrected_classification"]["current"]=="EXTERNAL_TEMPLATE_OWNED_QUERY_AND_FORMULA","candidate_binding_rejected":x["summary"]["prior_name_candidate_count"]==24 and x["summary"]["bound_report_query_count"]==0,"parity_not_claimed":x["summary"]["result_parity_proven_count"]==0,"risk_stable":x["summary"]["risk_count"]==84,"zero_execution":set(v for k,v in x["safety"].items() if k!="mode")=={0}};failed=sorted(k for k,v in checks.items() if not v);p={"artifact":"varanegar_return_report_checkpoint_20260829","schema_version":1,"generated_at":datetime.now().astimezone().isoformat(),"validation":"PASS" if not failed else "FAIL","previous_checkpoint":{"path":S["previous"],"sha256":sha(paths["previous"])},"checks":checks,"failed_checks":failed,"source_manifest":[{"name":k,"path":S[k],"size_bytes":v.stat().st_size,"sha256":sha(v)} for k,v in sorted(paths.items())],"safety":{"report_template_reads_or_executions":0,"operational_commands":0,"assemblies_loaded_or_executed":0,"data_mutations":0,"sensitive_values_persisted":0}};a.output.parent.mkdir(parents=True,exist_ok=True);a.output.write_text(json.dumps(p,ensure_ascii=False,indent=2)+"\n",encoding="utf-8");print(a.output.resolve());print(p["validation"]);return 0 if not failed else 1
+if __name__=="__main__":raise SystemExit(main())

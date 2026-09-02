@@ -1,0 +1,2 @@
+-keep class org.neshan.** { *; }
+-keep class org.rajman.** { *; }

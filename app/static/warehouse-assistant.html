@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#173f35">
+  <title>دستیار مستقل انبار نگین</title>
+  <link rel="icon" href="/static/negin-brand-icon-192.png" type="image/png">
+  <link rel="stylesheet" href="/static/warehouse-assistant.css?v=3">
+</head>
+<body>
+  <div id="warehouseAssistantApp" class="warehouse-shell">
+    <header class="topbar">
+      <div class="identity">
+        <img src="/static/negin-brand-icon-192.png" alt="">
+        <div>
+          <span class="eyebrow">پایلوت مستقل · بدون اتصال به سفارش فروش</span>
+          <h1>دستیار انبار نگین</h1>
+          <p>Snapshot موجودی، تحلیل پوشش و پیشنهاد تجدید موجودی</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <span class="safety-badge">خروجی مستقیم برای تأمین‌کننده</span>
+        <span id="userBadge" class="user-badge" hidden></span>
+        <button id="loginButton" class="header-button" type="button">ورود</button>
+        <button id="logoutButton" class="header-button" type="button" hidden>خروج</button>
+        <a href="/">بازگشت به پنل اصلی</a>
+      </div>
+    </header>
+
+    <main>
+      <section id="accessMessage" class="notice" hidden></section>
+
+      <section class="summary-grid" aria-label="وضعیت دستیار انبار">
+        <article><span>حالت اجرا</span><strong>پایلوت مستقل</strong><small>بدون تغییر در /assistant</small></article>
+        <article><span>آخرین دریافت از ورانگر</span><strong id="snapshotDate">—</strong><small id="snapshotFile">هنوز داده‌ای دریافت نشده است</small></article>
+        <article><span>تعداد کالا</span><strong id="productCount">۰</strong><small>در آخرین دریافت معتبر</small></article>
+        <article><span>خروجی سفارش</span><strong>آماده تحویل</strong><small>متن و Excel جداگانه برای هر تأمین‌کننده</small></article>
+      </section>
+
+      <section class="workspace-grid">
+        <aside class="panel import-panel">
+          <div class="panel-head">
+            <div><h2>دریافت از ورانگر</h2><p>موجودی جاری و روند خروج را مستقیم و فقط‌خواندنی دریافت کنید.</p></div>
+          </div>
+          <form id="varanegarSyncForm" class="stack">
+            <label class="sync-field">بازه بررسی روند خروج
+              <span><input id="syncPeriodDays" type="number" min="7" max="365" value="60"> روز گذشته</span>
+            </label>
+            <button class="primary" type="submit" id="syncButton">دریافت موجودی و خروج از ورانگر</button>
+          </form>
+          <details class="backup-import">
+            <summary>ورود فایل پشتیبان</summary>
+            <form id="snapshotForm" class="stack">
+              <label class="file-drop" for="snapshotFileInput">
+                <span>انتخاب فایل XLSX یا XLSM</span>
+                <small>فقط برای حالت اضطراری؛ ماکروها هرگز اجرا نمی‌شوند.</small>
+                <input id="snapshotFileInput" type="file" accept=".xlsx,.xlsm" required>
+              </label>
+              <button class="secondary-action" type="submit" id="importButton">ورود فایل پشتیبان</button>
+            </form>
+          </details>
+          <div class="security-note">
+            <strong>مرز ایمنی</strong>
+            <p>اتصال ورانگر فقط SELECT است. داده در پایگاه مستقل دستیار کپی می‌شود و هیچ INSERT، UPDATE، DELETE، EXEC یا ثبت سفارش در ورانگر انجام نمی‌شود.</p>
+          </div>
+        </aside>
+
+        <section class="panel suggestion-panel">
+          <div class="panel-head">
+            <div><h2>آماده‌سازی سفارش تأمین‌کننده</h2><p>ابتدا پیشنهاد را محاسبه کنید، اقلام و تعداد را کنترل کنید و سپس سند خرید بسازید.</p></div>
+            <div class="panel-actions">
+              <button id="calculateButton" class="secondary-action" type="button">محاسبه پیشنهاد</button>
+              <button id="createOrderButton" class="primary" type="button" disabled>ساخت سند تأمین‌کننده</button>
+            </div>
+          </div>
+          <form id="filterForm" class="filter-grid">
+            <label>انبار<select id="warehouseSelect"></select></label>
+            <label>تولیدکننده<input id="manufacturerFilter" maxlength="200" placeholder="همه تولیدکننده‌ها"></label>
+            <label>برند<input id="brandFilter" maxlength="200" placeholder="همه برندها"></label>
+            <label>کالا یا کد<input id="productSearch" maxlength="200" placeholder="جست‌وجو"></label>
+            <label>روز پوشش هدف<input id="targetDays" type="number" min="1" max="180" value="30"></label>
+            <label>روز ذخیره اطمینان<input id="safetyDays" type="number" min="0" max="90" value="7"></label>
+            <label>بازه روند دریافت‌شده<input id="periodDays" type="number" min="7" max="365" value="60" disabled></label>
+            <label class="checkbox"><input id="onlyNeeded" type="checkbox" checked> فقط اقلام نیازمند سفارش</label>
+          </form>
+
+          <div id="resultSummary" class="result-summary empty">بعد از دریافت داده ورانگر، پیشنهاد سفارش را محاسبه کنید.</div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>انتخاب</th><th>کالا</th><th>تأمین‌کننده / برند</th><th>موجودی</th><th>رزرو</th><th>قابل‌مصرف</th><th>خروج دوره</th><th>پوشش</th><th>ضریب</th><th>تعداد سفارش</th><th>ارزش تخمینی</th>
+                </tr>
+              </thead>
+              <tbody id="suggestionRows"><tr><td colspan="11" class="empty-cell">داده‌ای برای نمایش نیست.</td></tr></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <section class="panel prepared-orders">
+        <div class="panel-head">
+          <div><h2>سفارش‌های آماده تحویل</h2><p>سامانه اقلام را براساس تأمین‌کننده تفکیک می‌کند؛ فایل را دانلود و از کانال موردنظر برای تأمین‌کننده ارسال کنید.</p></div>
+          <button id="refreshOrdersButton" class="secondary-action" type="button">بازخوانی</button>
+        </div>
+        <div id="ordersList" class="orders-list"><div class="empty-cell">هنوز سندی آماده نشده است.</div></div>
+      </section>
+
+      <section class="formula-panel">
+        <h2>فرمول نسخه آزمایشی</h2>
+        <div><span>موجودی قابل‌مصرف</span><code>موجودی − رزرو</code></div>
+        <div><span>مصرف روزانه</span><code>خروج دوره ÷ تعداد روز دوره</code></div>
+        <div><span>نیاز خام</span><code>(پوشش هدف + ذخیره اطمینان) × مصرف روزانه − موجودی قابل‌مصرف</code></div>
+        <div><span>پیشنهاد نهایی</span><code>گردکردن رو به بالا براساس ضریب کارتن</code></div>
+      </section>
+    </main>
+  </div>
+  <dialog id="loginDialog" class="login-dialog">
+    <form id="loginForm">
+      <img src="/static/negin-brand-icon-192.png" alt="">
+      <h2>ورود به دستیار انبار</h2>
+      <p>با همان نام کاربری و رمز دستیار نگین وارد شوید.</p>
+      <label>نام کاربری<input id="loginUsername" autocomplete="username" required></label>
+      <label>رمز عبور<input id="loginPassword" type="password" autocomplete="current-password" required></label>
+      <p id="loginError" class="login-error"></p>
+      <button class="primary" type="submit">ورود امن</button>
+      <a href="/assistant">ورود یا تغییر رمز در دستیار اصلی</a>
+    </form>
+  </dialog>
+  <div id="toast" class="toast" role="status"></div>
+  <script src="/static/warehouse-assistant.js?v=3" defer></script>
+</body>
+</html>

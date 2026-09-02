@@ -1,0 +1,9 @@
+import json,subprocess,sys
+from pathlib import Path
+R=Path(__file__).resolve().parents[1];B=R/"scripts/windows/build_varanegar_p2_assertion_effect_family_gap_matrix_20260829.py";A=R/"artifacts/varanegar_analysis/varanegar_p2_assertion_effect_family_gap_matrix_20260829.json"
+def load():return json.loads(A.read_text(encoding="utf-8-sig"))
+def test_rebuild(tmp_path):o=tmp_path/"e.json";subprocess.run([sys.executable,str(B),"--output",str(o)],check=True);assert json.loads(o.read_text(encoding="utf-8"))["validation"]=="PASS"
+def test_pair_family_and_overlap_counts():s=load()["summary"];assert (s["candidate_case_pair_count"],s["effect_family_count"])==(73,12);assert (s["exact_family_set_pair_count"],s["nonempty_family_overlap_pair_count"],s["zero_family_overlap_pair_count"])==(0,64,9)
+def test_asymmetric_family_assignments():s=load()["summary"];assert (s["newer_only_family_assignment_count"],s["baseline_only_family_assignment_count"])==(420,97)
+def test_material_family_asymmetries():s=load()["summary"];assert (s["newer_audit_pair_count"],s["baseline_audit_pair_count"],s["newer_outbox_pair_count"],s["baseline_outbox_pair_count"])==(73,36,73,14);assert (s["newer_source_immutability_pair_count"],s["baseline_source_immutability_pair_count"])==(56,28);assert (s["newer_transaction_atomicity_pair_count"],s["baseline_transaction_atomicity_pair_count"])==(0,46);assert (s["newer_version_concurrency_pair_count"],s["baseline_version_concurrency_pair_count"])==(73,14)
+def test_nonadditive_safe():d=load();s=d["summary"];assert s["accepted_family_mapping_count"]==s["accepted_case_pair_count"]==0;assert s["design_lower_bound_before_effect_family_matrix"]==s["design_lower_bound_after_effect_family_matrix"]==1404;assert s["executed_case_count"]==s["owner_approved_case_count"]==s["command_ready_module_count"]==s["pilot_ready_module_count"]==0;assert set(d["safety"].values())=={0}

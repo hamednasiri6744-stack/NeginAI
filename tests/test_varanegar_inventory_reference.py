@@ -1,0 +1,9 @@
+import copy,importlib.util
+from pathlib import Path
+P=Path(__file__).resolve().parents[1]/"scripts/windows/varanegar_inventory_reference.py";S=importlib.util.spec_from_file_location("ref",P);M=importlib.util.module_from_spec(S);S.loader.exec_module(M)
+def test_movement_and_unknown():assert M.evaluate(M.baseline())=="STOCK_MOVEMENT_ACCEPTED_SCOPED_VERSIONED_AND_BALANCED";assert M.evaluate(dict(M.baseline(),unknown_commit=True))=="STOCK_MOVEMENT_UNKNOWN_RECONCILIATION_REQUIRED"
+def test_expiry_and_negative_fail_closed():assert M.evaluate(dict(M.baseline(),operation="ALLOCATE",expiry_recall_quarantine_clear=False))=="STOCK_REJECTED_EXPIRY_RECALL_QUARANTINE_OR_DAMAGE";assert M.evaluate(dict(M.baseline(),negative_stock_policy_current=False))=="STOCK_MOVEMENT_REJECTED_NEGATIVE_BACKDATE_OR_UNKNOWN"
+def test_cost_requires_lineage_and_nonnegative_layer():assert M.evaluate(dict(M.baseline(),operation="COST",cost_layer_lineage_current=False))=="COST_LAYER_REJECTED_METHOD_SCOPE_QUANTITY_OR_ROUNDING";assert M.evaluate(dict(M.baseline(),operation="COST",cost_layer_quantity_nonnegative=False))=="COST_LAYER_REJECTED_METHOD_SCOPE_QUANTITY_OR_ROUNDING"
+def test_transfer_and_count_fail_closed():assert M.evaluate(dict(M.baseline(),operation="TRANSFER",transfer_ownership_current=False))=="TRANSFER_REJECTED_SCOPE_OWNER_OR_RECEIPT";assert M.evaluate(dict(M.baseline(),operation="COUNT",variance_approved=False))=="COUNT_ADJUSTMENT_REJECTED_VARIANCE_APPROVAL_OR_VERSION"
+def test_revaluation_and_reconciliation():assert M.evaluate(dict(M.baseline(),operation="REVALUE",period_current=False))=="PERIOD_REVALUATION_REJECTED_PERIOD_OR_RECONCILIATION";assert M.evaluate(dict(M.baseline(),operation="RECONCILE",stock_cost_gl_reconciled=False))=="INVENTORY_RECONCILIATION_REJECTED_QUANTITY_VALUE_OR_LEDGER"
+def test_schema_exact():e=copy.deepcopy(M.baseline());e["extra"]=True;assert M.evaluate(e)=="SCHEMA_INVALID"

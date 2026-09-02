@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0f766e">
+  <title>Negin Planning</title>
+  <link rel="stylesheet" href="/static/planning.css?v=1">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <span class="eyebrow"> برنامه‌ریزی نگین پخش</span>
+      <h1>Negin Planning</h1>
+      <p>بودجه، پیش‌بینی، سناریو و گردش تأیید</p>
+    </div>
+    <div class="top-actions">
+      <a class="secondary" href="#scenario-management">سناریوها</a>
+      <a class="secondary" href="#comparison">مقایسه</a>
+      <a class="secondary" href="/">پنل مدیریت</a>
+      <a class="secondary" href="/assistant">دستیار نگین</a>
+      <button class="secondary" id="keyButton">کلید دسترسی</button>
+      <button class="primary" id="newScenarioButton">سناریوی جدید</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="stats" aria-label="خلاصه برنامه‌ریزی">
+      <article><span>سناریوهای فعال</span><strong id="scenarioCount">۰</strong></article>
+      <article><span>سناریوهای تأییدشده</span><strong id="approvedCount">۰</strong></article>
+      <article><span>مقادیر برنامه</span><strong id="valueCount">۰</strong></article>
+      <article><span>سال‌های مالی</span><strong id="yearCount">۰</strong></article>
+    </section>
+
+    <section class="layout" id="scenario-management">
+      <aside class="panel scenarios-panel">
+        <div class="panel-head">
+          <div><h2>سناریوها</h2><p>بودجه، پیش‌بینی و برنامه‌های نسخه‌بندی‌شده</p></div>
+          <label class="archive-toggle"><input type="checkbox" id="includeArchived"> بایگانی</label>
+        </div>
+        <div id="scenarioList" class="scenario-list loading">در حال دریافت سناریوها...</div>
+      </aside>
+
+      <section class="workspace">
+        <article class="panel empty-detail" id="emptyDetail">
+          <div><span class="empty-icon">◎</span><h2>یک سناریو انتخاب کنید</h2><p>برای شروع، سناریوی بودجه یا پیش‌بینی بسازید.</p></div>
+        </article>
+
+        <div id="scenarioWorkspace" hidden>
+          <article class="panel scenario-detail">
+            <div class="detail-title">
+              <div><span id="detailType" class="type-pill"></span><h2 id="detailName"></h2><p id="detailMeta"></p></div>
+              <span id="detailStatus" class="status"></span>
+            </div>
+            <div id="scenarioTotals" class="totals"></div>
+            <div id="workflowActions" class="workflow-actions"></div>
+          </article>
+
+          <div class="two-column">
+            <article class="panel">
+              <div class="panel-head"><div><h2>ثبت مقدار برنامه</h2><p>هر ترکیب دوره، شاخص و ابعاد فقط یک مقدار دارد.</p></div></div>
+              <form id="valueForm" class="form-grid compact">
+                <label>دوره<input id="valuePeriod" required placeholder="1405-01" pattern="\d{4}-(0[1-9]|1[0-2])"></label>
+                <label>شاخص<select id="valueMetric" required></select></label>
+                <label>مقدار<input id="valueAmount" type="number" step="any" required></label>
+                <label>واحد<select id="valueUnit"><option value="rial">ریال</option><option value="count">عدد</option><option value="percent">درصد</option></select></label>
+                <label>شعبه<input id="valueBranch" placeholder="مثلاً البرز"></label>
+                <label>لاین فروش<input id="valueSalesLine" placeholder="مثلاً مارکت"></label>
+                <label>فروشنده<input id="valueSeller" placeholder="کد یا نام"></label>
+                <label>برند<input id="valueBrand" placeholder="مثلاً Misswake"></label>
+                <label>کالا / SKU<input id="valueProduct" placeholder="کد کالا"></label>
+                <label class="wide">یادداشت<input id="valueNote" placeholder="فرض یا توضیح این مقدار"></label>
+                <button class="primary wide" type="submit">ذخیره یا به‌روزرسانی مقدار</button>
+              </form>
+            </article>
+
+            <article class="panel">
+              <div class="panel-head"><div><h2>فرض‌های سناریو</h2><p>فرض‌های ثبت‌شده هنگام ساخت نسخه</p></div></div>
+              <div id="assumptions" class="assumptions"></div>
+              <div class="audit-head"><h3>آخرین رخدادها</h3></div>
+              <div id="auditList" class="audit-list"></div>
+            </article>
+          </div>
+
+          <article class="panel values-panel">
+            <div class="panel-head"><div><h2>مقادیر سناریو</h2><p id="valuesHint"></p></div><button class="secondary" id="refreshValues">به‌روزرسانی</button></div>
+            <div class="table-wrap"><table><thead><tr><th>دوره</th><th>شاخص</th><th>مقدار</th><th>شعبه / لاین</th><th>فروشنده</th><th>برند / کالا</th><th>یادداشت</th></tr></thead><tbody id="valuesBody"></tbody></table></div>
+          </article>
+        </div>
+      </section>
+    </section>
+
+    <section class="panel compare-panel" id="comparison">
+      <div class="panel-head"><div><h2>مقایسه سناریوها</h2><p>انحراف دوره‌ای بین دو نسخه را قطعی محاسبه کنید.</p></div></div>
+      <form id="compareForm" class="compare-form">
+        <label>سناریوی جاری<select id="compareLeft" required></select></label>
+        <label>سناریوی مبنا<select id="compareRight" required></select></label>
+        <label>شاخص<select id="compareMetric" required></select></label>
+        <button class="primary" type="submit">محاسبه انحراف</button>
+      </form>
+      <div id="comparisonResult" class="comparison-result empty">هنوز مقایسه‌ای اجرا نشده است.</div>
+    </section>
+  </main>
+
+  <dialog id="scenarioDialog">
+    <form method="dialog" id="scenarioForm">
+      <div class="dialog-head"><div><h2>سناریوی جدید</h2><p>نسخه بودجه، پیش‌بینی یا برنامه را ایجاد کنید.</p></div><button type="button" class="close" id="closeScenario">×</button></div>
+      <div class="form-grid">
+        <label>کد سناریو<input id="scenarioCode" required maxlength="40" pattern="[A-Za-z0-9_.-]+" placeholder="BUD-1405"></label>
+        <label>نام سناریو<input id="scenarioName" required maxlength="200" placeholder="بودجه فروش ۱۴۰۵"></label>
+        <label>نوع<select id="scenarioType"><option value="budget">بودجه</option><option value="forecast">پیش‌بینی</option><option value="plan">برنامه</option></select></label>
+        <label>سال مالی<input id="scenarioYear" type="number" min="1300" max="2500" value="1405" required></label>
+        <label>دوره شروع<input id="scenarioStart" value="1405-01" required pattern="\d{4}-(0[1-9]|1[0-2])"></label>
+        <label>دوره پایان<input id="scenarioEnd" value="1405-12" required pattern="\d{4}-(0[1-9]|1[0-2])"></label>
+        <label class="wide">سناریوی مبنا<select id="scenarioBase"><option value="">بدون مبنا</option></select></label>
+        <label>رشد قیمت (%)<input id="assumptionPrice" type="number" step="any"></label>
+        <label>رشد حجم (%)<input id="assumptionVolume" type="number" step="any"></label>
+      </div>
+      <button class="primary full" type="submit">ایجاد سناریو</button>
+    </form>
+  </dialog>
+
+  <dialog id="keyDialog">
+    <form method="dialog" id="keyForm">
+      <div class="dialog-head"><div><h2>کلید دسترسی</h2><p>برای دسترسی شبکه‌ای، کلید داخلی را وارد کنید.</p></div><button type="button" class="close" id="closeKey">×</button></div>
+      <label>NEGIN_ACTION_API_KEY<input id="apiKey" type="password" autocomplete="off"></label>
+      <button class="primary full" type="submit">ذخیره و اتصال</button>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast"></div>
+  <script src="/static/planning.js?v=1" defer></script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+{
+	storage file_system {
+		root data/caddy
+	}
+}
+
+ai.neginpakhsh.com {
+	encode zstd gzip
+
+	handle_path /erp/* {
+		reverse_proxy 127.0.0.1:8100
+	}
+
+	handle /erp {
+		redir /erp/ permanent
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:8006
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+		-Server
+	}
+}

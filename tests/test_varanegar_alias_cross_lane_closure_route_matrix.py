@@ -1,0 +1,9 @@
+import json,subprocess,sys
+from pathlib import Path
+R=Path(__file__).resolve().parents[1];B=R/"scripts/windows/build_varanegar_alias_cross_lane_closure_route_matrix_20260829.py";A=R/"artifacts/varanegar_analysis/varanegar_alias_cross_lane_closure_route_matrix_20260829.json"
+def load():return json.loads(A.read_text(encoding="utf-8-sig"))
+def test_rebuild(tmp_path):o=tmp_path/"x.json";subprocess.run([sys.executable,str(B),"--output",str(o)],check=True);assert json.loads(o.read_text(encoding="utf-8"))["validation"]=="PASS"
+def test_scope_partition():s=load()["summary"];assert (s["lane_count"],s["status_packet_count"],s["case_count"],s["candidate_bearing_packet_count"],s["explicit_none_packet_count"])==(5,29,203,20,9)
+def test_route_distribution():s=load()["summary"];assert (s["external_alias_or_new_action_decision_packet_count"],s["external_semantic_equivalence_decision_packet_count"],s["external_semantic_effect_and_result_parity_decision_packet_count"],s["external_export_effect_and_result_parity_decision_packet_count"])==(9,12,5,3)
+def test_pairs_and_semantic_gap():s=load()["summary"];assert (s["same_kind_case_pair_count"],s["failure_injection_pair_count"],s["control_pair_count"])==(246,78,168);assert (s["outcome_exact_pair_count"],s["assertion_list_exact_pair_count"],s["fully_exact_pair_count"],s["exact_effect_family_set_pair_count"],s["zero_effect_family_overlap_pair_count"])==(4,0,0,0,10)
+def test_all_promotions_zero():d=load();s=d["summary"];assert s["semantic_disposition_closed_packet_count"]==s["result_parity_proven_packet_count"]==s["accepted_case_disposition_count"]==s["executed_case_count"]==s["owner_approved_case_count"]==s["command_ready_module_count"]==s["pilot_ready_module_count"]==0;assert s["design_lower_bound_before_cross_lane_matrix"]==s["design_lower_bound_after_cross_lane_matrix"]==1404;assert set(d["safety"].values())=={0}

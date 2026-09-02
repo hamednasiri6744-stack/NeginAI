@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="نشان جاده نگین پخش">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#080807"/><stop offset="1" stop-color="#27231c"/></linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff0a6"/><stop offset=".32" stop-color="#d19a2c"/><stop offset=".68" stop-color="#8f5c12"/><stop offset="1" stop-color="#f2cd67"/></linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <path d="M256 70 431 169 382 370 256 448 130 370 81 169Z" fill="#11100e" stroke="url(#gold)" stroke-width="15"/>
+  <path d="M86 171 203 95 150 361 256 443 362 361 309 95 426 171 382 370 256 448 130 370Z" fill="url(#gold)" opacity=".92"/>
+  <path d="M256 86c-28 78-21 130 18 177 31 38 35 88-18 173h77c52-95 46-159 3-211-35-42-37-81-17-139Z" fill="#11100e" stroke="#f3cf69" stroke-width="8"/>
+  <path d="M301 119c-9 40-1 72 26 104 37 44 45 91 12 158" fill="none" stroke="#f5d46f" stroke-width="9" stroke-linecap="round" stroke-dasharray="18 19"/>
+  <path d="m105 174 98-79-50 263Z" fill="#221b11" opacity=".72"/><path d="m407 174-98-79 50 263Z" fill="#3a3021" opacity=".72"/>
+</svg>

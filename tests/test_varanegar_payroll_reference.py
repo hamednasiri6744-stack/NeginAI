@@ -1,0 +1,9 @@
+import copy,importlib.util
+from pathlib import Path
+P=Path(__file__).resolve().parents[1]/"scripts/windows/varanegar_payroll_reference.py";S=importlib.util.spec_from_file_location("ref",P);M=importlib.util.module_from_spec(S);S.loader.exec_module(M)
+def test_input_and_unknown():assert M.evaluate(M.baseline())=="PAYROLL_INPUT_ACCEPTED_SCOPED_EFFECTIVE_AND_APPROVED";assert M.evaluate(dict(M.baseline(),unknown_commit=True))=="PAYROLL_UNKNOWN_RECONCILIATION_REQUIRED"
+def test_calculation_formula_and_statutory_fail_closed():assert M.evaluate(dict(M.baseline(),operation="CALCULATE",formula_version_current=False))=="GROSS_TO_NET_REJECTED_FORMULA_STATUTORY_SCALE_PERIOD_OR_ROUNDING";assert M.evaluate(dict(M.baseline(),operation="CALCULATE",statutory_rules_current=False))=="GROSS_TO_NET_REJECTED_FORMULA_STATUTORY_SCALE_PERIOD_OR_ROUNDING"
+def test_retro_and_payslip_require_lineage_privacy():assert M.evaluate(dict(M.baseline(),operation="RETRO",retro_lineage_current=False))=="RETRO_OFF_CYCLE_REJECTED_LINEAGE_PERIOD_OR_APPROVAL";assert M.evaluate(dict(M.baseline(),operation="PAYSLIP",payslip_identity_privacy_current=False))=="PAYSLIP_REJECTED_IDENTITY_PRIVACY_OR_DELIVERY"
+def test_payment_and_termination_fail_closed():assert M.evaluate(dict(M.baseline(),operation="PAYMENT",payment_token_approval_current=False))=="PAYMENT_BLOCKED_IDENTITY_APPROVAL_PERIOD_OR_UNKNOWN";assert M.evaluate(dict(M.baseline(),operation="TERMINATE",termination_settlement_revocation_current=False))=="TERMINATION_FINAL_PAY_REJECTED_INCOMPLETE_OR_UNAPPROVED"
+def test_reconciliation():assert M.evaluate(dict(M.baseline(),operation="RECONCILE",liability_cash_gl_reconciled=False))=="PAYROLL_RECONCILIATION_REJECTED_LIABILITY_CASH_OR_GL"
+def test_schema_exact():e=copy.deepcopy(M.baseline());e["extra"]=True;assert M.evaluate(e)=="SCHEMA_INVALID"

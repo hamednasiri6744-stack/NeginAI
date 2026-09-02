@@ -1,0 +1,43 @@
+"""Build review-only semantic alias candidates for Distribution and Treasury cases."""
+from __future__ import annotations
+import argparse, hashlib, json
+from collections import defaultdict
+from datetime import datetime
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[2]
+S={"core":"artifacts/varanegar_analysis/ui/varanegar_golden_command_cases_20260827.json","orchestrator":"artifacts/varanegar_analysis/ui/varanegar_orchestrator_golden_cases_20260827.json","master":"artifacts/varanegar_analysis/ui/negin_erp_customer_goods_master_golden_cases_20260827.json","extension":"artifacts/varanegar_analysis/ui/varanegar_extension_golden_cases_20260827.json","bank":"artifacts/varanegar_analysis/ui/negin_erp_bank_reconciliation_golden_cases_20260827.json","distribution":"artifacts/varanegar_analysis/varanegar_distribution_golden_uat_cases_20260829.json","treasury":"artifacts/varanegar_analysis/varanegar_treasury_golden_uat_cases_20260829.json","crosswalk":"artifacts/varanegar_analysis/varanegar_golden_uat_crosswalk_feasibility_matrix_20260829.json","risk":"artifacts/varanegar_analysis/ui/negin_erp_risk_register_20260829.json","trace":"artifacts/varanegar_analysis/ui/negin_erp_requirements_traceability_20260829.json","previous":"artifacts/varanegar_analysis/varanegar_golden_uat_crosswalk_feasibility_checkpoint_20260829.json"}
+def load(p):return json.loads(p.read_text(encoding="utf-8-sig"))
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def module(command):
+ if command.startswith("distribution."):return "distribution"
+ if command.startswith("received_cheque."):return "receivables_treasury"
+ if command.startswith(("master_data.","order.","sales_return.","payable_cheque.","supplier_","stock_voucher.","inventory.")):return "other"
+ raise ValueError(command)
+def action(x):return str(x.get("command") or x.get("surface") or x.get("command_id") or "")
+def kind(x):return str(x.get("kind") or x.get("case_kind") or "")
+def expected(x):return str(x.get("expected") or x.get("expected_outcome") or "")
+def assertions(x):return x.get("assertions") or x.get("expected_assertions") or []
+def main():
+ q=argparse.ArgumentParser();q.add_argument("--output",required=True,type=Path);a=q.parse_args();paths={k:ROOT/v for k,v in S.items()};d={k:load(v) for k,v in paths.items()};base=defaultdict(list)
+ for source in ("core","orchestrator","master"):
+  for row in d[source]["cases"]:
+   m=module(row["command"])
+   if m!="other":base[m].append((source,row))
+ for row in d["extension"]["cases"]:
+  if row["target_module"] in {"distribution","receivables_treasury"}:base[row["target_module"]].append(("extension",row))
+ base["receivables_treasury"].extend(("bank",row) for row in d["bank"]["cases"])
+ packets=[]
+ for m,source in (("distribution","distribution"),("receivables_treasury","treasury")):
+  left=defaultdict(list);right=defaultdict(list)
+  for source_name,row in base[m]:left[(action(row).casefold(),kind(row).casefold())].append((source_name,row))
+  for row in d[source]["cases"]:right[(action(row).casefold(),kind(row).casefold())].append(row)
+  for key in sorted(set(left)&set(right)):
+   old=sorted(left[key],key=lambda item:item[1]["case_id"]);new=sorted(right[key],key=lambda row:row["case_id"])
+   for index,((source_name,baseline),newer) in enumerate(zip(old,new),1):
+    outcome_equal=expected(baseline).casefold()==expected(newer).casefold();assertions_equal=assertions(baseline)==assertions(newer)
+    packets.append({"packet_id":f"ALIAS-{m.upper()}-{len(packets)+1:03d}","module":m,"baseline_case_id":baseline["case_id"],"newer_case_id":newer["case_id"],"baseline_source":S[source_name],"newer_source":S[source],"casefold_action":key[0],"casefold_kind":key[1],"action_casefold_equal":True,"kind_casefold_equal":True,"expected_outcome_label_exact_equal":outcome_equal,"assertion_list_exact_equal":assertions_equal,"automatic_equivalence_allowed":False,"current_disposition":"REVIEW_REQUIRED","accepted_semantic_equivalence":False,"required_review":["compare precondition and state setup","map legacy and target outcome vocabulary","compare assertion/effect classes rather than labels alone","classify EXACT_REUSE, SEMANTIC_REPLACEMENT, EXACT_NEW, DEPRECATED or UNRESOLVED","record accountable role, rationale, policy version and expiry"]})
+ packets.sort(key=lambda x:x["packet_id"]);summary={"candidate_packet_count":len(packets),"distribution_candidate_packet_count":sum(x["module"]=="distribution" for x in packets),"treasury_candidate_packet_count":sum(x["module"]=="receivables_treasury" for x in packets),"action_casefold_equal_count":sum(x["action_casefold_equal"] for x in packets),"kind_casefold_equal_count":sum(x["kind_casefold_equal"] for x in packets),"expected_outcome_label_exact_equal_count":sum(x["expected_outcome_label_exact_equal"] for x in packets),"assertion_list_exact_equal_count":sum(x["assertion_list_exact_equal"] for x in packets),"fully_exact_candidate_count":sum(x["expected_outcome_label_exact_equal"] and x["assertion_list_exact_equal"] for x in packets),"review_required_packet_count":sum(x["current_disposition"]=="REVIEW_REQUIRED" for x in packets),"accepted_semantic_equivalence_count":sum(x["accepted_semantic_equivalence"] for x in packets),"exact_non_duplicated_additive_count":0,"design_lower_bound_before_alias_review":d["crosswalk"]["summary"]["design_lower_bound_after_crosswalk"],"design_lower_bound_after_alias_review":d["crosswalk"]["summary"]["design_lower_bound_after_crosswalk"],"executed_case_count":0,"owner_approved_case_count":0,"command_ready_module_count":0,"pilot_ready_module_count":0,"risk_count":d["risk"]["summary"]["risk_count"],"mapped_risk_assignment_count":d["trace"]["summary"]["mapped_risk_assignment_count"],"new_risk_count":0}
+ checks={"validated_sources_pass":all(d[k].get("validation")=="PASS" for k in d if k!="core"),"legacy_core_pinned":d["core"].get("validation") is None and d["core"]["summary"]["case_count"]==77,"thirty_candidates_24_6":summary["candidate_packet_count"]==30 and summary["distribution_candidate_packet_count"]==24 and summary["treasury_candidate_packet_count"]==6,"action_kind_equal_all":summary["action_casefold_equal_count"]==summary["kind_casefold_equal_count"]==30,"outcome_five_assertion_zero":summary["expected_outcome_label_exact_equal_count"]==5 and summary["assertion_list_exact_equal_count"]==summary["fully_exact_candidate_count"]==0,"review_only":summary["review_required_packet_count"]==30 and summary["accepted_semantic_equivalence_count"]==0 and not any(x["automatic_equivalence_allowed"] for x in packets),"non_additive_1404":summary["exact_non_duplicated_additive_count"]==0 and summary["design_lower_bound_before_alias_review"]==summary["design_lower_bound_after_alias_review"]==1404,"execution_approval_readiness_zero":summary["executed_case_count"]==summary["owner_approved_case_count"]==summary["command_ready_module_count"]==summary["pilot_ready_module_count"]==0,"base_stable":summary["risk_count"]==84 and summary["mapped_risk_assignment_count"]==343};failed=sorted(k for k,v in checks.items() if not v)
+ out={"artifact":"varanegar_distribution_treasury_semantic_alias_candidate_packets_20260829","schema_version":1,"generated_at":datetime.now().astimezone().isoformat(),"validation":"PASS" if not failed else "FAIL","scope":{"mode":"OFFLINE_REVIEW_ONLY_CASE_ALIAS_CANDIDATES","continuation_complete":False},"safety":{"database_connections":0,"golden_uat_or_operational_execution":0,"assemblies_loaded_or_executed":0,"data_mutations":0,"write_access_created":0,"raw_business_values_identity_or_credentials_persisted":0},"summary":summary,"candidate_packets":packets,"acceptance_rule":"NO_AUTO_ACCEPT; action and kind equality are insufficient without outcome, assertion/effect and accountable disposition evidence","checks":checks,"failed_checks":failed,"source_manifest":[{"name":k,"path":S[k],"size_bytes":p.stat().st_size,"sha256":sha(p)} for k,p in sorted(paths.items())]+[{"name":"builder","path":"scripts/windows/build_varanegar_distribution_treasury_semantic_alias_candidate_packets_20260829.py","size_bytes":Path(__file__).stat().st_size,"sha256":sha(Path(__file__))}],"limits":["All 30 packets remain review-required.","No semantic equivalence or additive case is accepted.","No case was executed and no readiness state was promoted."]}
+ a.output.parent.mkdir(parents=True,exist_ok=True);a.output.write_text(json.dumps(out,ensure_ascii=False,indent=2)+"\n",encoding="utf-8");print(a.output.resolve());print(out["validation"]);print(json.dumps(summary,ensure_ascii=False));return 0 if not failed else 1
+if __name__=="__main__":raise SystemExit(main())

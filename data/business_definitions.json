@@ -1,0 +1,33 @@
+[
+  {
+    "term": "فروش / فروش امروز",
+    "definition": "منبع پیشنهادی فروش قطعی، View با نام Acc.vwRcvSaleReviewFast است. شناسه سند SaleId، تاریخ فروش SaleDate، نام مشتری CustFullName، مبلغ ناخالص SalesAmount، تخفیف SalesDiscountAmount، اضافات SalesAddAmount و مبلغ خالص SalesNetAmount است.",
+    "rules": "تاریخ ورانگر شمسی و با قالب YYYY/MM/DD است. برای جلوگیری از دوباره‌شماری، ابتدا رکوردها را بر اساس SaleId یکتا یا تجمیع کن و سپس SalesNetAmount را جمع بزن. هنگام پاسخ نام منبع، SQL، تاریخ مبنا و تعداد اسناد را اعلام کن.",
+    "approved_sql": "WITH sales AS (SELECT SaleId, MAX(SalesNetAmount) AS SalesNetAmount FROM Acc.vwRcvSaleReviewFast WHERE SaleDate = '1405/05/12' GROUP BY SaleId) SELECT COUNT(*) AS SaleCount, SUM(SalesNetAmount) AS TotalNetSales FROM sales",
+    "related_objects": [
+      "Acc.vwRcvSaleReviewFast.SaleId",
+      "Acc.vwRcvSaleReviewFast.SaleDate",
+      "Acc.vwRcvSaleReviewFast.CustFullName",
+      "Acc.vwRcvSaleReviewFast.SalesAmount",
+      "Acc.vwRcvSaleReviewFast.SalesDiscountAmount",
+      "Acc.vwRcvSaleReviewFast.SalesAddAmount",
+      "Acc.vwRcvSaleReviewFast.SalesNetAmount"
+    ]
+  },
+  {
+    "term": "نام تجاری / برند / تولیدکننده",
+    "definition": "برای گزارش فروش برند یا نام تجاری از ستون ManufacturerName در dbo.SalesReviewFast استفاده شود. ستون‌های فروش شامل SellId، SellDate، CustomerName، CustomerStoreName، GoodsName، SellQty و SellNetAmount هستند.",
+    "rules": "به FRU.GoodsModel متصل نشو، چون کاربر Read Only برای تابع داخلی GNR.DateTimeToSolar مجوز EXECUTE ندارد. برند را مستقیماً با ManufacturerName LIKE N'%نام برند%' در dbo.SalesReviewFast فیلتر کن. تاریخ شمسی در SellDate و با قالب YYYY/MM/DD است.",
+    "approved_sql": "SELECT TOP (50) ManufacturerName, GoodsName, COUNT(DISTINCT SellId) AS InvoiceCount, SUM(SellNetAmount) AS NetSalesAmount FROM dbo.SalesReviewFast WHERE SellDate = '1405/05/12' AND ManufacturerName LIKE N'%زاکی%' GROUP BY ManufacturerName, GoodsName ORDER BY NetSalesAmount DESC",
+    "related_objects": [
+      "dbo.SalesReviewFast.ManufacturerName",
+      "dbo.SalesReviewFast.SellId",
+      "dbo.SalesReviewFast.SellDate",
+      "dbo.SalesReviewFast.CustomerName",
+      "dbo.SalesReviewFast.CustomerStoreName",
+      "dbo.SalesReviewFast.GoodsName",
+      "dbo.SalesReviewFast.SellQty",
+      "dbo.SalesReviewFast.SellNetAmount"
+    ]
+  }
+]

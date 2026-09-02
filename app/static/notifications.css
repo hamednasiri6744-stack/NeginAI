@@ -1,0 +1,27 @@
+.chat-shell{position:relative}
+.inbox-button{margin-right:0}
+.new-chat-button{margin-right:auto}
+.inbox-badge{position:absolute;top:1px;left:1px;min-width:17px;height:17px;padding:0 4px;border:2px solid #fff;border-radius:10px;background:#d92d20;color:#fff;font:700 9px/13px inherit;text-align:center}
+.notifications-panel{position:absolute;inset:0;z-index:15;display:grid;grid-template-rows:auto minmax(0,1fr);background:#f7f7f8}
+.notifications-header{min-height:76px;display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid var(--line);background:#fff}
+.notifications-header h2{margin:0;font-size:18px}
+.notifications-header p{margin:3px 0 0;color:var(--muted);font-size:10px}
+.panel-back{width:40px;height:40px;border:0;border-radius:12px;background:#f1f1f3;color:#333;font:600 20px inherit;cursor:pointer}
+.mark-all{border:0;background:transparent;color:var(--accent);font:600 11px inherit;cursor:pointer}
+.notifications-list{min-height:0;overflow-y:auto;padding:18px clamp(14px,5vw,42px)}
+.notification-card{max-width:760px;margin:0 auto 11px;border:1px solid var(--line);border-radius:18px;background:#fff;overflow:hidden;box-shadow:0 5px 18px #21183b0a}
+.notification-card.unread{border-color:#cfc2f2;background:#fcfbff}
+.notification-card.selected{box-shadow:0 0 0 3px #e9e3fb}
+.notification-card button{display:block;width:100%;border:0;background:transparent;padding:15px 17px;text-align:right;color:inherit;font:inherit;cursor:pointer}
+.notification-card-head{display:grid;grid-template-columns:8px minmax(0,1fr) auto;align-items:center;gap:9px}
+.notification-dot{width:7px;height:7px;border-radius:50%;background:transparent}
+.notification-card.unread .notification-dot{background:var(--accent);box-shadow:0 0 0 3px #eee9fc}
+.notification-card strong{font-size:13px}
+.notification-card time{color:#929299;font-size:9px;direction:ltr}
+.notification-card p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin:9px 17px 0 0;color:#555;font-size:12px;line-height:1.95;white-space:pre-wrap}
+.notification-card.expanded p{display:block;overflow:visible}
+.notifications-empty{display:grid;place-items:center;align-content:center;min-height:65vh;text-align:center;color:var(--muted)}
+.notifications-empty>div{font-size:38px}
+.notifications-empty h3{margin:12px 0 4px;color:#333;font-size:16px}
+.notifications-empty p{margin:0;font-size:11px}
+@media(max-width:600px){.notifications-header{min-height:66px;padding:9px 12px}.notifications-list{padding:12px}.notification-card{border-radius:15px}.notification-card button{padding:13px}.notification-card p{margin-right:16px}.notification-button.active{display:none}}

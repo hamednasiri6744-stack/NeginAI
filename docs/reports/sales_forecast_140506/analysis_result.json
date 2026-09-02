@@ -1,0 +1,440 @@
+{
+  "generated_at": "2026-08-25T21:00:17",
+  "source_snapshot": {
+    "server_time": "2026-08-25 21:00:15",
+    "source": "SQL Server 192.168.1.171 / NeginPakhsh / dbo.SalesReviewFast",
+    "date_range": "1405/02/01..1405/06/03",
+    "metric": "sum(SellNetAmount - SellReturnNetAmount), divided by 10 to toman"
+  },
+  "quality": {
+    "line_rows": 276945,
+    "distinct_detail_ids": 276945,
+    "duplicate_detail_rows": 0,
+    "null_report_dates": 0,
+    "null_sell_ids": 0,
+    "return_toman": 0.0,
+    "partial_day_rule": "exclude dates with documents below 20% of that month's median"
+  },
+  "historical_months": {
+    "1405/02": {
+      "median_documents": 344,
+      "document_cutoff": 68.8,
+      "qualified_days": 26,
+      "excluded_dates": [
+        {
+          "date": "1405/02/01",
+          "documents": 8,
+          "net_toman": 431487827.5
+        }
+      ],
+      "buckets": {
+        "01-05": {
+          "qualified_days": 3,
+          "average_daily_toman": 5805787445.366668,
+          "total_toman": 17417362336.100002,
+          "multiplier_vs_early": 1.0
+        },
+        "06-10": {
+          "qualified_days": 5,
+          "average_daily_toman": 8707700210.9,
+          "total_toman": 43538501054.5,
+          "multiplier_vs_early": 1.4998310380531095
+        },
+        "11-15": {
+          "qualified_days": 4,
+          "average_daily_toman": 7680203659.299999,
+          "total_toman": 30720814637.199997,
+          "multiplier_vs_early": 1.3228530550888866
+        },
+        "16-20": {
+          "qualified_days": 4,
+          "average_daily_toman": 9665266495.175,
+          "total_toman": 38661065980.7,
+          "multiplier_vs_early": 1.6647640972265363
+        },
+        "21-end": {
+          "qualified_days": 10,
+          "average_daily_toman": 8325729854.05,
+          "total_toman": 83257298540.5,
+          "multiplier_vs_early": 1.4340397288733646
+        }
+      },
+      "all_sales_toman": 214026530376.5,
+      "qualified_sales_toman": 213595042549.0
+    },
+    "1405/03": {
+      "median_documents": 385.0,
+      "document_cutoff": 77.0,
+      "qualified_days": 23,
+      "excluded_dates": [
+        {
+          "date": "1405/03/02",
+          "documents": 3,
+          "net_toman": 10052924.2
+        }
+      ],
+      "buckets": {
+        "01-05": {
+          "qualified_days": 3,
+          "average_daily_toman": 4292767907.6666665,
+          "total_toman": 12878303723.0,
+          "multiplier_vs_early": 1.0
+        },
+        "06-10": {
+          "qualified_days": 3,
+          "average_daily_toman": 6649729038.733334,
+          "total_toman": 19949187116.2,
+          "multiplier_vs_early": 1.5490539395007248
+        },
+        "11-15": {
+          "qualified_days": 3,
+          "average_daily_toman": 6440513462.033333,
+          "total_toman": 19321540386.1,
+          "multiplier_vs_early": 1.5003171847541306
+        },
+        "16-20": {
+          "qualified_days": 5,
+          "average_daily_toman": 6742109484.28,
+          "total_toman": 33710547421.399998,
+          "multiplier_vs_early": 1.5705739581771783
+        },
+        "21-end": {
+          "qualified_days": 9,
+          "average_daily_toman": 9977636790.11111,
+          "total_toman": 89798731111.0,
+          "multiplier_vs_early": 2.3242898299466774
+        }
+      },
+      "all_sales_toman": 175668362681.90002,
+      "qualified_sales_toman": 175658309757.70004
+    },
+    "1405/04": {
+      "median_documents": 450,
+      "document_cutoff": 90.0,
+      "qualified_days": 24,
+      "excluded_dates": [
+        {
+          "date": "1405/04/03",
+          "documents": 2,
+          "net_toman": 0.4
+        }
+      ],
+      "buckets": {
+        "01-05": {
+          "qualified_days": 2,
+          "average_daily_toman": 2244544788.8,
+          "total_toman": 4489089577.6,
+          "multiplier_vs_early": 1.0
+        },
+        "06-10": {
+          "qualified_days": 5,
+          "average_daily_toman": 8495985230.32,
+          "total_toman": 42479926151.6,
+          "multiplier_vs_early": 3.7851707271398243
+        },
+        "11-15": {
+          "qualified_days": 3,
+          "average_daily_toman": 6426192276.100001,
+          "total_toman": 19278576828.300003,
+          "multiplier_vs_early": 2.86302697463018
+        },
+        "16-20": {
+          "qualified_days": 4,
+          "average_daily_toman": 7450169254.375,
+          "total_toman": 29800677017.5,
+          "multiplier_vs_early": 3.319233945141313
+        },
+        "21-end": {
+          "qualified_days": 10,
+          "average_daily_toman": 12679281947.079998,
+          "total_toman": 126792819470.79999,
+          "multiplier_vs_early": 5.648932474124838
+        }
+      },
+      "all_sales_toman": 222841089046.2,
+      "qualified_sales_toman": 222841089045.8
+    },
+    "1405/05": {
+      "median_documents": 519,
+      "document_cutoff": 103.80000000000001,
+      "qualified_days": 22,
+      "excluded_dates": [
+        {
+          "date": "1405/05/01",
+          "documents": 18,
+          "net_toman": 48659184.5
+        },
+        {
+          "date": "1405/05/21",
+          "documents": 81,
+          "net_toman": 3512615862.0
+        },
+        {
+          "date": "1405/05/30",
+          "documents": 4,
+          "net_toman": 46996833.1
+        }
+      ],
+      "buckets": {
+        "01-05": {
+          "qualified_days": 3,
+          "average_daily_toman": 6291395795.866666,
+          "total_toman": 18874187387.6,
+          "multiplier_vs_early": 1.0
+        },
+        "06-10": {
+          "qualified_days": 4,
+          "average_daily_toman": 9299824757.025002,
+          "total_toman": 37199299028.100006,
+          "multiplier_vs_early": 1.4781814813073466
+        },
+        "11-15": {
+          "qualified_days": 4,
+          "average_daily_toman": 13004871813.5,
+          "total_toman": 52019487254.0,
+          "multiplier_vs_early": 2.0670884864760803
+        },
+        "16-20": {
+          "qualified_days": 4,
+          "average_daily_toman": 15351526115.05,
+          "total_toman": 61406104460.2,
+          "multiplier_vs_early": 2.4400827118738384
+        },
+        "21-end": {
+          "qualified_days": 7,
+          "average_daily_toman": 17006786316.699999,
+          "total_toman": 119047504216.9,
+          "multiplier_vs_early": 2.7031817530655364
+        }
+      },
+      "all_sales_toman": 292154854226.39996,
+      "qualified_sales_toman": 288546582346.8
+    }
+  },
+  "model_months": [
+    "1405/02",
+    "1405/03",
+    "1405/05"
+  ],
+  "excluded_model_months": [
+    "1405/04"
+  ],
+  "uplift_curve": [
+    {
+      "bucket": "01-05",
+      "median_multiplier": 1.0,
+      "mean_multiplier": 1.0,
+      "q25_multiplier": 1.0,
+      "q75_multiplier": 1.0,
+      "minimum_multiplier": 1.0,
+      "maximum_multiplier": 1.0,
+      "month_multipliers": {
+        "1405/02": 1.0,
+        "1405/03": 1.0,
+        "1405/05": 1.0
+      }
+    },
+    {
+      "bucket": "06-10",
+      "median_multiplier": 1.4998310380531095,
+      "mean_multiplier": 1.5090221529537269,
+      "q25_multiplier": 1.489006259680228,
+      "q75_multiplier": 1.5244424887769172,
+      "minimum_multiplier": 1.4781814813073466,
+      "maximum_multiplier": 1.5490539395007248,
+      "month_multipliers": {
+        "1405/02": 1.4998310380531095,
+        "1405/03": 1.5490539395007248,
+        "1405/05": 1.4781814813073466
+      }
+    },
+    {
+      "bucket": "11-15",
+      "median_multiplier": 1.5003171847541306,
+      "mean_multiplier": 1.6300862421063658,
+      "q25_multiplier": 1.4115851199215086,
+      "q75_multiplier": 1.7837028356151055,
+      "minimum_multiplier": 1.3228530550888866,
+      "maximum_multiplier": 2.0670884864760803,
+      "month_multipliers": {
+        "1405/02": 1.3228530550888866,
+        "1405/03": 1.5003171847541306,
+        "1405/05": 2.0670884864760803
+      }
+    },
+    {
+      "bucket": "16-20",
+      "median_multiplier": 1.6647640972265363,
+      "mean_multiplier": 1.891806922425851,
+      "q25_multiplier": 1.6176690277018573,
+      "q75_multiplier": 2.0524234045501872,
+      "minimum_multiplier": 1.5705739581771783,
+      "maximum_multiplier": 2.4400827118738384,
+      "month_multipliers": {
+        "1405/02": 1.6647640972265363,
+        "1405/03": 1.5705739581771783,
+        "1405/05": 2.4400827118738384
+      }
+    },
+    {
+      "bucket": "21-end",
+      "median_multiplier": 2.3242898299466774,
+      "mean_multiplier": 2.1538371039618593,
+      "q25_multiplier": 1.879164779410021,
+      "q75_multiplier": 2.513735791506107,
+      "minimum_multiplier": 1.4340397288733646,
+      "maximum_multiplier": 2.7031817530655364,
+      "month_multipliers": {
+        "1405/02": 1.4340397288733646,
+        "1405/03": 2.3242898299466774,
+        "1405/05": 2.7031817530655364
+      }
+    }
+  ],
+  "current": {
+    "observed_dates": [
+      "1405/06/01",
+      "1405/06/02",
+      "1405/06/03"
+    ],
+    "documents": 1488,
+    "sales_toman": 30330673246.5,
+    "baseline_daily_toman": 10110224415.5
+  },
+  "expected_workdays": {
+    "01-05": 5,
+    "06-10": 3,
+    "11-15": 4,
+    "16-20": 4,
+    "21-end": 9
+  },
+  "forecast_parts": [
+    {
+      "bucket": "01-05",
+      "expected_workdays": 5,
+      "multiplier": 1.0,
+      "forecast_daily_toman": 10110224415.5,
+      "forecast_bucket_toman": 50551122077.5
+    },
+    {
+      "bucket": "06-10",
+      "expected_workdays": 3,
+      "multiplier": 1.4998310380531095,
+      "forecast_daily_toman": 15163628380.049257,
+      "forecast_bucket_toman": 45490885140.14777
+    },
+    {
+      "bucket": "11-15",
+      "expected_workdays": 4,
+      "multiplier": 1.5003171847541306,
+      "forecast_daily_toman": 15168543432.295435,
+      "forecast_bucket_toman": 60674173729.18174
+    },
+    {
+      "bucket": "16-20",
+      "expected_workdays": 4,
+      "multiplier": 1.6647640972265363,
+      "forecast_daily_toman": 16831138621.827543,
+      "forecast_bucket_toman": 67324554487.31017
+    },
+    {
+      "bucket": "21-end",
+      "expected_workdays": 9,
+      "multiplier": 2.3242898299466774,
+      "forecast_daily_toman": 23499091787.42524,
+      "forecast_bucket_toman": 211491826086.82715
+    }
+  ],
+  "curve_scenarios": [
+    {
+      "source_month": "1405/02",
+      "forecast_toman": 347350098044.54407
+    },
+    {
+      "source_month": "1405/03",
+      "forecast_toman": 433216391486.95447
+    },
+    {
+      "source_month": "1405/05",
+      "forecast_toman": 523627378198.03894
+    }
+  ],
+  "forecast": {
+    "central_toman": 435532561520.9668,
+    "scenario_min_toman": 347350098044.54407,
+    "scenario_max_toman": 523627378198.03894,
+    "scenario_median_toman": 433216391486.95447
+  },
+  "backtests": [
+    {
+      "month": "1405/02",
+      "predicted_toman": 295291471232.2249,
+      "actual_toman": 213595042549.0,
+      "error_percent": 38.24827941148645
+    },
+    {
+      "month": "1405/03",
+      "predicted_toman": 177856005808.9334,
+      "actual_toman": 175658309757.70004,
+      "error_percent": 1.2511198896680842
+    },
+    {
+      "month": "1405/05",
+      "predicted_toman": 216228604633.6501,
+      "actual_toman": 288546582346.8,
+      "error_percent": -25.06284327645647
+    }
+  ],
+  "daily_preview": [
+    {
+      "date": "1405/02/01",
+      "documents": 8,
+      "net_toman": 431487827.5
+    },
+    {
+      "date": "1405/02/02",
+      "documents": 230,
+      "net_toman": 3041236603.3
+    },
+    {
+      "date": "1405/02/03",
+      "documents": 356,
+      "net_toman": 8728688799.1
+    },
+    {
+      "date": "1405/02/05",
+      "documents": 321,
+      "net_toman": 5647436933.7
+    },
+    {
+      "date": "1405/02/06",
+      "documents": 294,
+      "net_toman": 9982097732.9
+    },
+    {
+      "date": "1405/02/07",
+      "documents": 304,
+      "net_toman": 6161124105.4
+    },
+    {
+      "date": "1405/02/08",
+      "documents": 316,
+      "net_toman": 8453885546.8
+    },
+    {
+      "date": "1405/02/09",
+      "documents": 399,
+      "net_toman": 11112857684.5
+    },
+    {
+      "date": "1405/02/10",
+      "documents": 355,
+      "net_toman": 7828535984.9
+    },
+    {
+      "date": "1405/02/12",
+      "documents": 295,
+      "net_toman": 5531364723.0
+    }
+  ]
+}

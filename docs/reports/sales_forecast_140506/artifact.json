@@ -1,0 +1,366 @@
+{
+  "surface": "report",
+  "manifest": {
+    "version": 1,
+    "surface": "report",
+    "title": "پیش‌بینی فروش شهریور با الگوی رشد داخل ماه",
+    "description": "پیش‌بینی غیرخطی فروش شهریور ۱۴۰۵ با استفاده از منحنی افزایش فروش در طول ماه.",
+    "generatedAt": "2026-08-25T21:00:17",
+    "cards": [
+      {
+        "id": "current_sales_card",
+        "dataset": "headline",
+        "sourceId": "sales_review_fast_sql",
+        "description": "فروش خالص ثبت‌شده در سه روز نخست شهریور.",
+        "metrics": [
+          {
+            "label": "فروش ۱ تا ۳ شهریور",
+            "field": "current_3day_bn",
+            "format": "number",
+            "unit": "میلیارد تومان"
+          }
+        ]
+      },
+      {
+        "id": "forecast_card",
+        "dataset": "headline",
+        "sourceId": "sales_review_fast_sql",
+        "description": "برآورد مرکزی مبتنی بر میانه منحنی سه ماه معتبر.",
+        "metrics": [
+          {
+            "label": "پیش‌بینی مرکزی",
+            "field": "central_forecast_bn",
+            "format": "number",
+            "unit": "میلیارد تومان"
+          },
+          {
+            "label": "کف سناریو",
+            "field": "low_forecast_bn",
+            "format": "number"
+          },
+          {
+            "label": "سقف سناریو",
+            "field": "high_forecast_bn",
+            "format": "number"
+          }
+        ]
+      }
+    ],
+    "charts": [
+      {
+        "id": "uplift_curve_chart",
+        "title": "ضریب فروش روزانه در طول ماه",
+        "description": "میانه سه ماه معتبر؛ مبنا برابر میانگین روزهای ۱ تا ۵ است.",
+        "type": "bar",
+        "dataset": "uplift_curve",
+        "sourceId": "sales_review_fast_sql",
+        "encodings": {
+          "x": {
+            "field": "period",
+            "type": "nominal"
+          },
+          "y": {
+            "field": "median_multiplier",
+            "type": "quantitative",
+            "unit": "برابر"
+          }
+        }
+      },
+      {
+        "id": "forecast_scenarios_chart",
+        "title": "سناریوهای پیش‌بینی بر اساس شکل ماه‌های گذشته",
+        "description": "هر ستون، شکل یکی از سه ماه معتبر را روی سرعت سه روز اول شهریور اعمال می‌کند.",
+        "type": "bar",
+        "dataset": "forecast_scenarios",
+        "sourceId": "sales_review_fast_sql",
+        "encodings": {
+          "x": {
+            "field": "source_month",
+            "type": "nominal"
+          },
+          "y": {
+            "field": "forecast_bn",
+            "type": "quantitative",
+            "unit": "میلیارد تومان"
+          }
+        }
+      }
+    ],
+    "tables": [
+      {
+        "id": "forecast_parts_table",
+        "title": "اجزای پیش‌بینی ماه",
+        "description": "فروش روزانه و جمع هر بازه با لحاظ تعداد روز کاری شهریور.",
+        "dataset": "forecast_parts",
+        "sourceId": "sales_review_fast_sql",
+        "defaultSort": {
+          "field": "sort_order",
+          "direction": "asc"
+        },
+        "columns": [
+          {
+            "field": "sort_order",
+            "label": "ترتیب"
+          },
+          {
+            "field": "period",
+            "label": "بازه ماه"
+          },
+          {
+            "field": "workdays",
+            "label": "روز کاری"
+          },
+          {
+            "field": "multiplier",
+            "label": "ضریب نسبت به ابتدا"
+          },
+          {
+            "field": "daily_bn",
+            "label": "فروش روزانه",
+            "unit": "میلیارد تومان"
+          },
+          {
+            "field": "period_bn",
+            "label": "جمع بازه",
+            "unit": "میلیارد تومان"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "sales_review_fast_sql",
+        "label": "فروش خالص اسناد فروش ورانگر"
+      }
+    ],
+    "blocks": [
+      {
+        "id": "title",
+        "type": "markdown",
+        "body": "# پیش‌بینی فروش شهریور با الگوی رشد داخل ماه"
+      },
+      {
+        "id": "executive_summary",
+        "type": "markdown",
+        "sourceId": "sales_review_fast_sql",
+        "body": "## Executive Summary\n\n- **پیش‌بینی خطی قبلی کم‌برآورد بود.** فروش در ماه‌های معتبر با عبور از نیمه ماه شتاب می‌گیرد و نمی‌توان سرعت سه روز اول را ثابت فرض کرد.\n- **برآورد مرکزی جدید ۴۳۵٫۵ میلیارد تومان است.** این عدد از اعمال ضریب رشد هر بازه بر متوسط ۱۰٫۱ میلیارد تومان فروش روزانه سه روز اول به دست آمده است.\n- **دامنه تصمیم‌گیری ۳۴۷ تا ۵۲۴ میلیارد تومان است.** پراکندگی ماه‌های گذشته زیاد است و فعلاً فقط سه روز از شهریور مشاهده شده؛ بنابراین عدد مرکزی باید همراه دامنه گزارش شود."
+      },
+      {
+        "id": "headline_metrics",
+        "type": "metric-strip",
+        "cardIds": [
+          "current_sales_card",
+          "forecast_card"
+        ]
+      },
+      {
+        "id": "curve_finding",
+        "type": "markdown",
+        "sourceId": "sales_review_fast_sql",
+        "body": "## فروش هرچه به پایان ماه نزدیک می‌شود، واقعاً بیشتر است\n\nدر سه ماه قابل‌مقایسه، فروش روزانه روزهای ۶–۱۰ حدود **۱٫۵ برابر** ابتدای ماه است. این ضریب برای روزهای ۱۶–۲۰ به **۱٫۶۶ برابر** و برای روزهای ۲۱ تا پایان ماه به **۲٫۳۲ برابر** می‌رسد. پس فرض فروش روزانه ثابت، بخش بزرگی از فروش نیمه دوم ماه را حذف می‌کند."
+      },
+      {
+        "id": "uplift_curve",
+        "type": "chart",
+        "chartId": "uplift_curve_chart"
+      },
+      {
+        "id": "scenario_finding",
+        "type": "markdown",
+        "sourceId": "sales_review_fast_sql",
+        "body": "## سه شکل تاریخی، یک نقطه مرکزی نزدیک ۴۳۵ میلیارد می‌دهند\n\nاگر شهریور شکل اردیبهشت، خرداد یا مرداد را تکرار کند، خروجی بین **۳۴۷ تا ۵۲۴ میلیارد تومان** قرار می‌گیرد. میانه سناریوها **۴۳۳٫۲ میلیارد** و برآورد قطعه‌به‌قطعه با ضرایب میانه **۴۳۵٫۵ میلیارد تومان** است؛ نزدیکی این دو، نقطه مرکزی را تقویت می‌کند."
+      },
+      {
+        "id": "forecast_scenarios",
+        "type": "chart",
+        "chartId": "forecast_scenarios_chart"
+      },
+      {
+        "id": "forecast_method",
+        "type": "markdown",
+        "sourceId": "sales_review_fast_sql",
+        "body": "## پیش‌بینی از پنج قطعه ساخته شده است\n\nبرای هر بازه، متوسط فروش سه روز نخست شهریور در ضریب تاریخی همان بازه و تعداد روز کاری آن ضرب شده است. بیشترین سهم پیش‌بینی از روزهای ۲۱ تا پایان ماه می‌آید؛ این بخش به‌تنهایی حدود **۲۱۱٫۵ میلیارد تومان** از برآورد مرکزی را تشکیل می‌دهد."
+      },
+      {
+        "id": "forecast_parts",
+        "type": "table",
+        "tableId": "forecast_parts_table"
+      },
+      {
+        "id": "next_steps",
+        "type": "markdown",
+        "body": "## اقدام پیشنهادی\n\n- پیش‌بینی را در پایان روزهای ۵، ۱۰، ۱۵ و ۲۰ دوباره محاسبه کنید؛ با هر بازه کامل، عدم‌قطعیت به‌طور محسوسی کم می‌شود.\n- عدد عملیاتی فعلی را **حدود ۴۳۵ میلیارد تومان** بگیرید، اما برای برنامه نقدینگی کف **۳۵۰ میلیارد تومان** را مبنای محافظه‌کارانه قرار دهید.\n- اگر فروش روزهای ۶–۱۰ کمتر از ۱٫۳ برابر روزهای اول باشد، پیش‌بینی باید سریعاً به سمت کف دامنه اصلاح شود."
+      },
+      {
+        "id": "questions",
+        "type": "markdown",
+        "body": "## Further Questions\n\nآیا بخشی از جهش پایان ماه ناشی از سیاست وصول، ثبت دیرهنگام اسناد یا هدف‌گذاری فروشندگان است؟ تفکیک بعدی برحسب درجه مشتری و شعبه می‌تواند مشخص کند این الگو عملیاتی است یا فقط زمان ثبت اسناد."
+      },
+      {
+        "id": "caveats",
+        "type": "markdown",
+        "sourceId": "sales_review_fast_sql",
+        "body": "## مفروضات و محدودیت‌ها\n\nتیر از برازش اصلی حذف شد چون روزهای ۱–۵ آن فقط دو روز کامل داشت و ضریب پایان ماه را به ۵٫۶۵ برابر می‌رساند. روزهای با اسناد کمتر از ۲۰٪ میانه ماه نیز روز ناقص تلقی شدند. آزمون بازگشتی سه‌ماهه خطایی بین حدود منفی ۲۵٪ تا مثبت ۳۸٪ نشان می‌دهد؛ بنابراین اعتماد به جهت روند **متوسط** و اعتماد به عدد دقیق **متوسط رو به پایین** است. مبلغ برگشتی در این نما طی بازه بررسی صفر بوده و باید در صورت وجود منبع برگشتی مستقل، جداگانه تطبیق شود."
+      }
+    ]
+  },
+  "snapshot": {
+    "version": 1,
+    "generatedAt": "2026-08-25T21:00:17",
+    "status": "ready",
+    "datasets": {
+      "headline": [
+        {
+          "current_3day_bn": 30.331,
+          "central_forecast_bn": 435.533,
+          "low_forecast_bn": 347.35,
+          "high_forecast_bn": 523.627
+        }
+      ],
+      "uplift_curve": [
+        {
+          "sort_order": 1,
+          "period": "01-05",
+          "median_multiplier": 1.0,
+          "increase_percent": 0.0,
+          "minimum_multiplier": 1.0,
+          "maximum_multiplier": 1.0,
+          "month_1405_02": 1.0,
+          "month_1405_03": 1.0,
+          "month_1405_05": 1.0
+        },
+        {
+          "sort_order": 2,
+          "period": "06-10",
+          "median_multiplier": 1.4998,
+          "increase_percent": 50.0,
+          "minimum_multiplier": 1.4782,
+          "maximum_multiplier": 1.5491,
+          "month_1405_02": 1.4998,
+          "month_1405_03": 1.5491,
+          "month_1405_05": 1.4782
+        },
+        {
+          "sort_order": 3,
+          "period": "11-15",
+          "median_multiplier": 1.5003,
+          "increase_percent": 50.0,
+          "minimum_multiplier": 1.3229,
+          "maximum_multiplier": 2.0671,
+          "month_1405_02": 1.3229,
+          "month_1405_03": 1.5003,
+          "month_1405_05": 2.0671
+        },
+        {
+          "sort_order": 4,
+          "period": "16-20",
+          "median_multiplier": 1.6648,
+          "increase_percent": 66.5,
+          "minimum_multiplier": 1.5706,
+          "maximum_multiplier": 2.4401,
+          "month_1405_02": 1.6648,
+          "month_1405_03": 1.5706,
+          "month_1405_05": 2.4401
+        },
+        {
+          "sort_order": 5,
+          "period": "21-end",
+          "median_multiplier": 2.3243,
+          "increase_percent": 132.4,
+          "minimum_multiplier": 1.434,
+          "maximum_multiplier": 2.7032,
+          "month_1405_02": 1.434,
+          "month_1405_03": 2.3243,
+          "month_1405_05": 2.7032
+        }
+      ],
+      "forecast_scenarios": [
+        {
+          "source_month": "1405/02",
+          "forecast_bn": 347.35,
+          "current_baseline_daily_bn": 10.11,
+          "expected_workdays": 25
+        },
+        {
+          "source_month": "1405/03",
+          "forecast_bn": 433.216,
+          "current_baseline_daily_bn": 10.11,
+          "expected_workdays": 25
+        },
+        {
+          "source_month": "1405/05",
+          "forecast_bn": 523.627,
+          "current_baseline_daily_bn": 10.11,
+          "expected_workdays": 25
+        }
+      ],
+      "forecast_parts": [
+        {
+          "sort_order": 1,
+          "period": "01-05",
+          "workdays": 5,
+          "multiplier": 1.0,
+          "daily_bn": 10.11,
+          "period_bn": 50.551
+        },
+        {
+          "sort_order": 2,
+          "period": "06-10",
+          "workdays": 3,
+          "multiplier": 1.4998,
+          "daily_bn": 15.164,
+          "period_bn": 45.491
+        },
+        {
+          "sort_order": 3,
+          "period": "11-15",
+          "workdays": 4,
+          "multiplier": 1.5003,
+          "daily_bn": 15.169,
+          "period_bn": 60.674
+        },
+        {
+          "sort_order": 4,
+          "period": "16-20",
+          "workdays": 4,
+          "multiplier": 1.6648,
+          "daily_bn": 16.831,
+          "period_bn": 67.325
+        },
+        {
+          "sort_order": 5,
+          "period": "21-end",
+          "workdays": 9,
+          "multiplier": 2.3243,
+          "daily_bn": 23.499,
+          "period_bn": 211.492
+        }
+      ]
+    }
+  },
+  "sources": [
+    {
+      "id": "sales_review_fast_sql",
+      "label": "فروش خالص اسناد فروش ورانگر",
+      "query": {
+        "engine": "sqlserver",
+        "sql": "SET NOCOUNT ON;\nSELECT\n    ReportDate,\n    COUNT_BIG(*) AS LineRows,\n    COUNT(DISTINCT SellDetailID) AS DistinctDetailIds,\n    COUNT(DISTINCT SellId) AS Documents,\n    SUM(COALESCE(SellNetAmount, 0) - COALESCE(SellReturnNetAmount, 0)) AS NetRial,\n    SUM(COALESCE(SellReturnNetAmount, 0)) AS ReturnRial\nFROM dbo.SalesReviewFast\nWHERE ReportDate >= '1405/02/01' AND ReportDate <= '1405/06/03'\nGROUP BY ReportDate\nORDER BY ReportDate;",
+        "description": "فروش خالص روزانه فاکتور و حواله، پس از کسر مبلغ برگشتی، برای چهار ماه کامل و سه روز نخست شهریور.",
+        "executed_at": "2026-08-25 21:00:15",
+        "tables_used": [
+          "NeginPakhsh.dbo.SalesReviewFast"
+        ],
+        "filters": [
+          "ReportDate between 1405/02/01 and 1405/06/03",
+          "روز ناقص: اسناد کمتر از 20 درصد میانه ماه",
+          "تیر از برازش نهایی حذف شد چون بازه 1 تا 5 فقط دو روز کامل داشت"
+        ],
+        "metric_definitions": [
+          "فروش خالص تومان = SUM(SellNetAmount - SellReturnNetAmount) / 10",
+          "ضریب هر بازه = میانگین فروش روز کامل بازه / میانگین فروش روز کامل بازه 1 تا 5 همان ماه",
+          "پیش‌بینی = میانگین فروش سه روز نخست شهریور × ضریب میانه سه ماه معتبر × روزهای کاری هر بازه"
+        ]
+      }
+    }
+  ]
+}
