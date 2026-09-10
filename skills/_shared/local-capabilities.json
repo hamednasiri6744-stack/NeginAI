@@ -1,0 +1,26 @@
+{
+  "version": "1.0.0",
+  "policy": "loopback-only; no secrets stored in repository",
+  "services": {
+    "figma-x": {
+      "endpoint": "http://127.0.0.1:8784/mcp",
+      "health": "http://127.0.0.1:8784/health",
+      "tokenEnv": "FIGMA_X_BEARER_TOKEN",
+      "capability": "figma-read-write-guarded"
+    },
+    "data-x": {
+      "endpoint": "http://127.0.0.1:8781/mcp",
+      "health": "http://127.0.0.1:8781/health",
+      "tokenConfig": "C:\\code-x\\agents\\specialist-host\\data-x.json",
+      "tokenField": "bearer_token",
+      "capability": "analytics-readonly"
+    },
+    "automation-x": {
+      "endpoint": "http://127.0.0.1:8782/mcp",
+      "health": "http://127.0.0.1:8782/health",
+      "tokenConfig": "C:\\code-x\\agents\\specialist-host\\automation-x.json",
+      "tokenField": "bearer_token",
+      "capability": "workflow-advisory-readonly"
+    }
+  }
+}
