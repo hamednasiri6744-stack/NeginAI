@@ -1,7 +1,7 @@
-import { Bell, ChevronDown, Search } from 'lucide-react'
+import { Bell } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { primaryNavigation, type PrimaryDestination } from '../app/navigation'
-import { NeginAIBrandMark } from '../design-system/components/NeginAIBrandMark'
+import { BottomNavigation, Cluster, NotificationButton, ProfileChip, TopAppBar } from '../design-system/v2'
 
 type AppShellProps = {
   active: PrimaryDestination
@@ -10,62 +10,25 @@ type AppShellProps = {
 }
 
 export function AppShell({ active, onNavigate, children }: AppShellProps) {
+  const items = primaryNavigation.map((item) => {
+    const Icon = item.icon
+    return { id: item.id, label: item.label, icon: <Icon size={20} strokeWidth={1.8} /> }
+  })
+
   return (
-    <div className="ng-shell ng-v2" dir="rtl" data-trace-id="SHL-001">
-      <header className="ng-topbar" data-trace-id="SHL-001">
-        <div className="ng-brand">
-          <NeginAIBrandMark className="ng-brand-symbol--shell" />
-          <div>
-            <strong>NeginAI</strong>
-            <span>Enterprise Operational &amp; AI Platform</span>
-          </div>
-        </div>
-
-        <div className="ng-user-context">
-          <button className="ng-icon-button" type="button" aria-label="اعلان‌ها">
-            <Bell size={19} />
-            <span className="ng-notification-dot" aria-hidden="true" />
-          </button>
-          <button className="ng-profile-button" type="button" aria-label="تغییر زمینه کاربر">
-            <span className="ng-avatar" aria-hidden="true">NR</span>
-            <span className="ng-profile-copy">
-              <strong>کاربر NeginAI</strong>
-              <small>زمینه و نقش فعال</small>
-            </span>
-            <ChevronDown size={16} />
-          </button>
-        </div>
-      </header>
-
-      <section className="ng-context-bar" data-trace-id="SHL-002" aria-label="جستجو و اقدام زمینه‌ای">
-        <Search size={18} aria-hidden="true" />
-        <span>جستجو در ماژول‌ها، مشتری، گزارش یا عملیات مجاز…</span>
-        <kbd>⌘ K</kbd>
-      </section>
-
-      <main className="ng-main" data-trace-id="SHL-003">
-        {children}
-      </main>
-
-      <nav className="ng-bottom-nav" aria-label="ناوبری اصلی" data-trace-id="CMP-SPEC-001">
-        {primaryNavigation.map((item) => {
-          const Icon = item.icon
-          const selected = active === item.id
-          return (
-            <button
-              key={item.id}
-              type="button"
-              className={`ng-nav-item ${item.id === 'ai' ? 'ng-nav-item--ai' : ''} ${selected ? 'is-active' : ''}`}
-              aria-current={selected ? 'page' : undefined}
-              data-trace-id={item.traceId}
-              onClick={() => onNavigate(item.id)}
-            >
-              <span className="ng-nav-icon"><Icon size={21} strokeWidth={1.8} /></span>
-              <span>{item.label}</span>
-            </button>
-          )
-        })}
-      </nav>
+    <div className="ng-v2 ng-app-shell-v2" dir="rtl" data-trace-id="SHL-V2">
+      <TopAppBar
+        title="Negin AI"
+        subtitle={'\u0633\u0627\u0645\u0627\u0646\u0647 \u0639\u0645\u0644\u06cc\u0627\u062a\u06cc \u0648 \u0647\u0648\u0634\u0645\u0646\u062f \u0646\u06af\u06cc\u0646 \u067e\u062e\u0634'}
+        actions={
+          <Cluster gap={2}>
+            <NotificationButton count={3} label={'\u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627'}><Bell size={19}/></NotificationButton>
+            <ProfileChip name={'\u0648\u06cc\u0632\u06cc\u062a\u0648\u0631 Negin AI'} subtitle={'\u062d\u0633\u0627\u0628 \u0641\u0639\u0627\u0644'} avatar="NA"/>
+          </Cluster>
+        }
+      />
+      <main className="ng-app-shell-v2__main" data-trace-id="SHL-V2-MAIN">{children}</main>
+      <BottomNavigation items={items} activeId={active} onNavigate={(id)=>onNavigate(id as PrimaryDestination)} />
     </div>
   )
 }

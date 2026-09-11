@@ -73,3 +73,6 @@ clock_timestamp()*
 *.bak
 docs/reports/**/*.zip
 
+
+vnext/.tmp_*.b64
+
