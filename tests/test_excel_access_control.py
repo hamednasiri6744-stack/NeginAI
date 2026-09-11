@@ -23,7 +23,6 @@ def test_seller_cannot_export_a_report_created_without_current_access_scope(
                 "supervisor_personnel_id": 14,
             }
         ],
-        temporary_password="1",
     )
     with sqlite_connection(settings.sqlite_path) as conn:
         conn.execute(

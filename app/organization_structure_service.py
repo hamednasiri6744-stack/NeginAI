@@ -1,4 +1,4 @@
-"""Versioned team-structure settings and administrator change proposals."""
+﻿"""Versioned team-structure settings and administrator change proposals."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ def _proposal_from_row(row: Any) -> dict[str, Any]:
 
 
 def _is_admin(settings: Any, username: str) -> bool:
-    if username in {"local", "action-api-key", "Admin"}:
+    if username in {"local", "Admin"}:
         return True
     with sqlite_connection(settings.sqlite_path) as conn:
         row = conn.execute("SELECT role FROM users WHERE username=?", (username,)).fetchone()
@@ -209,3 +209,4 @@ def seed_confirmed_rules(settings: Any) -> None:
                 (branch, line, supervisor_id, supervisor_name, split, json.dumps(brands, ensure_ascii=False),
                  "\u062a\u06cc\u0645 \u0648 \u0633\u0628\u062f \u0628\u0631\u0646\u062f \u062a\u0623\u06cc\u06cc\u062f\u0634\u062f\u0647 \u062a\u0648\u0633\u0637 \u0645\u062f\u06cc\u0631\u06cc\u062a.", now, now),
             )
+

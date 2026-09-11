@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 
 from app.models import PrevisitCustomerUpdateDraftRequest, PrevisitDraftUpdateRequest, PrevisitOutcomeRequest, PrevisitPreviewRequest, PrevisitSavedRequestUpsert, PrevisitVisitStartRequest
 from app.ngt_previsit_service import catalog_image, previsit_context, preview_previsit, validate_order_draft, warm_previsit_route
-from app.previsit_service import PrevisitError, complete_visit, create_saved_request, get_saved_request, get_visit_draft, list_route_saved_requests, list_saved_requests, start_visit, update_draft, update_saved_request
+from app.previsit_service import PrevisitError, complete_visit, create_saved_request, get_order_completion_state, get_saved_request, get_visit_draft, list_route_saved_requests, list_saved_requests, start_visit, update_draft, update_saved_request
 from app.varanegar_order_bridge import (
     VaranegarOrderBridgeError,
     VaranegarOrderBridgeUnavailable,
@@ -360,25 +360,40 @@ def complete_my_previsit(visit_id: str, payload: PrevisitOutcomeRequest, request
     try:
         settings = request.app.state.settings
         username = _username(request)
-        bridge_order = payload.outcome == "order" and settings.varanegar_order_bridge_enabled
-        draft = get_visit_draft(settings, username, visit_id) if bridge_order else None
-        saved_requests = list_saved_requests(settings, username, visit_id) if bridge_order else []
+        is_order = payload.outcome == "order"
+        bridge_order = is_order and settings.varanegar_order_bridge_enabled
+        completion_state = (
+            get_order_completion_state(settings, username, visit_id) if is_order else None
+        )
+        if bridge_order and completion_state is None:
+            # Preserve the bridge's strict visit/draft ownership check.
+            get_visit_draft(settings, username, visit_id)
         # A saved request was already officially calculated and credit-checked
         # when it was created. Ending its visit must not revalidate the now-empty
         # working cart or accidentally submit one of several saved requests.
         validation = (
             validate_order_draft(settings, username, visit_id)
-            if payload.outcome == "order"
-            and (not settings.varanegar_order_bridge_enabled or (draft or {}).get("line_count"))
+            if is_order
+            and (completion_state is None or completion_state["line_count"])
             else None
         )
-        if bridge_order and not (draft or {}).get("line_count") and not saved_requests:
+        if (
+            completion_state is not None
+            and not completion_state["line_count"]
+            and not completion_state["saved_request_count"]
+        ):
             raise PrevisitError("پایان ویزیت سفارشی نیاز به حداقل یک درخواست ذخیره‌شده دارد")
         registration = None
         # Keeping the feature switch off preserves the current local completion
         # flow and guarantees that this staged bridge cannot touch Varanegar.
         if validation is not None and settings.varanegar_order_bridge_enabled:
-            registration = submit_validated_order(settings, username, visit_id, validation)
+            registration = submit_validated_order(
+                settings,
+                username,
+                visit_id,
+                validation,
+                getattr(request.app.state, "enterprise_store", None),
+            )
             if not registration.get("committed"):
                 result = get_visit_draft(settings, username, visit_id)
                 result["order_registration"] = registration

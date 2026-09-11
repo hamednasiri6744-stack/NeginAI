@@ -6,6 +6,9 @@
 
 ai.neginpakhsh.com {
 	encode zstd gzip
+	request_body {
+		max_size 26MB
+	}
 
 	handle_path /erp/* {
 		reverse_proxy 127.0.0.1:8100

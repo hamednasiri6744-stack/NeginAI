@@ -1,0 +1,173 @@
+:root {
+  color-scheme: dark;
+
+  /* Negin AI Design System v2 — premium dark / warm gold visual foundation */
+  --ng-navy-1000:#030507;
+  --ng-navy-950:#06090d;
+  --ng-navy-900:#0a0f15;
+  --ng-navy-850:#0d141c;
+  --ng-navy-800:#111a24;
+  --ng-navy-750:#17222e;
+  --ng-navy-700:#1d2a37;
+  --ng-navy-600:#2a3948;
+
+  --ng-slate-500:#778493;
+  --ng-slate-400:#9aa6b4;
+  --ng-slate-300:#c0c8d2;
+  --ng-slate-200:#dce2e8;
+  --ng-slate-100:#f5f7f9;
+  --ng-white:#fff;
+
+  --ng-gold-800:#76501d;
+  --ng-gold-700:#956522;
+  --ng-gold-600:#b77b28;
+  --ng-gold-500:#d79b35;
+  --ng-gold-400:#edb84f;
+  --ng-gold-300:#f6cd76;
+  --ng-gold-200:#ffe2a0;
+
+  --ng-cyan-500:#45b8d5;
+  --ng-blue-500:#5c93e8;
+  --ng-green-500:#30d49a;
+  --ng-amber-500:#e6ad45;
+  --ng-red-500:#ef6672;
+
+  --ng-canvas:var(--ng-navy-950);
+  --ng-canvas-deep:var(--ng-navy-1000);
+  --ng-surface-1:var(--ng-navy-900);
+  --ng-surface-2:var(--ng-navy-850);
+  --ng-surface-3:var(--ng-navy-800);
+  --ng-surface-4:var(--ng-navy-750);
+  --ng-surface-raised:#17212c;
+
+  --ng-glass:rgb(17 26 36 / 78%);
+  --ng-glass-strong:rgb(8 13 19 / 94%);
+  --ng-overlay:rgb(2 4 7 / 82%);
+
+  --ng-text:var(--ng-slate-100);
+  --ng-text-secondary:var(--ng-slate-300);
+  --ng-text-muted:var(--ng-slate-400);
+  --ng-text-disabled:rgb(154 166 180 / 48%);
+  --ng-text-inverse:#1b1307;
+
+  --ng-accent:var(--ng-gold-500);
+  --ng-accent-hover:var(--ng-gold-400);
+  --ng-accent-strong:var(--ng-gold-300);
+  --ng-accent-soft:rgb(215 155 53 / 12%);
+  --ng-accent-softer:rgb(215 155 53 / 6%);
+
+  --ng-border:rgb(222 231 239 / 11%);
+  --ng-border-strong:rgb(222 231 239 / 19%);
+  --ng-border-soft:rgb(222 231 239 / 7%);
+  --ng-border-accent:rgb(246 205 118 / 34%);
+
+  --ng-focus:var(--ng-gold-300);
+  --ng-success:var(--ng-green-500);
+  --ng-warning:var(--ng-amber-500);
+  --ng-danger:var(--ng-red-500);
+  --ng-info:var(--ng-cyan-500);
+  --ng-disabled:rgb(113 128 153 / 26%);
+
+  --ng-font-fa:Vazirmatn,Tahoma,Arial,sans-serif;
+  --ng-font-latin:Inter,Vazirmatn,Arial,sans-serif;
+  --ng-fs-caption:.78125rem;
+  --ng-fs-label:.875rem;
+  --ng-fs-body-sm:.9rem;
+  --ng-fs-body:1rem;
+  --ng-fs-card:1.0625rem;
+  --ng-fs-section:1.25rem;
+  --ng-fs-page:clamp(1.55rem,3vw,2.15rem);
+  --ng-fs-display:clamp(2rem,5vw,3.6rem);
+  --ng-fs-kpi:clamp(1.7rem,4vw,2.65rem);
+  --ng-lh-tight:1.35;
+  --ng-lh-body:1.75;
+  --ng-weight-regular:400;
+  --ng-weight-medium:500;
+  --ng-weight-semibold:600;
+  --ng-weight-bold:700;
+  --ng-weight-black:800;
+
+  --ng-space-0:0;
+  --ng-space-1:.25rem;
+  --ng-space-2:.5rem;
+  --ng-space-3:.75rem;
+  --ng-space-4:1rem;
+  --ng-space-5:1.25rem;
+  --ng-space-6:1.5rem;
+  --ng-space-8:2rem;
+  --ng-space-10:2.5rem;
+  --ng-space-12:3rem;
+  --ng-space-16:4rem;
+
+  --ng-radius-control:.9rem;
+  --ng-radius-button:1rem;
+  --ng-radius-card:1.2rem;
+  --ng-radius-sheet:1.75rem;
+  --ng-radius-modal:1.5rem;
+  --ng-radius-nav:1.35rem;
+  --ng-radius-floating:1.65rem;
+  --ng-radius-pill:999rem;
+
+  --ng-shadow-surface:
+    0 .7rem 1.8rem rgb(0 0 0 / 34%),
+    inset 0 1px 0 rgb(255 255 255 / 5%),
+    inset 0 -1px 0 rgb(0 0 0 / 40%);
+  --ng-shadow-raised:
+    0 1rem 2.75rem rgb(0 0 0 / 44%),
+    inset 0 1px 0 rgb(255 255 255 / 7%),
+    inset 0 -1px 0 rgb(0 0 0 / 46%);
+  --ng-shadow-modal:0 1.75rem 4.5rem rgb(0 0 0 / 58%);
+  --ng-shadow-nav:
+    0 -.25rem 2rem rgb(0 0 0 / 26%),
+    0 .85rem 2.6rem rgb(0 0 0 / 42%),
+    inset 0 1px 0 rgb(255 255 255 / 5%);
+  --ng-shadow-focus:0 0 0 3px rgb(246 205 118 / 24%);
+  --ng-shadow-gold:
+    0 .75rem 1.8rem rgb(215 155 53 / 16%),
+    0 0 0 1px rgb(246 205 118 / 10%);
+  --ng-highlight-top:inset 0 1px 0 rgb(255 255 255 / 7%);
+  --ng-blur:18px;
+
+  --ng-fast:120ms;
+  --ng-standard:190ms;
+  --ng-overlay-speed:250ms;
+  --ng-ease:cubic-bezier(.2,.8,.2,1);
+
+  --ng-touch:2.75rem;
+  --ng-control:3rem;
+  --ng-control-lg:3.25rem;
+  --ng-content:82rem;
+  --ng-wide:104rem;
+  --ng-gutter:clamp(1rem,2.5vw,2rem);
+  --ng-bottom-nav:4.85rem;
+
+  --ng-z-sticky:100;
+  --ng-z-nav:200;
+  --ng-z-overlay:400;
+  --ng-z-toast:500;
+
+  /* Component tokens: stable mapping seams for React and Figma variants */
+  --ng-button-primary-bg:
+    linear-gradient(145deg,var(--ng-gold-200) 0%,var(--ng-gold-400) 42%,var(--ng-gold-600) 100%);
+  --ng-button-secondary-bg:
+    linear-gradient(155deg,rgb(29 42 55 / 92%),rgb(12 19 27 / 96%));
+  --ng-field-bg:
+    linear-gradient(180deg,rgb(4 8 13 / 74%),rgb(10 16 23 / 84%));
+  --ng-card-bg:
+    linear-gradient(155deg,rgb(31 43 55 / 94%) 0%,rgb(17 25 34 / 96%) 48%,rgb(8 13 19 / 98%) 100%);
+  --ng-card-premium-bg:
+    radial-gradient(circle at 16% 0%,rgb(246 205 118 / 10%),transparent 42%),
+    linear-gradient(155deg,rgb(35 43 48 / 96%),rgb(13 19 24 / 98%));
+  --ng-navigation-bg:
+    linear-gradient(180deg,rgb(24 34 44 / 92%),rgb(8 13 19 / 96%));
+  --ng-ai-surface-bg:
+    radial-gradient(circle at 12% 0%,rgb(246 205 118 / 7%),transparent 38%),
+    linear-gradient(155deg,rgb(24 34 44 / 88%),rgb(8 13 19 / 96%));
+  --ng-hero-bg:
+    radial-gradient(circle at 76% 18%,rgb(246 205 118 / 22%),transparent 24%),
+    linear-gradient(135deg,rgb(38 43 43 / 96%),rgb(12 18 24 / 98%) 68%);
+}
+
+@media(prefers-reduced-motion:reduce){
+  :root{--ng-fast:0ms;--ng-standard:0ms;--ng-overlay-speed:0ms}
+}

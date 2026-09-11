@@ -1,0 +1,82 @@
+# NeginAI Screen Contract Template
+screen_id: scr.<module>.<screen>
+version: SC-1.0
+name_fa: ""
+name_en: ""
+module_id: mod.<module>
+
+status:
+  inventory: CONFIRMED   # CONFIRMED | PARTIAL | OPEN
+  design: NOT_STARTED    # NOT_STARTED | STRUCTURE_DRAFT | VISUAL_DRAFT | QA | APPROVED
+  parity: PENDING        # PENDING | PASS | FAIL | BLOCKED
+  runtime: PENDING       # PENDING | PASS | FAIL | BLOCKED
+
+role:
+  primary: []
+  secondary: []
+  permission_keys: []
+
+navigation:
+  entry_points: []
+  origin: ""
+  back_behavior: ""
+  close_behavior: ""
+  deep_link: null
+
+goal:
+  user_goal: ""
+  business_goal: ""
+
+entities_required: []
+components_required: []
+actions_required: []
+states_required: []
+
+mandatory_elements:
+  - id: ""
+    description: ""
+    source_evidence: ""
+
+optional_elements: []
+
+forbidden_inventions:
+  - "No new business rule without verified source"
+  - "No removal of inherited capability"
+
+responsive:
+  mobile_390: ""
+  tablet_768: ""
+  desktop_1440: ""
+
+accessibility:
+  touch_target_44: true
+  focus_visible: true
+  color_independent_status: true
+  rtl_verified: false
+  reduced_motion_considered: true
+
+offline:
+  applicable: false
+  behavior: ""
+
+business_invariants: []
+
+evidence:
+  source_files: []
+  runtime_screens: []
+  project_docs: []
+  figma_nodes: []
+
+visual_direction:
+  reference_images: []
+  notes: ""
+
+acceptance_tests:
+  - ""
+  - ""
+
+review:
+  owner: ""
+  reviewer: ""
+  last_review: ""
+  notes: ""

@@ -25,7 +25,6 @@ def test_workspace_contains_authenticated_identity_org_and_access(settings):
                 "supervisor_personnel_id": 14,
             },
         ],
-        temporary_password="test",
     )
     policy = policy_for_user(settings, "seller")
 

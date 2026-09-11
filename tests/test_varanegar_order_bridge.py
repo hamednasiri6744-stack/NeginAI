@@ -121,6 +121,32 @@ def test_unverified_numbering_blocks_before_operational_connection(settings, mon
         submit_validated_order(configured, "seller", "visit-1", _validation())
 
 
+def test_enterprise_mode_enqueues_without_opening_operational_connection(settings, monkeypatch):
+    _active_draft(settings)
+    configured = replace(_configured(settings), command_outbox_enabled=True)
+    captured = {}
+
+    class Store:
+        def enqueue_command(self, **command):
+            captured.update(command)
+            return {"command_id": "command-1", "status": "pending", "created": True}
+
+    monkeypatch.setattr(
+        "app.varanegar_order_bridge._write_connection",
+        lambda _settings: pytest.fail("request thread must not open Varanegar in outbox mode"),
+    )
+
+    result = submit_validated_order(
+        configured, "seller", "visit-1", _validation(), Store()
+    )
+
+    assert result["status"] == "queued"
+    assert result["committed"] is False
+    assert result["command_id"] == "command-1"
+    assert captured["command_type"] == "varanegar.order.submit.v1"
+    assert captured["idempotency_key"] == captured["payload"]["order_unique_id"]
+
+
 def test_committed_positive_order_is_idempotent(settings, monkeypatch):
     _active_draft(settings)
     calls = []

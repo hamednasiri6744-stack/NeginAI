@@ -1,6 +1,7 @@
 import base64
 import hashlib
 from dataclasses import replace
+from pathlib import Path
 
 from app.auth_service import (
     authenticate_user,
@@ -13,6 +14,7 @@ from app.auth_service import (
     verify_password,
     verify_session,
 )
+from app.config import ensure_action_api_key
 
 
 def _password_hash(password: str) -> str:
@@ -22,6 +24,33 @@ def _password_hash(password: str) -> str:
         base64.urlsafe_b64encode(salt).decode(),
         base64.urlsafe_b64encode(digest).decode(),
     )
+
+
+def test_startup_generates_an_independent_persistent_session_secret(
+    tmp_path: Path, monkeypatch
+):
+    env_path = tmp_path / ".env"
+    for name in (
+        "NEGIN_ACTION_API_KEY",
+        "NEGIN_OAUTH_CLIENT_SECRET",
+        "NEGIN_SESSION_SIGNING_SECRET",
+    ):
+        monkeypatch.delenv(name, raising=False)
+
+    ensure_action_api_key(env_path)
+
+    values = dict(
+        line.split("=", 1)
+        for line in env_path.read_text(encoding="utf-8").splitlines()
+        if "=" in line
+    )
+    secrets = {
+        values["NEGIN_ACTION_API_KEY"],
+        values["NEGIN_OAUTH_CLIENT_SECRET"],
+        values["NEGIN_SESSION_SIGNING_SECRET"],
+    }
+    assert len(secrets) == 3
+    assert all(len(value) >= 48 for value in secrets)
 
 
 def test_password_and_signed_session(settings):
@@ -80,7 +109,7 @@ def test_database_user_can_login_and_session_keeps_own_username(client, settings
     assert session_username(settings, token) == "m.etemadi"
 
 
-def test_provisioned_user_must_change_temporary_password_before_data_access(
+def test_provisioned_user_uses_unique_one_time_activation_before_data_access(
     client, settings
 ):
     result = provision_users(
@@ -98,31 +127,37 @@ def test_provisioned_user_must_change_temporary_password_before_data_access(
                 "supervisor_personnel_id": 14,
             }
         ],
-        temporary_password="1",
     )
-    assert result == {"created": 1, "updated": 0, "claimed_existing": 0}
+    assert {key: result[key] for key in ("created", "updated", "claimed_existing")} == {
+        "created": 1,
+        "updated": 0,
+        "claimed_existing": 0,
+    }
+    activation_token = result["activation_tokens"]["A.kamran"]
 
     login = client.post("/auth/login", json={"username": "A.kamran", "password": "1"})
-    assert login.status_code == 200
-    assert login.json()["must_change_password"] is True
-    assert login.json()["phone"] == "09120000000"
+    assert login.status_code == 401
+
+    activated = client.post(
+        "/auth/activate",
+        json={"activation_token": activation_token, "new_password": "StrongPass9"},
+    )
+    assert activated.status_code == 200
+    assert activated.json()["activated"] is True
+    assert activated.json()["must_change_password"] is False
+    assert activated.json()["phone"] == "09120000000"
     from http.cookies import SimpleCookie
 
     cookie = SimpleCookie()
-    cookie.load(login.headers["set-cookie"])
+    cookie.load(activated.headers["set-cookie"])
     session_header = {"Cookie": f"negin_session={cookie['negin_session'].value}"}
 
-    blocked = client.get("/chat/conversations", headers=session_header)
-    assert blocked.status_code == 428
-
-    changed = client.post(
-        "/auth/change-password",
-        json={"current_password": "1", "new_password": "StrongPass9"},
-        headers=session_header,
-    )
-    assert changed.status_code == 200
-    assert changed.json()["must_change_password"] is False
     assert client.get("/chat/conversations", headers=session_header).status_code == 200
+    reused = client.post(
+        "/auth/activate",
+        json={"activation_token": activation_token, "new_password": "OtherPass10"},
+    )
+    assert reused.status_code == 400
     assert authenticate_user(settings, "A.kamran", "1") is None
     assert authenticate_user(settings, "A.kamran", "StrongPass9") == "A.kamran"
 
@@ -144,8 +179,97 @@ def test_provisioning_can_claim_matching_legacy_username(settings):
                 "supervisor_personnel_id": None,
             }
         ],
-        temporary_password="1",
     )
-    assert result == {"created": 0, "updated": 0, "claimed_existing": 1}
+    assert result["claimed_existing"] == 1
     assert authenticate_user(settings, "m.etemadi", "7055") is None
-    assert authenticate_user(settings, "m.etemadi", "1") == "m.etemadi"
+    token = result["activation_tokens"]["M.etemadi"]
+    from app.auth_service import activate_user
+
+    assert activate_user(settings, token, "Replacement9") == "m.etemadi"
+    assert authenticate_user(settings, "m.etemadi", "Replacement9") == "m.etemadi"
+
+
+def test_session_signature_is_independent_of_action_api_key(settings):
+    create_user(settings, "session.user", "StrongPass9")
+    token = create_session(settings, "session.user", now=1_000)
+    changed_action_key = replace(settings, action_api_key="rotated-action-key")
+
+    assert session_username(changed_action_key, token, now=1_001) == "session.user"
+
+
+def test_password_change_and_logout_revoke_prior_sessions(client, settings):
+    create_user(settings, "revoke.user", "StrongPass9")
+    login = client.post(
+        "/auth/login", json={"username": "revoke.user", "password": "StrongPass9"}
+    )
+    from http.cookies import SimpleCookie
+
+    first_cookie = SimpleCookie()
+    first_cookie.load(login.headers["set-cookie"])
+    old_token = first_cookie["negin_session"].value
+    changed = client.post(
+        "/auth/change-password",
+        json={"current_password": "StrongPass9", "new_password": "NewStrong10"},
+        headers={"Cookie": f"negin_session={old_token}"},
+    )
+    assert changed.status_code == 200
+    assert session_username(settings, old_token) is None
+
+    fresh_cookie = SimpleCookie()
+    fresh_cookie.load(changed.headers["set-cookie"])
+    fresh_token = fresh_cookie["negin_session"].value
+    assert session_username(settings, fresh_token) == "revoke.user"
+    logged_out = client.post(
+        "/auth/logout", headers={"Cookie": f"negin_session={fresh_token}"}
+    )
+    assert logged_out.status_code == 200
+    assert session_username(settings, fresh_token) is None
+
+
+def test_activation_tokens_are_unique_expiring_and_shared_passwords_are_rejected(settings):
+    users = [
+        {"username": "first.user", "personnel_id": 901},
+        {"username": "second.user", "personnel_id": 902},
+    ]
+    result = provision_users(settings, users, activation_ttl_seconds=300)
+    tokens = result["activation_tokens"]
+
+    assert tokens["first.user"] != tokens["second.user"]
+    from app.auth_service import activate_user
+
+    assert (
+        activate_user(
+            settings,
+            tokens["first.user"],
+            "StrongPass9",
+            now=result["activation_expires_at"] + 1,
+        )
+        is None
+    )
+    import pytest
+
+    with pytest.raises(ValueError, match="shared temporary passwords are disabled"):
+        provision_users(settings, users, temporary_password="shared")
+
+
+def test_activation_delivery_failure_rolls_back_provisioning(settings):
+    from app.database import sqlite_connection
+    import pytest
+
+    def fail_delivery(_result):
+        raise OSError("activation destination unavailable")
+
+    with pytest.raises(OSError, match="destination unavailable"):
+        provision_users(
+            settings,
+            [{"username": "rollback.user", "personnel_id": 903}],
+            activation_sink=fail_delivery,
+        )
+
+    with sqlite_connection(settings.sqlite_path) as conn:
+        assert (
+            conn.execute(
+                "SELECT 1 FROM users WHERE username='rollback.user'"
+            ).fetchone()
+            is None
+        )

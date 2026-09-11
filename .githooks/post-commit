@@ -1,0 +1,7 @@
+#!/bin/sh
+repo_root="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
+cd "$repo_root" || exit 0
+python_cmd=".venv/Scripts/python.exe"
+if [ ! -x "$python_cmd" ]; then python_cmd="python"; fi
+"$python_cmd" scripts/neginai_guardian.py post-commit || true
+exit 0

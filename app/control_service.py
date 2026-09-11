@@ -9,6 +9,7 @@ import sqlite3
 from datetime import datetime, timezone
 from typing import Any
 
+from app.auth_service import revoke_user_credentials_in_transaction
 from app.database import execute_query, sqlite_connection
 from app.sql_guard import validate_read_only_sql
 
@@ -684,10 +685,12 @@ def _delete_entity(conn: Any, operation: dict[str, Any], username: str, now: str
             (revision, now, now, entity_id),
         )
         if row["username"]:
+            revoked_username = str(row["username"])
             conn.execute(
                 "UPDATE users SET active=0, updated_at=? WHERE username=?",
-                (now, str(row["username"])),
+                (now, revoked_username),
             )
+            revoke_user_credentials_in_transaction(conn, revoked_username, now=now)
         return {"revision": revision, "deleted": True}
     raise ControlError("نوع موجودیت برای حذف پشتیبانی نمی‌شود.")
 

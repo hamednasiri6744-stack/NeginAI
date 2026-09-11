@@ -8,9 +8,6 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from faster_whisper import WhisperModel
-
-
 def write_json(path: Path, payload: dict) -> None:
     temporary = path.with_name(path.name + ".tmp")
     temporary.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -236,6 +233,11 @@ def main() -> int:
         "checkpoint_segments_reused": checkpoint_segments_reused,
         "resume_start_seconds": round(resume_start, 3),
     })
+    # Keep this optional, heavyweight runtime dependency out of module import
+    # so checkpoint/resume validation can run in the ordinary application test
+    # environment without installing the local ASR stack.
+    from faster_whisper import WhisperModel
+
     model = WhisperModel(args.model, device="cpu", compute_type="int8", download_root=str(args.model_dir))
     # Do not duplicate initial_prompt as hotwords: faster-whisper can reserve
     # half of the 448-token decoder context for each and overflow the model.

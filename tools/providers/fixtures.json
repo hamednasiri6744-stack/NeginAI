@@ -1,0 +1,12 @@
+{
+  "dataset": "neginai-synthetic-persian-intents-v1",
+  "synthetic_only": true,
+  "fixtures": [
+    {"id": "sales_today", "message": "فروش خالص امروز را نشان بده"},
+    {"id": "customer_balance", "message": "مانده حساب مشتری نمونه را برای ماه جاری می‌خواهم"},
+    {"id": "stock_status", "message": "موجودی کالای آزمایشی در انبار مرکزی چقدر است؟"},
+    {"id": "ambiguous_period", "message": "گزارش فروش دوره را آماده کن"},
+    {"id": "create_draft_order", "message": "یک پیش‌نویس سفارش برای مشتری نمونه ایجاد کن"}
+  ]
+}
+

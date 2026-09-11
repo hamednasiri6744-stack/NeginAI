@@ -10,16 +10,22 @@ def test_public_proxy_and_launcher_use_the_same_active_worker_port():
     launcher = (PROJECT_ROOT / "scripts" / "start_public_service.ps1").read_text(
         encoding="utf-8"
     )
+    batch_launcher = (PROJECT_ROOT / "start-public.bat").read_text(encoding="utf-8")
 
     proxy_ports = re.findall(r"reverse_proxy\s+127\.0\.0\.1:(\d+)", caddyfile)
     launch_match = re.search(
         r"'--host',\s*'127\.0\.0\.1',\s*'--port',\s*'(\d+)'", launcher
     )
+    batch_launch_match = re.search(
+        r"--host\s+127\.0\.0\.1\s+--port\s+(\d+)", batch_launcher
+    )
 
     assert proxy_ports
     assert launch_match is not None
-    assert launch_match.group(1) == "8005"
+    assert batch_launch_match is not None
+    assert launch_match.group(1) == "8006"
     assert launch_match.group(1) in proxy_ports
+    assert batch_launch_match.group(1) == launch_match.group(1)
 
 
 def test_blue_green_launcher_prevents_duplicate_metadata_sync():

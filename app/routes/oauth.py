@@ -6,8 +6,6 @@ import hmac
 import html
 import json
 import secrets
-import time
-from collections import defaultdict
 from urllib.parse import parse_qs, unquote_plus, urlencode, urlparse
 
 from fastapi import APIRouter, Request
@@ -18,7 +16,10 @@ from app.auth_service import (
     session_username,
     user_requires_password_change,
 )
-from app.database import record_oauth_client_diagnostic
+from app.login_rate_limit import (
+    LoginRateLimitExceeded,
+    LoginRateLimitUnavailable,
+)
 from app.oauth_service import (
     DEFAULT_SCOPE,
     create_authorization_code,
@@ -27,7 +28,6 @@ from app.oauth_service import (
 )
 
 router = APIRouter(prefix="/oauth", tags=["oauth"])
-_attempts: dict[str, list[float]] = defaultdict(list)
 
 
 def _setup_page(client_id: str, client_secret: str | None) -> HTMLResponse:
@@ -73,15 +73,18 @@ def oauth_setup(request: Request):
     )
 
 
-def _allowed_redirect(uri: str) -> bool:
+def _allowed_redirect(uri: str, configured_uris: tuple[str, ...]) -> bool:
     parsed = urlparse(uri)
-    host = (parsed.hostname or "").lower().rstrip(".")
-    official_host = (
-        host in {"openai.com", "chatgpt.com"}
-        or host.endswith(".openai.com")
-        or host.endswith(".chatgpt.com")
+    structurally_safe = (
+        parsed.scheme == "https"
+        and bool(parsed.hostname)
+        and parsed.username is None
+        and parsed.password is None
+        and not parsed.fragment
     )
-    return parsed.scheme == "https" and official_host
+    return structurally_safe and any(
+        secrets.compare_digest(uri, configured) for configured in configured_uris
+    )
 
 
 def _authorization_error(
@@ -90,19 +93,24 @@ def _authorization_error(
     expected_client_id: str,
     redirect_uri: str,
     scope: str,
+    code_challenge: str,
     code_challenge_method: str,
+    configured_redirect_uris: tuple[str, ...],
 ) -> str | None:
     if response_type not in {"", "code"}:
         return "نوع پاسخ OAuth باید code باشد."
     if not secrets.compare_digest(client_id.strip(), expected_client_id):
         return "Client ID با مقدار ثبت‌شده در NeginAI یکسان نیست."
-    if not _allowed_redirect(redirect_uri.strip()):
+    if not _allowed_redirect(redirect_uri.strip(), configured_redirect_uris):
         host = urlparse(redirect_uri).hostname or "نامشخص"
         return f"Callback URL ارسالی ChatGPT مجاز نیست (میزبان: {host})."
     if _scope(scope.strip()) is None:
         return "Scope باید دقیقاً company.read باشد."
-    if code_challenge_method.strip().upper() not in {"", "PLAIN", "S256"}:
-        return "روش PKCE ارسالی ChatGPT پشتیبانی نمی‌شود."
+    challenge = code_challenge.strip()
+    if code_challenge_method.strip().upper() != "S256" or len(challenge) != 43:
+        return "روش PKCE باید S256 و challenge آن معتبر باشد."
+    if any(character not in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_" for character in challenge):
+        return "PKCE challenge معتبر نیست."
     return None
 
 
@@ -162,7 +170,7 @@ def authorize_page(
     settings = request.app.state.settings
     error = _authorization_error(
         response_type.strip(), client_id, settings.oauth_client_id, redirect_uri,
-        scope, code_challenge_method,
+        scope, code_challenge, code_challenge_method, settings.oauth_redirect_uris,
     )
     if error:
         return HTMLResponse(
@@ -171,8 +179,6 @@ def authorize_page(
         )
     clean_scope = _scope(scope.strip()) or DEFAULT_SCOPE
     normalized_method = code_challenge_method.strip().upper()
-    if normalized_method == "PLAIN":
-        normalized_method = "plain"
     data = {
         "client_id": client_id.strip(), "redirect_uri": redirect_uri.strip(), "state": state,
         "scope": clean_scope, "code_challenge": code_challenge,
@@ -194,29 +200,54 @@ async def authorize_login(request: Request):
         return HTMLResponse("درخواست ورود منقضی یا نامعتبر است.", status_code=400)
     if (
         not secrets.compare_digest(data["client_id"], settings.oauth_client_id)
-        or not _allowed_redirect(data["redirect_uri"])
+        or not _allowed_redirect(data["redirect_uri"], settings.oauth_redirect_uris)
         or _scope(data["scope"]) is None
+        or _authorization_error(
+            "code",
+            data["client_id"],
+            settings.oauth_client_id,
+            data["redirect_uri"],
+            data["scope"],
+            data["code_challenge"],
+            data["code_challenge_method"],
+            settings.oauth_redirect_uris,
+        )
+        is not None
     ):
         return HTMLResponse("درخواست ورود معتبر نیست.", status_code=400)
 
     client = request.client.host if request.client else "unknown"
-    cutoff = time.time() - 300
-    _attempts[client] = [stamp for stamp in _attempts[client] if stamp > cutoff]
-    if len(_attempts[client]) >= 8:
-        return _login_page(data, expected_signature, "تعداد تلاش‌ها زیاد است؛ پنج دقیقه بعد دوباره امتحان کنید.")
+    limiter = getattr(request.app.state, "login_rate_limiter", None)
+    if limiter is None:
+        return HTMLResponse("Authentication rate limiter is unavailable", status_code=503)
+    try:
+        limiter.consume("oauth-authorize", client)
+    except LoginRateLimitExceeded as exc:
+        response = _login_page(
+            data,
+            expected_signature,
+            "تعداد تلاش‌ها زیاد است؛ پنج دقیقه بعد دوباره امتحان کنید.",
+        )
+        response.status_code = 429
+        response.headers["Retry-After"] = str(exc.retry_after)
+        return response
+    except LoginRateLimitUnavailable:
+        return HTMLResponse("Authentication rate limiter is unavailable", status_code=503)
     username = authenticate_user(
         settings, parsed.get("username", ""), parsed.get("password", "")
     )
     if username is None:
-        _attempts[client].append(time.time())
         return _login_page(data, expected_signature, "نام کاربری یا رمز عبور اشتباه است.")
+    try:
+        limiter.reset("oauth-authorize", client)
+    except LoginRateLimitUnavailable:
+        return HTMLResponse("Authentication rate limiter is unavailable", status_code=503)
     if user_requires_password_change(settings, username):
         return _login_page(
             data,
             expected_signature,
             "ابتدا وارد اپ نگین AI شوید و رمز موقت خود را تغییر دهید.",
         )
-    _attempts.pop(client, None)
     code = create_authorization_code(
         settings, username, data["client_id"], data["redirect_uri"],
         data["scope"], data["code_challenge"] or None, data["code_challenge_method"] or None,
@@ -256,8 +287,6 @@ async def _token_payload(request: Request) -> dict[str, str]:
             key: values[-1]
             for key, values in parse_qs(raw, keep_blank_values=True).items()
         }
-    for key, value in request.query_params.items():
-        payload.setdefault(key, value)
     return _normalize_token_payload(payload)
 
 
@@ -272,7 +301,7 @@ def _client_credentials(request: Request, parsed: dict[str, str]) -> tuple[str, 
             return "", "", "basic_invalid"
     if "client_id" in parsed or "client_secret" in parsed:
         content_type = request.headers.get("content-type", "").lower()
-        method = "json" if "application/json" in content_type else "form_or_query"
+        method = "json" if "application/json" in content_type else "form"
         return parsed.get("client_id", "").strip(), parsed.get("client_secret", "").strip(), method
     if request.headers.get("X-Client-ID") or request.headers.get("X-Client-Secret"):
         return (
@@ -283,34 +312,25 @@ def _client_credentials(request: Request, parsed: dict[str, str]) -> tuple[str, 
     return "", "", "missing"
 
 
-def _content_type_category(request: Request) -> str:
-    content_type = request.headers.get("content-type", "").lower()
-    if "application/json" in content_type:
-        return "json"
-    if "application/x-www-form-urlencoded" in content_type:
-        return "form"
-    if "multipart/form-data" in content_type:
-        return "multipart"
-    return "other" if content_type else "missing"
-
-
 @router.post("/token", include_in_schema=False)
 async def token(request: Request):
+    if any(
+        key in request.query_params
+        for key in ("client_id", "client_secret", "clientId", "clientSecret")
+    ):
+        return JSONResponse(
+            {
+                "error": "invalid_request",
+                "error_description": "OAuth client credentials are not accepted in the query string.",
+            },
+            status_code=400,
+            headers={"Cache-Control": "no-store"},
+        )
     parsed = await _token_payload(request)
     settings = request.app.state.settings
-    client_id, client_secret, auth_method = _client_credentials(request, parsed)
+    client_id, client_secret, _ = _client_credentials(request, parsed)
     client_id_match = secrets.compare_digest(client_id, settings.oauth_client_id)
     client_secret_match = secrets.compare_digest(client_secret, settings.oauth_client_secret)
-    record_oauth_client_diagnostic(
-        settings,
-        auth_method=auth_method,
-        content_type=_content_type_category(request),
-        client_id_present=bool(client_id),
-        client_id_match=client_id_match,
-        client_secret_present=bool(client_secret),
-        client_secret_length=len(client_secret),
-        client_secret_match=client_secret_match,
-    )
     if not (client_id_match and client_secret_match):
         return JSONResponse(
             {"error": "invalid_client", "error_description": "OAuth client credentials did not match."},

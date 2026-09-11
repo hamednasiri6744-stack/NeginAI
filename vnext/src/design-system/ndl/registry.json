@@ -1,0 +1,40 @@
+{
+  "$schema": "./registry.schema.json",
+  "name": "NeginAI Design Language",
+  "version": "1.0.0-phase0",
+  "status": "PARTIAL_IMPLEMENTED_FOUNDATION",
+  "figmaMapping": "FIGMA_MAPPING_PENDING",
+  "semanticAuthority": "NEEDS_VALIDATION",
+  "tokenSource": "tokens.css",
+  "tokenCategories": ["color.primitive", "color.semantic", "typography", "spacing", "sizing", "radius", "border", "elevation", "blur", "motion", "z-index", "layout"],
+  "components": [
+    { "id": "DSO-ACT-001", "name": "Button", "source": "components.tsx", "status": "IMPLEMENTED" },
+    { "id": "DSO-ACT-006", "name": "IconButton", "source": "components.tsx", "status": "IMPLEMENTED" },
+    { "id": "DSO-INP-001", "name": "Input", "source": "components.tsx", "status": "IMPLEMENTED" },
+    { "id": "DSO-INP-002", "name": "PasswordInput", "source": "components.tsx", "status": "IMPLEMENTED" },
+    { "id": "DSO-INP-003", "name": "SearchInput", "source": "components.tsx", "status": "IMPLEMENTED" },
+    { "id": "DSO-DAT-010", "name": "Badge", "source": "components.tsx", "status": "IMPLEMENTED" },
+    { "id": "DSO-DAT-012", "name": "Chip", "source": "components.tsx", "status": "IMPLEMENTED" },
+    { "id": "NDL-PRM-001", "name": "Surface", "source": "components.tsx", "status": "IMPLEMENTED" },
+    { "id": "DSO-DAT-001", "name": "Card", "source": "components.tsx", "status": "IMPLEMENTED" },
+    { "id": "DSO-DAT-002", "name": "Metric", "source": "components.tsx", "status": "IMPLEMENTED" },
+    { "id": "DSO-DAT-013", "name": "Progress", "source": "components.tsx", "status": "IMPLEMENTED" },
+    { "id": "DSO-FBK-005", "name": "Spinner", "source": "components.tsx", "status": "IMPLEMENTED" },
+    { "id": "DSO-FBK-004", "name": "Skeleton", "source": "components.tsx", "status": "IMPLEMENTED" },
+    { "id": "DSO-DAT-007", "name": "Avatar", "source": "components.tsx", "status": "IMPLEMENTED" },
+    { "id": "DSO-NAV-002", "name": "AppHeader", "source": "navigation.tsx", "status": "IMPLEMENTED" },
+    { "id": "DSO-DAT-008", "name": "PageHeader", "source": "navigation.tsx", "status": "IMPLEMENTED" },
+    { "id": "DSO-NAV-003", "name": "CommandBar", "source": "navigation.tsx", "status": "IMPLEMENTED" },
+    { "id": "DSO-NAV-004", "name": "BottomNavigation", "source": "navigation.tsx", "status": "IMPLEMENTED" },
+    { "id": "DSO-NAV-006", "name": "AIAction", "source": "navigation.tsx", "status": "IMPLEMENTED" },
+    { "id": "DSO-NAV-008", "name": "Tabs", "source": "navigation.tsx", "status": "IMPLEMENTED" },
+    { "id": "DSO-OVR-001", "name": "Dialog", "source": "overlays.tsx", "status": "IMPLEMENTED" },
+    { "id": "DSO-OVR-003", "name": "BottomSheet", "source": "overlays.tsx", "status": "IMPLEMENTED" },
+    { "id": "DSO-FBK-001", "name": "Toast", "source": "overlays.tsx", "status": "IMPLEMENTED" },
+    { "id": "DSO-NAV-001", "name": "SharedAppShell", "source": "SharedAppShell.tsx", "status": "IMPLEMENTED" }
+  ],
+  "patterns": [
+    { "id": "NDL-PATTERN-SHELL-001", "name": "Shared application shell", "status": "IMPLEMENTED" },
+    { "id": "NDL-PATTERN-VALIDATION-001", "name": "Neutral golden validation page", "status": "IMPLEMENTED" }
+  ]
+}

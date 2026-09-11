@@ -25,9 +25,14 @@ from app.sql_guard import validate_read_only_sql
 
 
 SOURCE_SHEET = "فایل انبار"
-MAX_PRODUCT_ROWS = 100_000
-MAX_ARCHIVE_ENTRIES = 5_000
-MAX_UNCOMPRESSED_BYTES = 1_000 * 1024 * 1024
+MAX_PRODUCT_ROWS = 50_000
+MAX_ARCHIVE_ENTRIES = 2_048
+MAX_UNCOMPRESSED_BYTES = 128 * 1024 * 1024
+MAX_ARCHIVE_ENTRY_BYTES = 32 * 1024 * 1024
+MAX_COMPRESSION_RATIO = 100
+MAX_SHEET_COLUMNS = 128
+MAX_CELL_TEXT_CHARS = 10_000
+MAX_IMPORT_ITEMS = 150_000
 
 WAREHOUSES: dict[str, dict[str, Any]] = {
     "karaj": {
@@ -224,6 +229,8 @@ def init_warehouse_store(settings: Any) -> None:
 
 
 def _normalize_text(value: Any) -> str:
+    if isinstance(value, str) and len(value) > MAX_CELL_TEXT_CHARS:
+        raise WarehouseAssistantError("متن یکی از سلول‌های Excel بیش از حد مجاز است.")
     text = str(value or "").strip().replace("ي", "ی").replace("ك", "ک")
     return re.sub(r"\s+", " ", text)
 
@@ -274,6 +281,15 @@ def _validate_archive(path: Path) -> None:
                 normalized = entry.filename.replace("\\", "/")
                 if normalized.startswith("/") or ".." in normalized.split("/"):
                     raise WarehouseAssistantError("مسیر نامعتبر داخل فایل Excel پیدا شد.")
+                if entry.flag_bits & 0x1:
+                    raise WarehouseAssistantError("فایل Excel رمزگذاری‌شده قابل پردازش نیست.")
+                if entry.file_size > MAX_ARCHIVE_ENTRY_BYTES:
+                    raise WarehouseAssistantError("یک بخش از فایل Excel بیش از حد مجاز باز می‌شود.")
+                if entry.file_size and (
+                    entry.compress_size <= 0
+                    or entry.file_size / entry.compress_size > MAX_COMPRESSION_RATIO
+                ):
+                    raise WarehouseAssistantError("نسبت فشرده‌سازی فایل Excel ناامن است.")
                 total += int(entry.file_size)
                 if total > MAX_UNCOMPRESSED_BYTES:
                     raise WarehouseAssistantError("حجم بازشده فایل Excel بیش از حد مجاز است.")
@@ -327,6 +343,8 @@ def import_inventory_snapshot(
                 f"شیت الزامی «{SOURCE_SHEET}» در فایل پیدا نشد."
             )
         sheet = workbook[SOURCE_SHEET]
+        if sheet.max_row > MAX_PRODUCT_ROWS + 1 or sheet.max_column > MAX_SHEET_COLUMNS:
+            raise WarehouseAssistantError("ابعاد شیت Excel بیش از حد مجاز است.")
         first_row = next(sheet.iter_rows(min_row=1, max_row=1, values_only=True), ())
         header_indexes: dict[str, int] = {}
         for index, value in enumerate(first_row):
@@ -402,6 +420,8 @@ def import_inventory_snapshot(
                         values["buy_price"],
                     )
                 )
+                if len(items) > MAX_IMPORT_ITEMS:
+                    raise WarehouseAssistantError("تعداد اقلام قابل استخراج از Excel بیش از حد مجاز است.")
     finally:
         workbook.close()
 

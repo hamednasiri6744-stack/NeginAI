@@ -119,8 +119,8 @@ def test_chat_uses_configured_max_turns(settings, monkeypatch):
     assert captured["max_turns"] == 7
 
 
-def test_health_exposes_non_secret_performance_settings(client):
-    response = client.get("/health")
+def test_authenticated_readiness_exposes_non_secret_performance_settings(client, auth):
+    response = client.get("/health/readiness", headers=auth)
 
     assert response.status_code == 200
     assert response.json()["openai_reasoning_effort"] == "high"
@@ -132,6 +132,9 @@ def test_health_exposes_non_secret_performance_settings(client):
     assert response.json()["admin_openai_history_limit"] == 40
     assert response.json()["automation_configured"] is False
     assert response.json()["automation_enabled"] is True
+    assert response.json()["model_resource_controls_ready"] is True
+    assert response.json()["model_resource_backend"] == "process-local"
+    assert response.json()["model_resource_limits"]["global_concurrency"] == 8
 
 
 def test_chat_returns_successful_sql_result_when_max_turns_is_reached(settings, monkeypatch):

@@ -29,8 +29,13 @@ def sha256(path: Path) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument(
+        "--artifact-name",
+        default="varanegar_25h_final_test_result_20260829",
+    )
     args = parser.parse_args()
     source = load(SOURCE)
+    current_tests = sorted((ROOT / "tests").glob("test_varanegar_*.py"))
     valid = (
         source.get("validation") == "PASS"
         and source.get("runner", {}).get("exit_code") == 0
@@ -38,7 +43,7 @@ def main() -> int:
         and source.get("runner", {}).get("bootstrap_excluded_test_file_count", 0) == 0
     )
     output = {
-        "artifact": "varanegar_25h_final_test_result_20260829",
+        "artifact": args.artifact_name,
         "schema_version": 1,
         "generated_at": datetime.now().astimezone().isoformat(),
         "validation": "PASS" if valid else "FAIL",
@@ -53,14 +58,21 @@ def main() -> int:
             "python_executable": str(Path(sys.executable).resolve()),
             "pytest_plugin_autoload_disabled": True,
             "test_glob": source["runner"]["test_glob"],
-            "test_file_count": source["runner"]["test_file_count"],
+            "test_file_count": len(current_tests),
             "exit_code": source["runner"]["exit_code"],
             "elapsed_seconds": source["runner"]["elapsed_seconds"],
             "passed_test_count": source["runner"]["passed_test_count"],
             "warning_count": source["runner"]["warning_count"],
             "bootstrap_excluded_test_file_count": 0,
         },
-        "test_manifest": source["test_manifest"],
+        "test_manifest": [
+            {
+                "path": test.relative_to(ROOT).as_posix(),
+                "size_bytes": test.stat().st_size,
+                "sha256": sha256(test),
+            }
+            for test in current_tests
+        ],
         "safety": {
             "database_connections_created_by_runner": 0,
             "assemblies_loaded_or_executed_by_runner": 0,

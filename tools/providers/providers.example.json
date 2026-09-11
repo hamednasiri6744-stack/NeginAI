@@ -1,0 +1,17 @@
+{
+  "providers": [],
+  "candidate_hints": [
+    {
+      "name": "AvalAI",
+      "documentation_url": "https://docs.avalai.ir/en/libraries",
+      "note": "Add current base_url, model, API-key environment variable name, and current prices after verification."
+    },
+    {
+      "name": "Liara",
+      "documentation_url": "https://liara.ir/products/ai",
+      "pricing_url": "https://liara.ir/pricing",
+      "note": "Add current base_url, model, API-key environment variable name, and current prices after verification."
+    }
+  ]
+}
+

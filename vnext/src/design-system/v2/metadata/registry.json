@@ -1,0 +1,205 @@
+{
+  "$schemaVersion": "2.0",
+  "name": "Negin AI Design System",
+  "version": "2.0.0",
+  "direction": "rtl-first",
+  "figmaStatus": "FIGMA_MAPPING_PENDING",
+  "semanticAuthority": "PRESENTATION_ONLY_NO_BUSINESS_SEMANTICS",
+  "tokenChain": [
+    "primitive",
+    "semantic",
+    "component"
+  ],
+  "breakpoints": [
+    390,
+    430,
+    768,
+    1024,
+    1440,
+    1920
+  ],
+  "components": [
+    {
+      "family": "Primitives",
+      "names": [
+        "Text",
+        "Icon",
+        "Divider",
+        "Surface",
+        "Stack",
+        "Cluster",
+        "Container",
+        "ScrollArea"
+      ],
+      "source": "primitives/index.tsx",
+      "figma": "NeginAI/Primitives/*"
+    },
+    {
+      "family": "Actions",
+      "names": [
+        "Button",
+        "IconButton",
+        "FloatingActionButton",
+        "SplitAction"
+      ],
+      "source": "components/actions.tsx",
+      "figma": "NeginAI/Actions/*"
+    },
+    {
+      "family": "Forms",
+      "names": [
+        "Field",
+        "TextInput",
+        "PasswordInput",
+        "TextArea",
+        "SearchInput",
+        "Select",
+        "Combobox",
+        "Checkbox",
+        "Radio",
+        "Switch",
+        "Stepper",
+        "QuantityControl",
+        "SegmentedControl",
+        "DateTimeField"
+      ],
+      "source": "components/forms.tsx",
+      "figma": "NeginAI/Forms/*"
+    },
+    {
+      "family": "Feedback",
+      "names": [
+        "Badge",
+        "StatusBadge",
+        "Alert",
+        "Toast",
+        "Progress",
+        "Spinner",
+        "Skeleton",
+        "EmptyState",
+        "ErrorState",
+        "OfflineState",
+        "PermissionDeniedState"
+      ],
+      "source": "components/feedback.tsx",
+      "figma": "NeginAI/Feedback/*"
+    },
+    {
+      "family": "Data",
+      "names": [
+        "Card",
+        "MetricCard",
+        "KPITile",
+        "StatStrip",
+        "ListItem",
+        "DataRow",
+        "Table",
+        "KeyValue",
+        "Timeline",
+        "ActivityItem",
+        "Sparkline",
+        "ProgressRing",
+        "VisualMetricCard"
+      ],
+      "source": "components/data.tsx",
+      "figma": "NeginAI/Data/*"
+    },
+    {
+      "family": "Navigation",
+      "names": [
+        "TopAppBar",
+        "BottomNavigation",
+        "PageHeader",
+        "SectionHeader",
+        "Breadcrumb",
+        "Tabs",
+        "SegmentedTabs",
+        "BottomSheet",
+        "AppDrawer",
+        "Modal",
+        "ContextMenu",
+        "CommandSurface",
+        "ProfileChip",
+        "NotificationButton"
+      ],
+      "source": "components/navigation.tsx",
+      "figma": "NeginAI/Navigation/*"
+    },
+    {
+      "family": "AI",
+      "names": [
+        "AIComposer",
+        "PromptChips",
+        "AIResponse",
+        "ToolResultCard",
+        "Attachment",
+        "ContextualAIAction",
+        "InsightCard"
+      ],
+      "source": "components/ai.tsx",
+      "figma": "NeginAI/AI/*"
+    },
+    {
+      "family": "Enterprise",
+      "names": [
+        "ResponsivePageContainer",
+        "FilterBar",
+        "SearchFilterBar",
+        "Toolbar",
+        "BulkActionBar",
+        "MasterDetail",
+        "FormSection",
+        "SummaryPanel",
+        "ActionFooter"
+      ],
+      "source": "patterns/index.tsx",
+      "figma": "NeginAI/Patterns/Enterprise/*"
+    },
+    {
+      "family": "Operational",
+      "names": [
+        "CustomerSummaryCard",
+        "RouteStopItem",
+        "VisitStatus",
+        "ProductListRow",
+        "ProductCard",
+        "CartRow",
+        "OrderSummaryShell",
+        "CommercialPreviewShell",
+        "WarningBlock",
+        "SavedRequestRow",
+        "RouteActionGroup",
+        "QuickActionTile",
+        "RouteSummaryCard"
+      ],
+      "source": "patterns/index.tsx",
+      "figma": "NeginAI/Patterns/Operational/*"
+    }
+  ],
+  "stateContract": [
+    "default",
+    "hover",
+    "focus-visible",
+    "active",
+    "selected",
+    "disabled",
+    "loading",
+    "success",
+    "warning",
+    "error",
+    "offline",
+    "destructive"
+  ],
+  "accessibility": [
+    "WCAG_AA_TARGET",
+    "44PX_TOUCH",
+    "KEYBOARD",
+    "FOCUS_VISIBLE",
+    "SEMANTIC_HTML",
+    "PERSISTENT_LABELS",
+    "COLOR_INDEPENDENT_STATUS",
+    "REDUCED_MOTION",
+    "SAFE_AREAS",
+    "RTL"
+  ]
+}

@@ -7,6 +7,7 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
 from openai import OpenAI
 
+from app.routes.chat import estimate_model_budget_units, model_resource_lease
 from app.routes.dependencies import require_user_or_local
 
 
@@ -116,6 +117,14 @@ async def analyze_chat_attachment(
         raise HTTPException(status_code=400, detail="فایل خالی است.")
     if len(content) > MAX_ATTACHMENT_BYTES:
         raise HTTPException(status_code=413, detail="حجم فایل باید حداکثر ۲۰ مگابایت باشد.")
+    resource_context = model_resource_lease(
+        request,
+        estimate_model_budget_units(
+            text_characters=len(question),
+            binary_bytes=len(content),
+        ),
+    )
+    await resource_context.__aenter__()
     try:
         analysis = await asyncio.to_thread(
             analyze_attachment,
@@ -128,6 +137,8 @@ async def analyze_chat_attachment(
         )
     except Exception as exc:
         raise HTTPException(status_code=502, detail="تحلیل فایل انجام نشد؛ دوباره تلاش کنید.") from exc
+    finally:
+        await resource_context.__aexit__(None, None, None)
     if not analysis:
         raise HTTPException(status_code=422, detail="محتوای قابل‌تحلیلی در فایل پیدا نشد.")
     return {

@@ -4,13 +4,16 @@ from contextlib import contextmanager
 from dataclasses import replace
 from io import BytesIO
 import sqlite3
+from zipfile import ZIP_DEFLATED, ZipFile
 
+import pytest
 from openpyxl import Workbook, load_workbook
 
 from app.auth_service import create_session, create_user
 from app.control_service import control_snapshot
 from app.database import sqlite_connection
 import app.warehouse_assistant_service as warehouse_service
+import app.routes.warehouse_assistant as warehouse_routes
 
 
 def _session(settings, username: str, role: str = "کارمند انبار") -> dict[str, str]:
@@ -226,6 +229,86 @@ def test_inventory_import_rejects_non_excel_files(client, settings):
     )
 
     assert response.status_code == 415
+
+
+def test_inventory_upload_rejects_oversized_body(client, settings, monkeypatch):
+    headers = _session(settings, "Admin", "Admin")
+    monkeypatch.setattr(warehouse_routes, "MAX_UPLOAD_BYTES", 8)
+
+    response = client.post(
+        "/warehouse-assistant/api/snapshots/import",
+        headers=headers,
+        files={"file": ("inventory.xlsx", b"123456789")},
+    )
+
+    assert response.status_code == 413
+
+
+def _minimal_excel_archive(path, payload: bytes) -> None:
+    with ZipFile(path, "w", compression=ZIP_DEFLATED) as archive:
+        archive.writestr("[Content_Types].xml", "<Types/>")
+        archive.writestr("xl/workbook.xml", "<workbook/>")
+        archive.writestr("xl/worksheets/sheet1.xml", payload)
+
+
+def test_excel_archive_rejects_high_compression_ratio(tmp_path, monkeypatch):
+    path = tmp_path / "bomb.xlsx"
+    _minimal_excel_archive(path, b"A" * 100_000)
+    monkeypatch.setattr(warehouse_service, "MAX_ARCHIVE_ENTRY_BYTES", 200_000)
+    monkeypatch.setattr(warehouse_service, "MAX_COMPRESSION_RATIO", 10)
+
+    with pytest.raises(warehouse_service.WarehouseAssistantError, match="فشرده"):
+        warehouse_service._validate_archive(path)
+
+
+def test_excel_archive_rejects_oversized_single_entry(tmp_path, monkeypatch):
+    path = tmp_path / "large-entry.xlsx"
+    _minimal_excel_archive(path, b"not-compressible-enough")
+    monkeypatch.setattr(warehouse_service, "MAX_ARCHIVE_ENTRY_BYTES", 8)
+
+    with pytest.raises(warehouse_service.WarehouseAssistantError, match="بخش"):
+        warehouse_service._validate_archive(path)
+
+
+def test_excel_archive_rejects_excessive_total_expansion(tmp_path, monkeypatch):
+    path = tmp_path / "large-total.xlsx"
+    _minimal_excel_archive(path, b"0123456789")
+    monkeypatch.setattr(warehouse_service, "MAX_ARCHIVE_ENTRY_BYTES", 100)
+    monkeypatch.setattr(warehouse_service, "MAX_UNCOMPRESSED_BYTES", 20)
+
+    with pytest.raises(warehouse_service.WarehouseAssistantError, match="بازشده"):
+        warehouse_service._validate_archive(path)
+
+
+def test_inventory_import_rejects_excessive_dimensions(settings, tmp_path):
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = warehouse_service.SOURCE_SHEET
+    sheet.cell(row=2, column=warehouse_service.MAX_SHEET_COLUMNS + 1, value="x")
+    path = tmp_path / "wide.xlsx"
+    workbook.save(path)
+
+    with pytest.raises(warehouse_service.WarehouseAssistantError, match="ابعاد"):
+        warehouse_service.import_inventory_snapshot(settings, path, path.name, "Admin")
+
+
+def test_inventory_import_rejects_oversized_cell_text(settings, tmp_path, monkeypatch):
+    monkeypatch.setattr(warehouse_service, "MAX_CELL_TEXT_CHARS", 8)
+    content = _inventory_workbook()
+    path = tmp_path / "long-cell.xlsx"
+    path.write_bytes(content)
+
+    with pytest.raises(warehouse_service.WarehouseAssistantError, match="سلول"):
+        warehouse_service.import_inventory_snapshot(settings, path, path.name, "Admin")
+
+
+def test_inventory_import_rejects_excessive_materialized_items(settings, tmp_path, monkeypatch):
+    monkeypatch.setattr(warehouse_service, "MAX_IMPORT_ITEMS", 2)
+    path = tmp_path / "too-many-items.xlsx"
+    path.write_bytes(_inventory_workbook())
+
+    with pytest.raises(warehouse_service.WarehouseAssistantError, match="اقلام"):
+        warehouse_service.import_inventory_snapshot(settings, path, path.name, "Admin")
 
 
 def test_admin_creates_supplier_order_and_downloads_ready_documents(client, settings):

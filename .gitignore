@@ -1,4 +1,4 @@
-.env
+﻿.env
 .venv/
 __pycache__/
 *.py[cod]
@@ -54,3 +54,22 @@ tools/ngrok.zip
 tools/localhost-run-key
 tools/localhost-run-key.pub
 0)else'credit_call_not_found')
+node_modules/
+.playwright/
+playwright-report/
+
+# Local assistant/runtime scratch files (2026-09-12)
+.codex-remote-attachments/
+.tmp.drivedownload/
+.tmp.driveupload/
+desktop.ini
+canonical.zip
+*_inventory.txt
+\!j.includes(id))
+1
+2
+clock_timestamp()*
+
+*.bak
+docs/reports/**/*.zip
+

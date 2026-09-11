@@ -14,11 +14,12 @@
   <title>دستیار هوشمند نگین پخش</title>
   <link rel="stylesheet" href="/static/assistant.css?v=106">
   <link rel="stylesheet" href="/static/previsit-workspace.css?v=50">
-  <link rel="stylesheet" href="https://static.neshan.org/sdk/maplibre/5.24.3/neshan-maplibre-sdk.css">
+  <link rel="stylesheet" href="https://static.neshan.org/sdk/maplibre/5.24.3/neshan-maplibre-sdk.css" integrity="sha384-pUxsnE8dF8B3YMPiz+kzbxV4L1GsgnjImy1j2p+eOJgVYUBqNJpykDx6naFlBYUx" crossorigin="anonymous">
 </head>
 <body>
   <div id="app" class="app-shell">
     <aside id="sidebar" class="sidebar" aria-label="فهرست گفتگوها">
+      <div id="sidebarResizeHandle" class="sidebar-resize-handle" role="separator" aria-orientation="vertical" aria-label="Resize sidebar" aria-valuemin="220" aria-valuemax="420" aria-valuenow="280" tabindex="0"></div>
       <div class="sidebar-top">
         <div class="sidebar-brand">
           <span class="brand-logo" aria-hidden="true"><img class="brand-mark-image" src="/static/negin-brand-icon-192.png" alt=""></span>
@@ -94,10 +95,10 @@
       <header class="main-header">
         <button id="accountSettingsBtnHeader" class="header-icon account-settings" type="button" aria-label="تنظیمات حساب" title="تنظیمات حساب"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.4-2.4 1a8 8 0 0 0-1.7-1L14.5 3h-5L9 6.1a8 8 0 0 0-1.7 1l-2.4-1-2 3.4L5 11a7 7 0 0 0 0 2l-2.1 1.5 2 3.4 2.4-1a8 8 0 0 0 1.7 1l.5 3.1h5l.5-3.1a8 8 0 0 0 1.7-1l2.4 1-2-3.4L19 13a7 7 0 0 0 0-1z"></path></svg></button>
         <button id="openSidebarBtn" class="header-icon mobile-menu" type="button" aria-label="بازکردن منو">☰</button>
-        <button class="assistant-title" type="button" aria-label="دستیار فعال">
+        <div class="assistant-title">
           <span class="assistant-brand-mark" aria-hidden="true"><img class="brand-mark-image" src="/static/negin-brand-icon-192.png" alt=""></span>
-          <strong>موتور هوشمند ورانگر</strong><span>⌄</span>
-        </button>
+          <strong>موتور هوشمند ورانگر</strong>
+        </div>
         <div class="header-actions">
           <a id="androidDownloadHeader" class="header-icon android-download-header" href="/download/android" hidden aria-label="&#1583;&#1575;&#1606;&#1604;&#1608;&#1583; &#1575;&#1662; &#1575;&#1606;&#1583;&#1585;&#1608;&#1740;&#1583;" title="&#1583;&#1575;&#1606;&#1604;&#1608;&#1583; &#1575;&#1662; &#1575;&#1606;&#1583;&#1585;&#1608;&#1740;&#1583;"><span aria-hidden="true">&#8681;</span><b>&#1606;&#1589;&#1576; &#1575;&#1662;</b></a>
           <span id="status" class="connection-status"><i></i>آماده</span>
@@ -230,12 +231,12 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <dialog id="keyDialog" class="auth-dialog">
-    <form id="loginForm">
+    <form id="loginForm" autocomplete="on">
       <div class="dialog-logo">ن</div>
       <h2>ورود به نگین AI</h2>
       <p>برای دسترسی به گفتگوها و گزارش‌های سازمانی وارد حساب خود شوید.</p>
-      <label>نام کاربری<input id="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" enterkeyhint="next" required></label>
-      <label>رمز عبور<input id="password" type="password" autocomplete="current-password" enterkeyhint="done" required></label>
+      <label>نام کاربری<input id="username" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" enterkeyhint="next" required></label>
+      <label>رمز عبور<span class="password-field"><input id="password" name="password" type="password" autocomplete="current-password" enterkeyhint="done" required><button id="togglePasswordVisibility" class="password-visibility-toggle" type="button" aria-label="نمایش رمز عبور" aria-pressed="false" title="نمایش رمز عبور"><span aria-hidden="true">👁</span></button></span></label>
       <p id="loginError" class="login-error"></p>
       <button type="submit">ورود امن</button>
       <a id="androidDownloadLogin" class="android-download-link" href="/download/android" hidden>دانلود و نصب اپ اندروید</a>
@@ -298,7 +299,7 @@
       </footer>
     </section>
   </dialog>
-  <script src="https://static.neshan.org/sdk/maplibre/5.24.3/neshan-maplibre-sdk.umd.js" defer></script>
+  <script src="https://static.neshan.org/sdk/maplibre/5.24.3/neshan-maplibre-sdk.umd.js" integrity="sha384-wnbzzSu12Ml7LvCjoLfYgoBhYUTJOyrfNJbFY+Bp4zPxZvg0vf2HbxW+e76zytIQ" crossorigin="anonymous" defer></script>
   <script src="/static/assistant.js?v=213" defer></script>
 </body>
 </html>

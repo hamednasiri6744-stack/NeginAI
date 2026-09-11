@@ -1,11 +1,37 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends, Request
+
+from app.routes.chat import model_resource_policy
+from app.routes.dependencies import require_user_or_local
 
 router = APIRouter(tags=["health"])
 
 
 @router.get("/health", operation_id="getHealth")
-def health(request: Request) -> dict[str, object]:
+async def health() -> dict[str, object]:
+    """Public process liveness without deployment or provider metadata."""
+    return {
+        "status": "ok",
+        "service": "NeginAI",
+    }
+
+
+@router.get(
+    "/health/readiness",
+    operation_id="getReadiness",
+    dependencies=[Depends(require_user_or_local)],
+)
+def readiness(request: Request) -> dict[str, object]:
+    """Authenticated configuration readiness for operators and diagnostics."""
     settings = request.app.state.settings
+    external_resource_backend = getattr(request.app.state, "model_resource_backend", ...)
+    try:
+        resource_policy = model_resource_policy()
+        resource_controls_ready = not getattr(
+            request.app.state, "_model_resource_backend_failed", False
+        ) and external_resource_backend is not None
+    except RuntimeError:
+        resource_policy = None
+        resource_controls_ready = False
     return {
         "status": "ok",
         "service": "NeginAI SQL Gateway",
@@ -24,6 +50,27 @@ def health(request: Request) -> dict[str, object]:
             and settings.varanegar_order_commit_enabled
             and settings.varanegar_order_numbering_verified
         ),
+        "enterprise_database_configured": bool(settings.enterprise_database_url),
+        "enterprise_database_ready": (
+            bool(getattr(request.app.state, "enterprise_database_ready", False))
+            if settings.enterprise_database_url else None
+        ),
+        "redis_configured": bool(settings.redis_url),
+        "redis_ready": (
+            bool(getattr(request.app.state, "redis_ready", False))
+            if settings.redis_url else None
+        ),
+        "enterprise_runtime_ready": bool(
+            (not settings.enterprise_database_url or getattr(request.app.state, "enterprise_database_ready", False))
+            and (not settings.redis_url or getattr(request.app.state, "redis_ready", False))
+            and (not settings.command_outbox_enabled or getattr(request.app.state, "command_worker_ready", False))
+        ),
+        "command_outbox_enabled": settings.command_outbox_enabled,
+        "command_worker_ready": (
+            getattr(request.app.state, "command_worker_ready", False)
+            if settings.command_outbox_enabled
+            else None
+        ),
         "openai_model": settings.openai_model,
         "openai_reasoning_effort": settings.openai_reasoning_effort,
         "model_router_enabled": settings.model_router_enabled,
@@ -33,4 +80,22 @@ def health(request: Request) -> dict[str, object]:
         "admin_openai_max_turns": settings.admin_openai_max_turns,
         "admin_openai_history_limit": settings.admin_openai_history_limit,
         "admin_openai_max_tokens": settings.admin_openai_max_tokens,
+        "model_resource_controls_ready": resource_controls_ready,
+        "model_resource_backend": (
+            "process-local"
+            if external_resource_backend is ...
+            else "external" if external_resource_backend is not None else "unavailable"
+        ),
+        "model_resource_limits": (
+            {
+                "global_concurrency": resource_policy.global_concurrency,
+                "user_concurrency": resource_policy.user_concurrency,
+                "user_requests_per_minute": resource_policy.user_requests_per_minute,
+                "user_daily_budget_units": resource_policy.user_daily_budget_units,
+                "global_daily_budget_units": resource_policy.global_daily_budget_units,
+                "max_request_budget_units": resource_policy.max_request_budget_units,
+            }
+            if resource_policy
+            else None
+        ),
     }

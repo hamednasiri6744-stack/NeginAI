@@ -1,0 +1,161 @@
+{
+  "title": "NeginAI زیر ذره‌بین: نقشه، آمادگی اینترپرایز و مسیر ۲۰۰ کاربر",
+  "report_date": "2026-09-02",
+  "revision": "673112f6ce5bb1f8dfaca41804cbd893b57bfc6c",
+  "branch": "dev/hamed",
+  "verdict": "NO-GO for enterprise production; viable foundation",
+  "inventory": {
+    "git_tracked_files": 1892,
+    "app_files": 85,
+    "routes": 110,
+    "routers": 19,
+    "sqlite_tables_minimum": 43,
+    "python_test_files": 507,
+    "javascript_test_files": 3,
+    "scripts": 800,
+    "docs": 422
+  },
+  "tests": {
+    "python_collected": 2502,
+    "python_passed": 2491,
+    "python_failed": 11,
+    "product_python_passed": 348,
+    "product_python_failed": 3,
+    "javascript_passed": 3,
+    "javascript_failed": 0,
+    "collection_blocker": "faster_whisper missing for one review-checkpoint test"
+  },
+  "product_failures": [
+    "parallel SQLite startup can raise database is locked",
+    "saved request plus empty cart revalidates the empty cart when ending a visit",
+    "public worker port contract is inconsistent across test, Caddy, PowerShell and batch launcher"
+  ],
+  "knowledge_drift": {
+    "stale_path": "G:/NeginAI",
+    "path_related_failures": 8,
+    "stale_checkpoint_failures": 1,
+    "resolution": "preserve historical artifacts; publish a new logical-path manifest"
+  },
+  "target": {
+    "concurrent_users": 200,
+    "architecture": "modular monolith plus stateless API replicas and durable workers",
+    "transactional_store": "PostgreSQL",
+    "coordination_cache": "Redis",
+    "llm_role": "intent extraction and optional final Persian wording only",
+    "core_intelligence": "typed tools, semantic catalog, rule engine, calculation, optimization, forecasting and verifier inside NeginAI"
+  },
+  "queries": {
+    "inventory": {
+      "columns": [
+        "metric",
+        "value"
+      ],
+      "rows": [
+        {
+          "metric": "Git tracked files",
+          "value": 1892
+        },
+        {
+          "metric": "FastAPI routes",
+          "value": 110
+        },
+        {
+          "metric": "Connected routers",
+          "value": 19
+        },
+        {
+          "metric": "SQLite tables (minimum)",
+          "value": 43
+        },
+        {
+          "metric": "Python tests collected",
+          "value": 2502
+        }
+      ]
+    },
+    "test_results": {
+      "columns": [
+        "suite",
+        "passed",
+        "failed"
+      ],
+      "rows": [
+        {
+          "suite": "Full Python excluding collection blocker",
+          "passed": 2491,
+          "failed": 11
+        },
+        {
+          "suite": "Product Python excluding Varanegar historical tests",
+          "passed": 348,
+          "failed": 3
+        },
+        {
+          "suite": "Handoff JavaScript",
+          "passed": 3,
+          "failed": 0
+        }
+      ]
+    },
+    "security_findings": {
+      "columns": [
+        "id",
+        "severity",
+        "finding"
+      ],
+      "rows": [
+        {"id":"SEC-001","severity":"High","finding":"رمز اولیه مشترک در provisioning کاربران"},
+        {"id":"SEC-002","severity":"High","finding":"API key مشترک با عبور از مرز هویت و مجوز"},
+        {"id":"SEC-003","severity":"High","finding":"ادامه OAuth پس از غیرفعال یا حذف کاربر"},
+        {"id":"SEC-004","severity":"Medium","finding":"عدم ابطال session پس از logout یا تغییر رمز"},
+        {"id":"SEC-005","severity":"Medium","finding":"SQL فقط‌خواندنی بدون مهار هزینه و lock hint"},
+        {"id":"SEC-006","severity":"Medium","finding":"نبود quota، budget و concurrency سراسری مدل"},
+        {"id":"SEC-007","severity":"Medium","finding":"buffer شدن کامل صوت پیش از سقف اندازه"},
+        {"id":"SEC-008","severity":"High","finding":"خاموش بودن اعتبارسنجی گواهی ODBC"},
+        {"id":"SEC-009","severity":"High","finding":"کد ثالث در WebView دارای native bridge ممتاز"},
+        {"id":"SEC-010","severity":"Low","finding":"افشای جزئیات readiness در health عمومی"}
+      ]
+    },
+    "roadmap": {
+      "columns": [
+        "phase",
+        "weeks_min",
+        "weeks_max"
+      ],
+      "rows": [
+        {
+          "phase": "0 Baseline",
+          "weeks_min": 1,
+          "weeks_max": 2
+        },
+        {
+          "phase": "1 Enterprise substrate",
+          "weeks_min": 2,
+          "weeks_max": 4
+        },
+        {
+          "phase": "2 Official order slice",
+          "weeks_min": 3,
+          "weeks_max": 5
+        },
+        {
+          "phase": "3 Internal intelligence and AI Gateway",
+          "weeks_min": 3,
+          "weeks_max": 5
+        },
+        {
+          "phase": "4 Product and security",
+          "weeks_min": 3,
+          "weeks_max": 4
+        },
+        {
+          "phase": "5 Capacity and rollout",
+          "weeks_min": 2,
+          "weeks_max": 3
+        }
+      ]
+    }
+  },
+  "surface": "report",
+  "id": "report:5e476faa-b8d7-44a4-b63a-178f213410ae"
+}

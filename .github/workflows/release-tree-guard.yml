@@ -1,0 +1,19 @@
+name: release-tree-guard
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  reject-runtime-and-secret-material:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify checked-out release tree
+        run: python tools/security/release_tree_guard.py .

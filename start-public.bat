@@ -13,6 +13,6 @@ if not exist "tools\caddy.exe" (
   exit /b 1
 )
 
-start "NeginAI API" /min cmd /c "".venv\Scripts\python.exe" -m uvicorn app.main:app --host 127.0.0.1 --port 8000"
+start "NeginAI API" /min cmd /c "".venv\Scripts\python.exe" -m uvicorn app.main:app --host 127.0.0.1 --port 8006"
 timeout /t 3 /nobreak >nul
 "tools\caddy.exe" run --config Caddyfile --adapter caddyfile

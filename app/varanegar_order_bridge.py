@@ -1,4 +1,4 @@
-"""Disabled-by-default bridge for validated Varanegar order registration.
+﻿"""Disabled-by-default bridge for validated Varanegar order registration.
 
 The reporting connection in :mod:`app.database` remains read-only. This
 module owns a separate credential that may only execute one reviewed wrapper.
@@ -74,7 +74,7 @@ def _write_connection(settings: Any) -> Iterator[Any]:
             f"DATABASE={settings.varanegar_order_sql_database};"
             f"UID={settings.varanegar_order_sql_username};"
             f"PWD={settings.varanegar_order_sql_password};"
-            f"TrustServerCertificate={trust};ApplicationIntent=ReadWrite;",
+            f"Encrypt=yes;TrustServerCertificate={trust};ApplicationIntent=ReadWrite;",
             timeout=settings.sql_query_timeout,
         )
     try:
@@ -194,6 +194,7 @@ def submit_validated_order(
     username: str,
     visit_id: str,
     validation: dict[str, Any],
+    enterprise_store: Any | None = None,
 ) -> dict[str, Any]:
     """Register one freshly validated draft through the reviewed SQL wrapper."""
     if not settings.varanegar_order_bridge_enabled:
@@ -256,6 +257,26 @@ def submit_validated_order(
         raise VaranegarOrderBridgeUnavailable(
             "نسخه تراکنشی شماره‌گذاری درخواست ورانگر هنوز روی دیتابیس نصب و تأیید نشده است؛ هیچ سندی ثبت نشد"
         )
+
+    if settings.command_outbox_enabled:
+        if enterprise_store is None:
+            raise VaranegarOrderBridgeUnavailable(
+                "صف پایدار فرمان ورانگر در دسترس نیست؛ هیچ سفارشی ثبت نشد"
+            )
+        queued = enterprise_store.enqueue_command(
+            idempotency_key=identity["idempotency_key"],
+            command_type="varanegar.order.submit.v1",
+            subject=username,
+            payload=payload,
+        )
+        return {
+            "status": "queued",
+            "committed": False,
+            "command_id": queued["command_id"],
+            "idempotent_replay": not queued["created"],
+            "idempotency_key": identity["idempotency_key"],
+            "message": "سفارش در صف پایدار ورانگر قرار گرفت و پس از رسید رسمی نهایی می‌شود.",
+        }
 
     procedure = _procedure(settings)
     encoded_payload = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
@@ -334,3 +355,4 @@ def submit_validated_order(
         raise VaranegarOrderBridgeError(
             "ارتباط با مسیر محدود ثبت سفارش ورانگر ناموفق بود؛ هیچ ثبت تأییدشده‌ای دریافت نشد"
         ) from exc
+

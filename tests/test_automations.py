@@ -7,6 +7,8 @@ import json
 
 import pytest
 
+from app.auth_service import create_session, create_user
+
 from app.automation_service import (
     AutomationRunTimeout,
     ConditionDecision,
@@ -299,10 +301,13 @@ def test_condition_alert_notifies_only_on_false_to_true_transition(settings):
     assert len(list_notifications(settings, "Admin")) == 2
 
 
-def test_automation_api_uses_authenticated_owner(client, auth):
+def test_automation_api_uses_authenticated_owner(client, settings):
+    create_user(settings, "automation.api.user", "StrongPass9")
+    token = create_session(settings, "automation.api.user")
+    headers = {"Cookie": f"negin_session={token}"}
     created = client.post(
         "/automations",
-        headers=auth,
+        headers=headers,
         json={
             "title": "گزارش روزانه",
             "query_text": "فروش امروز را گزارش کن",
@@ -311,7 +316,7 @@ def test_automation_api_uses_authenticated_owner(client, auth):
         },
     )
     assert created.status_code == 201
-    listed = client.get("/automations", headers=auth)
+    listed = client.get("/automations", headers=headers)
     assert listed.status_code == 200
     assert listed.json()["automations"][0]["title"] == "گزارش روزانه"
 

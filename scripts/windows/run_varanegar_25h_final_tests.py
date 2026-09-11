@@ -85,6 +85,7 @@ def bootstrap_exclusions(tests: list[Path]) -> list[Path]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--mirror-output", type=Path)
     parser.add_argument("--exclude-final-bundle-bootstrap", action="store_true")
     args = parser.parse_args()
     tests = sorted((ROOT / "tests").glob("test_varanegar_*.py"))
@@ -151,6 +152,14 @@ def main() -> int:
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(output, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    if args.mirror_output is not None:
+        mirror = dict(output)
+        mirror["artifact"] = args.mirror_output.stem
+        args.mirror_output.parent.mkdir(parents=True, exist_ok=True)
+        args.mirror_output.write_text(
+            json.dumps(mirror, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
     print(args.output.resolve())
     print(json.dumps(output["runner"], ensure_ascii=False))
     print(validation)

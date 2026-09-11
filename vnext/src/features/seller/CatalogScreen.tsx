@@ -1,0 +1,5 @@
+import {ShoppingCart} from 'lucide-react'
+import {Button,Card,Cluster,PageHeader,ProductListRow,ResponsivePageContainer,SearchInput,Stack,StatusBadge} from '../../design-system/v2'
+import {navigate} from '../../app/router'
+const products=[['خمیردندان میسویک ۱۰۰ml','Misswake · ۱,۴۸۰,۰۰۰ ریال','موجود'],['مسواک متوسط اورال‌کلین','Oral Clean · ۹۲۰,۰۰۰ ریال','موجود'],['دهانشویه ۳۰۰ml','Misswake · ۲,۱۱۰,۰۰۰ ریال','موجودی کم'],['نخ دندان حرفه‌ای','Dental Pro · ۷۶۰,۰۰۰ ریال','موجود']]
+export function CatalogScreen(){return <div className="ng-v2" dir="rtl" data-trace-id="ORD-01"><ResponsivePageContainer><Stack gap={5}><PageHeader eyebrow="ORDER / CATALOG" title="انتخاب کالا" description="فروشگاه بهار · قیمت و موجودی آنلاین"/><SearchInput label="جستجوی کالا" placeholder="نام، کد یا برند کالا"/><Card>{products.map(p=><ProductListRow key={p[0]} title={p[0]} subtitle={p[1]} status={p[2]}/>)}</Card><Cluster><StatusBadge label="۲ قلم در سبد" tone="premium"/><strong>۲,۴۰۰,۰۰۰ ریال</strong><Button startIcon={<ShoppingCart/>} onClick={()=>navigate('/seller/cart')}>مشاهده سبد</Button></Cluster></Stack></ResponsivePageContainer></div>}

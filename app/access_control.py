@@ -20,6 +20,11 @@ class DataAccessDenied(ValueError):
     """Raised when an authenticated principal requests data outside its policy."""
 
 
+_EXTERNAL_READ_FUNCTIONS = frozenset(
+    {"OPENQUERY", "OPENROWSET", "OPENDATASOURCE", "OPENXML"}
+)
+
+
 @dataclass(frozen=True)
 class DataAccessPolicy:
     username: str
@@ -30,8 +35,12 @@ class DataAccessPolicy:
     supervisor_personnel_id: int | None = None
     is_restricted_seller: bool = False
     is_admin: bool = False
+    is_service_principal: bool = False
+    service_scope: str = ""
 
     def trusted_context(self) -> dict[str, Any]:
+        if self.is_service_principal:
+            return {"principal": self.username, "role": "service", "mode": "service_company_read", "service_scope": self.service_scope or "company.read", "database_scope": "catalogued_read_only_reporting", "write_access": False, "user_owned_resource_access": False, "admin_access": False}
         if self.is_admin:
             return {
                 "principal": self.username,
@@ -198,8 +207,10 @@ _RESTRICTED_REQUEST_PATTERNS = tuple(
 
 def policy_for_user(settings: Settings, username: str | None) -> DataAccessPolicy:
     principal = str(username or "").strip()
-    if not principal or principal in {"local", "action-api-key"}:
-        return DataAccessPolicy(username=principal or "action-api-key")
+    if not principal or principal == "action-api-key":
+        return DataAccessPolicy(username=principal or "action-api-key", is_service_principal=True, service_scope="company.read")
+    if principal == "local":
+        return DataAccessPolicy(username=principal)
     profile = user_profile(settings, principal)
     if not profile:
         return DataAccessPolicy(
@@ -310,6 +321,72 @@ def _object_metadata(
         str(row["schema_name"]),
         str(row["object_name"]),
         list(details.get("columns") or []),
+    )
+
+
+def authorize_catalogued_sql(
+    settings: Settings,
+    policy: DataAccessPolicy,
+    validated: ValidatedSql,
+) -> ValidatedSql:
+    """Bind raw read-only SQL to the configured DB and reviewed inventory."""
+    statement = parse_one(validated.sql, read="tsql")
+    cte_names = {
+        cte.alias_or_name.casefold()
+        for cte in statement.find_all(exp.CTE)
+        if cte.alias_or_name
+    }
+
+    for function in statement.find_all(exp.Anonymous):
+        if str(function.name or "").upper() in _EXTERNAL_READ_FUNCTIONS:
+            raise DataAccessDenied("External SQL data providers are not authorized")
+
+    # SQLGlot represents a schema-qualified user function as dbo.fn(...).
+    # The app has no reviewed function catalog, so raw user functions fail
+    # closed instead of inheriting the SQL login's broader execute rights.
+    for dotted in statement.find_all(exp.Dot):
+        if isinstance(dotted.expression, exp.Anonymous):
+            raise DataAccessDenied("User-defined SQL functions are not authorized")
+
+    authorized_sources: set[str] = set()
+    for table in list(statement.find_all(exp.Table)):
+        table_name = table.name
+        if not table.db and table_name and table_name.casefold() in cte_names:
+            continue
+
+        # Table-valued functions, external providers, and four-part linked
+        # server names are not identifiers backed by the reviewed catalog.
+        if not table_name or not isinstance(table.args.get("this"), exp.Identifier):
+            raise DataAccessDenied("The SQL source is not an authorized catalog object")
+        if table.args.get("db") is not None and not isinstance(
+            table.args.get("db"), exp.Identifier
+        ):
+            raise DataAccessDenied("Multipart or linked-server SQL sources are not authorized")
+
+        catalog_expression = table.args.get("catalog")
+        if catalog_expression is not None:
+            if not isinstance(catalog_expression, exp.Identifier):
+                raise DataAccessDenied("External SQL data providers are not authorized")
+            if catalog_expression.name.casefold() != settings.sql_database.casefold():
+                raise DataAccessDenied("Only the configured reporting database is authorized")
+
+        metadata = _object_metadata(settings, table.db, table_name)
+        if metadata is None:
+            raise DataAccessDenied("The SQL source is not in the authorized schema catalog")
+        schema, name, _columns = metadata
+        item = get_schema_object(settings, schema, name)
+        if item is None or filter_schema_item(policy, item) is None:
+            raise DataAccessDenied("The SQL source is not authorized for this principal")
+
+        # Canonicalization closes default-schema ambiguity: the object checked
+        # above is exactly the object SQL Server will read.
+        table.set("db", exp.to_identifier(schema, quoted=True))
+        table.set("this", exp.to_identifier(name, quoted=True))
+        authorized_sources.add(_source_key(schema, name))
+
+    return ValidatedSql(
+        sql=statement.sql(dialect="tsql"),
+        sources=sorted(authorized_sources, key=str.casefold),
     )
 
 
@@ -524,7 +601,7 @@ def schema_item_allowed(policy: DataAccessPolicy, item: dict[str, Any]) -> bool:
     return filter_schema_item(policy, item) is not None
 
 
-def _source_allowed_in_catalog(
+def source_allowed_in_catalog(
     settings: Settings, policy: DataAccessPolicy, source: str
 ) -> bool:
     parts = source.split(".", 1)
@@ -562,12 +639,12 @@ def filter_prepared_context(
     safe_examples = []
     for example in list(context.get("successful_report_examples") or []):
         sources = [str(value) for value in example.get("sources") or []]
-        if sources and all(_source_allowed_in_catalog(settings, policy, source) for source in sources):
+        if sources and all(source_allowed_in_catalog(settings, policy, source) for source in sources):
             safe_examples.append(example)
     filtered["successful_report_examples"] = safe_examples
     filtered["known_source_failures"] = [
         item
         for item in list(context.get("known_source_failures") or [])
-        if all(_source_allowed_in_catalog(settings, policy, str(source)) for source in item.get("sources") or [])
+        if all(source_allowed_in_catalog(settings, policy, str(source)) for source in item.get("sources") or [])
     ]
     return filtered

@@ -317,10 +317,17 @@ def find_successful_report_examples(
     question: str,
     limit: int = 4,
     allowed_sources: set[str] | None = None,
+    *,
+    principal: str | None = None,
 ) -> list[dict[str, Any]]:
-    """Retrieve relevant previously successful reports as hints, never as current facts."""
+    """Retrieve report patterns only from conversations owned by ``principal``.
+
+    Administrators intentionally receive no implicit cross-user memory bypass:
+    database reporting authority does not grant access to another user's chat.
+    """
     query_terms = _terms(question)
-    if not query_terms:
+    owner = str(principal or "").strip()
+    if not query_terms or not owner:
         return []
     with sqlite_connection(settings.sqlite_path) as conn:
         rows = conn.execute(
@@ -331,8 +338,11 @@ def find_successful_report_examples(
                          AND u.role = 'user' AND u.id < a.id
                        ORDER BY u.id DESC LIMIT 1) AS question
                FROM chat_messages AS a
+               JOIN chat_conversations AS c ON c.id = a.conversation_id
                WHERE a.role = 'assistant' AND a.sql_text IS NOT NULL
-               ORDER BY a.id DESC LIMIT 300"""
+                 AND c.username = ? COLLATE NOCASE
+               ORDER BY a.id DESC LIMIT 300""",
+            (owner,),
         ).fetchall()
 
     ranked: list[tuple[int, int, dict[str, Any]]] = []
@@ -545,6 +555,7 @@ def prepare_analysis_context(
     history: list[dict[str, str]],
     now: datetime | None = None,
     admin_full_database: bool = False,
+    principal: str | None = None,
 ) -> dict[str, Any]:
     recent_context = " ".join(item.get("content", "") for item in history[-6:])
     retrieval_question = f"{recent_context}\n{question}".strip()
@@ -598,6 +609,7 @@ def prepare_analysis_context(
             if route is not None and not admin_full_database
             else None
         ),
+        principal=principal,
     )
     temporal_context = resolve_temporal_context(question, history)
     current_tehran = tehran_now(now)

@@ -57,6 +57,23 @@ def test_android_webview_requests_microphone_only_for_trusted_app_origin():
     assert "negin-native-order-voice" in activity
 
 
+def test_android_webview_bridge_and_neshan_assets_are_origin_hardened():
+    activity = open(
+        "android/SellerNavigator/app/src/main/java/ir/neginpakhsh/seller/AssistantActivity.kt",
+        encoding="utf-8",
+    ).read()
+    page = open("app/static/assistant.html", encoding="utf-8").read()
+
+    assert "setAcceptThirdPartyCookies(webView, false)" in activity
+    assert "allowFileAccess = false" in activity
+    assert "detachNativeBridge()" in activity
+    assert "attachNativeBridgeIfTrusted(url)" in activity
+    assert "expectedIsSafe && sameOrigin(origin, expected)" in activity
+    assert "callback.invoke(origin, false, false)" in activity
+    assert page.count('integrity="sha384-') == 2
+    assert page.count('crossorigin="anonymous"') == 2
+
+
 def test_android_update_blocks_app_until_download_or_install_finishes():
     activity = open(
         "android/SellerNavigator/app/src/main/java/ir/neginpakhsh/seller/AssistantActivity.kt",
@@ -67,10 +84,36 @@ def test_android_update_blocks_app_until_download_or_install_finishes():
     assert "progressBarStyleLarge" in activity
     assert "showUpdateLock" in activity
     assert "hideUpdateLock" in activity
-    assert "DownloadManager.STATUS_SUCCESSFUL" in activity
-    assert "Context.RECEIVER_EXPORTED" in activity
+    assert ".followRedirects(false)" in activity
+    assert "expectedSha256" in activity
+    assert "MessageDigest.isEqual" in activity
+    assert "verifyUpdatePackage(destination)" in activity
     assert "takeIf { it.exists() }" in activity
     assert "updateOverlay.visibility == View.VISIBLE -> Unit" in activity
+
+
+def test_android_updater_pins_origin_path_hash_and_signing_certificate():
+    activity = open(
+        "android/SellerNavigator/app/src/main/java/ir/neginpakhsh/seller/AssistantActivity.kt",
+        encoding="utf-8",
+    ).read()
+    manifest = open(
+        "android/SellerNavigator/app/src/main/AndroidManifest.xml", encoding="utf-8"
+    ).read()
+
+    assert 'const val UPDATE_DOWNLOAD_PATH = "/download/android"' in activity
+    assert "if (rawUrl != UPDATE_DOWNLOAD_PATH) return null" in activity
+    assert '!base.scheme.equals("https", ignoreCase = true)' in activity
+    assert "base.userInfo != null || base.query != null || base.fragment != null" in activity
+    assert "it.priorResponse == null" in activity
+    assert "metadataLength in 1L..MAX_UPDATE_METADATA_BYTES" in activity
+    assert 'Regex("^[0-9a-f]{64}$")' in activity
+    assert "written == length" in activity
+    assert "candidate.packageName != packageName" in activity
+    assert "signingCertificateHistory" in activity
+    assert "installedCertificates.intersect(candidateCertificates).isNotEmpty()" in activity
+    assert "androidx.core.content.FileProvider" in manifest
+    assert '${applicationId}.update-files' in manifest
 
 
 def test_android_webview_keeps_ordering_ui_above_system_navigation_and_refreshes_shell():

@@ -5,15 +5,111 @@ import hashlib
 import hmac
 import os
 import re
+import secrets
 import time
-from typing import Any, Iterable
+from typing import Any, Callable, Iterable
 
 from app.config import Settings
 from app.database import sqlite_connection
 
 SESSION_SECONDS = 8 * 60 * 60
+ACTIVATION_SECONDS = 60 * 60
 PASSWORD_HASH_ITERATIONS = 260_000
 USERNAME_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9._-]{1,99}$")
+_EPHEMERAL_SESSION_SECRET = secrets.token_bytes(48)
+
+
+def _ensure_identity_tables(conn) -> None:
+    """Install additive identity state without changing the legacy users schema."""
+    conn.executescript(
+        """
+        CREATE TABLE IF NOT EXISTS auth_session_state (
+          username TEXT PRIMARY KEY COLLATE NOCASE,
+          generation INTEGER NOT NULL DEFAULT 0,
+          updated_at TEXT NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS user_activations (
+          token_hash TEXT PRIMARY KEY,
+          username TEXT NOT NULL COLLATE NOCASE,
+          expires_at INTEGER NOT NULL,
+          used_at TEXT,
+          created_at TEXT NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_user_activations_user
+          ON user_activations(username, expires_at);
+        """
+    )
+
+
+def _session_signing_key(settings: Settings) -> bytes:
+    """Return a domain-separated session key that never uses the action API key."""
+    configured = settings.session_signing_secret.strip()
+    root = configured or settings.oauth_client_secret
+    root_bytes = root.encode("utf-8") if root else _EPHEMERAL_SESSION_SECRET
+    return hmac.new(root_bytes, b"NeginAI/session-signing/v2", hashlib.sha256).digest()
+
+
+def _session_generation(conn, username: str) -> int:
+    _ensure_identity_tables(conn)
+    row = conn.execute(
+        "SELECT generation FROM auth_session_state WHERE username=?",
+        (username,),
+    ).fetchone()
+    if row is not None:
+        return int(row["generation"])
+    now = str(time.time())
+    conn.execute(
+        "INSERT OR IGNORE INTO auth_session_state(username, generation, updated_at) VALUES (?, 0, ?)",
+        (username, now),
+    )
+    return 0
+
+
+def _revoke_user_security_state(conn, username: str, now: str | None = None) -> None:
+    """Revoke every session, OAuth grant, and activation for one identity."""
+    _ensure_identity_tables(conn)
+    changed_at = now or str(time.time())
+    conn.execute(
+        """INSERT INTO auth_session_state(username, generation, updated_at)
+           VALUES (?, 1, ?)
+           ON CONFLICT(username) DO UPDATE SET
+             generation=auth_session_state.generation + 1,
+             updated_at=excluded.updated_at""",
+        (username, changed_at),
+    )
+    conn.execute("UPDATE oauth_tokens SET revoked=1 WHERE username=?", (username,))
+    conn.execute("UPDATE oauth_codes SET used=1 WHERE username=? AND used=0", (username,))
+    conn.execute(
+        "UPDATE user_activations SET used_at=? WHERE username=? AND used_at IS NULL",
+        (changed_at, username),
+    )
+
+
+def revoke_user_sessions(settings: Settings, username: str) -> None:
+    with sqlite_connection(settings.sqlite_path) as conn:
+        _ensure_identity_tables(conn)
+        changed_at = str(time.time())
+        conn.execute(
+            """INSERT INTO auth_session_state(username, generation, updated_at)
+               VALUES (?, 1, ?)
+               ON CONFLICT(username) DO UPDATE SET
+                 generation=auth_session_state.generation + 1,
+                 updated_at=excluded.updated_at""",
+            (username, changed_at),
+        )
+
+
+def revoke_user_credentials(settings: Settings, username: str) -> None:
+    """Public seam for administrative password reset/deactivation integrations."""
+    with sqlite_connection(settings.sqlite_path) as conn:
+        _revoke_user_security_state(conn, username)
+
+
+def revoke_user_credentials_in_transaction(
+    conn: Any, username: str, *, now: str | None = None
+) -> None:
+    """Atomically revoke credentials inside an existing identity transaction."""
+    _revoke_user_security_state(conn, username, now=now)
 
 
 def hash_password(password: str, iterations: int = PASSWORD_HASH_ITERATIONS) -> str:
@@ -52,6 +148,10 @@ def upsert_user_hash(
         raise ValueError("unsupported password hash")
     now = str(time.time())
     with sqlite_connection(settings.sqlite_path) as conn:
+        existing = conn.execute(
+            "SELECT username FROM users WHERE username=?",
+            (clean_username,),
+        ).fetchone()
         conn.execute(
             """INSERT INTO users
                (username, password_hash, active, created_at, updated_at)
@@ -62,6 +162,8 @@ def upsert_user_hash(
                  updated_at=excluded.updated_at""",
             (clean_username, password_hash, int(active), now, now),
         )
+        if existing is not None:
+            _revoke_user_security_state(conn, str(existing["username"]), now)
 
 
 def create_user(settings: Settings, username: str, password: str) -> None:
@@ -71,14 +173,26 @@ def create_user(settings: Settings, username: str, password: str) -> None:
 def provision_users(
     settings: Settings,
     users: Iterable[dict[str, Any]],
-    temporary_password: str,
-) -> dict[str, int]:
-    """Atomically provision personnel accounts and force a first-login password change."""
+    temporary_password: str | None = None,
+    activation_ttl_seconds: int = ACTIVATION_SECONDS,
+    activation_sink: Callable[[dict[str, Any]], None] | None = None,
+) -> dict[str, Any]:
+    """Provision accounts with unique, hashed, short-lived activation secrets."""
     prepared = list(users)
     if not prepared:
-        return {"created": 0, "updated": 0, "claimed_existing": 0}
-    if not temporary_password:
-        raise ValueError("temporary password is required")
+        return {
+            "created": 0,
+            "updated": 0,
+            "claimed_existing": 0,
+            "activation_tokens": {},
+            "activation_expires_at": None,
+        }
+    if temporary_password is not None:
+        raise ValueError(
+            "shared temporary passwords are disabled; use one-time activation tokens"
+        )
+    if activation_ttl_seconds < 300 or activation_ttl_seconds > 24 * 60 * 60:
+        raise ValueError("activation TTL must be between 5 minutes and 24 hours")
 
     seen_usernames: set[str] = set()
     seen_personnel_ids: set[int] = set()
@@ -95,9 +209,14 @@ def provision_users(
         seen_usernames.add(key)
         seen_personnel_ids.add(personnel_id)
 
-    now = str(time.time())
+    current = int(time.time())
+    now = str(current)
+    activation_expires_at = current + activation_ttl_seconds
     counts = {"created": 0, "updated": 0, "claimed_existing": 0}
+    activation_tokens: dict[str, str] = {}
+    result: dict[str, Any]
     with sqlite_connection(settings.sqlite_path) as conn:
+        _ensure_identity_tables(conn)
         existing_rows = conn.execute(
             "SELECT username, personnel_id FROM users"
         ).fetchall()
@@ -126,7 +245,10 @@ def provision_users(
             username = str(item["username"]).strip()
             personnel_id = int(item["personnel_id"])
             existing = by_username.get(username.casefold()) or by_personnel.get(personnel_id)
-            password_hash = hash_password(temporary_password)
+            # A high-entropy, undisclosed placeholder makes password login
+            # impossible until the one-time activation has completed.
+            password_hash = hash_password(secrets.token_urlsafe(48))
+            activation_token = secrets.token_urlsafe(48)
             values = (
                 password_hash,
                 1,
@@ -167,7 +289,88 @@ def provision_users(
                        WHERE username=?""",
                     (*values, existing_username),
                 )
-    return counts
+                _revoke_user_security_state(conn, existing_username, now)
+            activation_username = (
+                str(existing["username"]) if existing is not None else username
+            )
+            conn.execute(
+                "UPDATE user_activations SET used_at=? WHERE username=? AND used_at IS NULL",
+                (now, activation_username),
+            )
+            conn.execute(
+                """INSERT INTO user_activations
+                   (token_hash, username, expires_at, used_at, created_at)
+                   VALUES (?, ?, ?, NULL, ?)""",
+                (
+                    hashlib.sha256(activation_token.encode("utf-8")).hexdigest(),
+                    activation_username,
+                    activation_expires_at,
+                    now,
+                ),
+            )
+            activation_tokens[username] = activation_token
+        result = {
+            **counts,
+            "activation_tokens": activation_tokens,
+            "activation_expires_at": activation_expires_at,
+        }
+        # The CLI persists the activation bundle before this transaction
+        # commits. A sink failure therefore rolls the credential reset back.
+        if activation_sink is not None:
+            activation_sink(result)
+    return result
+
+
+def activate_user(
+    settings: Settings,
+    activation_token: str,
+    new_password: str,
+    now: int | None = None,
+) -> str | None:
+    if len(new_password) < 8 or len(new_password) > 200:
+        raise ValueError("new password must contain 8 to 200 characters")
+    if len(activation_token) < 32 or len(activation_token) > 512:
+        return None
+    current = now or int(time.time())
+    changed_at = str(current)
+    token_hash = hashlib.sha256(activation_token.encode("utf-8")).hexdigest()
+    with sqlite_connection(settings.sqlite_path) as conn:
+        _ensure_identity_tables(conn)
+        row = conn.execute(
+            """SELECT u.username, a.expires_at, a.used_at, u.active
+               FROM user_activations a
+               JOIN users u ON u.username=a.username
+               WHERE a.token_hash=?""",
+            (token_hash,),
+        ).fetchone()
+        if (
+            row is None
+            or row["used_at"] is not None
+            or int(row["expires_at"]) < current
+            or not bool(row["active"])
+        ):
+            return None
+        consumed = conn.execute(
+            """UPDATE user_activations SET used_at=?
+               WHERE token_hash=? AND used_at IS NULL AND expires_at>=?""",
+            (changed_at, token_hash, current),
+        ).rowcount
+        if consumed != 1:
+            return None
+        username = str(row["username"])
+        conn.execute(
+            """UPDATE users SET password_hash=?, must_change_password=0, updated_at=?
+               WHERE username=? AND active=1""",
+            (hash_password(new_password), changed_at, username),
+        )
+        _revoke_user_security_state(conn, username, changed_at)
+        # Preserve the just-consumed token as consumed while invalidating all
+        # sibling activation attempts for this account.
+        conn.execute(
+            "UPDATE user_activations SET used_at=? WHERE username=? AND used_at IS NULL",
+            (changed_at, username),
+        )
+        return username
 
 
 def ensure_configured_user(settings: Settings) -> None:
@@ -241,6 +444,8 @@ def change_password(
                WHERE username=? AND active=1""",
             (hash_password(new_password), now, str(row["username"])),
         ).rowcount
+        if changed:
+            _revoke_user_security_state(conn, str(row["username"]), now)
     return bool(changed)
 
 
@@ -261,23 +466,39 @@ def authenticate_user(settings: Settings, username: str, password: str) -> str |
 
 
 def create_session(settings: Settings, username: str, now: int | None = None) -> str:
-    expires = (now or int(time.time())) + SESSION_SECONDS
-    payload = f"{username}|{expires}"
-    signature = hmac.new(settings.action_api_key.encode(), payload.encode(), hashlib.sha256).hexdigest()
+    issued_at = now or int(time.time())
+    expires = issued_at + SESSION_SECONDS
+    with sqlite_connection(settings.sqlite_path) as conn:
+        generation = _session_generation(conn, username)
+    payload = f"v2|{username}|{expires}|{generation}"
+    signature = hmac.new(
+        _session_signing_key(settings), payload.encode(), hashlib.sha256
+    ).hexdigest()
     return base64.urlsafe_b64encode(f"{payload}|{signature}".encode()).decode()
 
 
 def session_username(settings: Settings, token: str, now: int | None = None) -> str | None:
     try:
         decoded = base64.b64decode(token.encode(), altchars=b"-_", validate=True).decode()
-        username, expires_text, signature = decoded.rsplit("|", 2)
-        payload = f"{username}|{expires_text}"
-        expected = hmac.new(settings.action_api_key.encode(), payload.encode(), hashlib.sha256).hexdigest()
+        version, username, expires_text, generation_text, signature = decoded.split("|", 4)
+        if version != "v2":
+            return None
+        payload = f"{version}|{username}|{expires_text}|{generation_text}"
+        expected = hmac.new(
+            _session_signing_key(settings), payload.encode(), hashlib.sha256
+        ).hexdigest()
         valid_signature = hmac.compare_digest(signature, expected)
         valid_time = int(expires_text) >= (now or int(time.time()))
         if not (valid_signature and valid_time):
             return None
-        row = _database_user(settings, username)
+        with sqlite_connection(settings.sqlite_path) as conn:
+            generation = _session_generation(conn, username)
+            row = conn.execute(
+                "SELECT username, active FROM users WHERE username=?",
+                (username,),
+            ).fetchone()
+        if generation != int(generation_text):
+            return None
         if row is not None:
             return str(row["username"]) if row["active"] else None
         if settings.login_username and hmac.compare_digest(username, settings.login_username):

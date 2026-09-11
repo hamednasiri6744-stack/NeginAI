@@ -1,0 +1,214 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "version": "1.0.0",
+  "color": {
+    "bg": {
+      "canvas": {
+        "$value": "#090E1A",
+        "$type": "color"
+      },
+      "canvasRaised": {
+        "$value": "#0B1321",
+        "$type": "color"
+      }
+    },
+    "surface": {
+      "1": {
+        "$value": "#0E1525",
+        "$type": "color"
+      },
+      "2": {
+        "$value": "#121C2E",
+        "$type": "color"
+      },
+      "3": {
+        "$value": "#18243A",
+        "$type": "color"
+      },
+      "glass": {
+        "$value": "rgba(18,28,46,.72)",
+        "$type": "color"
+      }
+    },
+    "border": {
+      "subtle": {
+        "$value": "rgba(154,177,210,.14)",
+        "$type": "color"
+      },
+      "strong": {
+        "$value": "rgba(154,177,210,.26)",
+        "$type": "color"
+      }
+    },
+    "text": {
+      "primary": {
+        "$value": "#F4F6FA",
+        "$type": "color"
+      },
+      "secondary": {
+        "$value": "#B5C0D1",
+        "$type": "color"
+      },
+      "tertiary": {
+        "$value": "#7F8CA2",
+        "$type": "color"
+      },
+      "inverse": {
+        "$value": "#111722",
+        "$type": "color"
+      }
+    },
+    "gold": {
+      "500": {
+        "$value": "#D99712",
+        "$type": "color"
+      },
+      "400": {
+        "$value": "#E5B33D",
+        "$type": "color"
+      },
+      "300": {
+        "$value": "#F1CD72",
+        "$type": "color"
+      },
+      "muted": {
+        "$value": "rgba(217,151,18,.16)",
+        "$type": "color"
+      }
+    },
+    "semantic": {
+      "success": {
+        "$value": "#2ED47A",
+        "$type": "color"
+      },
+      "info": {
+        "$value": "#36B9E8",
+        "$type": "color"
+      },
+      "warning": {
+        "$value": "#F0B64D",
+        "$type": "color"
+      },
+      "danger": {
+        "$value": "#EF5B63",
+        "$type": "color"
+      },
+      "ai": {
+        "$value": "#6EC8FF",
+        "$type": "color"
+      }
+    }
+  },
+  "space": {
+    "4": {
+      "$value": "4px",
+      "$type": "dimension"
+    },
+    "8": {
+      "$value": "8px",
+      "$type": "dimension"
+    },
+    "12": {
+      "$value": "12px",
+      "$type": "dimension"
+    },
+    "16": {
+      "$value": "16px",
+      "$type": "dimension"
+    },
+    "20": {
+      "$value": "20px",
+      "$type": "dimension"
+    },
+    "24": {
+      "$value": "24px",
+      "$type": "dimension"
+    },
+    "32": {
+      "$value": "32px",
+      "$type": "dimension"
+    },
+    "40": {
+      "$value": "40px",
+      "$type": "dimension"
+    },
+    "48": {
+      "$value": "48px",
+      "$type": "dimension"
+    },
+    "64": {
+      "$value": "64px",
+      "$type": "dimension"
+    }
+  },
+  "radius": {
+    "6": {
+      "$value": "6px",
+      "$type": "dimension"
+    },
+    "10": {
+      "$value": "10px",
+      "$type": "dimension"
+    },
+    "14": {
+      "$value": "14px",
+      "$type": "dimension"
+    },
+    "18": {
+      "$value": "18px",
+      "$type": "dimension"
+    },
+    "22": {
+      "$value": "22px",
+      "$type": "dimension"
+    },
+    "28": {
+      "$value": "28px",
+      "$type": "dimension"
+    }
+  },
+  "size": {
+    "touchMin": {
+      "$value": "44px",
+      "$type": "dimension"
+    },
+    "input": {
+      "$value": "48px",
+      "$type": "dimension"
+    },
+    "inputLarge": {
+      "$value": "52px",
+      "$type": "dimension"
+    },
+    "buttonM": {
+      "$value": "44px",
+      "$type": "dimension"
+    },
+    "buttonL": {
+      "$value": "52px",
+      "$type": "dimension"
+    },
+    "navBottom": {
+      "$value": "68px",
+      "$type": "dimension"
+    }
+  },
+  "motion": {
+    "fast": {
+      "$value": "120ms",
+      "$type": "duration"
+    },
+    "standard": {
+      "$value": "190ms",
+      "$type": "duration"
+    },
+    "overlay": {
+      "$value": "250ms",
+      "$type": "duration"
+    },
+    "major": {
+      "$value": "320ms",
+      "$type": "duration"
+    }
+  }
+}

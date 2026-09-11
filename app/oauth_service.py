@@ -21,15 +21,34 @@ def _hash_secret(value: str) -> str:
 
 
 def _pkce_matches(verifier: str, challenge: str, method: str | None) -> bool:
-    if not challenge:
-        return True
-    if method in (None, "plain"):
-        return hmac.compare_digest(verifier, challenge)
-    if method == "S256":
+    if method != "S256" or len(verifier) < 43 or len(verifier) > 128:
+        return False
+    try:
         digest = hashlib.sha256(verifier.encode("ascii")).digest()
-        actual = base64.urlsafe_b64encode(digest).rstrip(b"=").decode("ascii")
-        return hmac.compare_digest(actual, challenge)
-    return False
+    except UnicodeEncodeError:
+        return False
+    actual = base64.urlsafe_b64encode(digest).rstrip(b"=").decode("ascii")
+    return hmac.compare_digest(actual, challenge)
+
+
+def _active_username(conn, settings: Settings, username: str) -> str | None:
+    row = conn.execute(
+        "SELECT username, active FROM users WHERE username=?",
+        (username,),
+    ).fetchone()
+    if row is not None:
+        return str(row["username"]) if bool(row["active"]) else None
+    # The configured bootstrap identity is inserted into users during normal
+    # startup. Preserve direct service/test compatibility without ever treating
+    # an existing inactive database identity as active.
+    if settings.login_username and hmac.compare_digest(username, settings.login_username):
+        return settings.login_username
+    return None
+
+
+def _revoke_identity_grants(conn, username: str) -> None:
+    conn.execute("UPDATE oauth_tokens SET revoked=1 WHERE username=?", (username,))
+    conn.execute("UPDATE oauth_codes SET used=1 WHERE username=? AND used=0", (username,))
 
 
 def create_authorization_code(
@@ -42,16 +61,36 @@ def create_authorization_code(
     code_challenge_method: str | None = None,
     now: int | None = None,
 ) -> str:
+    if not any(
+        secrets.compare_digest(redirect_uri, configured)
+        for configured in settings.oauth_redirect_uris
+    ):
+        raise ValueError("OAuth redirect URI is not registered")
+    challenge = code_challenge or ""
+    if (
+        code_challenge_method != "S256"
+        or len(challenge) != 43
+        or any(
+            character
+            not in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+            for character in challenge
+        )
+    ):
+        raise ValueError("OAuth authorization codes require S256 PKCE")
     code = secrets.token_urlsafe(48)
     expires_at = (now or int(time.time())) + AUTH_CODE_SECONDS
     with sqlite_connection(settings.sqlite_path) as conn:
+        active_username = _active_username(conn, settings, username)
+        if active_username is None:
+            _revoke_identity_grants(conn, username)
+            raise ValueError("active user is required")
         conn.execute(
             """INSERT INTO oauth_codes
                (code_hash, username, client_id, redirect_uri, scope, code_challenge,
                 code_challenge_method, expires_at, used)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)""",
             (
-                _hash_secret(code), username, client_id, redirect_uri, scope,
+                _hash_secret(code), active_username, client_id, redirect_uri, scope,
                 code_challenge, code_challenge_method, expires_at,
             ),
         )
@@ -104,13 +143,17 @@ def exchange_authorization_code(
             return None
         if not _pkce_matches(code_verifier, row["code_challenge"] or "", row["code_challenge_method"]):
             return None
+        active_username = _active_username(conn, settings, str(row["username"]))
+        if active_username is None:
+            _revoke_identity_grants(conn, str(row["username"]))
+            return None
         updated = conn.execute(
             "UPDATE oauth_codes SET used=1 WHERE code_hash=? AND used=0",
             (_hash_secret(code),),
         )
         if updated.rowcount != 1:
             return None
-        return _issue_token_pair(conn, row["username"], row["scope"], current)
+        return _issue_token_pair(conn, active_username, row["scope"], current)
 
 
 def exchange_refresh_token(
@@ -125,11 +168,15 @@ def exchange_refresh_token(
         ).fetchone()
         if not row or row["revoked"] or row["expires_at"] < current:
             return None
+        active_username = _active_username(conn, settings, str(row["username"]))
+        if active_username is None:
+            _revoke_identity_grants(conn, str(row["username"]))
+            return None
         conn.execute(
             "UPDATE oauth_tokens SET revoked=1 WHERE token_hash=?",
             (_hash_secret(refresh_token),),
         )
-        return _issue_token_pair(conn, row["username"], row["scope"], current)
+        return _issue_token_pair(conn, active_username, row["scope"], current)
 
 
 def verify_access_token(settings: Settings, token: str, now: int | None = None) -> str | None:
@@ -140,6 +187,10 @@ def verify_access_token(settings: Settings, token: str, now: int | None = None) 
                WHERE token_hash=? AND token_type='access'""",
             (_hash_secret(token),),
         ).fetchone()
-    if not row or row["revoked"] or row["expires_at"] < current:
-        return None
-    return str(row["username"])
+        if not row or row["revoked"] or row["expires_at"] < current:
+            return None
+        active_username = _active_username(conn, settings, str(row["username"]))
+        if active_username is None:
+            _revoke_identity_grants(conn, str(row["username"]))
+            return None
+        return active_username

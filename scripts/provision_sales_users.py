@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 import sys
 from collections import Counter
 from pathlib import Path
@@ -28,7 +29,6 @@ INPUT_CSV = (
 )
 OUTPUT_CSV = INPUT_CSV.with_name("sales_user_accounts_1405-05-19.csv")
 OUTPUT_METADATA = INPUT_CSV.with_name("sales_user_accounts_1405-05-19.json")
-TEMPORARY_PASSWORD = "1"
 
 
 def load_assignments() -> list[dict[str, str]]:
@@ -80,7 +80,6 @@ def prepare_users(assignments: list[dict[str, str]]) -> list[dict[str, object]]:
         prepared.append(
             {
                 "username": usernames[personnel_id],
-                "temporary_password": TEMPORARY_PASSWORD,
                 "personnel_id": personnel_id,
                 "full_name": row["نام"].strip(),
                 "first_name": names[personnel_id]["first_name"],
@@ -134,6 +133,9 @@ def write_account_list(
         "سرپرست",
         "وضعیت ایجاد",
     ]
+    # Never persist a password or activation secret in the review CSV.
+    fields.pop(6)
+    fields[6] = "One-time activation required"
     with OUTPUT_CSV.open("w", encoding="utf-8-sig", newline="") as handle:
         writer = csv.writer(handle)
         writer.writerow(fields)
@@ -153,7 +155,6 @@ def write_account_list(
                     user["last_name"],
                     user["role"],
                     user["username"],
-                    user["temporary_password"],
                     "بله",
                     user["phone"],
                     user["phone_status"],
@@ -166,6 +167,29 @@ def write_account_list(
             )
 
 
+def write_activation_bundle(path: Path, provision_result: dict[str, object]) -> None:
+    """Persist one-time activation secrets only to an explicit new JSON file."""
+    if path.suffix.lower() != ".json":
+        raise ValueError("activation output must be a .json file")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+            json.dump(
+                {
+                    "expires_at": provision_result["activation_expires_at"],
+                    "one_time_activation_tokens": provision_result["activation_tokens"],
+                },
+                handle,
+                ensure_ascii=False,
+                indent=2,
+            )
+            handle.write("\n")
+    except Exception:
+        path.unlink(missing_ok=True)
+        raise
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -173,7 +197,19 @@ def main() -> None:
         action="store_true",
         help="Create/update accounts. Without this flag only the reviewed list is written.",
     )
+    parser.add_argument(
+        "--activation-output",
+        type=Path,
+        help=(
+            "Required with --apply. New JSON file for unique one-time activation "
+            "tokens; distribute securely and delete after activation."
+        ),
+    )
     args = parser.parse_args()
+    if args.apply and args.activation_output is None:
+        parser.error("--activation-output is required with --apply")
+    if not args.apply and args.activation_output is not None:
+        parser.error("--activation-output is only valid with --apply")
 
     assignments = load_assignments()
     users = prepare_users(assignments)
@@ -200,8 +236,13 @@ def main() -> None:
 
     provision_result = None
     if args.apply:
+        activation_path = args.activation_output.resolve()
         provision_result = provision_users(
-            get_settings(), users, temporary_password=TEMPORARY_PASSWORD
+            get_settings(),
+            users,
+            activation_sink=lambda result: write_activation_bundle(
+                activation_path, result
+            ),
         )
 
     metadata = {
@@ -223,7 +264,18 @@ def main() -> None:
             str(user["username"]).casefold() in existing for user in users
         ),
         "applied": args.apply,
-        "provision_result": provision_result,
+        "provision_result": (
+            {
+                key: value
+                for key, value in provision_result.items()
+                if key != "activation_tokens"
+            }
+            if provision_result is not None
+            else None
+        ),
+        "activation_output": (
+            str(args.activation_output.resolve()) if args.activation_output else None
+        ),
         "sample_aref_kamran": next(
             (
                 user["username"]

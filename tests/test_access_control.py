@@ -37,7 +37,6 @@ def _seller(settings) -> None:
                 "supervisor_personnel_id": 14,
             }
         ],
-        temporary_password="1",
     )
 
 

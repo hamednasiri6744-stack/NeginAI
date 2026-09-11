@@ -1,0 +1,134 @@
+:root {
+  color-scheme: dark;
+
+  /* NDL-1.0 primitive color tokens */
+  --ndl-navy-950: #050914;
+  --ndl-navy-900: #090e1a;
+  --ndl-navy-850: #0b1321;
+  --ndl-navy-800: #0e1525;
+  --ndl-navy-700: #121c2e;
+  --ndl-navy-600: #18243a;
+  --ndl-slate-500: #7f8ca2;
+  --ndl-slate-300: #b5c0d1;
+  --ndl-slate-50: #f4f6fa;
+  --ndl-gold-700: #a86f08;
+  --ndl-gold-500: #d99712;
+  --ndl-gold-400: #e5b33d;
+  --ndl-gold-300: #f1cd72;
+  --ndl-cyan-500: #36b9e8;
+  --ndl-blue-500: #4f8ff7;
+  --ndl-emerald-500: #2ed47a;
+  --ndl-amber-500: #f0b64d;
+  --ndl-red-500: #ef5b63;
+
+  /* Semantic color tokens */
+  --ndl-color-canvas: var(--ndl-navy-900);
+  --ndl-color-canvas-raised: var(--ndl-navy-850);
+  --ndl-color-surface-1: var(--ndl-navy-800);
+  --ndl-color-surface-2: var(--ndl-navy-700);
+  --ndl-color-surface-3: var(--ndl-navy-600);
+  --ndl-color-surface-glass: rgb(18 28 46 / 72%);
+  --ndl-color-surface-glass-strong: rgb(14 21 37 / 88%);
+  --ndl-color-text: var(--ndl-slate-50);
+  --ndl-color-text-secondary: var(--ndl-slate-300);
+  --ndl-color-text-tertiary: var(--ndl-slate-500);
+  --ndl-color-text-inverse: #111722;
+  --ndl-color-action: var(--ndl-gold-500);
+  --ndl-color-action-hover: var(--ndl-gold-400);
+  --ndl-color-action-soft: rgb(217 151 18 / 16%);
+  --ndl-color-focus: var(--ndl-gold-300);
+  --ndl-color-info: var(--ndl-cyan-500);
+  --ndl-color-success: var(--ndl-emerald-500);
+  --ndl-color-warning: var(--ndl-amber-500);
+  --ndl-color-danger: var(--ndl-red-500);
+  --ndl-color-disabled: rgb(127 140 162 / 42%);
+
+  /* Typography */
+  --ndl-font-sans: Vazirmatn, Tahoma, Arial, sans-serif;
+  --ndl-font-size-100: 0.6875rem;
+  --ndl-font-size-200: 0.75rem;
+  --ndl-font-size-300: 0.8125rem;
+  --ndl-font-size-400: 0.875rem;
+  --ndl-font-size-500: 1rem;
+  --ndl-font-size-600: 1.125rem;
+  --ndl-font-size-700: 1.375rem;
+  --ndl-font-size-800: 1.625rem;
+  --ndl-font-size-900: 2rem;
+  --ndl-line-tight: 1.35;
+  --ndl-line-normal: 1.7;
+  --ndl-line-relaxed: 1.9;
+  --ndl-weight-regular: 400;
+  --ndl-weight-medium: 500;
+  --ndl-weight-semibold: 600;
+  --ndl-weight-bold: 700;
+  --ndl-weight-extrabold: 800;
+
+  /* Spacing and sizing */
+  --ndl-space-0: 0;
+  --ndl-space-1: 0.25rem;
+  --ndl-space-2: 0.5rem;
+  --ndl-space-3: 0.75rem;
+  --ndl-space-4: 1rem;
+  --ndl-space-5: 1.25rem;
+  --ndl-space-6: 1.5rem;
+  --ndl-space-8: 2rem;
+  --ndl-space-10: 2.5rem;
+  --ndl-space-12: 3rem;
+  --ndl-space-16: 4rem;
+  --ndl-size-touch: 2.75rem;
+  --ndl-size-control: 3rem;
+  --ndl-size-control-lg: 3.25rem;
+
+  /* Radius, border, elevation and blur */
+  --ndl-radius-1: 0.375rem;
+  --ndl-radius-2: 0.625rem;
+  --ndl-radius-3: 0.875rem;
+  --ndl-radius-4: 1.125rem;
+  --ndl-radius-5: 1.375rem;
+  --ndl-radius-6: 1.75rem;
+  --ndl-radius-pill: 999rem;
+  --ndl-border-width: 1px;
+  --ndl-border-subtle: 1px solid rgb(154 177 210 / 14%);
+  --ndl-border-strong: 1px solid rgb(154 177 210 / 26%);
+  --ndl-border-premium: 1px solid rgb(217 151 18 / 34%);
+  --ndl-elevation-0: none;
+  --ndl-elevation-1: 0 0.25rem 0.875rem rgb(0 0 0 / 18%);
+  --ndl-elevation-2: 0 0.625rem 1.75rem rgb(0 0 0 / 26%);
+  --ndl-elevation-3: 0 1rem 2.75rem rgb(0 0 0 / 32%);
+  --ndl-elevation-focus: 0 0 0 1px rgb(217 151 18 / 50%), 0 0 1.25rem rgb(217 151 18 / 12%);
+  --ndl-blur-1: 0.5rem;
+  --ndl-blur-2: 0.75rem;
+  --ndl-blur-3: 0.875rem;
+
+  /* Motion */
+  --ndl-motion-instant: 80ms;
+  --ndl-motion-fast: 120ms;
+  --ndl-motion-standard: 190ms;
+  --ndl-motion-overlay: 250ms;
+  --ndl-motion-major: 320ms;
+  --ndl-ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ndl-ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Layering and layout */
+  --ndl-z-base: 0;
+  --ndl-z-sticky: 100;
+  --ndl-z-navigation: 200;
+  --ndl-z-overlay: 400;
+  --ndl-z-toast: 500;
+  --ndl-layout-compact: 30rem;
+  --ndl-layout-content: 80rem;
+  --ndl-layout-wide: 96rem;
+  --ndl-layout-gutter: clamp(1rem, 2.5vw, 2rem);
+  --ndl-layout-header: 4rem;
+  --ndl-layout-bottom-nav: 4.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ndl-motion-instant: 0ms;
+    --ndl-motion-fast: 0ms;
+    --ndl-motion-standard: 0ms;
+    --ndl-motion-overlay: 0ms;
+    --ndl-motion-major: 0ms;
+  }
+}

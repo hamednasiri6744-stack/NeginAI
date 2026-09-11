@@ -5,6 +5,24 @@ def test_assistant_ui_has_camera_files_excel_and_right_sidebar(client):
 
     assert 'assistant.css?v=106' in page
     assert 'assistant.js?v=213' in page
+    assert 'id="sidebarResizeHandle"' in page
+    assert '<button class="assistant-title"' not in page
+    assert '<div class="assistant-title">' in page
+    assert ".assistant-title:hover" not in styles
+    assert 'role="separator"' in page
+    assert '--sidebar-width:280px' in styles
+    assert '.sidebar-resize-handle{position:absolute' in styles
+    assert '.sidebar-resize-handle{display:none}' in styles
+    assert "SIDEBAR_WIDTH_STORAGE_KEY = 'negin-sidebar-width'" in script
+    assert 'function initializeSidebarResize()' in script
+    assert "handle.addEventListener('pointerdown'" in script
+    assert "handle.addEventListener('pointermove'" in script
+    assert "handle.addEventListener('pointercancel'" in script
+    assert "handle.addEventListener('dblclick'" in script
+    assert "event.key === 'ArrowLeft'" in script
+    assert "event.key === 'ArrowRight'" in script
+    assert "event.key === 'Home'" in script
+    assert "event.key === 'End'" in script
     assert 'id="previsitOrderCommand"' not in page  # The order UI is rendered only after a visit starts.
     assert "function runPrevisitOrderCommand" in script
     assert "runPrevisitOrderCommand({source: 'voice'})" in script

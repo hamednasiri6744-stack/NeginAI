@@ -27,12 +27,19 @@ ENV_DEFAULTS = {
     "SQL_PASSWORD": "",
     "SQL_DRIVER": "ODBC Driver 18 for SQL Server",
     "SQL_CLIENT": "odbc",
-    "SQL_TRUST_CERTIFICATE": "true",
+    # Enterprise deployments must validate the SQL Server certificate and
+    # hostname. Development can opt in to a local bypass explicitly.
+    "SQL_TRUST_CERTIFICATE": "false",
     "SQL_QUERY_TIMEOUT": "30",
     "SQL_MAX_ROWS": "1000",
     # Allows the development server to use an isolated local state database
     # while the pilot process keeps its existing database unchanged.
     "NEGINAI_SQLITE_PATH": "",
+    "NEGINAI_ENVIRONMENT": "development",
+    "NEGIN_ENTERPRISE_DATABASE_URL": "",
+    "NEGIN_REDIS_URL": "",
+    "NEGIN_COMMAND_OUTBOX_ENABLED": "false",
+    "NEGIN_OTEL_EXPORTER_OTLP_ENDPOINT": "",
     "ENTITY_SYNC_INTERVAL": "300",
     "SCHEMA_SYNC_INTERVAL": "3600",
     "OPENAI_MODEL": "gpt-5.6-sol",
@@ -59,6 +66,12 @@ ENV_DEFAULTS = {
     "ADMIN_OPENAI_HISTORY_LIMIT": "40",
     "ADMIN_OPENAI_MAX_TOKENS": "6000",
     "NEGIN_OAUTH_CLIENT_ID": "neginai-chatgpt",
+    # OAuth callbacks are exact-match only. These two URLs preserve the
+    # currently configured ChatGPT GPT callback on both official hosts.
+    "NEGIN_OAUTH_REDIRECT_URIS": (
+        "https://chatgpt.com/aip/g-4554e122eda78292cad88bc29ae5cf3b7cdbb3b2/oauth/callback,"
+        "https://oauth.openai.com/aip/g-4554e122eda78292cad88bc29ae5cf3b7cdbb3b2/oauth/callback"
+    ),
     "VAPID_SUBJECT": "mailto:admin@neginpakhsh.com",
     "PUSH_NOTIFICATION_URL": "/assistant",
     "CHATGPT_GPT_URL": "https://chatgpt.com/g/g-4554e122eda78292cad88bc29ae5cf3b7cdbb3b2-hwsh-msnw-y-ngyn-pkhsh",
@@ -114,6 +127,11 @@ def ensure_action_api_key(env_path: Path = ENV_PATH) -> None:
         oauth_secret = secrets.token_urlsafe(48)
         additions += f"NEGIN_OAUTH_CLIENT_SECRET={oauth_secret}\n"
         os.environ["NEGIN_OAUTH_CLIENT_SECRET"] = oauth_secret
+    session_secret = os.getenv("NEGIN_SESSION_SIGNING_SECRET", "").strip()
+    if not session_secret:
+        session_secret = secrets.token_urlsafe(48)
+        additions += f"NEGIN_SESSION_SIGNING_SECRET={session_secret}\n"
+        os.environ["NEGIN_SESSION_SIGNING_SECRET"] = session_secret
     if additions:
         env_path.write_text(existing + additions, encoding="utf-8")
 
@@ -130,6 +148,11 @@ class Settings:
     sql_max_rows: int
     action_api_key: str
     sqlite_path: Path
+    deployment_environment: str = "development"
+    enterprise_database_url: str = ""
+    redis_url: str = ""
+    command_outbox_enabled: bool = False
+    otel_exporter_otlp_endpoint: str = ""
     sql_client: str = "odbc"
     entity_sync_interval: int = 300
     schema_sync_interval: int = 3600
@@ -157,6 +180,8 @@ class Settings:
     login_password_hash: str = ""
     oauth_client_id: str = "neginai-chatgpt"
     oauth_client_secret: str = ""
+    oauth_redirect_uris: tuple[str, ...] = ()
+    session_signing_secret: str = ""
     vapid_private_key_path: Path | None = None
     vapid_subject: str = "mailto:admin@neginpakhsh.com"
     push_notification_url: str = "/assistant"
@@ -186,7 +211,7 @@ class Settings:
     varanegar_order_sql_password: str = ""
     varanegar_order_sql_driver: str = "ODBC Driver 18 for SQL Server"
     varanegar_order_sql_client: str = "odbc"
-    varanegar_order_sql_trust_certificate: bool = True
+    varanegar_order_sql_trust_certificate: bool = False
     varanegar_order_procedure: str = "NeginAI.usp_SubmitValidatedOrder"
     varanegar_order_system_username: str = "VnAdmin"
 
@@ -202,6 +227,42 @@ class Settings:
             and self.varanegar_order_sql_password
         )
 
+
+def validate_transport_security(settings: Settings) -> None:
+    """Fail closed when a production SQL connection skips certificate checks."""
+    if settings.command_outbox_enabled and not settings.enterprise_database_url:
+        raise RuntimeError(
+            "The durable command outbox requires NEGIN_ENTERPRISE_DATABASE_URL"
+        )
+    if settings.command_outbox_enabled and not settings.redis_url:
+        raise RuntimeError("Replica-safe enterprise mode requires NEGIN_REDIS_URL")
+    environment = settings.deployment_environment.casefold()
+    local_development = environment in {"development", "dev", "test", "local"}
+    enterprise_runtime = bool(
+        settings.enterprise_database_url
+        or settings.command_outbox_enabled
+        or not local_development
+    )
+    if enterprise_runtime and not settings.redis_url:
+        raise RuntimeError(
+            "Enterprise authentication rate limiting requires NEGIN_REDIS_URL"
+        )
+    if environment not in {"production", "prod"}:
+        return
+    insecure_connections: list[str] = []
+    if settings.sql_configured and settings.sql_trust_certificate:
+        insecure_connections.append("reporting SQL Server")
+    if (
+        settings.varanegar_order_sql_configured
+        and settings.varanegar_order_sql_trust_certificate
+    ):
+        insecure_connections.append("Varanegar order SQL Server")
+    if insecure_connections:
+        joined = ", ".join(insecure_connections)
+        raise RuntimeError(
+            "Production requires certificate and hostname validation for: " + joined
+        )
+
 def get_settings() -> Settings:
     load_dotenv(ENV_PATH, override=False)
     sqlite_path_override = os.getenv("NEGINAI_SQLITE_PATH", "").strip()
@@ -211,7 +272,7 @@ def get_settings() -> Settings:
         sql_username=os.getenv("SQL_USERNAME", "").strip(),
         sql_password=os.getenv("SQL_PASSWORD", ""),
         sql_driver=os.getenv("SQL_DRIVER", "ODBC Driver 18 for SQL Server").strip(),
-        sql_trust_certificate=_as_bool(os.getenv("SQL_TRUST_CERTIFICATE"), True),
+        sql_trust_certificate=_as_bool(os.getenv("SQL_TRUST_CERTIFICATE"), False),
         sql_query_timeout=max(1, int(os.getenv("SQL_QUERY_TIMEOUT", "30"))),
         sql_max_rows=max(1, int(os.getenv("SQL_MAX_ROWS", "1000"))),
         action_api_key=os.getenv("NEGIN_ACTION_API_KEY", "").strip(),
@@ -220,6 +281,16 @@ def get_settings() -> Settings:
             if sqlite_path_override
             else ROOT_DIR / "data" / "neginai.db"
         ),
+        deployment_environment=(
+            os.getenv("NEGINAI_ENVIRONMENT", "development").strip().lower()
+            or "development"
+        ),
+        enterprise_database_url=os.getenv("NEGIN_ENTERPRISE_DATABASE_URL", "").strip(),
+        redis_url=os.getenv("NEGIN_REDIS_URL", "").strip(),
+        command_outbox_enabled=_as_bool(os.getenv("NEGIN_COMMAND_OUTBOX_ENABLED"), False),
+        otel_exporter_otlp_endpoint=os.getenv(
+            "NEGIN_OTEL_EXPORTER_OTLP_ENDPOINT", ""
+        ).strip(),
         sql_client=(os.getenv("SQL_CLIENT", "odbc").strip().lower() or "odbc"),
         entity_sync_interval=max(30, int(os.getenv("ENTITY_SYNC_INTERVAL", "300"))),
         schema_sync_interval=max(300, int(os.getenv("SCHEMA_SYNC_INTERVAL", "3600"))),
@@ -283,6 +354,15 @@ def get_settings() -> Settings:
             or "neginai-chatgpt"
         ),
         oauth_client_secret=os.getenv("NEGIN_OAUTH_CLIENT_SECRET", "").strip(),
+        oauth_redirect_uris=tuple(
+            uri.strip()
+            for uri in os.getenv(
+                "NEGIN_OAUTH_REDIRECT_URIS",
+                ENV_DEFAULTS["NEGIN_OAUTH_REDIRECT_URIS"],
+            ).split(",")
+            if uri.strip()
+        ),
+        session_signing_secret=os.getenv("NEGIN_SESSION_SIGNING_SECRET", "").strip(),
         vapid_private_key_path=Path(
             os.getenv("VAPID_PRIVATE_KEY_PATH", str(ROOT_DIR / "data" / "vapid_private.pem"))
         ),
@@ -362,7 +442,7 @@ def get_settings() -> Settings:
             os.getenv("VARANEGAR_ORDER_SQL_CLIENT", "odbc").strip().lower() or "odbc"
         ),
         varanegar_order_sql_trust_certificate=_as_bool(
-            os.getenv("VARANEGAR_ORDER_SQL_TRUST_CERTIFICATE"), True
+            os.getenv("VARANEGAR_ORDER_SQL_TRUST_CERTIFICATE"), False
         ),
         varanegar_order_procedure=(
             os.getenv("VARANEGAR_ORDER_PROCEDURE", "NeginAI.usp_SubmitValidatedOrder").strip()

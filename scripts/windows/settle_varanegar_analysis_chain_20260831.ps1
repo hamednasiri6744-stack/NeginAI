@@ -12,6 +12,9 @@ $CheckpointBuilder = Join-Path $RepoRoot 'scripts\windows\build_varanegar_24h_co
 $CheckpointOutput = Join-Path $Analysis 'varanegar_24h_continuation_consolidated_checkpoint_20260829.json'
 $OfficialRunner = Join-Path $RepoRoot 'scripts\windows\run_varanegar_25h_final_tests.py'
 $OfficialResult = Join-Path $Analysis 'varanegar_25h_final_test_result_20260829.json'
+$Final15Result = Join-Path $Analysis 'varanegar_15h_final_test_result_20260829.json'
+$RecoverySeedBuilder = Join-Path $RepoRoot 'scripts\windows\build_varanegar_test_evidence_recovery_seed_20260831.py'
+$RecoverySeedMarker = Join-Path $Analysis 'varanegar_test_evidence_recovery_seed_20260831.json'
 
 if (-not (Test-Path -LiteralPath $Python)) {
     throw "Python virtual environment not found: $Python"
@@ -144,11 +147,52 @@ try {
         return [pscustomobject]@{ BaseBuilderCount = $BaseCount; PostBuilderCount = $PostCount }
     }
 
+    if (-not $SkipOfficialTests) {
+        $ExistingOfficial = Get-Content -LiteralPath $OfficialResult -Raw -Encoding utf8 | ConvertFrom-Json
+        $Existing15 = Get-Content -LiteralPath $Final15Result -Raw -Encoding utf8 | ConvertFrom-Json
+        $OfficialNeedsRecovery = (
+            $ExistingOfficial.validation -ne 'PASS' -or
+            $ExistingOfficial.runner.exit_code -ne 0 -or
+            $null -ne $ExistingOfficial.recovery_seed -or
+            $Existing15.validation -ne 'PASS' -or
+            $Existing15.runner.exit_code -ne 0 -or
+            $null -ne $Existing15.recovery_seed
+        )
+        if (-not $OfficialNeedsRecovery) {
+            foreach ($Entry in @($ExistingOfficial.test_manifest) + @($Existing15.test_manifest)) {
+                $ManifestPath = Join-Path $RepoRoot $Entry.path
+                if (
+                    -not (Test-Path -LiteralPath $ManifestPath -PathType Leaf) -or
+                    (Get-Item -LiteralPath $ManifestPath).Length -ne $Entry.size_bytes -or
+                    (Get-FileHash -LiteralPath $ManifestPath -Algorithm SHA256).Hash.ToLowerInvariant() -ne $Entry.sha256
+                ) {
+                    $OfficialNeedsRecovery = $true
+                    break
+                }
+            }
+        }
+        if ($OfficialNeedsRecovery) {
+            $RecoveryLog = & $Python $RecoverySeedBuilder --output $OfficialResult 2>&1
+            if ($LASTEXITCODE -ne 0) {
+                $RecoveryLog
+                throw 'Unable to create the explicit historical recovery seed.'
+            }
+            $Recovery15Log = & $Python $RecoverySeedBuilder --output $Final15Result --artifact-name varanegar_15h_final_test_result_20260829 2>&1
+            if ($LASTEXITCODE -ne 0) {
+                $Recovery15Log
+                throw 'Unable to create the explicit 15h historical recovery seed.'
+            }
+        }
+    }
+
     $First = Invoke-SettlementPass
     $Official = $null
     $Second = $null
     if (-not $SkipOfficialTests) {
-        $RunnerLog = & $Python $OfficialRunner --output $OfficialResult 2>&1
+        if (Test-Path -LiteralPath $RecoverySeedMarker -PathType Leaf) {
+            Remove-Item -LiteralPath $RecoverySeedMarker -Force
+        }
+        $RunnerLog = & $Python $OfficialRunner --output $OfficialResult --mirror-output $Final15Result 2>&1
         if ($LASTEXITCODE -ne 0) {
             $RunnerLog
             throw 'Official Varanegar test runner failed.'

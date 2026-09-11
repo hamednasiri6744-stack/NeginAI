@@ -46,6 +46,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -56,7 +57,9 @@ import okhttp3.Request
 import okhttp3.Response
 import org.json.JSONObject
 import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
+import java.security.MessageDigest
 import java.util.Locale
 
 /**
@@ -79,10 +82,8 @@ class AssistantActivity : ComponentActivity() {
     private var microphoneRequest: PermissionRequest? = null
     private var fullscreenView: View? = null
     private var fullscreenCallback: WebChromeClient.CustomViewCallback? = null
-    private var updateDownloadId = -1L
     private var pendingUpdateUri: Uri? = null
     private var updateCheckInProgress = false
-    private var updateReceiverRegistered = false
     private var waitingForUpdateSettings = false
     private var waitingForUpdateInstaller = false
     @Volatile private var orderVoiceRecorder: MediaRecorder? = null
@@ -91,6 +92,8 @@ class AssistantActivity : ComponentActivity() {
     private var printWebView: WebView? = null
     @Volatile private var navigationTtsReady = false
     private var navigationLocationReceiverRegistered = false
+    private val androidUpdateBridge by lazy { AndroidUpdateBridge() }
+    private var nativeBridgeAttached = false
 
     private val navigationLocationReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -117,42 +120,10 @@ class AssistantActivity : ComponentActivity() {
         }
     }
 
-    private val httpClient = OkHttpClient()
-    private val updateReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action != DownloadManager.ACTION_DOWNLOAD_COMPLETE) return
-            val completedId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1L)
-            if (completedId != updateDownloadId) return
-            val manager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-            val successful = manager.query(
-                DownloadManager.Query().setFilterById(completedId)
-            ).use { cursor ->
-                if (!cursor.moveToFirst()) false
-                else cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS)) ==
-                    DownloadManager.STATUS_SUCCESSFUL
-            }
-            if (!successful) {
-                updateDownloadId = -1L
-                hideUpdateLock()
-                Toast.makeText(
-                    this@AssistantActivity,
-                    "دانلود به‌روزرسانی کامل نشد؛ دوباره تلاش کنید.",
-                    Toast.LENGTH_LONG
-                ).show()
-                return
-            }
-            val uri = manager.getUriForDownloadedFile(completedId)
-            if (uri == null) {
-                updateDownloadId = -1L
-                hideUpdateLock()
-                Toast.makeText(this@AssistantActivity, "فایل به‌روزرسانی پیدا نشد.", Toast.LENGTH_LONG).show()
-                return
-            }
-            updateDownloadId = -1L
-            showUpdateLock("دانلود کامل شد؛ در حال بازکردن نصب…")
-            installUpdate(uri)
-        }
-    }
+    private val httpClient = OkHttpClient.Builder()
+        .followRedirects(false)
+        .followSslRedirects(false)
+        .build()
 
     private val fileChooser = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         uploadCallback?.onReceiveValue(
@@ -201,7 +172,6 @@ class AssistantActivity : ComponentActivity() {
         configureWebView()
         refreshWebShellForInstalledVersion()
         configureBackNavigation()
-        registerUpdateReceiver()
         registerNavigationLocationReceiver()
 
         webView.loadUrl(BuildConfig.ASSISTANT_URL)
@@ -365,7 +335,7 @@ class AssistantActivity : ComponentActivity() {
     private fun configureWebView() {
         CookieManager.getInstance().apply {
             setAcceptCookie(true)
-            setAcceptThirdPartyCookies(webView, true)
+            setAcceptThirdPartyCookies(webView, false)
         }
 
         webView.settings.apply {
@@ -378,21 +348,23 @@ class AssistantActivity : ComponentActivity() {
             builtInZoomControls = false
             displayZoomControls = false
             allowFileAccess = false
+            // Required for user-selected document/image uploads from Android's picker.
             allowContentAccess = true
             mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
+            safeBrowsingEnabled = true
             mediaPlaybackRequiresUserGesture = false
             userAgentString = "$userAgentString NeginSellerAndroid/${BuildConfig.VERSION_NAME}"
         }
-        webView.addJavascriptInterface(AndroidUpdateBridge(), "NeginAndroid")
-
         webView.webViewClient = object : WebViewClient() {
             override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
+                detachNativeBridge()
                 errorPanel.visibility = View.GONE
                 progress.visibility = View.VISIBLE
             }
 
             override fun onPageFinished(view: WebView, url: String) {
                 progress.visibility = View.GONE
+                attachNativeBridgeIfTrusted(url)
                 CookieManager.getInstance().flush()
             }
 
@@ -412,14 +384,7 @@ class AssistantActivity : ComponentActivity() {
                 request: WebResourceRequest
             ): Boolean {
                 val uri = request.url
-                if (uri.scheme == "http" || uri.scheme == "https") {
-                    val host = uri.host.orEmpty().lowercase()
-                    if (
-                        host == "ai.neginpakhsh.com" ||
-                        host == "10.0.2.2" ||
-                        host == "127.0.0.1"
-                    ) return false
-                }
+                if (isTrustedWebOrigin(uri)) return false
                 return openExternal(uri)
             }
         }
@@ -483,6 +448,11 @@ class AssistantActivity : ComponentActivity() {
                 origin: String,
                 callback: GeolocationPermissions.Callback
             ) {
+                val originUri = runCatching { Uri.parse(origin) }.getOrNull()
+                if (originUri == null || !isTrustedWebOrigin(originUri)) {
+                    callback.invoke(origin, false, false)
+                    return
+                }
                 if (
                     ContextCompat.checkSelfPermission(
                         this@AssistantActivity,
@@ -693,20 +663,6 @@ class AssistantActivity : ComponentActivity() {
         }
     }
 
-    private fun registerUpdateReceiver() {
-        if (updateReceiverRegistered) return
-        val filter = IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            // DownloadManager is a system component outside this app. Android 13+
-            // requires an exported dynamic receiver for its completion broadcast.
-            registerReceiver(updateReceiver, filter, Context.RECEIVER_EXPORTED)
-        } else {
-            @Suppress("DEPRECATION")
-            registerReceiver(updateReceiver, filter)
-        }
-        updateReceiverRegistered = true
-    }
-
     private fun registerNavigationLocationReceiver() {
         if (navigationLocationReceiverRegistered) return
         val filter = IntentFilter(NavigationLocationService.ACTION_LOCATION)
@@ -740,7 +696,12 @@ class AssistantActivity : ComponentActivity() {
 
             override fun onResponse(call: Call, response: Response) {
                 response.use {
-                    val payload = if (it.isSuccessful) it.body?.string() else null
+                    val metadataUrlIsExact = it.request.url.toString() == BuildConfig.UPDATE_URL
+                    val metadataLength = it.body?.contentLength() ?: -1L
+                    val payload = if (
+                        it.isSuccessful && metadataUrlIsExact && it.priorResponse == null &&
+                        metadataLength in 1L..MAX_UPDATE_METADATA_BYTES
+                    ) it.body?.string() else null
                     runOnUiThread {
                         updateCheckInProgress = false
                         if (payload == null) {
@@ -766,12 +727,19 @@ class AssistantActivity : ComponentActivity() {
                             val notes = json.optString("release_notes", "بهبود عملکرد و امکانات اپ")
                             val mandatory = json.optBoolean("mandatory", false)
                             val rawUrl = json.getString("download_url")
-                            val downloadUrl = if (rawUrl.startsWith("http")) {
-                                rawUrl
-                            } else {
-                                BuildConfig.NEGIN_BASE_URL + "/" + rawUrl.trimStart('/')
+                            val downloadUrl = trustedUpdateDownloadUrl(rawUrl)
+                                ?: throw IllegalArgumentException("Untrusted update URL")
+                            val expectedSha256 = json.getString("sha256").lowercase()
+                            if (!expectedSha256.matches(Regex("^[0-9a-f]{64}$"))) {
+                                throw IllegalArgumentException("Invalid update digest")
                             }
-                            showUpdateDialog(versionName, notes, downloadUrl, mandatory)
+                            showUpdateDialog(
+                                versionName,
+                                notes,
+                                downloadUrl,
+                                expectedSha256,
+                                mandatory
+                            )
                         } catch (_: Exception) {
                             if (manual) Toast.makeText(
                                 this@AssistantActivity,
@@ -789,45 +757,154 @@ class AssistantActivity : ComponentActivity() {
         versionName: String,
         releaseNotes: String,
         downloadUrl: String,
+        expectedSha256: String,
         mandatory: Boolean
     ) {
         val dialog = AlertDialog.Builder(this)
             .setTitle("نسخه جدید نگین AI")
             .setMessage("نسخه $versionName آماده است.\n\n$releaseNotes")
             .setPositiveButton("دانلود و نصب") { _, _ ->
-                downloadUpdate(downloadUrl, versionName)
+                downloadUpdate(downloadUrl, versionName, expectedSha256)
             }
         if (!mandatory) dialog.setNegativeButton("بعداً", null)
         dialog.setCancelable(!mandatory)
         dialog.show()
     }
 
-    private fun downloadUpdate(downloadUrl: String, versionName: String) {
+    private fun downloadUpdate(downloadUrl: String, versionName: String, expectedSha256: String) {
         showUpdateLock("در حال دریافت نسخه $versionName…\nلطفاً تا پایان به‌روزرسانی صبر کنید.")
-        try {
-            val fileName = "NeginAI-$versionName.apk"
-            getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
-                ?.resolve(fileName)
-                ?.takeIf { it.exists() }
-                ?.delete()
-            val request = DownloadManager.Request(Uri.parse(downloadUrl)).apply {
-                setMimeType("application/vnd.android.package-archive")
-                setTitle("به‌روزرسانی نگین AI")
-                setDescription("در حال دریافت نسخه $versionName")
-                setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                setDestinationInExternalFilesDir(
-                    this@AssistantActivity,
-                    Environment.DIRECTORY_DOWNLOADS,
-                    fileName
-                )
-            }
-            updateDownloadId = (getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager)
-                .enqueue(request)
-            Toast.makeText(this, "دانلود به‌روزرسانی شروع شد.", Toast.LENGTH_SHORT).show()
-        } catch (_: Exception) {
+        val safeVersion = versionName.replace(Regex("[^A-Za-z0-9._-]"), "_").take(64)
+        val destination = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+            ?.resolve("NeginAI-$safeVersion.apk")
+        if (destination == null) {
             hideUpdateLock()
-            openExternal(Uri.parse(downloadUrl))
+            Toast.makeText(this, "فضای امن دانلود در دسترس نیست.", Toast.LENGTH_LONG).show()
+            return
         }
+        destination.takeIf { it.exists() }?.delete()
+        val request = Request.Builder().url(downloadUrl).header("Cache-Control", "no-cache").build()
+        httpClient.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, error: IOException) {
+                destination.delete()
+                runOnUiThread {
+                    hideUpdateLock()
+                    Toast.makeText(this@AssistantActivity, "دانلود به‌روزرسانی کامل نشد.", Toast.LENGTH_LONG).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                var verified = false
+                try {
+                    response.use {
+                        val exactUrl = it.request.url.toString() == downloadUrl
+                        val length = it.body?.contentLength() ?: -1L
+                        if (!it.isSuccessful || !exactUrl || it.priorResponse != null ||
+                            length < 0 || length > MAX_UPDATE_BYTES
+                        ) return@use
+                        val digest = MessageDigest.getInstance("SHA-256")
+                        var written = 0L
+                        var tooLarge = false
+                        it.body!!.byteStream().use { input ->
+                            FileOutputStream(destination).use { output ->
+                                val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                                while (true) {
+                                    val count = input.read(buffer)
+                                    if (count < 0) break
+                                    written += count
+                                    if (written > MAX_UPDATE_BYTES) {
+                                        tooLarge = true
+                                        break
+                                    }
+                                    digest.update(buffer, 0, count)
+                                    output.write(buffer, 0, count)
+                                }
+                            }
+                        }
+                        val actualSha256 = digest.digest().joinToString("") { "%02x".format(it) }
+                        verified = !tooLarge && written == length &&
+                            MessageDigest.isEqual(actualSha256.toByteArray(), expectedSha256.toByteArray()) &&
+                            verifyUpdatePackage(destination)
+                    }
+                } catch (_: Exception) {
+                    verified = false
+                }
+                if (!verified) destination.delete()
+                runOnUiThread {
+                    if (!verified) {
+                        hideUpdateLock()
+                        Toast.makeText(
+                            this@AssistantActivity,
+                            "اصالت یا یکپارچگی فایل به‌روزرسانی تأیید نشد.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        return@runOnUiThread
+                    }
+                    val uri = FileProvider.getUriForFile(
+                        this@AssistantActivity,
+                        "$packageName.update-files",
+                        destination
+                    )
+                    showUpdateLock("دانلود و اعتبارسنجی کامل شد؛ در حال بازکردن نصب…")
+                    installUpdate(uri)
+                }
+            }
+        })
+    }
+
+    private fun trustedUpdateDownloadUrl(rawUrl: String): String? {
+        if (rawUrl != UPDATE_DOWNLOAD_PATH) return null
+        val base = Uri.parse(BuildConfig.NEGIN_BASE_URL)
+        if (!base.scheme.equals("https", ignoreCase = true) || base.host.isNullOrBlank()) return null
+        if (base.userInfo != null || base.query != null || base.fragment != null) return null
+        if (base.port !in setOf(-1, 443) || base.path.orEmpty() !in setOf("", "/")) return null
+        return "https://${base.host}$UPDATE_DOWNLOAD_PATH"
+    }
+
+    private fun verifyUpdatePackage(apk: File): Boolean {
+        return try {
+            val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                PackageManager.GET_SIGNING_CERTIFICATES
+            } else {
+                @Suppress("DEPRECATION")
+                PackageManager.GET_SIGNATURES
+            }
+            val installed = packageManager.getPackageInfo(packageName, flags)
+            val candidate = packageManager.getPackageArchiveInfo(apk.absolutePath, flags)
+                ?: return false
+            if (candidate.packageName != packageName) return false
+            val installedCertificates = signingCertificateDigests(installed)
+            val candidateCertificates = signingCertificateDigests(candidate)
+            installedCertificates.isNotEmpty() &&
+                candidateCertificates.isNotEmpty() &&
+                installedCertificates.intersect(candidateCertificates).isNotEmpty()
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun signingCertificateDigests(info: android.content.pm.PackageInfo): Set<String> {
+        val signatures = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val signingInfo = info.signingInfo ?: return emptySet()
+            if (signingInfo.hasMultipleSigners()) {
+                signingInfo.apkContentsSigners
+            } else {
+                signingInfo.signingCertificateHistory
+            }
+        } else {
+            info.signatures.orEmpty()
+        }
+        return signatures.mapTo(mutableSetOf()) { signature ->
+            MessageDigest.getInstance("SHA-256")
+                .digest(signature.toByteArray())
+                .joinToString("") { "%02x".format(it) }
+        }
+    }
+
+    private companion object {
+        const val UPDATE_DOWNLOAD_PATH = "/download/android"
+        const val MAX_UPDATE_METADATA_BYTES = 64L * 1024
+        const val MAX_UPDATE_BYTES = 250L * 1024 * 1024
     }
 
     private fun installUpdate(uri: Uri) {
@@ -908,14 +985,30 @@ class AssistantActivity : ComponentActivity() {
 
     private fun isTrustedWebOrigin(origin: Uri): Boolean {
         val expected = Uri.parse(BuildConfig.ASSISTANT_URL)
-        val current = Uri.parse(webView.url.orEmpty())
         fun sameOrigin(first: Uri, second: Uri): Boolean =
             first.scheme.equals(second.scheme, ignoreCase = true) &&
                 first.host.equals(second.host, ignoreCase = true) &&
                 first.port == second.port
-        val safeCurrent = current.scheme.equals("https", ignoreCase = true) ||
-            (BuildConfig.DEBUG && current.scheme.equals("http", ignoreCase = true))
-        return sameOrigin(origin, expected) || (safeCurrent && sameOrigin(origin, current))
+        val expectedIsSafe = expected.scheme.equals("https", ignoreCase = true) ||
+            (
+                BuildConfig.DEBUG &&
+                    expected.scheme.equals("http", ignoreCase = true) &&
+                    expected.host.orEmpty().lowercase() in setOf("10.0.2.2", "127.0.0.1", "localhost")
+            )
+        return expectedIsSafe && sameOrigin(origin, expected)
+    }
+
+    private fun attachNativeBridgeIfTrusted(url: String) {
+        val uri = runCatching { Uri.parse(url) }.getOrNull() ?: return
+        if (!isTrustedWebOrigin(uri) || nativeBridgeAttached) return
+        webView.addJavascriptInterface(androidUpdateBridge, "NeginAndroid")
+        nativeBridgeAttached = true
+    }
+
+    private fun detachNativeBridge() {
+        if (!nativeBridgeAttached) return
+        webView.removeJavascriptInterface("NeginAndroid")
+        nativeBridgeAttached = false
     }
 
     private fun dispatchMicrophonePermission(granted: Boolean) {
@@ -1033,10 +1126,6 @@ class AssistantActivity : ComponentActivity() {
         if (navigationLocationReceiverRegistered) {
             unregisterReceiver(navigationLocationReceiver)
             navigationLocationReceiverRegistered = false
-        }
-        if (updateReceiverRegistered) {
-            unregisterReceiver(updateReceiver)
-            updateReceiverRegistered = false
         }
         super.onDestroy()
     }

@@ -1,3 +1,4 @@
+from app.auth_service import create_session, create_user
 from app.database import sqlite_connection
 from app.organization_structure_service import (
     create_proposal,
@@ -55,9 +56,12 @@ def test_proposal_notifies_admin_and_only_changes_rule_after_approval(settings):
     assert any(rule["branch"] == "branch-x" and rule["supervisor_id"] == 42 for rule in list_structure(settings))
 
 
-def test_admin_structure_api_lists_rules_and_pending_proposals(client, auth):
-    response = client.get("/organization-structure", headers=auth)
-    proposals = client.get("/organization-structure/proposals?status=pending", headers=auth)
+def test_admin_structure_api_lists_rules_and_pending_proposals(client, settings):
+    create_user(settings, "Admin", "StrongPass9")
+    token = create_session(settings, "Admin")
+    headers = {"Cookie": f"negin_session={token}"}
+    response = client.get("/organization-structure", headers=headers)
+    proposals = client.get("/organization-structure/proposals?status=pending", headers=headers)
 
     assert response.status_code == 200
     assert response.json()["rules"]

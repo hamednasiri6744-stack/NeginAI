@@ -1,11 +1,15 @@
-def test_health_does_not_require_auth(client):
+def test_health_does_not_require_auth_and_exposes_only_liveness(client, auth):
     response = client.get("/health")
     assert response.status_code == 200
-    assert response.json()["status"] == "ok"
-    assert response.json()["varanegar_order_bridge_enabled"] is False
-    assert response.json()["varanegar_order_commit_enabled"] is False
-    assert response.json()["varanegar_order_numbering_verified"] is False
-    assert response.json()["varanegar_order_registration_ready"] is False
+    assert response.json() == {"status": "ok", "service": "NeginAI"}
+    assert client.get("/health/readiness").status_code == 401
+
+    readiness = client.get("/health/readiness", headers=auth)
+    assert readiness.status_code == 200
+    assert readiness.json()["varanegar_order_bridge_enabled"] is False
+    assert readiness.json()["varanegar_order_commit_enabled"] is False
+    assert readiness.json()["varanegar_order_numbering_verified"] is False
+    assert readiness.json()["varanegar_order_registration_ready"] is False
 
 
 def test_privacy_policy_is_public(client):

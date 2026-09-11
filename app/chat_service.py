@@ -30,6 +30,7 @@ from app.access_control import (
     policy_for_user,
     response_access_scope,
     restricted_request_message,
+    source_allowed_in_catalog,
 )
 from app.config import Settings
 from app.conversation_service import ensure_conversation, touch_conversation
@@ -911,11 +912,26 @@ def search_successful_report_memory(
     ctx: RunContextWrapper[AgentContext], query: str, limit: int = 4
 ) -> str:
     """Find relevant previously successful report queries as reusable patterns, never cached answers."""
-    return _json(
-        find_successful_report_examples(
-            ctx.context.settings, query, max(1, min(limit, 8))
-        )
+    examples = find_successful_report_examples(
+        ctx.context.settings,
+        query,
+        max(1, min(limit, 8)),
+        principal=ctx.context.username or "action-api-key",
     )
+    policy = ctx.context.access_policy
+    if policy and policy.is_restricted_seller:
+        examples = [
+            example
+            for example in examples
+            if example.get("sources")
+            and all(
+                source_allowed_in_catalog(
+                    ctx.context.settings, policy, str(source)
+                )
+                for source in example.get("sources") or []
+            )
+        ]
+    return _json(examples)
 
 
 @function_tool
@@ -3026,6 +3042,7 @@ def chat(
             history,
             None,
             access_policy.is_admin,
+            username or "action-api-key",
         )
     else:
         prepared_context = {

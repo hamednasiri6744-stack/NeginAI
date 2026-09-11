@@ -95,7 +95,15 @@ def test_cardex_followup_preloads_official_cardex_sources(settings):
     assert context["active_customer_financial_followup"]["route_name"] == "customer_cardex"
 
 
-def _save_report(conn, conversation_id, question, answer, sql, sources, base_id):
+def _save_report(
+    conn, conversation_id, question, answer, sql, sources, base_id, username="report-owner"
+):
+    conn.execute(
+        """INSERT OR IGNORE INTO chat_conversations
+           (id, username, title, pinned, created_at, updated_at)
+           VALUES (?, ?, 'report', 0, '2026-08-08T00:00:00', '2026-08-08T00:00:01')""",
+        (conversation_id, username),
+    )
     conn.execute(
         """INSERT INTO chat_messages
            (id, conversation_id, role, content, sources_json, created_at)
@@ -132,7 +140,10 @@ def test_successful_report_memory_prefers_semantically_relevant_question(setting
         )
 
     examples = find_successful_report_examples(
-        settings, "ثبت‌کننده و زمان آخرین حواله فروش را بگو", 3
+        settings,
+        "ثبت‌کننده و زمان آخرین حواله فروش را بگو",
+        3,
+        principal="report-owner",
     )
 
     assert examples
@@ -175,6 +186,7 @@ def test_prepared_context_combines_semantics_schema_and_report_memory(settings):
         settings,
         "زمان و کاربر ثبت‌کننده آخرین حواله را بگو",
         [],
+        principal="report-owner",
     )
 
     assert context["successful_report_examples"]
@@ -295,7 +307,9 @@ def test_sales_route_uses_only_catalogued_sales_sources_and_examples(settings):
             "SELECT StockCount FROM dbo.InventoryFast", ["dbo.InventoryFast"], 500,
         )
 
-    context = prepare_analysis_context(settings, "فروش امروز را بگو", [])
+    context = prepare_analysis_context(
+        settings, "فروش امروز را بگو", [], principal="report-owner"
+    )
 
     assert context["analysis_route"] == "sales"
     assert [item["name"] for item in context["schema_candidates"]] == ["SalesReviewFast"]

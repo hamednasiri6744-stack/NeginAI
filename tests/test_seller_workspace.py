@@ -65,7 +65,7 @@ def _seller(settings):
         "username": "A.kamran", "personnel_id": 22, "full_name": "\u0639\u0627\u0631\u0641 \u06a9\u0627\u0645\u0631\u0627\u0646",
         "role": "\u0641\u0631\u0648\u0634\u0646\u062f\u0647", "branch": BRANCH, "sales_line": LINE,
         "supervisor_personnel_id": 14,
-    }], temporary_password="1")
+    }])
 
 
 def test_seller_brands_come_from_current_ngt_product_template(settings, monkeypatch):

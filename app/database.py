@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 import sqlite3
@@ -17,13 +17,31 @@ from app.config import Settings
 from app.sql_guard import ValidatedSql
 
 
+def _enable_wal_mode(connection: sqlite3.Connection) -> None:
+    """Enable WAL while tolerating another process doing the same startup work."""
+    deadline = time.monotonic() + 30
+    while True:
+        try:
+            journal_mode = str(
+                connection.execute("PRAGMA journal_mode=WAL").fetchone()[0]
+            ).casefold()
+            if journal_mode != "wal":
+                raise RuntimeError(f"SQLite did not enable WAL mode: {journal_mode}")
+            return
+        except sqlite3.OperationalError as exc:
+            is_locked = "locked" in str(exc).casefold() or "busy" in str(exc).casefold()
+            if not is_locked or time.monotonic() >= deadline:
+                raise
+            time.sleep(0.05)
+
+
 def init_sqlite(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with sqlite3.connect(path, timeout=30) as conn:
         conn.execute("PRAGMA busy_timeout=30000")
         current_journal_mode = str(conn.execute("PRAGMA journal_mode").fetchone()[0]).casefold()
         if current_journal_mode != "wal":
-            conn.execute("PRAGMA journal_mode=WAL")
+            _enable_wal_mode(conn)
         conn.executescript(
             """
             CREATE TABLE IF NOT EXISTS schema_objects (
@@ -614,7 +632,7 @@ def _connection_string(settings: Settings) -> str:
     return (
         f"DRIVER={{{settings.sql_driver}}};SERVER={settings.sql_server};"
         f"DATABASE={settings.sql_database};UID={settings.sql_username};"
-        f"PWD={settings.sql_password};TrustServerCertificate={trust};"
+        f"PWD={settings.sql_password};Encrypt=yes;TrustServerCertificate={trust};"
         "ApplicationIntent=ReadOnly;"
     )
 
@@ -779,3 +797,4 @@ def execute_query(settings: Settings, validated: ValidatedSql) -> dict[str, Any]
         elapsed = round(time.perf_counter() - started, 6)
         record_audit(settings, validated.sql, False, validated.sources, execution_time=elapsed, error=str(exc)[:4000])
         raise
+

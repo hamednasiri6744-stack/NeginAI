@@ -1,0 +1,31 @@
+{
+  "name": "neginai-ui-tooling",
+  "version": "0.0.0",
+  "private": true,
+  "description": "UI/UX engineering and quality tooling for NeginAI without changing the product visual identity.",
+  "scripts": {
+    "ui:types": "tsc -p tsconfig.ui.json --noEmit",
+    "ui:e2e": "powershell -noprofile -executionpolicy bypass -file tools/ui/run-playwright.ps1",
+    "ui:e2e:headed": "powershell -noprofile -executionpolicy bypass -file tools/ui/run-playwright.ps1 -headed",
+    "ui:e2e:cross": "powershell -noprofile -executionpolicy bypass -file tools/ui/run-playwright.ps1 -crossbrowser",
+    "ui:perf": "powershell -noprofile -executionpolicy bypass -file tools/ui/run-lighthouse.ps1",
+    "ui:lint:js": "eslint app/static/assistant.js",
+    "ui:lint:css": "stylelint \"app/static/*.css\"",
+    "ui:lint": "npm run ui:lint:js && npm run ui:lint:css",
+    "ui:check": "npm run ui:types && npm run ui:e2e"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^24.10.7",
+    "eslint": "^10.9.1",
+    "globals": "^17.12.0",
+    "lighthouse": "^13.4.1",
+    "stylelint": "^17.14.1",
+    "stylelint-config-standard": "^40.0.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.2",
+    "web-vitals": "^6.2.1"
+  }
+}

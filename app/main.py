@@ -1,5 +1,8 @@
 import asyncio
+import os
+import socket
 import time
+import uuid
 from contextlib import asynccontextmanager
 from html import escape
 
@@ -7,11 +10,16 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.config import ensure_action_api_key, get_settings
+from app.config import ensure_action_api_key, get_settings, validate_transport_security
 from app.auth_service import ensure_configured_user
 from app.control_service import ensure_control_defaults
 from app.automation_service import get_notification_report, run_due_automations
 from app.database import init_sqlite
+from app.enterprise_store import EnterpriseStore
+from app.redis_resource_backend import RedisModelResourceBackend
+from app.login_rate_limit import LocalLoginRateLimiter, RedisLoginRateLimiter
+from app.observability import configure_observability, monotonic_seconds, record_http
+from app.varanegar_command_worker import process_one as process_one_varanegar_command
 from app.entity_service import sync_entities
 from app.routes import android_app, attachments, automations, audio, auth, chat, context, control, dashboard, definitions, entities, health, oauth, organization_structure, planning, push, schema, seller_workspace, sql, warehouse_assistant
 from app.organization_structure_service import seed_confirmed_rules
@@ -24,12 +32,52 @@ from app.schema_service import scan_schema
 async def lifespan(app: FastAPI):
     ensure_action_api_key()
     settings = get_settings()
+    validate_transport_security(settings)
     ensure_vapid_private_key(settings.vapid_private_key_path)
     init_sqlite(settings.sqlite_path)
     seed_confirmed_rules(settings)
     ensure_configured_user(settings)
     ensure_control_defaults(settings)
     app.state.settings = settings
+    app.state.enterprise_database_ready = False
+    app.state.redis_ready = False
+    app.state.command_worker_ready = False
+    app.state.command_worker_last_error = ""
+    enterprise_store = None
+    redis_client = None
+    observability = None
+    if settings.enterprise_database_url:
+        enterprise_store = EnterpriseStore(settings.enterprise_database_url)
+        await asyncio.to_thread(enterprise_store.open)
+        await asyncio.to_thread(enterprise_store.check)
+        app.state.enterprise_store = enterprise_store
+        app.state.enterprise_database_ready = True
+    if settings.redis_url:
+        import redis
+
+        redis_client = redis.Redis.from_url(
+            settings.redis_url,
+            socket_connect_timeout=3,
+            socket_timeout=3,
+            health_check_interval=30,
+        )
+        await asyncio.to_thread(redis_client.ping)
+        app.state.redis_client = redis_client
+        app.state.redis_ready = True
+        app.state.model_resource_backend = RedisModelResourceBackend(redis_client)
+        app.state.login_rate_limiter = RedisLoginRateLimiter(redis_client)
+    else:
+        # validate_transport_security prevents this fallback in enterprise and
+        # production. It remains intentionally bounded for local development.
+        app.state.redis_client = None
+        app.state.login_rate_limiter = LocalLoginRateLimiter()
+    if settings.otel_exporter_otlp_endpoint:
+        observability = configure_observability(
+            service_name="neginai-api",
+            environment=settings.deployment_environment,
+            endpoint=settings.otel_exporter_otlp_endpoint,
+        )
+        app.state.observability = observability
     async def metadata_sync_loop():
         last_schema_sync = 0.0
         while True:
@@ -52,6 +100,25 @@ async def lifespan(app: FastAPI):
                 pass
             await asyncio.sleep(30)
 
+    async def command_worker_loop():
+        worker_id = f"{socket.gethostname()}:{os.getpid()}"
+        await asyncio.to_thread(enterprise_store.recover_expired_leases)
+        while True:
+            try:
+                result = await asyncio.to_thread(
+                    process_one_varanegar_command,
+                    enterprise_store,
+                    settings,
+                    worker_id=worker_id,
+                )
+                app.state.command_worker_ready = True
+                app.state.command_worker_last_error = ""
+                await asyncio.sleep(0.2 if result else 1.0)
+            except Exception as exc:
+                app.state.command_worker_ready = False
+                app.state.command_worker_last_error = type(exc).__name__
+                await asyncio.sleep(2)
+
     sync_task = (
         asyncio.create_task(metadata_sync_loop())
         if settings.metadata_sync_enabled
@@ -62,6 +129,11 @@ async def lifespan(app: FastAPI):
         if settings.automation_enabled
         else None
     )
+    command_worker_task = (
+        asyncio.create_task(command_worker_loop())
+        if settings.command_outbox_enabled and enterprise_store is not None
+        else None
+    )
     try:
         yield
     finally:
@@ -69,13 +141,23 @@ async def lifespan(app: FastAPI):
             sync_task.cancel()
         if automation_task is not None:
             automation_task.cancel()
+        if command_worker_task is not None:
+            command_worker_task.cancel()
         try:
             tasks = [sync_task] if sync_task is not None else []
             if automation_task is not None:
                 tasks.append(automation_task)
+            if command_worker_task is not None:
+                tasks.append(command_worker_task)
             await asyncio.gather(*tasks)
         except asyncio.CancelledError:
             pass
+        if enterprise_store is not None:
+            await asyncio.to_thread(enterprise_store.close)
+        if redis_client is not None:
+            await asyncio.to_thread(redis_client.close)
+        if observability is not None:
+            await asyncio.to_thread(observability.shutdown)
 
 
 app = FastAPI(
@@ -84,6 +166,39 @@ app = FastAPI(
     description="Read-only gateway between a Custom GPT Action and NeginPakhsh SQL Server.",
     lifespan=lifespan,
 )
+
+
+@app.middleware("http")
+async def request_observability(request, call_next):
+    started = monotonic_seconds()
+    request_id = request.headers.get("x-request-id", "").strip()
+    if not request_id or len(request_id) > 100:
+        request_id = str(uuid.uuid4())
+    runtime = getattr(request.app.state, "observability", None)
+    status_code = 500
+    if runtime is None:
+        response = await call_next(request)
+        status_code = response.status_code
+    else:
+        with runtime.tracer.start_as_current_span("http.request") as span:
+            span.set_attribute("http.request.method", request.method)
+            response = await call_next(request)
+            status_code = response.status_code
+            span.set_attribute("http.response.status_code", status_code)
+    route = request.scope.get("route")
+    route_path = getattr(route, "path", "unmatched")
+    if runtime is not None:
+        record_http(
+            runtime,
+            {
+                "http.request.method": request.method,
+                "http.route": route_path,
+                "http.response.status_code": status_code,
+            },
+            monotonic_seconds() - started,
+        )
+    response.headers["X-Request-ID"] = request_id
+    return response
 app.include_router(health.router)
 app.include_router(schema.router)
 app.include_router(sql.router)

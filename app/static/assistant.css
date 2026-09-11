@@ -1,14 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap');
 
 [hidden]{display:none!important}
-:root{font-family:Vazirmatn,Tahoma,Arial,sans-serif;color:#202123;background:#fff;--sidebar:#f7f7f8;--hover:#ececef;--line:#e5e5e5;--muted:#6f7077;--brand:#111827;--green:#10a37f;--danger:#c63737}
+:root{font-family:Vazirmatn,Tahoma,Arial,sans-serif;color:#202123;background:#fff;--sidebar:#f7f7f8;--hover:#ececef;--line:#e5e5e5;--muted:#6f7077;--brand:#111827;--green:#10a37f;--danger:#c63737;--sidebar-width:280px}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;overflow:hidden}
 body{background:#fff}
 button,input,textarea{font:inherit}
 button{color:inherit}
 .app-shell{height:100dvh;display:flex;direction:rtl;overflow:hidden}
-.sidebar{width:280px;flex:0 0 280px;min-width:0;display:flex;flex-direction:column;direction:rtl;overflow:hidden;background:var(--sidebar);border-left:1px solid #ededee;z-index:30}
+.sidebar{position:relative;width:var(--sidebar-width);flex:0 0 var(--sidebar-width);min-width:0;display:flex;flex-direction:column;direction:rtl;overflow:hidden;background:var(--sidebar);border-left:1px solid #ededee;z-index:30}
+.sidebar-resize-handle{position:absolute;top:0;bottom:0;left:0;z-index:34;width:9px;border:0;background:transparent;cursor:col-resize;touch-action:none;outline:0}
+.sidebar-resize-handle::after{content:"";position:absolute;top:0;bottom:0;left:3px;width:2px;background:transparent;transition:background .15s ease}
+.sidebar-resize-handle:hover::after,.sidebar-resize-handle:focus-visible::after,body.sidebar-resizing .sidebar-resize-handle::after{background:#10a37f66}
+.sidebar-resize-handle:focus-visible{box-shadow:inset 3px 0 0 #10a37f}
+body.sidebar-resizing{cursor:col-resize;user-select:none}
 .sidebar-top{flex:0 1 auto;min-width:0;min-height:0;max-height:52dvh;overflow-x:hidden;overflow-y:auto;padding:10px 10px 0;scrollbar-width:thin}
 .sidebar-brand{height:44px;display:flex;align-items:center;gap:10px;padding:0 8px;font-size:14px;font-weight:700}
 .brand-logo,.welcome-logo,.dialog-logo{display:grid;place-items:center;background:#111;color:#fff;font-weight:700}
@@ -61,8 +66,7 @@ button{color:inherit}
 .android-download-header{width:auto;grid-auto-flow:column;gap:5px;padding:0 10px;color:#087d62;text-decoration:none;font-size:14px}.android-download-header b{font-size:10px;white-space:nowrap}
 .account-settings svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .mobile-menu{display:none}
-.assistant-title{display:flex;align-items:center;gap:6px;border:0;background:transparent;border-radius:9px;padding:7px 8px;cursor:pointer}
-.assistant-title:hover{background:#f3f3f3}
+.assistant-title{display:flex;align-items:center;gap:6px;border:0;background:transparent;border-radius:9px;padding:7px 8px;cursor:default;user-select:none}
 .assistant-title strong{font-size:14px}.assistant-title span{color:#888;font-size:14px}
 .header-actions{margin-right:auto;display:flex;align-items:center;gap:2px}
 .connection-status{display:flex;align-items:center;gap:6px;margin-left:7px;color:#777;font-size:10px}
@@ -145,7 +149,7 @@ button{color:inherit}
 .panel-header{height:64px;display:grid;grid-template-columns:40px minmax(0,1fr) auto;align-items:center;gap:10px;padding:8px 18px;border-bottom:1px solid #e5e5e5;background:#fff}.panel-header h2{margin:0;font-size:16px}.panel-header p{margin:2px 0 0;color:#888;font-size:9px}.text-button{border:0;background:transparent;color:#087d62;cursor:pointer;font-size:10px}
 .notifications-list{min-height:0;overflow-y:auto;padding:18px}.notification-card{max-width:760px;margin:0 auto 9px;border:1px solid #e2e2e2;border-radius:14px;background:#fff;overflow:hidden}.notification-card.unread{border-color:#a8d8ca;background:#fbfffd}.notification-card.selected{box-shadow:0 0 0 3px #dff5ee}.notification-card button{width:100%;border:0;background:transparent;padding:14px;text-align:right;cursor:pointer}.notification-card-head{display:grid;grid-template-columns:7px minmax(0,1fr) auto;align-items:center;gap:8px}.notification-dot{width:6px;height:6px;border-radius:50%;background:transparent}.notification-card.unread .notification-dot{background:var(--green)}.notification-card strong{font-size:12px}.notification-card time{color:#999;font-size:8px;direction:ltr}.notification-card p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin:8px 15px 0 0;color:#555;font-size:11px;line-height:1.9;white-space:pre-wrap}.notification-card.expanded p{display:block}.notifications-empty{min-height:65vh;display:grid;place-items:center;align-content:center;text-align:center;color:#888}.notifications-empty>div{font-size:34px}.notifications-empty h3{margin:10px 0 4px;color:#333;font-size:15px}.notifications-empty p{margin:0;font-size:10px}
 .toast{position:fixed;left:50%;bottom:105px;z-index:80;transform:translate(-50%,12px);padding:9px 14px;border-radius:10px;background:#222;color:#fff;font-size:10px;opacity:0;pointer-events:none;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
-dialog{width:min(92%,410px);border:0;border-radius:20px;padding:0;box-shadow:0 25px 80px #0004}dialog::backdrop{background:#0007;backdrop-filter:blur(3px)}dialog form,.install-help{display:grid;gap:13px;padding:27px}.dialog-logo{width:44px;height:44px;border-radius:14px;font-size:18px}dialog h2{margin:0;font-size:19px}dialog p{margin:0;color:#777;font-size:11px;line-height:1.9}dialog label{display:grid;gap:6px;color:#555;font-size:10px}dialog input{position:relative;z-index:1;height:44px;border:1px solid #ddd;border-radius:10px;padding:0 11px;outline:0;background:#fff;font-size:16px;line-height:normal;pointer-events:auto;touch-action:manipulation;-webkit-appearance:none;appearance:none;-webkit-user-select:text;user-select:text}dialog input:focus{border-color:#999}dialog form>button,.install-help button{height:44px;border:0;border-radius:11px;background:#111;color:#fff;cursor:pointer;font-weight:600;font-size:11px}.login-error{min-height:16px;color:#b42318!important}
+dialog{width:min(92%,410px);border:0;border-radius:20px;padding:0;box-shadow:0 25px 80px #0004}dialog::backdrop{background:#0007;backdrop-filter:blur(3px)}dialog form,.install-help{display:grid;gap:13px;padding:27px}.dialog-logo{width:44px;height:44px;border-radius:14px;font-size:18px}dialog h2{margin:0;font-size:19px}dialog p{margin:0;color:#777;font-size:11px;line-height:1.9}dialog label{display:grid;gap:6px;color:#555;font-size:10px}dialog input{position:relative;z-index:1;height:44px;border:1px solid #ddd;border-radius:10px;padding:0 11px;outline:0;background:#fff;font-size:16px;line-height:normal;pointer-events:auto;touch-action:manipulation;-webkit-appearance:none;appearance:none;-webkit-user-select:text;user-select:text}dialog input:focus{border-color:#999}dialog form>button,.install-help button{height:44px;border:0;border-radius:11px;background:#111;color:#fff;cursor:pointer;font-weight:600;font-size:11px}.login-error{min-height:16px;color:#b42318!important}.password-field{position:relative;display:block}.password-field input{width:100%;padding-left:48px}.password-visibility-toggle{position:absolute;left:5px;top:50%;z-index:2;width:38px;height:38px;display:grid;place-items:center;transform:translateY(-50%);border:0;border-radius:8px;background:transparent;color:#686868;cursor:pointer;font-size:18px;line-height:1;touch-action:manipulation}.password-visibility-toggle:hover{background:#f1f1f1}.password-visibility-toggle:focus-visible{outline:2px solid #999;outline-offset:1px}.password-visibility-toggle[aria-pressed="true"]{color:#111;background:#ededed}
 .android-download-link{display:block;text-align:center;color:#087d62;text-decoration:none;font-size:11px;font-weight:700}.android-download-link:hover{text-decoration:underline}
 .mobile-only{display:none}
 .sidebar-backdrop{display:none}
@@ -157,6 +161,7 @@ dialog{width:min(92%,410px);border:0;border-radius:20px;padding:0;box-shadow:0 2
 @media(max-width:800px){
   .sidebar-top{max-height:48dvh}
   .sidebar{position:fixed;inset:0 0 0 auto;width:min(86vw,310px);transform:translateX(105%);transition:transform .22s ease;box-shadow:-10px 0 45px #0002}
+ .sidebar-resize-handle{display:none}
   body.sidebar-open .sidebar{transform:none}
   .sidebar-backdrop{position:fixed;inset:0;z-index:25;display:block;border:0;background:#0006}
   .mobile-only,.mobile-menu{display:grid}
@@ -242,7 +247,6 @@ html.web-road-theme .main-panel{background:radial-gradient(circle at 86% 2%,#fff
 html.web-road-theme .main-header{border-bottom:1px solid #d8c58b;background:rgba(255,253,248,.94);box-shadow:0 4px 18px #2b241518;backdrop-filter:blur(14px)}
 html.web-road-theme .assistant-brand-mark{overflow:hidden;width:28px;height:28px;border:1px solid #d4a936;border-radius:8px;background:#111;box-shadow:0 4px 12px #0003}
 html.web-road-theme .assistant-title{border:1px solid transparent}
-html.web-road-theme .assistant-title:hover{border-color:#e4d29a;background:#fdf9ed}
 html.web-road-theme .welcome-logo{overflow:hidden;width:62px;height:62px;border:1px solid #d4a936;border-radius:19px;background:#111;box-shadow:0 12px 35px #0002,0 0 0 5px #d6a73912}
 html.web-road-theme .header-icon{color:#3a3020}
 html.web-road-theme .header-icon:hover{background:#f4e8bd;color:#8d6717}
@@ -474,7 +478,7 @@ html.web-road-theme .main-header,html.web-road-theme .panel-header{border-bottom
 html.web-road-theme .panel-header:after{background:var(--road-gold)}
 html.web-road-theme .panel-header p,html.web-road-theme .connection-status{color:var(--road-muted)}
 html.web-road-theme .main-header .assistant-title span{color:#bbb6aa}
-html.web-road-theme .main-header .assistant-title:hover,html.web-road-theme .panel-header .header-icon:hover,html.web-road-theme .header-icon:hover{border-color:#6b5726;background:#28271f;color:var(--road-gold-high)}
+html.web-road-theme .panel-header .header-icon:hover,html.web-road-theme .header-icon:hover{border-color:#6b5726;background:#28271f;color:var(--road-gold-high)}
 html.web-road-theme .main-header .header-icon,html.web-road-theme .panel-header .header-icon,html.web-road-theme .text-button{color:var(--road-gold-high)}
 html.web-road-theme .connection-status i{background:var(--road-gold);box-shadow:0 0 0 3px #d4aa4225}
 html.web-road-theme .welcome h1{color:var(--road-text)}

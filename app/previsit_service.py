@@ -353,6 +353,30 @@ def list_saved_requests(settings: Any, username: str, visit_id: str) -> list[dic
     return [_serialize_saved_request(dict(row)) for row in rows]
 
 
+def get_order_completion_state(
+    settings: Any, username: str, visit_id: str,
+) -> dict[str, int] | None:
+    """Return the local cart/request state needed to complete an order visit."""
+    with sqlite_connection(settings.sqlite_path) as connection:
+        row = connection.execute(
+            """SELECT d.cart_json,
+                      (SELECT COUNT(*) FROM previsit_saved_requests r
+                       WHERE r.visit_id = d.visit_id AND r.username = d.username)
+                        AS saved_request_count
+               FROM previsit_drafts d
+               JOIN previsit_visits v
+                 ON v.id = d.visit_id AND v.username = d.username
+               WHERE d.visit_id = ? AND d.username = ?""",
+            (visit_id, username),
+        ).fetchone()
+    if row is None:
+        return None
+    return {
+        "line_count": len(json.loads(row["cart_json"] or "[]")),
+        "saved_request_count": int(row["saved_request_count"]),
+    }
+
+
 def list_route_saved_requests(settings: Any, username: str, route_id: str) -> list[dict[str, Any]]:
     """Return the seller's saved requests for the active Tehran business day."""
     tehran_now = datetime.now(timezone.utc).astimezone(ZoneInfo("Asia/Tehran"))

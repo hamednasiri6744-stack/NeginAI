@@ -188,6 +188,90 @@ function closeSidebar() {
   $('#sidebarBackdrop').hidden = true;
 }
 
+const SIDEBAR_WIDTH_STORAGE_KEY = 'negin-sidebar-width';
+const SIDEBAR_DEFAULT_WIDTH = 280;
+const SIDEBAR_MIN_WIDTH = 220;
+const SIDEBAR_MAX_WIDTH = 420;
+let sidebarResizePointerId = null;
+
+function sidebarDesktopMaxWidth() {
+  return Math.max(SIDEBAR_MIN_WIDTH, Math.min(SIDEBAR_MAX_WIDTH, Math.floor(window.innerWidth * 0.45)));
+}
+
+function currentSidebarWidth() {
+  const value = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width'));
+  return Number.isFinite(value) ? value : SIDEBAR_DEFAULT_WIDTH;
+}
+
+function setSidebarWidth(value, persist = true) {
+  const width = Math.min(sidebarDesktopMaxWidth(), Math.max(SIDEBAR_MIN_WIDTH, Math.round(Number(value) || SIDEBAR_DEFAULT_WIDTH)));
+  const handle = $('#sidebarResizeHandle');
+  document.documentElement.style.setProperty('--sidebar-width', `${width}px`);
+  handle?.setAttribute('aria-valuemax', String(sidebarDesktopMaxWidth()));
+  handle?.setAttribute('aria-valuenow', String(width));
+  if (persist) {
+    try { localStorage.setItem(SIDEBAR_WIDTH_STORAGE_KEY, String(width)); } catch (_error) {}
+  }
+  return width;
+}
+
+function endSidebarResize() {
+  if (sidebarResizePointerId === null) return;
+  const handle = $('#sidebarResizeHandle');
+  const pointerId = sidebarResizePointerId;
+  sidebarResizePointerId = null;
+  document.body.classList.remove('sidebar-resizing');
+  try { if (handle?.hasPointerCapture?.(pointerId)) handle.releasePointerCapture(pointerId); } catch (_error) {}
+  setSidebarWidth(currentSidebarWidth());
+}
+
+function initializeSidebarResize() {
+  const handle = $('#sidebarResizeHandle');
+  if (!handle) return;
+  let saved = SIDEBAR_DEFAULT_WIDTH;
+  try {
+    const raw = localStorage.getItem(SIDEBAR_WIDTH_STORAGE_KEY);
+    if (raw !== null && raw.trim() !== '' && Number.isFinite(Number(raw))) saved = Number(raw);
+  } catch (_error) {}
+  setSidebarWidth(saved, false);
+
+  handle.addEventListener('pointerdown', (event) => {
+    if (!matchMedia('(min-width: 801px)').matches || (event.button !== undefined && event.button !== 0)) return;
+    sidebarResizePointerId = event.pointerId;
+    handle.setPointerCapture?.(event.pointerId);
+    document.body.classList.add('sidebar-resizing');
+    event.preventDefault();
+  });
+  handle.addEventListener('pointermove', (event) => {
+    if (event.pointerId === sidebarResizePointerId) setSidebarWidth(window.innerWidth - event.clientX, false);
+  });
+  handle.addEventListener('pointerup', endSidebarResize);
+  handle.addEventListener('pointercancel', endSidebarResize);
+  handle.addEventListener('dblclick', () => setSidebarWidth(SIDEBAR_DEFAULT_WIDTH));
+  handle.addEventListener('keydown', (event) => {
+    let next;
+    if (event.key === 'ArrowLeft') next = currentSidebarWidth() + 16;
+    else if (event.key === 'ArrowRight') next = currentSidebarWidth() - 16;
+    else if (event.key === 'Home') next = SIDEBAR_MIN_WIDTH;
+    else if (event.key === 'End') next = sidebarDesktopMaxWidth();
+    else return;
+    setSidebarWidth(next);
+    event.preventDefault();
+  });
+
+  const mobileMedia = matchMedia('(max-width: 800px)');
+  const syncSidebarViewport = () => {
+    if (mobileMedia.matches) {
+      endSidebarResize();
+      document.body.classList.remove('sidebar-resizing');
+    } else {
+      setSidebarWidth(currentSidebarWidth(), false);
+    }
+  };
+  mobileMedia.addEventListener?.('change', syncSidebarViewport);
+  window.addEventListener('resize', syncSidebarViewport);
+}
+
 function appHistoryState() {
   const state = history.state;
   return state?.marker === APP_HISTORY_MARKER ? state : null;
@@ -1014,6 +1098,7 @@ $('#mobileNewChatBtn').addEventListener('click', resetChat);
 $('#openSidebarBtn').addEventListener('click', openSidebar);
 $('#closeSidebarBtn').addEventListener('click', closeSidebar);
 $('#sidebarBackdrop').addEventListener('click', closeSidebar);
+initializeSidebarResize();
 $('#closeExcelPreview')?.addEventListener('click', closeExcelPreview);
 $('#closeExcelPreviewFooter')?.addEventListener('click', closeExcelPreview);
 $('#downloadExcelBtn')?.addEventListener('click', (event) => downloadExcel(event.currentTarget.dataset.downloadExcel));
@@ -6844,6 +6929,20 @@ notificationsList.addEventListener('click', async (event) => {
   card.classList.remove('unread');
 });
 notificationBtn.addEventListener('click', enablePush);
+
+const loginPasswordInput = $('#password');
+const loginPasswordToggle = $('#togglePasswordVisibility');
+if (loginPasswordInput && loginPasswordToggle) {
+  loginPasswordToggle.addEventListener('click', () => {
+    const reveal = loginPasswordInput.type === 'password';
+    loginPasswordInput.type = reveal ? 'text' : 'password';
+    loginPasswordToggle.setAttribute('aria-pressed', String(reveal));
+    loginPasswordToggle.setAttribute('aria-label', reveal ? 'Hide password' : 'Show password');
+    loginPasswordToggle.title = reveal ? 'Hide password' : 'Show password';
+    loginPasswordInput.focus({preventScroll: true});
+    loginPasswordInput.setSelectionRange(loginPasswordInput.value.length, loginPasswordInput.value.length);
+  });
+}
 
 $('#loginForm').addEventListener('submit', async (event) => {
   event.preventDefault();

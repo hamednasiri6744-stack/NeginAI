@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 
 from app.database import record_chat_failure
 from app.ngt_previsit_service import cached_previsit_vocabulary
+from app.routes.chat import estimate_model_budget_units, model_resource_lease
 from app.routes.dependencies import require_user_or_local
 
 router = APIRouter(
@@ -28,6 +29,26 @@ SUPPORTED_AUDIO_TYPES = {
     "audio/x-wav": "recording.wav",
     "audio/ogg": "recording.ogg",
 }
+
+
+async def read_bounded_request_body(request: Request, maximum_bytes: int) -> bytes:
+    """Stream a request into a bounded buffer and stop at the first oversized chunk."""
+    content_length = request.headers.get("content-length")
+    if content_length:
+        try:
+            declared_bytes = int(content_length)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail="invalid Content-Length") from exc
+        if declared_bytes < 0:
+            raise HTTPException(status_code=400, detail="invalid Content-Length")
+        if declared_bytes > maximum_bytes:
+            raise HTTPException(status_code=413, detail="audio payload is too large")
+    body = bytearray()
+    async for chunk in request.stream():
+        if len(body) + len(chunk) > maximum_bytes:
+            raise HTTPException(status_code=413, detail="audio payload is too large")
+        body.extend(chunk)
+    return bytes(body)
 
 TRANSCRIPTION_PROMPT = (
     "گفتار محاوره‌ای فارسی یک مدیر یا کارشناس شرکت نگین پخش را با املای استاندارد و علائم "
@@ -118,6 +139,11 @@ async def create_navigation_speech(payload: NavigationSpeechRequest, request: Re
     settings = request.app.state.settings
     if not settings.openai_api_key:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="راهنمای صوتی پیکربندی نشده است.")
+    resource_context = model_resource_lease(
+        request,
+        estimate_model_budget_units(text_characters=len(payload.text)),
+    )
+    await resource_context.__aenter__()
     try:
         audio = await asyncio.to_thread(
             synthesize_navigation_speech,
@@ -129,6 +155,8 @@ async def create_navigation_speech(payload: NavigationSpeechRequest, request: Re
     except Exception as exc:
         record_chat_failure(settings, "navigation-voice", type(exc).__name__, str(exc))
         raise HTTPException(status_code=502, detail="تولید راهنمای صوتی انجام نشد.") from exc
+    finally:
+        await resource_context.__aexit__(None, None, None)
     if not audio:
         raise HTTPException(status_code=502, detail="راهنمای صوتی خالی دریافت شد.")
     return Response(content=audio, media_type="audio/mpeg", headers={"Cache-Control": "no-store"})
@@ -150,7 +178,7 @@ async def create_transcription(
     media_type = request.headers.get("content-type", "").split(";", 1)[0].lower()
     if media_type not in SUPPORTED_AUDIO_TYPES:
         raise HTTPException(status_code=415, detail="فرمت فایل صوتی پشتیبانی نمی‌شود.")
-    audio = await request.body()
+    audio = await read_bounded_request_body(request, MAX_AUDIO_BYTES)
     if not audio:
         raise HTTPException(status_code=400, detail="فایل صوتی خالی است.")
     if len(audio) > MAX_AUDIO_BYTES:
@@ -163,6 +191,11 @@ async def create_transcription(
             path_id,
             customer_id,
         )
+    resource_context = model_resource_lease(
+        request,
+        estimate_model_budget_units(binary_bytes=len(audio)),
+    )
+    await resource_context.__aenter__()
     try:
         text = await asyncio.to_thread(
             transcribe_audio,
@@ -180,6 +213,8 @@ async def create_transcription(
             str(exc),
         )
         raise HTTPException(status_code=502, detail="تبدیل صدا به متن انجام نشد؛ دوباره تلاش کنید.") from exc
+    finally:
+        await resource_context.__aexit__(None, None, None)
     if not text:
         raise HTTPException(status_code=422, detail="گفتار قابل تشخیصی در صدا پیدا نشد.")
     return {"text": text}

@@ -5,6 +5,14 @@ from dataclasses import replace
 from urllib.parse import parse_qs, urlparse
 
 
+PKCE_VERIFIER = "v" * 43
+PKCE_CHALLENGE = base64.urlsafe_b64encode(
+    hashlib.sha256(PKCE_VERIFIER.encode("ascii")).digest()
+).rstrip(b"=").decode("ascii")
+CHATGPT_REDIRECT = "https://chatgpt.com/aip/g-test/oauth/callback"
+OPENAI_REDIRECT = "https://oauth.openai.com/aip/g-test/oauth/callback"
+
+
 def _password_hash(password: str) -> str:
     salt = b"oauth-test-salt"
     digest = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, 10_000)
@@ -21,6 +29,7 @@ def _configured(settings):
         login_password_hash=_password_hash("test-password"),
         oauth_client_id="neginai-chatgpt",
         oauth_client_secret="oauth-secret",
+        oauth_redirect_uris=(CHATGPT_REDIRECT, OPENAI_REDIRECT),
     )
 
 
@@ -39,16 +48,17 @@ def test_oauth_rejects_untrusted_redirect(client, settings):
     assert "attacker.example" in response.text
 
 
-def test_oauth_accepts_official_openai_callback_subdomains(client, settings):
+def test_oauth_accepts_only_exact_configured_callbacks(client, settings):
     client.app.state.settings = _configured(settings)
     response = client.get(
         "/oauth/authorize",
         params={
             "response_type": "code",
             "client_id": "neginai-chatgpt",
-            "redirect_uri": "https://oauth.openai.com/aip/g-test/oauth/callback",
+            "redirect_uri": OPENAI_REDIRECT,
             "state": "state-1",
             "scope": "company.read",
+            "code_challenge": PKCE_CHALLENGE,
             "code_challenge_method": "s256",
         },
     )
@@ -59,11 +69,68 @@ def test_oauth_accepts_official_openai_callback_subdomains(client, settings):
         params={
             "response_type": "code",
             "client_id": "neginai-chatgpt",
-            "redirect_uri": "https://chatgpt.com.attacker.example/callback",
+            "redirect_uri": "https://oauth.openai.com/aip/another-gpt/oauth/callback",
             "scope": "company.read",
+            "code_challenge": PKCE_CHALLENGE,
+            "code_challenge_method": "S256",
         },
     )
     assert evil.status_code == 400
+
+
+def test_oauth_requires_s256_pkce(client, settings):
+    client.app.state.settings = _configured(settings)
+    base = {
+        "response_type": "code",
+        "client_id": "neginai-chatgpt",
+        "redirect_uri": CHATGPT_REDIRECT,
+        "scope": "company.read",
+    }
+
+    missing = client.get("/oauth/authorize", params=base)
+    plain = client.get(
+        "/oauth/authorize",
+        params={
+            **base,
+            "code_challenge": "p" * 43,
+            "code_challenge_method": "plain",
+        },
+    )
+
+    assert missing.status_code == 400
+    assert plain.status_code == 400
+
+
+def test_oauth_login_uses_shared_rate_limiter(client, settings):
+    from app.login_rate_limit import LocalLoginRateLimiter
+
+    client.app.state.settings = _configured(settings)
+    client.app.state.login_rate_limiter = LocalLoginRateLimiter(limit=1)
+    page = client.get(
+        "/oauth/authorize",
+        params={
+            "response_type": "code",
+            "client_id": "neginai-chatgpt",
+            "redirect_uri": CHATGPT_REDIRECT,
+            "scope": "company.read",
+            "code_challenge": PKCE_CHALLENGE,
+            "code_challenge_method": "S256",
+        },
+    )
+    hidden = dict(re.findall(r'name="([^"]+)" value="([^"]*)"', page.text))
+
+    first = client.post(
+        "/oauth/authorize",
+        data={**hidden, "username": "Admin", "password": "wrong"},
+    )
+    blocked = client.post(
+        "/oauth/authorize",
+        data={**hidden, "username": "Admin", "password": "wrong"},
+    )
+
+    assert first.status_code == 200
+    assert blocked.status_code == 429
+    assert int(blocked.headers["Retry-After"]) > 0
 
 
 def test_oauth_setup_hides_secret_until_admin_login(client, settings):
@@ -92,7 +159,7 @@ def test_oauth_setup_hides_secret_until_admin_login(client, settings):
 def test_oauth_authorization_code_and_bearer_flow(client, settings, monkeypatch):
     configured = _configured(settings)
     client.app.state.settings = configured
-    redirect_uri = "https://chatgpt.com/aip/g-test/oauth/callback"
+    redirect_uri = CHATGPT_REDIRECT
     page = client.get(
         "/oauth/authorize",
         params={
@@ -101,6 +168,8 @@ def test_oauth_authorization_code_and_bearer_flow(client, settings, monkeypatch)
             "redirect_uri": redirect_uri,
             "state": "state-1",
             "scope": "company.read",
+            "code_challenge": PKCE_CHALLENGE,
+            "code_challenge_method": "S256",
         },
     )
     assert page.status_code == 200
@@ -127,6 +196,7 @@ def test_oauth_authorization_code_and_bearer_flow(client, settings, monkeypatch)
             "grant_type": "authorization_code",
             "code": query["code"][0],
             "redirect_uri": redirect_uri,
+            "code_verifier": PKCE_VERIFIER,
         },
         headers={"Authorization": f"Basic {basic}"},
     )
@@ -153,6 +223,7 @@ def test_oauth_authorization_code_and_bearer_flow(client, settings, monkeypatch)
             "grant_type": "authorization_code",
             "code": query["code"][0],
             "redirect_uri": redirect_uri,
+            "code_verifier": PKCE_VERIFIER,
         },
         headers={"Authorization": f"Basic {basic}"},
     )
@@ -167,7 +238,7 @@ def test_database_user_can_complete_oauth_authorization(client, settings):
     configured = _configured(settings)
     client.app.state.settings = configured
     upsert_user_hash(configured, "m.etemadi", _password_hash("7055"))
-    redirect_uri = "https://chatgpt.com/aip/g-test/oauth/callback"
+    redirect_uri = CHATGPT_REDIRECT
     page = client.get(
         "/oauth/authorize",
         params={
@@ -176,6 +247,8 @@ def test_database_user_can_complete_oauth_authorization(client, settings):
             "redirect_uri": redirect_uri,
             "state": "user-state",
             "scope": "company.read",
+            "code_challenge": PKCE_CHALLENGE,
+            "code_challenge_method": "S256",
         },
     )
     hidden = dict(re.findall(r'name="([^"]+)" value="([^"]*)"', page.text))
@@ -202,9 +275,10 @@ def test_oauth_token_accepts_json_and_camel_case_credentials(client, settings):
 
     configured = _configured(settings)
     client.app.state.settings = configured
-    redirect_uri = "https://chatgpt.com/aip/g-test/oauth/callback"
+    redirect_uri = CHATGPT_REDIRECT
     code = create_authorization_code(
-        configured, "Admin", configured.oauth_client_id, redirect_uri, "company.read"
+        configured, "Admin", configured.oauth_client_id, redirect_uri, "company.read",
+        PKCE_CHALLENGE, "S256",
     )
     response = client.post(
         "/oauth/token",
@@ -214,6 +288,7 @@ def test_oauth_token_accepts_json_and_camel_case_credentials(client, settings):
             "clientSecret": configured.oauth_client_secret,
             "code": code,
             "redirectUri": redirect_uri,
+            "codeVerifier": PKCE_VERIFIER,
         },
     )
     assert response.status_code == 200
@@ -225,9 +300,10 @@ def test_oauth_token_trims_pasted_client_credentials(client, settings):
 
     configured = _configured(settings)
     client.app.state.settings = configured
-    redirect_uri = "https://chatgpt.com/aip/g-test/oauth/callback"
+    redirect_uri = CHATGPT_REDIRECT
     code = create_authorization_code(
-        configured, "Admin", configured.oauth_client_id, redirect_uri, "company.read"
+        configured, "Admin", configured.oauth_client_id, redirect_uri, "company.read",
+        PKCE_CHALLENGE, "S256",
     )
     response = client.post(
         "/oauth/token",
@@ -237,16 +313,18 @@ def test_oauth_token_trims_pasted_client_credentials(client, settings):
             "client_secret": f" {configured.oauth_client_secret}\n",
             "code": code,
             "redirect_uri": redirect_uri,
+            "code_verifier": PKCE_VERIFIER,
         },
     )
     assert response.status_code == 200
 
 
-def test_oauth_invalid_client_records_only_safe_diagnostics(client, settings):
+def test_oauth_invalid_client_does_not_write_sqlite_diagnostics(client, settings):
     from app.database import sqlite_connection
 
     configured = _configured(settings)
     client.app.state.settings = configured
+    before = hashlib.sha256(configured.sqlite_path.read_bytes()).digest()
     response = client.post(
         "/oauth/token",
         json={
@@ -258,15 +336,105 @@ def test_oauth_invalid_client_records_only_safe_diagnostics(client, settings):
     )
     assert response.status_code == 401
     assert response.json()["error"] == "invalid_client"
+    assert hashlib.sha256(configured.sqlite_path.read_bytes()).digest() == before
 
     with sqlite_connection(configured.sqlite_path) as conn:
-        diagnostic = conn.execute(
-            "SELECT * FROM oauth_client_diagnostics ORDER BY id DESC LIMIT 1"
-        ).fetchone()
-    assert diagnostic["auth_method"] == "json"
-    assert diagnostic["content_type"] == "json"
-    assert diagnostic["client_id_match"] == 1
-    assert diagnostic["client_secret_present"] == 1
-    assert diagnostic["client_secret_length"] == len("wrong-secret")
-    assert diagnostic["client_secret_match"] == 0
-    assert "wrong-secret" not in repr(dict(diagnostic))
+        count = conn.execute(
+            "SELECT COUNT(*) FROM oauth_client_diagnostics"
+        ).fetchone()[0]
+    assert count == 0
+
+
+def test_oauth_token_rejects_query_credentials_without_sqlite_write(client, settings):
+    from app.database import sqlite_connection
+
+    configured = _configured(settings)
+    client.app.state.settings = configured
+    response = client.post(
+        "/oauth/token",
+        params={
+            "client_id": configured.oauth_client_id,
+            "client_secret": configured.oauth_client_secret,
+        },
+        data={"grant_type": "authorization_code", "code": "unused"},
+    )
+
+    assert response.status_code == 400
+    assert response.json()["error"] == "invalid_request"
+    with sqlite_connection(configured.sqlite_path) as conn:
+        count = conn.execute(
+            "SELECT COUNT(*) FROM oauth_client_diagnostics"
+        ).fetchone()[0]
+    assert count == 0
+
+
+def test_inactive_user_cannot_refresh_or_use_oauth_tokens(settings):
+    from app.auth_service import create_user
+    from app.database import sqlite_connection
+    from app.oauth_service import (
+        create_authorization_code,
+        exchange_authorization_code,
+        exchange_refresh_token,
+        verify_access_token,
+    )
+
+    configured = _configured(settings)
+    create_user(configured, "oauth.user", "StrongPass9")
+    redirect_uri = CHATGPT_REDIRECT
+    code = create_authorization_code(
+        configured,
+        "oauth.user",
+        configured.oauth_client_id,
+        redirect_uri,
+        "company.read",
+        PKCE_CHALLENGE,
+        "S256",
+    )
+    pair = exchange_authorization_code(
+        configured, code, configured.oauth_client_id, redirect_uri, PKCE_VERIFIER
+    )
+    assert pair is not None
+
+    with sqlite_connection(configured.sqlite_path) as conn:
+        conn.execute("UPDATE users SET active=0 WHERE username='oauth.user'")
+
+    assert verify_access_token(configured, pair["access_token"]) is None
+    assert exchange_refresh_token(configured, pair["refresh_token"]) is None
+    with sqlite_connection(configured.sqlite_path) as conn:
+        remaining = conn.execute(
+            "SELECT COUNT(*) FROM oauth_tokens WHERE username='oauth.user' AND revoked=0"
+        ).fetchone()[0]
+    assert remaining == 0
+
+
+def test_password_change_revokes_oauth_token_family(settings):
+    from app.auth_service import change_password, create_user
+    from app.oauth_service import (
+        create_authorization_code,
+        exchange_authorization_code,
+        exchange_refresh_token,
+        verify_access_token,
+    )
+
+    configured = _configured(settings)
+    create_user(configured, "password.user", "StrongPass9")
+    redirect_uri = CHATGPT_REDIRECT
+    code = create_authorization_code(
+        configured,
+        "password.user",
+        configured.oauth_client_id,
+        redirect_uri,
+        "company.read",
+        PKCE_CHALLENGE,
+        "S256",
+    )
+    pair = exchange_authorization_code(
+        configured, code, configured.oauth_client_id, redirect_uri, PKCE_VERIFIER
+    )
+    assert pair is not None
+
+    assert change_password(
+        configured, "password.user", "StrongPass9", "Replacement10"
+    )
+    assert verify_access_token(configured, pair["access_token"]) is None
+    assert exchange_refresh_token(configured, pair["refresh_token"]) is None

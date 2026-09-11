@@ -141,11 +141,16 @@ def test_comparison_returns_period_variance_and_percent(settings):
     ]
 
 
-def test_planning_api_exposes_metadata_scenarios_values_and_comparison(client, auth):
-    metadata = client.get("/planning/metadata", headers=auth)
+def test_planning_api_exposes_metadata_scenarios_values_and_comparison(client, settings):
+    create_user(settings, "planning.api.admin", "StrongPass9")
+    with sqlite_connection(settings.sqlite_path) as conn:
+        conn.execute("UPDATE users SET role='Admin' WHERE username='planning.api.admin'")
+    token = create_session(settings, "planning.api.admin")
+    headers = {"Cookie": f"negin_session={token}"}
+    metadata = client.get("/planning/metadata", headers=headers)
     created = client.post(
         "/planning/scenarios",
-        headers=auth,
+        headers=headers,
         json={
             "code": "API-BUD-1405",
             "name": "بودجه API",
@@ -164,13 +169,13 @@ def test_planning_api_exposes_metadata_scenarios_values_and_comparison(client, a
 
     saved = client.put(
         f"/planning/scenarios/{scenario_id}/values",
-        headers=auth,
+        headers=headers,
         json={"values": [_value("1405-01", 500)]},
     )
-    listed = client.get("/planning/scenarios", headers=auth)
+    listed = client.get("/planning/scenarios", headers=headers)
     compared = client.get(
         "/planning/compare",
-        headers=auth,
+        headers=headers,
         params={
             "left_id": scenario_id,
             "right_id": scenario_id,

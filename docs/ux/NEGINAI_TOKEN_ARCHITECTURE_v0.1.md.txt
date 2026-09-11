@@ -1,0 +1,539 @@
+# NeginAI Token Architecture v0.1
+
+Status:
+Draft / Design Foundation
+
+Date:
+2026-09-07
+
+---
+
+# 1. Purpose
+
+NeginAI Token Architecture defines the technical design language shared between:
+
+- Brand Identity
+- Figma Variables
+- Design System
+- Frontend Components
+- Runtime UI
+
+Tokens are the bridge between design and implementation.
+
+Architecture:
+
+Brand Rules
+
+↓
+
+Foundation Tokens
+
+↓
+
+Semantic Tokens
+
+↓
+
+Component Tokens
+
+↓
+
+Application UI
+
+---
+
+# 2. Token Principles
+
+## Single Source of Truth
+
+No visual value should exist without a token.
+
+Avoid:
+
+- Hardcoded colors
+- Random spacing
+- Independent component styling
+
+---
+
+## Semantic Meaning
+
+Components should consume meaning, not raw values.
+
+Example:
+
+Wrong:
+
+```css
+color: #4fd1ff;
+```
+
+Correct:
+
+```css
+color: var(--ng-action-primary);
+```
+
+---
+
+## Theme Ready
+
+Token architecture must support:
+
+- Light mode
+- Dark mode
+- Future branding changes
+
+---
+
+# 3. Token Layers
+
+NeginAI Tokens have four layers:
+
+---
+
+## Layer 1 — Foundation Tokens
+
+Raw design values.
+
+Examples:
+
+- Colors
+- Typography
+- Spacing
+- Radius
+- Shadow
+- Motion
+
+---
+
+## Layer 2 — Semantic Tokens
+
+Business meaning.
+
+Examples:
+
+- Primary Action
+- AI Surface
+- Warning State
+- Critical Alert
+- Workspace Background
+
+---
+
+## Layer 3 — Component Tokens
+
+Component specific values.
+
+Examples:
+
+- Button
+- Card
+- Navigation
+- Input
+- AI Panel
+
+---
+
+## Layer 4 — Experience Tokens
+
+Large experience patterns.
+
+Examples:
+
+- Dashboard Workspace
+- AI Assistant Panel
+- Operational Card
+- Mobile Dock
+
+---
+
+# 4. Color Token Structure
+
+## Brand
+
+```
+ng-brand-primary
+ng-brand-secondary
+ng-brand-accent
+```
+
+---
+
+## Surface
+
+```
+ng-bg-primary
+ng-bg-secondary
+ng-surface-card
+ng-surface-elevated
+```
+
+---
+
+## Content
+
+```
+ng-text-primary
+ng-text-secondary
+ng-text-muted
+```
+
+---
+
+## Action
+
+```
+ng-action-primary
+ng-action-hover
+ng-action-disabled
+```
+
+---
+
+## Semantic
+
+```
+ng-success
+ng-warning
+ng-danger
+ng-info
+```
+
+---
+
+## AI
+
+```
+ng-ai-primary
+ng-ai-surface
+ng-ai-highlight
+```
+
+---
+
+# 5. Typography Tokens
+
+Font system must support:
+
+- Persian RTL
+- English
+- Enterprise readability
+- Dense information environments
+
+
+Typography scale:
+
+```
+display-xl
+
+display-lg
+
+heading-xl
+
+heading-lg
+
+heading-md
+
+body-lg
+
+body-md
+
+body-sm
+
+caption
+```
+
+Each typography token contains:
+
+- font family
+- size
+- weight
+- line height
+- letter spacing
+
+---
+
+# 6. Spacing Tokens
+
+Base unit:
+
+```
+4px
+```
+
+Token scale:
+
+```
+space-1
+
+space-2
+
+space-3
+
+space-4
+
+space-6
+
+space-8
+
+space-12
+
+space-16
+
+space-24
+```
+
+All layouts must use spacing tokens.
+
+---
+
+# 7. Radius Tokens
+
+```
+radius-sm
+
+radius-md
+
+radius-lg
+
+radius-xl
+
+radius-pill
+```
+
+Used for:
+
+- Buttons
+- Cards
+- Panels
+- Dialogs
+
+---
+
+# 8. Shadow Tokens
+
+```
+shadow-sm
+
+shadow-md
+
+shadow-lg
+```
+
+Rules:
+
+- Subtle depth
+- Clear hierarchy
+- No artificial heavy 3D effects
+
+---
+
+# 9. Glass Tokens
+
+Glass system:
+
+```
+glass-bg
+
+glass-border
+
+glass-blur
+
+glass-opacity
+```
+
+Usage:
+
+- AI panels
+- Floating navigation
+- Context surfaces
+
+Rules:
+
+- Low opacity
+- High readability
+- Functional usage only
+
+---
+
+# 10. Motion Tokens
+
+Duration:
+
+```
+duration-fast
+
+duration-normal
+
+duration-slow
+```
+
+Easing:
+
+```
+ease-standard
+
+ease-emphasized
+
+ease-decelerated
+```
+
+Motion communicates:
+
+- State change
+- Loading
+- AI activity
+- Feedback
+
+---
+
+# 11. Component Token Example
+
+## Button
+
+```
+button-primary-bg
+
+button-primary-text
+
+button-primary-radius
+
+button-primary-height
+```
+
+---
+
+## Card
+
+```
+card-bg
+
+card-border
+
+card-radius
+
+card-shadow
+```
+
+---
+
+## AI Panel
+
+```
+ai-panel-bg
+
+ai-panel-border
+
+ai-panel-action
+```
+
+---
+
+# 12. Figma Mapping
+
+Every token must exist as:
+
+```
+Figma Variable
+
+↓
+
+Semantic Variable
+
+↓
+
+Component Property
+
+↓
+
+Frontend CSS Variable
+```
+
+Figma is the Visual Source of Truth.
+
+---
+
+# 13. Frontend Mapping
+
+Example:
+
+Figma:
+
+```
+Primary Action
+```
+
+↓
+
+CSS:
+
+```css
+--ng-action-primary
+```
+
+↓
+
+React:
+
+```tsx
+<Button variant="primary">
+```
+
+---
+
+# 14. Responsive Tokens
+
+Responsive system:
+
+```
+mobile
+
+tablet
+
+desktop
+```
+
+Examples:
+
+```
+container-mobile
+
+container-tablet
+
+container-desktop
+```
+
+---
+
+# 15. Governance Rules
+
+Every new token requires:
+
+- Clear purpose
+- Usage example
+- Component mapping
+- Figma variable definition
+
+Avoid:
+
+- Duplicate tokens
+- One-off values
+- Component specific hacks
+
+---
+
+# 16. Current Status
+
+Version:
+
+v0.1 Draft
+
+
+Next Steps:
+
+1. Complete Figma Variables
+2. Define Brand Color System
+3. Create Typography Library
+4. Build Primitive Components
+5. Connect React Token Layer

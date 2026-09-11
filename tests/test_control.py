@@ -7,7 +7,7 @@ from pathlib import Path
 
 from openpyxl import load_workbook
 
-from app.auth_service import create_session, create_user, user_profile
+from app.auth_service import create_session, create_user, user_profile, verify_session
 from app.control_service import (
     PERSONNEL_DIRECTORY_COLUMNS,
     control_snapshot,
@@ -448,6 +448,37 @@ def test_sync_is_idempotent_and_position_permissions_become_effective(client, se
     assert user_profile(settings, "finance.user")["role"] == "مدیر مالی"
     finance_session = {"Cookie": f"negin_session={create_session(settings, 'finance.user')}"}
     assert client.get("/planning/metadata", headers=finance_session).status_code == 200
+
+
+def test_deactivating_personnel_revokes_existing_sessions(client, settings):
+    admin_headers = _session(settings, "Admin", "Admin")
+    create_user(settings, "departing.user", "StrongPass9")
+    snapshot = client.get("/control/api/bootstrap", headers=admin_headers).json()
+    person = next(
+        item for item in snapshot["personnel"] if item["username"] == "departing.user"
+    )
+    session = create_session(settings, "departing.user", now=1_000)
+    assert verify_session(settings, session, now=1_001)
+
+    response = client.post(
+        "/control/api/sync",
+        headers=admin_headers,
+        json={
+            "operations": [
+                _operation(
+                    "op-deactivate-departing-user",
+                    "personnel",
+                    "delete",
+                    person["id"],
+                    base_revision=person["revision"],
+                )
+            ]
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["results"][0]["status"] == "applied"
+    assert not verify_session(settings, session, now=1_001)
 
 
 def test_sync_rejects_stale_revision_without_overwriting(client, settings):

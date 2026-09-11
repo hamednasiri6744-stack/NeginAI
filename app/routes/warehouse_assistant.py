@@ -28,7 +28,7 @@ from app.warehouse_assistant_service import (
 )
 
 
-MAX_UPLOAD_BYTES = 120 * 1024 * 1024
+MAX_UPLOAD_BYTES = 25 * 1024 * 1024
 ALLOWED_EXTENSIONS = {".xlsx", ".xlsm"}
 
 
@@ -170,7 +170,7 @@ async def import_snapshot(
                 if size > MAX_UPLOAD_BYTES:
                     raise HTTPException(
                         status_code=413,
-                        detail="حجم فایل انبار باید حداکثر ۱۲۰ مگابایت باشد.",
+                        detail="حجم فایل انبار باید حداکثر ۲۵ مگابایت باشد.",
                     )
                 handle.write(chunk)
         if size == 0:
