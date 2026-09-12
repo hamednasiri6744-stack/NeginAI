@@ -1,0 +1,6 @@
+/* NeginAI Design System — single runtime stylesheet entrypoint. */
+@import './styles.css';
+@import './v21.css';
+@import './v21-responsive.css';
+@import './v21-mobile-polish.css';
+@import './patterns/auth.css';
