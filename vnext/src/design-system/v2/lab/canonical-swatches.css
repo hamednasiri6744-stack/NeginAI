@@ -1,0 +1,23 @@
+/* Figma Canonical bridge for the Design System Lab color swatches.
+   Scope is lab-only; production component styles remain token-driven in v2/styles.css. */
+.ng-lab .ng-swatches>div:nth-child(1) i{background:var(--ng-canvas)!important}
+.ng-lab .ng-swatches>div:nth-child(2) i{background:var(--ng-surface-1)!important}
+.ng-lab .ng-swatches>div:nth-child(3) i{background:var(--ng-surface-3)!important}
+.ng-lab .ng-swatches>div:nth-child(4) i{background:var(--ng-text)!important}
+.ng-lab .ng-swatches>div:nth-child(5) i{background:var(--ng-accent)!important}
+.ng-lab .ng-swatches>div:nth-child(6) i{background:var(--ng-info)!important}
+.ng-lab .ng-swatches>div:nth-child(7) i{background:var(--ng-success)!important}
+.ng-lab .ng-swatches>div:nth-child(8) i{background:var(--ng-warning)!important}
+.ng-lab .ng-swatches>div:nth-child(9) i{background:var(--ng-danger)!important}
+
+.ng-lab .ng-swatches code{font-size:0}
+.ng-lab .ng-swatches code::after{font-size:var(--ng-fs-caption)}
+.ng-lab .ng-swatches>div:nth-child(1) code::after{content:'var(--ng-canvas)'}
+.ng-lab .ng-swatches>div:nth-child(2) code::after{content:'var(--ng-surface-1)'}
+.ng-lab .ng-swatches>div:nth-child(3) code::after{content:'var(--ng-surface-3)'}
+.ng-lab .ng-swatches>div:nth-child(4) code::after{content:'var(--ng-text)'}
+.ng-lab .ng-swatches>div:nth-child(5) code::after{content:'var(--ng-accent)'}
+.ng-lab .ng-swatches>div:nth-child(6) code::after{content:'var(--ng-info)'}
+.ng-lab .ng-swatches>div:nth-child(7) code::after{content:'var(--ng-success)'}
+.ng-lab .ng-swatches>div:nth-child(8) code::after{content:'var(--ng-warning)'}
+.ng-lab .ng-swatches>div:nth-child(9) code::after{content:'var(--ng-danger)'}
