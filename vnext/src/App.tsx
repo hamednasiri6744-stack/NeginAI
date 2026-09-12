@@ -1,5 +1,6 @@
 import './design-system/v2/styles.css'
 import './design-system/v2/lab/canonical-swatches.css'
+import './design-system/v2/v21.css'
 import { AppShell } from './components/AppShell'
 import { NetworkStatus } from './components/NetworkStatus'
 import { navigate, pathForPrimary, primaryForPath, routeForPath, useAppPath } from './app/router'
