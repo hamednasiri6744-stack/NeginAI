@@ -110,8 +110,7 @@
   gap:1.25rem;
   min-inline-size:0;
   padding:clamp(1.5rem,4vw,3.2rem);
-  background:
-    linear-gradient(180deg,rgb(12 33 51 / 76%),rgb(5 17 28 / 94%));
+  background:linear-gradient(180deg,rgb(12 33 51 / 76%),rgb(5 17 28 / 94%));
 }
 .ng-auth-pattern__header{display:grid;gap:.5rem}
 .ng-auth-pattern__header>span{
@@ -153,9 +152,23 @@
   padding-block-start:.25rem;
   border-block-start:1px solid rgb(255 255 255 / 5%);
 }
-.ng-auth-pattern__footer a,
-.ng-auth-pattern__footer button{
+.ng-auth-pattern__download{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:var(--ng-space-2);
   inline-size:100%;
+  min-block-size:var(--ng-touch);
+  color:var(--ng-text-secondary);
+  text-decoration:none;
+  border:1px solid rgb(112 157 191 / 20%);
+  border-radius:1rem;
+  background:linear-gradient(180deg,#0a2237,#061522);
+  box-shadow:var(--ng-v21-shadow-recessed);
+}
+.ng-auth-pattern__download:hover{
+  color:var(--ng-text);
+  border-color:rgb(232 191 90 / 34%);
 }
 .ng-auth-pattern__status{
   position:relative;
