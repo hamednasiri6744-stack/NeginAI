@@ -1,7 +1,7 @@
 import { Bell } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { primaryNavigation, type PrimaryDestination } from '../app/navigation'
-import { BottomNavigation, Cluster, NotificationButton, ProfileChip, TopAppBar } from '../design-system/v2'
+import { BottomNavigation, Cluster, NotificationButton, ProfileChip } from '../design-system/v2'
 
 type AppShellProps = {
   active: PrimaryDestination
@@ -16,17 +16,20 @@ export function AppShell({ active, onNavigate, children }: AppShellProps) {
   })
 
   return (
-    <div className="ng-v2 ng-app-shell-v2" dir="rtl" data-trace-id="SHL-V2">
-      <TopAppBar
-        title="Negin AI"
-        subtitle={'\u0633\u0627\u0645\u0627\u0646\u0647 \u0639\u0645\u0644\u06cc\u0627\u062a\u06cc \u0648 \u0647\u0648\u0634\u0645\u0646\u062f \u0646\u06af\u06cc\u0646 \u067e\u062e\u0634'}
-        actions={
-          <Cluster gap={2}>
-            <NotificationButton count={3} label={'\u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627'}><Bell size={19}/></NotificationButton>
-            <ProfileChip name={'\u0648\u06cc\u0632\u06cc\u062a\u0648\u0631 Negin AI'} subtitle={'\u062d\u0633\u0627\u0628 \u0641\u0639\u0627\u0644'} avatar="NA"/>
-          </Cluster>
-        }
-      />
+    <div className="ng-v2 ng-app-shell-v2 ng-shell-v21" dir="rtl" data-trace-id="SHL-V2">
+      <header className="ng-shell-v21__topbar">
+        <div className="ng-shell-v21__brand" aria-label="Negin AI">
+          <img src="/brand/neginai-logo-canonical.webp" alt="Negin AI" />
+          <span>
+            <strong dir="ltr">Negin AI</strong>
+            <small>همراه شما در مسیر رشد</small>
+          </span>
+        </div>
+        <Cluster gap={2}>
+          <NotificationButton count={3} label="اعلان‌ها"><Bell size={19}/></NotificationButton>
+          <ProfileChip name="ویزیتور Negin AI" subtitle="حساب فعال" avatar="NA"/>
+        </Cluster>
+      </header>
       <main className="ng-app-shell-v2__main" data-trace-id="SHL-V2-MAIN">{children}</main>
       <BottomNavigation items={items} activeId={active} onNavigate={(id)=>onNavigate(id as PrimaryDestination)} />
     </div>
