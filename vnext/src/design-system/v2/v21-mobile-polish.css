@@ -1,0 +1,187 @@
+/* NeginAI v2.1 — Mobile visual QA polish
+   Screenshot-driven corrections for density, header behavior, dock clearance and route map rendering. */
+
+@media (max-width:47.99rem) {
+  .ng-shell-v21__topbar {
+    position: relative;
+    inset-block-start: auto;
+    min-block-size: 4.25rem;
+    padding: .55rem .75rem;
+    border-block-end-color: rgb(232 191 90 / 12%);
+    background: linear-gradient(180deg, rgb(7 20 34 / 94%), rgb(4 14 24 / 88%));
+    box-shadow: 0 .55rem 1.4rem rgb(0 0 0 / 20%), inset 0 -1px 0 rgb(255 255 255 / 3%);
+  }
+
+  .ng-shell-v21__brand {
+    gap: .55rem;
+  }
+
+  .ng-shell-v21__brand img {
+    inline-size: 2.55rem;
+    block-size: 2.55rem;
+  }
+
+  .ng-shell-v21__brand strong {
+    font-size: 1rem;
+  }
+
+  .ng-shell-v21__brand small {
+    font-size: .6rem;
+  }
+
+  .ng-home-v21 .ng-page-container {
+    inline-size: calc(100% - .8rem);
+    padding-block-start: .65rem;
+    padding-block-end: calc(8.75rem + env(safe-area-inset-bottom));
+  }
+
+  .ng-home-v21__hero {
+    min-block-size: 20.5rem;
+    gap: .45rem;
+    padding: .9rem;
+    border-radius: 1.2rem;
+  }
+
+  .ng-home-v21__eyebrow {
+    font-size: .65rem;
+  }
+
+  .ng-home-v21__hero h1 {
+    margin: .4rem 0 .45rem;
+    font-size: 1.58rem;
+    line-height: 1.35;
+  }
+
+  .ng-home-v21__hero p {
+    margin-block-end: .8rem;
+    font-size: .84rem;
+    line-height: 1.72;
+  }
+
+  .ng-home-v21__hero .ng-button {
+    min-block-size: 2.85rem;
+    padding-inline: .8rem;
+    font-size: .82rem;
+  }
+
+  .ng-home-v21__hero-art {
+    min-block-size: 8.75rem;
+  }
+
+  .ng-home-v21__sun {
+    inline-size: 4.25rem;
+    inset-block-start: 5%;
+  }
+
+  .ng-home-v21__kpis,
+  .ng-home-v21__quick-actions {
+    gap: .6rem;
+  }
+
+  .ng-home-v21__kpis article {
+    min-block-size: 7.65rem;
+    padding: .78rem;
+    border-radius: 1rem;
+  }
+
+  .ng-home-v21__kpi-icon {
+    inline-size: 2.15rem;
+    border-radius: .7rem;
+  }
+
+  .ng-home-v21__kpis strong {
+    font-size: 1.35rem;
+  }
+
+  .ng-home-v21__quick-actions button {
+    min-block-size: 6.65rem;
+    padding: .72rem;
+    border-radius: 1rem;
+  }
+
+  .ng-home-v21__route-card,
+  .ng-home-v21__suggestions,
+  .ng-home-v21__activity {
+    padding: .72rem;
+    border-radius: 1.15rem;
+  }
+
+  .ng-home-v21__route-layout {
+    grid-template-columns: minmax(0, 1fr) 7.25rem;
+    gap: .55rem;
+    align-items: stretch;
+  }
+
+  .ng-home-v21__map {
+    min-block-size: 13.25rem;
+    border-radius: .95rem;
+    background-color: #07131f;
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MjAgMjUwIj4KPHJlY3Qgd2lkdGg9IjUyMCIgaGVpZ2h0PSIyNTAiIGZpbGw9IiMwNzEzMWYiLz4KPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMjk0YTZkIiBzdHJva2Utd2lkdGg9IjIiIG9wYWNpdHk9Ii41MiI+CjxwYXRoIGQ9Ik0tMjAgNTUgQzkwIDQwIDE1MCA3OCAyNjAgNjAgUzQzMCAyMCA1NDAgNTIiLz4KPHBhdGggZD0iTS0xMCAxMTIgQzgwIDg1IDE0NSAxMzAgMjUwIDExMCBTMzkwIDgwIDU0MCAxMjUiLz4KPHBhdGggZD0iTS0xNSAxODAgQzExMCAxNjAgMTcwIDIxMCAzMDAgMTc1IFM0MzAgMTUwIDU0NSAxOTAiLz4KPHBhdGggZD0iTTgwIC0yMCBDNjAgNTUgMTEwIDk1IDg1IDE2MCBTNzAgMjIwIDk1IDI3MCIvPgo8cGF0aCBkPSJNMjEwIC0xMCBDMTkwIDYwIDIzNSAxMDAgMjEwIDE1MCBTMTkwIDIyNSAyMjUgMjcwIi8+CjxwYXRoIGQ9Ik0zODAgLTIwIEMzNTAgNDUgMzk1IDEwMCAzNjUgMTU1IFMzNTAgMjIwIDM5MCAyNzAiLz4KPC9nPgo8ZyBmaWxsPSJub25lIiBzdHJva2U9IiMzYjY2ODkiIHN0cm9rZS13aWR0aD0iNSIgb3BhY2l0eT0iLjI1Ij4KPHBhdGggZD0iTS0xMCAyMDggQzExMCAyMjAgMTYwIDE0OCAyNzUgMTY1IFM0MjAgMjEyIDU0MCAxNjAiLz4KPHBhdGggZD0iTTEzMiAtMjAgQzE0NSA3MCAxMTAgMTIwIDE1MCAyNzAiLz4KPC9nPgo8cGF0aCBkPSJNNjQgMTkwIEMxMzIgMTY4IDE1MCAxMTIgMjI2IDEyNSBTMzEwIDE5MCAzNzIgMTQyIFM0NDAgODIgNDc4IDYyIiBmaWxsPSJub25lIiBzdHJva2U9IiNlOGJmNWEiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAxOTAgQzEzMiAxNjggMTUwIDExMiAyMjYgMTI1IFMzMTAgMTkwIDM3MiAxNDIgUzQ0MCA4MiA0NzggNjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZjJiYyIgc3Ryb2tlLXdpZHRoPSIxLjQiIG9wYWNpdHk9Ii42NSIvPgo8ZyBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTMiIGZvbnQtd2VpZ2h0PSI3MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPgo8Zz48Y2lyY2xlIGN4PSI2NCIgY3k9IjE5MCIgcj0iMTUiIGZpbGw9IiNlOGJmNWEiLz48Y2lyY2xlIGN4PSI2NCIgY3k9IjE5MCIgcj0iNyIgZmlsbD0iIzA0MTExZiIvPjx0ZXh0IHg9IjY0IiB5PSIyMzAiIGZpbGw9IiNhN2I3Y2MiPlNUQVJUPC90ZXh0PjwvZz4KPGc+PGNpcmNsZSBjeD0iMjI2IiBjeT0iMTI1IiByPSIxNSIgZmlsbD0iI2U4YmY1YSIvPjx0ZXh0IHg9IjIyNiIgeT0iMTMwIiBmaWxsPSIjMDQxMTFmIj4yPC90ZXh0PjwvZz4KPGc+PGNpcmNsZSBjeD0iMzcyIiBjeT0iMTQyIiByPSIxNSIgZmlsbD0iI2U4YmY1YSIvPjx0ZXh0IHg9IjM3MiIgeT0iMTQ3IiBmaWxsPSIjMDQxMTFmIj4zPC90ZXh0PjwvZz4KPGc+PGNpcmNsZSBjeD0iNDc4IiBjeT0iNjIiIHI9IjE2IiBmaWxsPSIjZmZmMmJjIi8+PHRleHQgeD0iNDc4IiB5PSI2NyIgZmlsbD0iIzA0MTExZiI+NDwvdGV4dD48L2c+CjwvZz4KPGNpcmNsZSBjeD0iMTA0IiBjeT0iMTc4IiByPSIyMCIgZmlsbD0iIzNlOWVmZiIgb3BhY2l0eT0iLjE4Ii8+CjxjaXJjbGUgY3g9IjEwNCIgY3k9IjE3OCIgcj0iOCIgZmlsbD0iIzNlOWVmZiIvPgo8L3N2Zz4=");
+    background-size: cover;
+    background-position: center;
+    box-shadow: var(--ng-v21-shadow-recessed);
+  }
+
+  .ng-home-v21__map > svg {
+    display: none;
+  }
+
+  .ng-home-v21__next-stop {
+    inset-inline-start: .55rem;
+    inset-block-start: .55rem;
+    padding: .45rem .55rem;
+    border-radius: .75rem;
+  }
+
+  .ng-home-v21__route-stats {
+    gap: .45rem;
+  }
+
+  .ng-home-v21__route-stats > div:not(.ng-progress) {
+    display: grid;
+    justify-items: start;
+    gap: .35rem;
+    min-block-size: 4.45rem;
+    padding: .55rem;
+    border-radius: .75rem;
+  }
+
+  .ng-home-v21__route-stats small {
+    font-size: .56rem;
+  }
+
+  .ng-home-v21__route-stats strong {
+    font-size: .72rem;
+  }
+
+  .ng-home-v21__route-stats .ng-progress {
+    font-size: .62rem;
+  }
+
+  .ng-home-v21__route-stats .ng-button {
+    min-block-size: 2.55rem;
+    padding-inline: .45rem;
+    font-size: .68rem;
+  }
+
+  .ng-bottom-nav {
+    z-index: 100;
+    inset-inline: .55rem;
+    inset-block-end: max(.55rem, env(safe-area-inset-bottom));
+    border-radius: 1.3rem;
+  }
+}
+
+@media (max-width:27rem) {
+  .ng-home-v21__hero {
+    min-block-size: 19rem;
+  }
+
+  .ng-home-v21__hero h1 {
+    font-size: 1.45rem;
+  }
+
+  .ng-home-v21__route-layout {
+    grid-template-columns: minmax(0, 1fr) 6.8rem;
+  }
+}
