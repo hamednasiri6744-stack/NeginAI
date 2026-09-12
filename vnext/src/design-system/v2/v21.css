@@ -1,0 +1,210 @@
+/* NeginAI Design Language v2.1 — Volumetric Gold
+   Canonical visual recipes synchronized from Figma.
+   This layer changes presentation only; component contracts, routes and behavior stay intact. */
+
+:root {
+  --ng-v21-volumetric-navy: linear-gradient(180deg,
+    #17364f 0%,
+    #102a40 24%,
+    #091b2d 58%,
+    #030c15 100%);
+  --ng-v21-floating-glass: linear-gradient(180deg,
+    rgb(27 61 87 / 82%) 0%,
+    rgb(13 36 56 / 78%) 40%,
+    rgb(6 19 31 / 94%) 100%);
+  --ng-v21-metallic-gold: linear-gradient(180deg,
+    #fff2bc 0%,
+    #f5d36e 18%,
+    #e8bf5a 48%,
+    #b67629 76%,
+    #6b4014 100%);
+
+  /* Figma: Elevation / Volumetric Raised */
+  --ng-v21-shadow-raised:
+    0 18px 28px rgb(0 0 0 / 62%),
+    0 -3px 10px rgb(240 204 114 / 14%),
+    inset -2px -2px 5px rgb(255 255 255 / 8%),
+    inset 4px 6px 12px rgb(0 0 0 / 48%);
+
+  /* Figma: Elevation / Premium Gold */
+  --ng-v21-shadow-premium-gold:
+    0 20px 32px rgb(0 0 0 / 68%),
+    0 0 22px rgb(232 191 90 / 34%),
+    inset -2px -3px 7px rgb(255 243 194 / 22%),
+    inset 4px 6px 12px rgb(90 50 16 / 50%);
+
+  /* Figma: Elevation / Floating Glass */
+  --ng-v21-shadow-floating:
+    0 16px 28px rgb(0 0 0 / 54%),
+    0 -2px 10px rgb(148 197 232 / 10%),
+    inset -1px -2px 5px rgb(255 255 255 / 7%),
+    inset 2px 4px 10px rgb(0 0 0 / 30%);
+
+  /* Figma: Elevation / Recessed */
+  --ng-v21-shadow-recessed:
+    inset 4px 7px 16px rgb(0 0 0 / 72%),
+    inset -2px -3px 7px rgb(147 189 216 / 9%);
+
+  /* Compatibility seams: existing v2 components inherit the v2.1 recipes. */
+  --ng-button-primary-bg: var(--ng-v21-metallic-gold);
+  --ng-button-secondary-bg: var(--ng-v21-volumetric-navy);
+  --ng-field-bg: var(--ng-v21-volumetric-navy);
+  --ng-card-bg: var(--ng-v21-volumetric-navy);
+  --ng-card-premium-bg:
+    radial-gradient(circle at 18% -8%, rgb(255 223 145 / 13%), transparent 40%),
+    var(--ng-v21-volumetric-navy);
+  --ng-navigation-bg: var(--ng-v21-floating-glass);
+  --ng-shadow-surface: var(--ng-v21-shadow-raised);
+  --ng-shadow-raised: var(--ng-v21-shadow-raised);
+  --ng-shadow-nav: var(--ng-v21-shadow-floating);
+  --ng-shadow-gold: var(--ng-v21-shadow-premium-gold);
+}
+
+/* Ambient field — gold acts as light, not as decoration. */
+.ng-v2,
+.ng-app-shell-v2 {
+  background:
+    radial-gradient(circle at 82% 4%, rgb(232 191 90 / 14%), transparent 22rem),
+    radial-gradient(circle at 10% 34%, rgb(62 158 255 / 5%), transparent 28rem),
+    linear-gradient(180deg, #04111f 0%, #020a13 72%, #01060c 100%);
+}
+
+/* Raised surfaces */
+.ng-surface,
+.ng-card,
+.ng-profile-chip,
+.ng-notification-button,
+.ng-quick-action,
+.ng-route-summary,
+.ng-insight-card,
+.ng-form-section,
+.ng-summary-panel,
+.ng-filter-bar {
+  border-color: rgb(232 191 90 / 18%);
+  background: var(--ng-v21-volumetric-navy);
+  box-shadow: var(--ng-v21-shadow-raised);
+}
+
+.ng-card.is-interactive {
+  transition: transform var(--ng-fast), border-color var(--ng-fast), box-shadow var(--ng-fast), filter var(--ng-fast);
+}
+.ng-card.is-interactive:hover {
+  transform: translateY(-3px);
+  border-color: rgb(232 191 90 / 34%);
+  box-shadow:
+    var(--ng-v21-shadow-raised),
+    0 0 24px rgb(232 191 90 / 10%);
+  filter: brightness(1.035);
+}
+
+/* Metallic actions */
+.ng-button--primary,
+.ng-fab {
+  color: #04111f;
+  border-color: rgb(255 225 145 / 48%);
+  background: var(--ng-v21-metallic-gold);
+  box-shadow: var(--ng-v21-shadow-premium-gold);
+}
+.ng-button--primary:hover:not(:disabled),
+.ng-fab:hover:not(:disabled) {
+  filter: brightness(1.06);
+  transform: translateY(-2px);
+}
+.ng-button--secondary,
+.ng-icon-button--premium {
+  border-color: rgb(232 191 90 / 22%);
+  background: var(--ng-v21-volumetric-navy);
+  box-shadow: var(--ng-v21-shadow-raised);
+}
+
+/* Recessed controls */
+.ng-input-wrap,
+.ng-field > select,
+.ng-field > textarea,
+.ng-date-field > div,
+.ng-stepper > div,
+.ng-segmented {
+  border-color: rgb(98 147 186 / 24%);
+  background: var(--ng-v21-volumetric-navy);
+  box-shadow: var(--ng-v21-shadow-recessed);
+}
+.ng-input-wrap:focus-within,
+.ng-field > select:focus,
+.ng-field > textarea:focus {
+  border-color: rgb(232 191 90 / 58%);
+  background: var(--ng-v21-volumetric-navy);
+  box-shadow:
+    var(--ng-v21-shadow-recessed),
+    0 0 0 3px rgb(232 191 90 / 12%),
+    0 0 20px rgb(232 191 90 / 8%);
+}
+
+/* Floating glass navigation */
+.ng-topbar,
+.ng-bottom-nav {
+  border-color: rgb(232 191 90 / 20%);
+  background: var(--ng-v21-floating-glass);
+  box-shadow: var(--ng-v21-shadow-floating);
+  backdrop-filter: blur(22px) saturate(128%);
+  -webkit-backdrop-filter: blur(22px) saturate(128%);
+}
+.ng-bottom-nav button.is-active {
+  color: #f7e3a0;
+  background:
+    radial-gradient(circle at 50% 45%, rgb(232 191 90 / 22%), transparent 68%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 6%);
+}
+.ng-bottom-nav button.is-ai > span {
+  color: #04111f;
+  border-color: rgb(3 12 21 / 92%);
+  background: var(--ng-v21-metallic-gold);
+  box-shadow: var(--ng-v21-shadow-premium-gold);
+}
+
+/* Premium indicators and KPI emphasis */
+.ng-metric,
+.ng-visual-metric {
+  position: relative;
+}
+.ng-metric::before,
+.ng-visual-metric::before {
+  content: '';
+  position: absolute;
+  inset-inline: 1.1rem;
+  inset-block-start: 0;
+  block-size: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgb(255 226 160 / 42%), transparent);
+}
+.ng-tone--premium,
+.ng-tabs [role=tab][aria-selected=true] {
+  color: #f7e3a0;
+}
+
+/* Keep overlays visually elevated but not gold-heavy. */
+.ng-modal > div,
+.ng-sheet > div,
+.ng-drawer > div,
+.ng-context-menu,
+.ng-toast,
+.ng-combobox > [role=listbox] {
+  border-color: rgb(98 147 186 / 24%);
+  background: var(--ng-v21-floating-glass);
+  box-shadow: var(--ng-v21-shadow-floating);
+  backdrop-filter: blur(22px) saturate(124%);
+  -webkit-backdrop-filter: blur(22px) saturate(124%);
+}
+
+@media (min-width:48rem) {
+  .ng-bottom-nav {
+    border-color: rgb(232 191 90 / 24%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ng-card.is-interactive:hover,
+  .ng-button--primary:hover:not(:disabled),
+  .ng-fab:hover:not(:disabled) {
+    transform: none;
+  }
+}
