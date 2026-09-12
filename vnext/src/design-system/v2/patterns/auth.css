@@ -1,0 +1,222 @@
+/* Canonical Auth Pattern — Design System owned. */
+.ng-auth-pattern{
+  position:relative;
+  min-block-size:100dvh;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  padding:clamp(1rem,3vw,2rem);
+  background:
+    radial-gradient(circle at 82% 8%,rgb(232 191 90 / 16%),transparent 22rem),
+    radial-gradient(circle at 12% 88%,rgb(62 158 255 / 7%),transparent 26rem),
+    linear-gradient(180deg,#04111f 0%,#020a13 68%,#01060c 100%);
+}
+.ng-auth-pattern__ambient{
+  position:absolute;
+  inset:-15%;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 72% 24%,rgb(247 227 160 / 8%),transparent 19rem),
+    radial-gradient(circle at 22% 68%,rgb(62 158 255 / 4%),transparent 23rem);
+  filter:blur(16px);
+}
+.ng-auth-pattern__shell{
+  position:relative;
+  z-index:1;
+  display:grid;
+  grid-template-columns:minmax(18rem,.92fr) minmax(22rem,1.08fr);
+  inline-size:min(100%,62rem);
+  overflow:hidden;
+  border:1px solid rgb(232 191 90 / 22%);
+  border-radius:1.7rem;
+  background:linear-gradient(180deg,rgb(15 39 60 / 86%),rgb(5 17 29 / 96%));
+  box-shadow:
+    0 28px 60px rgb(0 0 0 / 52%),
+    0 0 38px rgb(232 191 90 / 9%),
+    inset 0 1px 0 rgb(255 255 255 / 7%);
+  backdrop-filter:blur(22px) saturate(120%);
+  -webkit-backdrop-filter:blur(22px) saturate(120%);
+}
+.ng-auth-pattern__brand{
+  position:relative;
+  display:grid;
+  align-content:center;
+  justify-items:start;
+  gap:.7rem;
+  min-block-size:34rem;
+  padding:clamp(1.5rem,4vw,3.2rem);
+  border-inline-end:1px solid rgb(232 191 90 / 14%);
+  background:
+    radial-gradient(circle at 50% 12%,rgb(232 191 90 / 16%),transparent 15rem),
+    linear-gradient(180deg,#16354f 0%,#0c253b 36%,#071827 72%,#030d16 100%);
+  box-shadow:inset -1px 0 0 rgb(255 255 255 / 3%);
+}
+.ng-auth-pattern__brand::after{
+  content:'';
+  position:absolute;
+  inset-inline:1.5rem;
+  inset-block-start:0;
+  block-size:1px;
+  background:linear-gradient(90deg,transparent,rgb(255 235 178 / 48%),transparent);
+}
+.ng-auth-pattern__logo-wrap{
+  display:grid;
+  place-items:center;
+  inline-size:5.4rem;
+  block-size:5.4rem;
+  margin-block-end:.5rem;
+  border:1px solid rgb(232 191 90 / 30%);
+  border-radius:1.3rem;
+  background:linear-gradient(180deg,rgb(20 46 68 / 88%),rgb(5 17 29 / 98%));
+  box-shadow:var(--ng-v21-shadow-premium-gold);
+}
+.ng-auth-pattern__logo-wrap img{
+  inline-size:4.35rem;
+  block-size:4.35rem;
+  object-fit:contain;
+  filter:drop-shadow(0 0 1.1rem rgb(232 191 90 / 28%));
+}
+.ng-auth-pattern__eyebrow{
+  color:#f7e3a0;
+  font-size:.72rem;
+  font-weight:800;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+.ng-auth-pattern__brand h1{
+  margin:0;
+  color:#f7e3a0;
+  font:800 clamp(2rem,4vw,3rem)/1.05 var(--ng-font-latin);
+  letter-spacing:.01em;
+}
+.ng-auth-pattern__brand p{
+  max-inline-size:22rem;
+  margin:0;
+  color:var(--ng-text-secondary);
+  line-height:1.9;
+}
+.ng-auth-pattern__brand-line{
+  inline-size:min(12rem,70%);
+  block-size:3px;
+  margin-block:.6rem .15rem;
+  border-radius:999px;
+  background:linear-gradient(90deg,#6b4014,#e8bf5a,#fff2bc);
+  box-shadow:0 0 1rem rgb(232 191 90 / 28%);
+}
+.ng-auth-pattern__brand small{color:var(--ng-text-muted)}
+.ng-auth-pattern__panel{
+  display:grid;
+  align-content:center;
+  gap:1.25rem;
+  min-inline-size:0;
+  padding:clamp(1.5rem,4vw,3.2rem);
+  background:
+    linear-gradient(180deg,rgb(12 33 51 / 76%),rgb(5 17 28 / 94%));
+}
+.ng-auth-pattern__header{display:grid;gap:.5rem}
+.ng-auth-pattern__header>span{
+  color:#f5d36e;
+  font-size:.72rem;
+  font-weight:800;
+  letter-spacing:.03em;
+}
+.ng-auth-pattern__header h2{
+  margin:0;
+  color:var(--ng-text);
+  font-size:clamp(1.65rem,3vw,2.15rem);
+  line-height:1.35;
+}
+.ng-auth-pattern__header p{
+  margin:0;
+  color:var(--ng-text-secondary);
+  line-height:1.85;
+}
+.ng-auth-pattern__body{min-inline-size:0}
+.ng-auth-pattern__body .ng-stack{inline-size:100%}
+.ng-auth-pattern__body .ng-field>label{color:#d7e0ea}
+.ng-auth-pattern__body .ng-input-wrap{
+  min-block-size:3.4rem;
+  border-color:rgb(112 157 191 / 24%);
+  border-radius:1rem;
+  background:linear-gradient(180deg,#0a2237,#061522);
+  box-shadow:var(--ng-v21-shadow-recessed);
+}
+.ng-auth-pattern__body .ng-input-wrap:focus-within{
+  border-color:rgb(232 191 90 / 62%);
+  box-shadow:var(--ng-v21-shadow-recessed),0 0 0 3px rgb(232 191 90 / 11%),0 0 22px rgb(232 191 90 / 8%);
+}
+.ng-auth-pattern__body .ng-button--lg{
+  min-block-size:3.45rem;
+  border-radius:1rem;
+}
+.ng-auth-pattern__footer{
+  padding-block-start:.25rem;
+  border-block-start:1px solid rgb(255 255 255 / 5%);
+}
+.ng-auth-pattern__footer a,
+.ng-auth-pattern__footer button{
+  inline-size:100%;
+}
+.ng-auth-pattern__status{
+  position:relative;
+  z-index:1;
+  inline-size:min(100%,26rem);
+  padding:2rem;
+  text-align:center;
+  border:1px solid rgb(232 191 90 / 20%);
+  border-radius:1.4rem;
+  background:var(--ng-v21-floating-glass);
+  box-shadow:var(--ng-v21-shadow-floating);
+  backdrop-filter:blur(22px) saturate(120%);
+  -webkit-backdrop-filter:blur(22px) saturate(120%);
+}
+.ng-auth-pattern__status .ng-stack{align-items:center}
+
+@media(max-width:47.99rem){
+  .ng-auth-pattern{padding:0;place-items:stretch}
+  .ng-auth-pattern__shell{
+    grid-template-columns:1fr;
+    inline-size:100%;
+    min-block-size:100dvh;
+    border:0;
+    border-radius:0;
+    box-shadow:none;
+  }
+  .ng-auth-pattern__brand{
+    grid-template-columns:auto 1fr;
+    align-items:center;
+    align-content:start;
+    gap:.45rem .9rem;
+    min-block-size:auto;
+    padding:calc(1rem + env(safe-area-inset-top)) 1rem 1.15rem;
+    border-inline-end:0;
+    border-block-end:1px solid rgb(232 191 90 / 14%);
+    background:linear-gradient(180deg,#0d2a42 0%,#071a2b 100%);
+  }
+  .ng-auth-pattern__logo-wrap{
+    grid-row:1 / span 4;
+    inline-size:4.4rem;
+    block-size:4.4rem;
+    margin:0;
+    border-radius:1rem;
+  }
+  .ng-auth-pattern__logo-wrap img{inline-size:3.55rem;block-size:3.55rem}
+  .ng-auth-pattern__eyebrow{font-size:.61rem}
+  .ng-auth-pattern__brand h1{font-size:1.7rem}
+  .ng-auth-pattern__brand p{font-size:.74rem;line-height:1.65}
+  .ng-auth-pattern__brand-line,.ng-auth-pattern__brand small{display:none}
+  .ng-auth-pattern__panel{
+    align-content:start;
+    padding:1.35rem 1rem calc(1.5rem + env(safe-area-inset-bottom));
+    background:linear-gradient(180deg,#061725 0%,#020a13 100%);
+  }
+  .ng-auth-pattern__header h2{font-size:1.6rem}
+  .ng-auth-pattern__header p{font-size:.83rem}
+  .ng-auth-pattern__body .ng-input-wrap{min-block-size:3.2rem}
+  .ng-auth-pattern__status{align-self:center;margin:auto 1rem}
+}
+
+@media(max-width:27rem){
+  .ng-auth-pattern__brand{padding-inline:.85rem}
+  .ng-auth-pattern__panel{padding-inline:.85rem}
+}
