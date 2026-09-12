@@ -30,6 +30,53 @@ function Invoke-Checked {
     }
 }
 
+function Test-DevHealth {
+    param([int]$HealthPort)
+    try {
+        $response = Invoke-WebRequest -UseBasicParsing "http://127.0.0.1:$HealthPort" -TimeoutSec 3
+        return ($response.StatusCode -eq 200)
+    }
+    catch {
+        return $false
+    }
+}
+
+function Stop-OwnedPreview {
+    param([int]$PreviewPort)
+
+    $listeners = @(Get-NetTCPConnection -State Listen -LocalPort $PreviewPort -ErrorAction SilentlyContinue)
+    foreach ($listener in $listeners) {
+        $owner = Get-CimInstance Win32_Process -Filter "ProcessId=$($listener.OwningProcess)"
+        $commandLine = [string]$owner.CommandLine
+        if (($owner.Name -ne 'node.exe') -or ($commandLine -notlike "*$VnextPath*") -or ($commandLine -notlike '*vite*')) {
+            throw "Port $PreviewPort is owned by an unrelated process (PID $($listener.OwningProcess))."
+        }
+        Stop-Process -Id $listener.OwningProcess -Force
+    }
+}
+
+function Start-PreviewAndWait {
+    param([int]$PreviewPort)
+
+    Stop-OwnedPreview -PreviewPort $PreviewPort
+    Start-Sleep -Milliseconds 700
+
+    Write-Host "[deploy] starting preview on 127.0.0.1:$PreviewPort..."
+    Start-Process -FilePath 'npm.cmd' `
+        -ArgumentList @('run','preview','--','--host','127.0.0.1','--port',"$PreviewPort",'--strictPort') `
+        -WorkingDirectory $VnextPath `
+        -WindowStyle Hidden
+
+    for ($i = 0; $i -lt 20; $i++) {
+        Start-Sleep -Seconds 1
+        if (Test-DevHealth -HealthPort $PreviewPort) {
+            return
+        }
+    }
+
+    throw "Deployment failed health check on port $PreviewPort."
+}
+
 try {
     $hasLock = $mutex.WaitOne(0)
     if (-not $hasLock) {
@@ -55,71 +102,53 @@ try {
 
     $localSha = (git rev-parse HEAD).Trim()
     $remoteSha = (git rev-parse "origin/$Branch").Trim()
+    $shaChanged = ($localSha -ne $remoteSha)
 
-    if ($localSha -eq $remoteSha) {
-        Write-Host "[ok] already deployed: $($localSha.Substring(0,7))"
+    if ($shaChanged) {
+        git merge-base --is-ancestor $localSha $remoteSha
+        if ($LASTEXITCODE -ne 0) {
+            throw 'Remote branch is not a fast-forward from the deploy clone.'
+        }
+
+        $dependencyChanges = @(git diff --name-only $localSha $remoteSha -- 'vnext/package.json' 'vnext/package-lock.json')
+        if ($LASTEXITCODE -ne 0) { throw 'git diff failed.' }
+
+        git pull --ff-only origin $Branch
+        if ($LASTEXITCODE -ne 0) { throw 'git pull --ff-only failed.' }
+
+        if (($dependencyChanges.Count -gt 0) -or (-not (Test-Path (Join-Path $VnextPath 'node_modules')))) {
+            Write-Host '[deploy] installing dependencies...'
+            Invoke-Checked -FilePath 'npm.cmd' -Arguments @('ci','--no-audit','--no-fund') -WorkingDirectory $VnextPath
+        }
+
+        Write-Host '[deploy] building vnext...'
+        Invoke-Checked -FilePath 'npm.cmd' -Arguments @('run','build') -WorkingDirectory $VnextPath
+    }
+    elseif (Test-DevHealth -HealthPort $Port) {
+        Write-Host "[ok] already deployed and healthy: $($localSha.Substring(0,7))"
         exit 0
     }
+    else {
+        Write-Host "[recover] SHA unchanged but port $Port is unhealthy. Restoring preview."
 
-    git merge-base --is-ancestor $localSha $remoteSha
-    if ($LASTEXITCODE -ne 0) {
-        throw 'Remote branch is not a fast-forward from the deploy clone.'
+        if (-not (Test-Path (Join-Path $VnextPath 'node_modules'))) {
+            Write-Host '[recover] installing dependencies...'
+            Invoke-Checked -FilePath 'npm.cmd' -Arguments @('ci','--no-audit','--no-fund') -WorkingDirectory $VnextPath
+        }
+
+        if (-not (Test-Path (Join-Path $VnextPath 'dist\index.html'))) {
+            Write-Host '[recover] build artifact missing; rebuilding...'
+            Invoke-Checked -FilePath 'npm.cmd' -Arguments @('run','build') -WorkingDirectory $VnextPath
+        }
     }
-
-    $dependencyChanges = @(git diff --name-only $localSha $remoteSha -- 'vnext/package.json' 'vnext/package-lock.json')
-    if ($LASTEXITCODE -ne 0) { throw 'git diff failed.' }
-
-    git pull --ff-only origin $Branch
-    if ($LASTEXITCODE -ne 0) { throw 'git pull --ff-only failed.' }
-
-    if (($dependencyChanges.Count -gt 0) -or (-not (Test-Path (Join-Path $VnextPath 'node_modules')))) {
-        Write-Host '[deploy] installing dependencies...'
-        Invoke-Checked -FilePath 'npm.cmd' -Arguments @('ci','--no-audit','--no-fund') -WorkingDirectory $VnextPath
-    }
-
-    Write-Host '[deploy] building vnext...'
-    Invoke-Checked -FilePath 'npm.cmd' -Arguments @('run','build') -WorkingDirectory $VnextPath
 
     if (-not (Test-Path (Join-Path $VnextPath 'dist\index.html'))) {
-        throw 'Build completed but dist\index.html was not produced.'
+        throw 'dist\index.html is missing.'
     }
 
-    $listeners = @(Get-NetTCPConnection -State Listen -LocalPort $Port -ErrorAction SilentlyContinue)
-    foreach ($listener in $listeners) {
-        $owner = Get-CimInstance Win32_Process -Filter "ProcessId=$($listener.OwningProcess)"
-        $commandLine = [string]$owner.CommandLine
-        if (($owner.Name -ne 'node.exe') -or ($commandLine -notlike "*$VnextPath*") -or ($commandLine -notlike '*vite*')) {
-            throw "Port $Port is owned by an unrelated process (PID $($listener.OwningProcess))."
-        }
-        Stop-Process -Id $listener.OwningProcess -Force
-    }
-
-    Start-Sleep -Milliseconds 700
-    Write-Host "[deploy] starting preview on 127.0.0.1:$Port..."
-    Start-Process -FilePath 'npm.cmd' `
-        -ArgumentList @('run','preview','--','--host','127.0.0.1','--port',"$Port",'--strictPort') `
-        -WorkingDirectory $VnextPath `
-        -WindowStyle Hidden
-
-    $healthy = $false
-    for ($i = 0; $i -lt 20; $i++) {
-        Start-Sleep -Seconds 1
-        try {
-            $response = Invoke-WebRequest -UseBasicParsing "http://127.0.0.1:$Port" -TimeoutSec 3
-            if ($response.StatusCode -eq 200) {
-                $healthy = $true
-                break
-            }
-        } catch {
-            # Retry until the health window expires.
-        }
-    }
-
-    if (-not $healthy) {
-        throw "New deployment failed health check on port $Port."
-    }
-
-    Write-Host "[deployed] $($remoteSha.Substring(0,7)) -> http://127.0.0.1:$Port"
+    Start-PreviewAndWait -PreviewPort $Port
+    $deployedSha = (git rev-parse HEAD).Trim()
+    Write-Host "[deployed] $($deployedSha.Substring(0,7)) -> http://127.0.0.1:$Port"
 }
 catch {
     Write-Error "[deploy-failed] $($_.Exception.Message)"
