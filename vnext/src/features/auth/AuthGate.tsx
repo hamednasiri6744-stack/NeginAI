@@ -93,7 +93,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
       title="ورود به سامانه"
       description="برای ادامه، اطلاعات حساب سازمانی خود را وارد کنید."
       footer={showAndroidDownload ? (
-        <a className="ng-auth-v2__download" href="/download/android">
+        <a className="ng-auth-pattern__download" href="/download/android">
           <Download size={17}/><span>دانلود نسخه Android</span>
         </a>
       ) : undefined}
