@@ -1,0 +1,8 @@
+/* NeginAI v2.1 responsive correction layer. */
+@media (min-width:48rem) {
+  .ng-bottom-nav {
+    inset-inline: 50% auto;
+    inline-size: min(calc(100% - 2rem), 42rem);
+    transform: translateX(50%);
+  }
+}
