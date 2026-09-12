@@ -41,13 +41,6 @@ export function HomeScreen() {
                 <Button size="lg" variant="secondary" startIcon={<Bot/>} onClick={()=>navigate('/ai')}>پرسش از Negin AI</Button>
               </Cluster>
             </div>
-            <div className="ng-home-v21__hero-art" aria-hidden="true">
-              <span className="ng-home-v21__sun"/>
-              <span className="ng-home-v21__mountain is-a"/>
-              <span className="ng-home-v21__mountain is-b"/>
-              <span className="ng-home-v21__mountain is-c"/>
-              <div className="ng-home-v21__road"><i/><i/><i/></div>
-            </div>
           </section>
 
           <section className="ng-home-v21__kpis" aria-label="شاخص‌های امروز">
