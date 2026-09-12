@@ -1,8 +1,25 @@
 /* NeginAI v2.1 responsive correction layer. */
+
+/* Hero artwork was removed after visual QA; keep the hero as a compact single-column command surface. */
+.ng-home-v21__hero {
+  grid-template-columns: minmax(0, 1fr);
+  min-block-size: auto;
+}
+
+.ng-home-v21__hero-copy {
+  max-inline-size: 42rem;
+}
+
 @media (min-width:48rem) {
   .ng-bottom-nav {
     inset-inline: 50% auto;
     inline-size: min(calc(100% - 2rem), 42rem);
     transform: translateX(50%);
+  }
+}
+
+@media (max-width:47.99rem) {
+  .ng-home-v21__hero {
+    min-block-size: auto;
   }
 }
