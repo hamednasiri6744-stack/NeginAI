@@ -55,6 +55,130 @@ def _ngt_timeout_error() -> HTTPException:
     )
 
 
+def _canonical_saved_request_payload(
+    settings,
+    username: str,
+    visit_id: str,
+    payload: PrevisitSavedRequestUpsert,
+) -> PrevisitSavedRequestUpsert:
+    # Browser-selected Saved Requests cross an HTTP trust boundary. Product
+    # choices/quantities and allowed option names may come from the client, but
+    # durable prices, discounts, totals and credit state must come from NGT.
+    visit = get_visit_draft(settings, username, visit_id)
+    route_id = str(visit["route_id"])
+    customer_id = str(visit["customer_id"])
+    context = previsit_context(
+        settings,
+        username,
+        route_id,
+        customer_id,
+        limit=1000,
+    )
+
+    order_name = payload.order_type.strip()
+    payment_name = payload.payment_type.strip()
+    order_matches = [
+        item for item in context.get("order_types") or []
+        if str(item.get("name") or "").strip() == order_name
+    ]
+    payment_matches = [
+        item for item in context.get("payment_types") or []
+        if str(item.get("name") or "").strip() == payment_name
+    ]
+    if len(order_matches) != 1:
+        raise PrevisitError("Selected order type is not uniquely available in the current NGT contract")
+    if len(payment_matches) != 1:
+        raise PrevisitError("Selected payment type is not uniquely available in the current NGT contract")
+
+    warehouse_ref = (
+        int(payload.warehouse_ref)
+        if payload.warehouse_ref is not None
+        else int(context.get("warehouse_selection", {}).get("default_ref") or 0) or None
+    )
+    official = preview_previsit(
+        settings,
+        username,
+        PrevisitPreviewRequest(
+            route_id=route_id,
+            customer_id=customer_id,
+            order_type_ref=int(order_matches[0]["id"]),
+            payment_usance_ref=str(payment_matches[0]["id"]),
+            warehouse_ref=warehouse_ref,
+            lines=[
+                {"product_id": str(line.product_id), "quantity": float(line.quantity)}
+                for line in payload.lines
+            ],
+        ),
+    )
+    if not official.get("ok"):
+        raise PrevisitError(str(official.get("message") or "Official NGT preview rejected this request"))
+    credit = official.get("credit_control") or {}
+    if credit.get("allowed") is False:
+        raise PrevisitError(str(credit.get("message") or "NGT credit control rejected this request"))
+    official = dict(official)
+    official["_server_canonicalized"] = {
+        "version": 1,
+        "source": "NGT EVC presale",
+    }
+
+    products = {
+        str(item.get("id")): item
+        for item in context.get("products") or []
+        if item.get("id") is not None
+    }
+    official_items: dict[str, list[dict]] = {}
+    for item in official.get("items") or []:
+        official_items.setdefault(str(item.get("product_id") or ""), []).append(item)
+
+    canonical_lines = []
+    for requested in payload.lines:
+        product_id = str(requested.product_id)
+        candidates = official_items.get(product_id) or []
+        if not candidates:
+            raise PrevisitError(f"Official NGT preview did not return product {product_id}")
+        item = candidates.pop(0)
+        product = products.get(product_id) or {}
+        canonical_lines.append({
+            "product_id": product_id,
+            "quantity": float(item.get("quantity") or requested.quantity),
+            "unit_price": float(item.get("unit_price") or 0),
+            "discount_amount": float(item.get("discount_amount") or 0),
+            "title": str(product.get("name") or requested.title or product_id),
+        })
+
+    official_order = official.get("order_type") or order_matches[0]
+    official_payment = official.get("payment_type") or payment_matches[0]
+    official_warehouse = official.get("warehouse") or {}
+    canonical_warehouse_ref = (
+        official_warehouse.get("ref")
+        if isinstance(official_warehouse, dict)
+        else None
+    ) or warehouse_ref
+    warehouse_name = (
+        str(official_warehouse.get("name") or "")
+        if isinstance(official_warehouse, dict)
+        else ""
+    )
+    if not warehouse_name and canonical_warehouse_ref is not None:
+        warehouse_name = next(
+            (
+                str(item.get("name") or "")
+                for item in context.get("warehouses") or []
+                if int(item.get("ref") or 0) == int(canonical_warehouse_ref)
+            ),
+            "",
+        )
+
+    return PrevisitSavedRequestUpsert(
+        lines=canonical_lines,
+        payment_type=str(official_payment.get("name") or payment_name),
+        order_type=str(official_order.get("name") or order_name),
+        warehouse_ref=int(canonical_warehouse_ref) if canonical_warehouse_ref is not None else None,
+        warehouse_name=warehouse_name,
+        preview=official,
+    )
+
+
 @router.get("/routes")
 def get_my_routes(request: Request):
     try:
@@ -332,9 +456,16 @@ def create_my_saved_previsit_request(
     visit_id: str, payload: PrevisitSavedRequestUpsert, request: Request,
 ):
     try:
-        return create_saved_request(request.app.state.settings, _username(request), visit_id, payload)
+        settings = request.app.state.settings
+        username = _username(request)
+        canonical = _canonical_saved_request_payload(settings, username, visit_id, payload)
+        return create_saved_request(settings, username, visit_id, canonical)
     except PrevisitError as exc:
         raise _previsit_error(exc) from exc
+    except TimeoutError as exc:
+        raise _ngt_timeout_error() from exc
+    except SellerWorkspaceError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
 
 
 @router.get("/previsit/visits/{visit_id}/saved-requests/{request_id}")
@@ -350,9 +481,16 @@ def update_my_saved_previsit_request(
     visit_id: str, request_id: str, payload: PrevisitSavedRequestUpsert, request: Request,
 ):
     try:
-        return update_saved_request(request.app.state.settings, _username(request), visit_id, request_id, payload)
+        settings = request.app.state.settings
+        username = _username(request)
+        canonical = _canonical_saved_request_payload(settings, username, visit_id, payload)
+        return update_saved_request(settings, username, visit_id, request_id, canonical)
     except PrevisitError as exc:
         raise _previsit_error(exc) from exc
+    except TimeoutError as exc:
+        raise _ngt_timeout_error() from exc
+    except SellerWorkspaceError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
 
 
 @router.post("/previsit/visits/{visit_id}/complete")
@@ -368,7 +506,40 @@ def complete_my_previsit(visit_id: str, payload: PrevisitOutcomeRequest, request
         if bridge_order and completion_state is None:
             # Preserve the bridge's strict visit/draft ownership check.
             get_visit_draft(settings, username, visit_id)
-        # A saved request was already officially calculated and credit-checked
+        if (
+            is_order
+            and completion_state is not None
+            and not completion_state["line_count"]
+            and completion_state["saved_request_count"]
+        ):
+            # Saved requests persisted before the server-canonicalization boundary
+            # are upgraded once before completion. New requests carry a server
+            # marker and do not incur another EVC calculation here.
+            for saved in list_saved_requests(settings, username, visit_id):
+                marker = (saved.get("preview") or {}).get("_server_canonicalized") or {}
+                if marker.get("version") == 1:
+                    continue
+                canonical = _canonical_saved_request_payload(
+                    settings,
+                    username,
+                    visit_id,
+                    PrevisitSavedRequestUpsert(
+                        lines=saved.get("lines") or [],
+                        payment_type=str(saved.get("payment_type") or ""),
+                        order_type=str(saved.get("order_type") or ""),
+                        warehouse_ref=saved.get("warehouse_ref"),
+                        warehouse_name=str(saved.get("warehouse_name") or ""),
+                        preview=saved.get("preview") or {},
+                    ),
+                )
+                update_saved_request(
+                    settings,
+                    username,
+                    visit_id,
+                    str(saved["id"]),
+                    canonical,
+                )
+        # A server-canonicalized saved request was officially calculated and credit-checked
         # when it was created. Ending its visit must not revalidate the now-empty
         # working cart or accidentally submit one of several saved requests.
         validation = (

@@ -117,6 +117,7 @@ export function CatalogScreen() {
   const pathId = routeQueryValue('pathId')
   const customerId = routeQueryValue('customerId')
   const visitId = routeQueryValue('visitId')
+  const requestId = routeQueryValue('requestId')
   const [search, setSearch] = useState('')
   const [brand, setBrand] = useState('')
   const [group, setGroup] = useState('')
@@ -251,7 +252,7 @@ export function CatalogScreen() {
           },
         },
       )
-      navigateWithParams('/seller/cart', { pathId, customerId, visitId })
+      navigateWithParams('/seller/cart', { pathId, customerId, visitId, requestId })
     } catch (reason) {
       setSaveError(reason instanceof Error ? reason.message : 'ذخیره پیش‌نویس انجام نشد.')
     } finally {

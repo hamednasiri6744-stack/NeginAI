@@ -34,7 +34,7 @@ def _seed_active_visit(settings):
             """INSERT INTO previsit_drafts
                (id, visit_id, username, idempotency_key, cart_json, payment_type, order_type, outcome,
                 outcome_reason, updated_at)
-               VALUES ('draft-1', 'visit-1', 'seller', 'idem-1', '[{"product_id":"old","quantity":1}]',
+               VALUES ('draft-1', 'visit-1', 'seller', 'idem-1', '[{"product_id":"old","quantity":1,"unit_price":1,"discount_amount":0,"title":"old"}]',
                        '', '', 'draft', '', '2026-08-27T08:00:00+00:00')"""
         )
 
@@ -142,7 +142,11 @@ def test_saved_request_can_be_opened_and_updated_without_changing_its_number(set
         get_saved_request(settings, "another-seller", "visit-1", created["id"])
 
 
-def test_saved_request_api_exposes_create_list_get_and_update(client, settings):
+def test_saved_request_api_exposes_create_list_get_and_update(client, settings, monkeypatch):
+    monkeypatch.setattr(
+        "app.routes.seller_workspace._canonical_saved_request_payload",
+        lambda _settings, _username, _visit_id, payload: payload,
+    )
     create_user(settings, "seller", "test-password")
     _seed_active_visit(settings)
     headers = {"Cookie": f"negin_session={create_session(settings, 'seller')}"}
@@ -169,12 +173,113 @@ def test_saved_request_api_exposes_create_list_get_and_update(client, settings):
     assert updated.json()["lines"][0]["quantity"] == 96
 
 
+
+def test_saved_request_http_boundary_recalculates_and_canonicalizes_browser_payload(client, settings, monkeypatch):
+    create_user(settings, "seller", "test-password")
+    _seed_active_visit(settings)
+    headers = {"Cookie": f"negin_session={create_session(settings, 'seller')}"}
+    captured = {}
+
+    monkeypatch.setattr(
+        "app.routes.seller_workspace.previsit_context",
+        lambda *_args, **_kwargs: {
+            "order_types": [{"id": 2, "name": "Official Order"}],
+            "payment_types": [{"id": "401", "name": "Official Payment"}],
+            "warehouses": [{"ref": 1, "name": "Official Warehouse"}],
+            "warehouse_selection": {"default_ref": 1},
+            "products": [{"id": "3626227101", "name": "Official Product"}],
+        },
+    )
+
+    def official_preview(_settings, _username, request):
+        captured.update({
+            "route_id": request.route_id,
+            "customer_id": request.customer_id,
+            "order_type_ref": request.order_type_ref,
+            "payment_usance_ref": request.payment_usance_ref,
+            "warehouse_ref": request.warehouse_ref,
+        })
+        return {
+            "ok": True,
+            "message": "",
+            "items": [{
+                "product_id": "3626227101",
+                "quantity": 2.0,
+                "unit_price": 2_000_000.0,
+                "discount_amount": 100_000.0,
+                "gross_amount": 4_000_000.0,
+                "tax_amount": 0.0,
+                "charge_amount": 0.0,
+                "tax_and_charge_amount": 0.0,
+                "net_amount": 3_900_000.0,
+                "discount_breakdown": {},
+            }],
+            "totals": {
+                "gross": 4_000_000.0,
+                "discount": 100_000.0,
+                "tax": 0.0,
+                "charge": 0.0,
+                "net": 3_900_000.0,
+            },
+            "gift_lines": [],
+            "credit_control": {"allowed": True, "blocking": False, "message": "ok"},
+            "order_type": {"id": 2, "name": "Official Order"},
+            "payment_type": {"id": "401", "name": "Official Payment"},
+            "warehouse": {"ref": 1, "name": "Official Warehouse"},
+            "source": "NGT EVC presale",
+            "creates_order": False,
+        }
+
+    monkeypatch.setattr("app.routes.seller_workspace.preview_previsit", official_preview)
+
+    forged = {
+        "lines": [{
+            "product_id": "3626227101",
+            "title": "forged browser title",
+            "quantity": 2,
+            "unit_price": 1,
+            "discount_amount": 0,
+        }],
+        "payment_type": "Official Payment",
+        "order_type": "Official Order",
+        "warehouse_ref": 1,
+        "warehouse_name": "forged warehouse",
+        "preview": {"totals": {"net": 1}, "credit_control": {"allowed": True}},
+    }
+    response = client.post(
+        "/seller-workspace/previsit/visits/visit-1/saved-requests",
+        json=forged,
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+    saved = response.json()
+    assert captured == {
+        "route_id": "route-1",
+        "customer_id": "customer-1",
+        "order_type_ref": 2,
+        "payment_usance_ref": "401",
+        "warehouse_ref": 1,
+    }
+    assert saved["lines"][0]["title"] == "Official Product"
+    assert saved["lines"][0]["unit_price"] == 2_000_000
+    assert saved["lines"][0]["discount_amount"] == 100_000
+    assert saved["total_amount"] == 3_900_000
+    assert saved["warehouse_name"] == "Official Warehouse"
+    assert saved["preview"]["totals"]["net"] == 3_900_000
+    assert saved["preview"]["_server_canonicalized"]["version"] == 1
+
 def test_saved_request_can_end_visit_without_revalidating_empty_cart(settings, monkeypatch):
+    canonicalized = []
     _seed_active_visit(settings)
     create_saved_request(settings, "seller", "visit-1", _payload())
     monkeypatch.setattr(
         "app.routes.seller_workspace.validate_order_draft",
         lambda *_args: (_ for _ in ()).throw(AssertionError("empty working cart must not be revalidated")),
+    )
+    monkeypatch.setattr(
+        "app.routes.seller_workspace._canonical_saved_request_payload",
+        lambda _settings, _username, _visit_id, payload: canonicalized.append(payload) or payload,
     )
     request = SimpleNamespace(
         app=SimpleNamespace(state=SimpleNamespace(settings=settings)),
@@ -189,6 +294,7 @@ def test_saved_request_can_end_visit_without_revalidating_empty_cart(settings, m
 
     assert response["visit_status"] == "completed"
     assert response["outcome"] == "order"
+    assert len(canonicalized) == 1
 
 
 def test_visit_tour_saved_request_api_is_route_scoped(client, settings, monkeypatch):

@@ -29,10 +29,10 @@ Varanegar write registration exists as a separate gated bridge and is intentiona
 | Visit policy | `/seller-workspace/previsit/policy?path_id=...&customer_id=...` | GET | LIVE_INTEGRATED |
 | Start visit | `/seller-workspace/previsit/visits` | POST | LIVE_INTEGRATED |
 | Previsit context/catalog | `/seller-workspace/previsit/context` | GET | LIVE_INTEGRATED |
-| Preview | `/seller-workspace/previsit/preview` | POST | NEXT |
+| Preview | `/seller-workspace/previsit/preview` | POST | LIVE_INTEGRATED |
 | Draft | `/seller-workspace/previsit/visits/{visit_id}/draft` | PUT | LIVE_INTEGRATED |
-| Saved requests | `/seller-workspace/previsit/visits/{visit_id}/saved-requests` | GET/POST | NEXT |
-| Complete visit | `/seller-workspace/previsit/visits/{visit_id}/complete` | POST | FINAL_PRE_WRITE |
+| Saved requests | `/seller-workspace/previsit/visits/{visit_id}/saved-requests` | GET/POST/PUT | LIVE_INTEGRATED + SERVER_CANONICALIZED |
+| Complete visit | `/seller-workspace/previsit/visits/{visit_id}/complete` | POST | LIVE_INTEGRATED (VARANEGAR WRITE DEFERRED) |
 | Neshan map config | `/seller-workspace/map-config` | GET | NEEDS_VALIDATION |
 | Route map plan | `/seller-workspace/routes/{path_id}/map-plan` | GET | NEXT |
 | Route map leg | `/seller-workspace/routes/{path_id}/map-leg` | GET | NEXT |
@@ -46,6 +46,17 @@ vNext passes existing backend identities via URL query parameters:
 - `customerId`
 
 These values are identifiers only; no business data is encoded into navigation state.
+
+## Saved request trust boundary
+
+Saved-request POST/PUT is an HTTP trust boundary. The browser may select products,
+quantities, order type, payment type and warehouse from the current contract, but
+durable prices, discounts, totals, credit status and preview data are recalculated
+server-side through the official NGT EVC preview before SQLite persistence. Browser
+`preview`, `unit_price`, `discount_amount`, product title and warehouse label are
+not trusted as canonical values. Saved requests created before this boundary are
+detected at order-visit completion, recalculated once through NGT EVC, rewritten
+with the canonical server marker, and only then allowed to complete.
 
 ## Deferred write boundary
 

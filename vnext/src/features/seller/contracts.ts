@@ -58,7 +58,7 @@ export type SellerRouteCustomersResponse = {
   live_assignment?: boolean
 }
 
-export function routeQueryValue(name: 'pathId' | 'customerId' | 'visitId') {
+export function routeQueryValue(name: 'pathId' | 'customerId' | 'visitId' | 'requestId') {
   return new URLSearchParams(window.location.search).get(name)?.trim() ?? ''
 }
 
@@ -365,4 +365,96 @@ export type PrevisitDraftLine = {
   unit_price: number
   discount_amount: number
   title: string
+}
+
+
+export type PrevisitPreviewItem = {
+  product_id: string
+  quantity: number
+  unit_price: number
+  discount_amount: number
+  discount_percent?: number
+  discount_breakdown?: Record<string, { amount?: number; percent?: number }>
+  gross_amount: number
+  tax_amount: number
+  charge_amount: number
+  tax_and_charge_amount: number
+  net_amount: number
+  rule_no?: string
+}
+
+export type PrevisitPreviewTotals = {
+  gross: number
+  discount: number
+  tax: number
+  charge: number
+  net: number
+}
+
+export type PrevisitCreditControl = {
+  allowed: boolean
+  blocking?: boolean
+  mode?: string
+  mode_label?: string
+  message?: string
+  current_order_amount?: number
+  pending_ngt_order_amount?: number
+  evaluated_total?: number
+  available_amount?: number | null
+  deficit?: number
+}
+
+export type PrevisitGiftLine = {
+  product_id: string
+  parent_product_id?: string
+  title?: string
+  quantity: number
+  unit_price?: number
+  gross_amount?: number
+  discount_amount?: number
+  discount_percent?: number
+  net_amount?: number
+  source?: string
+}
+
+export type PrevisitPreviewResponse = {
+  ok: boolean
+  error_code?: unknown
+  message?: string
+  evc_id?: unknown
+  items: PrevisitPreviewItem[]
+  totals: PrevisitPreviewTotals
+  prizes?: unknown[]
+  gift_lines?: PrevisitGiftLine[]
+  restrictions?: unknown[]
+  related_rules?: Array<Record<string, unknown>>
+  payment?: Record<string, unknown>
+  order_type?: PrevisitOrderType
+  payment_type?: PrevisitPaymentType
+  warehouse?: PrevisitWarehouse | null
+  credit_control: PrevisitCreditControl
+  source?: string
+  creates_order: boolean
+}
+
+export type PrevisitSavedRequest = {
+  id: string
+  visit_id: string
+  route_id: string
+  customer_id: string
+  request_number: number
+  lines: PrevisitDraftLine[]
+  line_count: number
+  total_amount: number
+  payment_type: string
+  order_type: string
+  warehouse_ref: number | null
+  warehouse_name: string
+  preview: PrevisitPreviewResponse | Record<string, unknown>
+  created_at: string
+  updated_at: string
+}
+
+export type PrevisitSavedRequestsResponse = {
+  requests: PrevisitSavedRequest[]
 }
