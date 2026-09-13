@@ -1,4 +1,4 @@
-﻿export type AuthProfile = {
+export type AuthProfile = {
   authenticated?: boolean
   username: string
   personnel_id: number | null
@@ -151,6 +151,14 @@ export class NeginApiError extends Error {
   }
 }
 
+function userFacingApiDetail(status: number, detail: string) {
+  const clean = detail.trim()
+  if (status === 401) return '\u0646\u0634\u0633\u062a \u0634\u0645\u0627 \u0645\u0639\u062a\u0628\u0631 \u0646\u06cc\u0633\u062a. \u062f\u0648\u0628\u0627\u0631\u0647 \u0648\u0627\u0631\u062f \u0634\u0648\u06cc\u062f.'
+  if (status === 403) return '\u0628\u0631\u0627\u06cc \u0627\u06cc\u0646 \u0628\u062e\u0634 \u062f\u0633\u062a\u0631\u0633\u06cc \u0644\u0627\u0632\u0645 \u0648\u062c\u0648\u062f \u0646\u062f\u0627\u0631\u062f.'
+  if (status >= 500 || /internal server error/i.test(clean)) return '\u0633\u0631\u0648\u06cc\u0633 \u062f\u0627\u062f\u0647 \u0645\u0648\u0642\u062a\u0627\u064b \u062f\u0631 \u062f\u0633\u062a\u0631\u0633 \u0646\u06cc\u0633\u062a. \u062f\u0648\u0628\u0627\u0631\u0647 \u062a\u0644\u0627\u0634 \u06a9\u0646\u06cc\u062f.'
+  return clean || `\u062e\u0637\u0627\u06cc \u0627\u0631\u062a\u0628\u0627\u0637\u06cc (${status})`
+}
+
 function apiBase() {
   return String(import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '')
 }
@@ -192,7 +200,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
       : typeof payload === 'string'
         ? payload
         : ''
-    throw new NeginApiError(response.status, detail || `ط®ط·ط§غŒ ط³ط±ظˆط± (${response.status})`)
+    throw new NeginApiError(response.status, userFacingApiDetail(response.status, detail))
   }
 
   return payload as T
