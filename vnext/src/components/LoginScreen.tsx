@@ -68,7 +68,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
     }
 
     if (!window.isSecureContext) {
-      setMessage('برای نصب وب‌اپ، Negin AI را از آدرس HTTPS مثل dev.hagents.ir باز کنید.')
+      setMessage('برای نصب وب‌اپ، Negin AI را از آدرس HTTPS مثل vnext.hagents.ir باز کنید.')
       return
     }
 
@@ -132,11 +132,12 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                   placeholder="نام کاربری یا شماره موبایل"
                   aria-label="نام کاربری یا شماره موبایل"
                   aria-invalid={usernameError}
+                  aria-describedby={usernameError ? 'username-error' : undefined}
                   value={username}
                   onChange={(event) => setUsername(event.target.value)}
                 />
               </label>
-              {usernameError ? <span className="field-error">نام کاربری را وارد کنید</span> : null}
+              {usernameError ? <span className="field-error" id="username-error">نام کاربری را وارد کنید</span> : null}
             </div>
 
             <div className="field-group">
@@ -148,6 +149,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                   placeholder="رمز عبور"
                   aria-label="رمز عبور"
                   aria-invalid={passwordError}
+                  aria-describedby={passwordError ? 'password-error' : undefined}
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                 />
@@ -156,11 +158,12 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                   className="field-action"
                   onClick={() => setShowPassword((value) => !value)}
                   aria-label={showPassword ? 'مخفی کردن رمز' : 'نمایش رمز'}
+                  aria-pressed={showPassword}
                 >
                   {showPassword ? <EyeOffIcon /> : <EyeIcon />}
                 </button>
               </label>
-              {passwordError ? <span className="field-error">رمز عبور را وارد کنید</span> : null}
+              {passwordError ? <span className="field-error" id="password-error">رمز عبور را وارد کنید</span> : null}
             </div>
 
             <div className="auth-options">

@@ -178,9 +178,9 @@ button { cursor: pointer; }
 }
 .field input::placeholder { color: #6f8093; opacity: 1; }
 .field-action {
-  width: 36px;
-  height: 36px;
-  margin-left: -5px;
+  width: 44px;
+  height: 44px;
+  margin-left: -9px;
   display: grid;
   place-items: center;
   border: 0;
@@ -200,6 +200,7 @@ button { cursor: pointer; }
   font-size: 13.5px;
 }
 .remember, .forgot {
+  min-height: 44px;
   border: 0;
   padding: 2px 0;
   background: transparent;
@@ -1550,3 +1551,8 @@ button:focus-visible,a:focus-visible { outline:2px solid rgba(240,193,82,.72); o
 .vr-map-live-marker{width:29px;height:29px;border-radius:50%;border:2px solid #f0c159;background:linear-gradient(180deg,#ffe08a,#d99b33);color:#201300;font:800 12px/1 Inter,Arial,sans-serif;box-shadow:0 0 14px rgba(227,170,55,.28)}
 .vr-map-live-marker.selected{box-shadow:0 0 0 5px rgba(236,190,78,.16),0 0 20px rgba(227,170,55,.48)}
 .vr-map-live-seller{display:block;width:18px;height:18px;border:4px solid #dcecff;border-radius:50%;background:#197ee4;box-shadow:0 0 0 7px rgba(25,126,228,.16),0 0 18px rgba(25,126,228,.5)}
+/* UXQA login keyboard accessibility */
+@media (max-height: 590px) and (max-width: 719px) {
+  .login-page { overflow-x: hidden; overflow-y: auto; }
+  .login-shell { height: auto; min-height: 100dvh; }
+}
