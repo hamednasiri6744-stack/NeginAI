@@ -389,3 +389,113 @@
   .ng-home-art__actions{grid-template-columns:1fr}
   .ng-home-art__kpis{grid-template-columns:1fr}.ng-home-art__kpis article+article{border-inline-start:0;border-block-start:1px solid var(--ng-border)}
 }
+
+/* Seller map / Neshan live route workspace */
+.ng-seller-map__controls{
+  display:flex;align-items:end;justify-content:space-between;gap:var(--ng-space-4);
+  padding:var(--ng-space-4);border:1px solid var(--ng-border);border-radius:var(--ng-radius-card);
+  background:linear-gradient(145deg,rgb(20 31 43 / 88%),rgb(8 14 20 / 96%));box-shadow:var(--ng-shadow-surface)
+}
+.ng-seller-map__controls>label{display:grid;gap:.4rem;min-inline-size:min(100%,18rem)}
+.ng-seller-map__controls>label>span{color:var(--ng-text-secondary);font-size:var(--ng-fs-label);font-weight:var(--ng-weight-semibold)}
+.ng-seller-map__controls select,.ng-seller-map__reason select{
+  min-block-size:var(--ng-control);padding-inline:var(--ng-space-3);color:var(--ng-text);
+  border:1px solid var(--ng-border-strong);border-radius:var(--ng-radius-control);
+  background:rgb(3 7 17 / 72%);outline:0
+}
+.ng-seller-map__controls select:focus,.ng-seller-map__reason select:focus{border-color:var(--ng-border-accent);box-shadow:var(--ng-shadow-focus)}
+.ng-seller-map__controls>div{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:var(--ng-space-2)}
+.ng-seller-map__workspace{
+  display:grid;grid-template-columns:minmax(0,1.5fr) minmax(20rem,.58fr);min-block-size:38rem;
+  overflow:hidden;border:1px solid var(--ng-border-strong);border-radius:calc(var(--ng-radius-card) + .2rem);
+  background:linear-gradient(145deg,rgb(16 25 34 / 96%),rgb(7 12 17 / 98%));box-shadow:var(--ng-shadow-raised)
+}
+.ng-seller-map__canvas-shell{position:relative;min-inline-size:0;min-block-size:38rem;overflow:hidden;background:#091018}
+.ng-seller-map__canvas{position:absolute;inset:0;min-block-size:100%;background:linear-gradient(145deg,#111b24,#081018)}
+.ng-seller-map__canvas .maplibregl-canvas{filter:saturate(.72) contrast(1.06) brightness(.82)}
+.ng-seller-map__canvas .maplibregl-ctrl-group{
+  overflow:hidden;border:1px solid rgb(255 255 255 / 12%);border-radius:.8rem;background:rgb(8 17 24 / 88%);box-shadow:var(--ng-shadow-surface)
+}
+.ng-seller-map__canvas .maplibregl-ctrl button{filter:invert(1) opacity(.76)}
+.ng-seller-map__review{
+  position:absolute;inset:0;z-index:2;display:grid;place-items:center;align-content:center;gap:.65rem;padding:2rem;
+  color:var(--ng-text-secondary);text-align:center;background:
+    radial-gradient(circle at center,rgb(57 182 212 / 10%),transparent 22rem),
+    linear-gradient(145deg,#111b24,#081018)
+}
+.ng-seller-map__review svg{color:var(--ng-gold-300)}.ng-seller-map__review strong{color:var(--ng-text);font:800 1.1rem var(--ng-font-latin)}
+.ng-seller-map__review span{max-inline-size:32rem;font-size:.82rem;line-height:1.9}
+.ng-seller-map__floating{
+  position:absolute;z-index:6;inset-block-end:1rem;inset-inline-start:1rem;display:flex;flex-wrap:wrap;gap:.55rem;
+  max-inline-size:calc(100% - 2rem);padding:.5rem;border:1px solid rgb(255 255 255 / 9%);
+  border-radius:calc(var(--ng-radius-button) + .25rem);background:rgb(5 12 18 / 78%);
+  box-shadow:0 1rem 2.2rem rgb(0 0 0 / 32%);backdrop-filter:blur(14px)
+}
+.ng-seller-map__instruction{
+  position:absolute;z-index:5;inset-block-start:1rem;inset-inline:1rem auto;display:grid;gap:.2rem;
+  max-inline-size:min(30rem,calc(100% - 2rem));padding:.85rem 1rem;border:1px solid rgb(240 200 115 / 24%);
+  border-radius:var(--ng-radius-card);background:linear-gradient(145deg,rgb(11 20 27 / 92%),rgb(7 13 19 / 96%));
+  box-shadow:0 .9rem 2.2rem rgb(0 0 0 / 32%);backdrop-filter:blur(12px)
+}
+.ng-seller-map__instruction small{color:var(--ng-gold-300);font-size:.66rem;font-weight:800;letter-spacing:.06em}
+.ng-seller-map__instruction strong{font-size:1rem}.ng-seller-map__instruction span{color:var(--ng-text-secondary);font-size:.75rem}
+.ng-seller-map__instruction p{margin:.35rem 0 0;padding-block-start:.45rem;border-block-start:1px solid var(--ng-border);color:var(--ng-text);font-weight:700;line-height:1.8}
+.ng-seller-map__seller-marker{
+  inline-size:1.2rem;block-size:1.2rem;border:3px solid #fff;border-radius:50%;
+  background:#176b54;box-shadow:0 0 0 .42rem rgb(23 107 84 / 24%),0 .35rem .9rem rgb(0 0 0 / 38%)
+}
+.ng-seller-map__sidebar{
+  display:flex;flex-direction:column;gap:.7rem;min-inline-size:0;max-block-size:38rem;padding:1rem;
+  overflow:auto;border-inline-start:1px solid var(--ng-border);background:linear-gradient(180deg,rgb(15 23 31 / 98%),rgb(8 13 19 / 99%));
+  scrollbar-width:thin;scrollbar-color:var(--ng-slate-500) transparent
+}
+.ng-seller-map__summary{
+  position:sticky;z-index:2;inset-block-start:0;display:grid;gap:.35rem;padding:.9rem 1rem;
+  border:1px solid var(--ng-border-accent);border-radius:var(--ng-radius-card);
+  background:linear-gradient(145deg,rgb(31 27 18 / 92%),rgb(12 16 19 / 96%));box-shadow:var(--ng-shadow-surface);backdrop-filter:blur(12px)
+}
+.ng-seller-map__summary>span{color:var(--ng-gold-300);font:800 .66rem var(--ng-font-latin);letter-spacing:.08em}
+.ng-seller-map__summary>strong{font:800 1.7rem/1.15 var(--ng-font-latin);font-variant-numeric:tabular-nums}
+.ng-seller-map__summary>small{color:var(--ng-text-muted)}
+.ng-seller-map__summary>div{overflow:hidden;block-size:.34rem;margin-block-start:.25rem;border-radius:999px;background:rgb(255 255 255 / 6%)}
+.ng-seller-map__summary i{display:block;block-size:100%;border-radius:inherit;background:linear-gradient(90deg,var(--ng-gold-500),var(--ng-gold-300))}
+.ng-seller-map__stop{gap:.7rem;padding:1rem;background:linear-gradient(145deg,rgb(20 31 42 / 84%),rgb(9 15 21 / 94%))}
+.ng-seller-map__stop.is-active{border-color:var(--ng-border-accent);background:
+  radial-gradient(circle at 90% 10%,rgb(240 200 115 / 9%),transparent 13rem),
+  linear-gradient(145deg,rgb(26 34 42 / 96%),rgb(10 16 21 / 98%));box-shadow:var(--ng-shadow-gold)}
+.ng-seller-map__stop.is-complete{opacity:.8}.ng-seller-map__stop.is-complete:not(.is-active){border-color:rgb(66 184 131 / 18%)}
+.ng-seller-map__stop .ng-cluster{row-gap:.55rem}.ng-seller-map__stop .ng-key-value{font-size:.72rem}
+.ng-seller-map__stop .ng-key-value>div{padding-block:.45rem}.ng-seller-map__stop small{display:block;color:var(--ng-text-muted);line-height:1.55}
+.ng-seller-map__index{
+  display:grid;place-items:center;flex:none;inline-size:2.2rem;block-size:2.2rem;border:1px solid var(--ng-border-strong);
+  border-radius:.72rem;color:var(--ng-text-secondary);background:var(--ng-surface-3);font:800 .75rem var(--ng-font-latin)
+}
+.ng-seller-map__stop.is-active .ng-seller-map__index{color:var(--ng-text-inverse);border-color:rgb(255 226 160 / 32%);background:linear-gradient(145deg,var(--ng-gold-300),var(--ng-gold-500))}
+.ng-seller-map__stop.is-complete .ng-seller-map__index{color:#a8e8c9;border-color:rgb(66 184 131 / 35%);background:rgb(66 184 131 / 10%)}
+.ng-seller-map__no-visit{border-color:rgb(223 102 112 / 26%);background:
+  radial-gradient(circle at 92% 8%,rgb(223 102 112 / 8%),transparent 18rem),
+  var(--ng-card-bg)}
+.ng-seller-map__no-visit .ng-page-header{align-items:start}
+.ng-seller-map__reason{display:grid;gap:.45rem}.ng-seller-map__reason>span{color:var(--ng-text-secondary);font-size:var(--ng-fs-label);font-weight:700}
+@media(max-width:72rem){
+  .ng-seller-map__workspace{grid-template-columns:1fr}
+  .ng-seller-map__canvas-shell{min-block-size:32rem}
+  .ng-seller-map__sidebar{max-block-size:none;border-inline-start:0;border-block-start:1px solid var(--ng-border)}
+  .ng-seller-map__summary{position:relative}
+}
+@media(max-width:47.99rem){
+  .ng-seller-map__controls{align-items:stretch;flex-direction:column}
+  .ng-seller-map__controls>div{justify-content:flex-start}
+  .ng-seller-map__canvas-shell{min-block-size:27rem}
+  .ng-seller-map__floating{inset-inlin:.75rem;inset-block-end:.75rem}
+  .ng-seller-map__floating .ng-button{flex:1;min-inline-size:10rem}
+  .ng-seller-map__instruction{inset-block-start:.75rem;inset-inline:.75rem;max-inline-size:none}
+  .ng-seller-map__sidebar{padding:.75rem}
+  .ng-seller-map__stop>.ng-cluster:last-child .ng-button{flex:1}
+}
+@media(max-width:27rem){
+  .ng-seller-map__canvas-shell{min-block-size:24rem}
+  .ng-seller-map__floating{display:grid}
+  .ng-seller-map__floating .ng-button{inline-size:100%}
+  .ng-seller-map__stop>.ng-cluster:last-child{display:grid;grid-template-columns:1fr}
+}

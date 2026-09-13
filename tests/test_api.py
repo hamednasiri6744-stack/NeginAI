@@ -10,6 +10,8 @@ def test_health_does_not_require_auth_and_exposes_only_liveness(client, auth):
     assert readiness.json()["varanegar_order_commit_enabled"] is False
     assert readiness.json()["varanegar_order_numbering_verified"] is False
     assert readiness.json()["varanegar_order_registration_ready"] is False
+    assert readiness.json()["neshan_web_configured"] is False
+    assert readiness.json()["neshan_service_configured"] is False
 
 
 def test_privacy_policy_is_public(client):

@@ -40,6 +40,8 @@ def readiness(request: Request) -> dict[str, object]:
         "automation_configured": bool(settings.openai_automation_api_key),
         "automation_enabled": settings.automation_enabled,
         "push_configured": bool(settings.vapid_private_key_path),
+        "neshan_web_configured": bool(settings.neshan_web_api_key),
+        "neshan_service_configured": bool(settings.neshan_service_api_key),
         "varanegar_order_bridge_configured": settings.varanegar_order_sql_configured,
         "varanegar_order_bridge_enabled": settings.varanegar_order_bridge_enabled,
         "varanegar_order_commit_enabled": settings.varanegar_order_commit_enabled,

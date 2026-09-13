@@ -196,6 +196,12 @@ export type SellerVisitWorkspaceResponse = {
   read_only: boolean
 }
 
+export type SellerVisitReason = {
+  id: string
+  title: string
+  type_id?: string
+}
+
 export type SellerVisitPolicyResponse = {
   route: { id: string; title: string }
   customer: {
@@ -216,7 +222,7 @@ export type SellerVisitPolicyResponse = {
   start_blockers: string[]
   order_blockers: string[]
   can_start_visit: boolean
-  reasons?: Record<string, Array<Record<string, unknown>>>
+  reasons?: Record<string, SellerVisitReason[]>
   visit_status_ids?: Record<string, string | null>
   source: string
 }
@@ -457,4 +463,56 @@ export type PrevisitSavedRequest = {
 
 export type PrevisitSavedRequestsResponse = {
   requests: PrevisitSavedRequest[]
+}
+
+
+export type NeshanMapConfigResponse = {
+  api_key: string
+}
+
+export type NeshanRouteMetric = {
+  text?: string
+  value?: number
+  [key: string]: unknown
+}
+
+export type NeshanRouteStep = {
+  instruction?: string
+  distance?: NeshanRouteMetric
+  duration?: NeshanRouteMetric
+  start_location?: number[]
+  [key: string]: unknown
+}
+
+export type NeshanRouteLeg = {
+  distance?: NeshanRouteMetric
+  duration?: NeshanRouteMetric
+  steps?: NeshanRouteStep[]
+  [key: string]: unknown
+}
+
+export type NeshanRouteMapCustomer = SellerCustomer & {
+  visit_score: number
+  analysis: Record<string, unknown>
+  priority_tier: 'high' | 'medium' | 'low' | string
+}
+
+export type NeshanRouteMapPlanResponse = {
+  route: { id: string; title: string }
+  customers: NeshanRouteMapCustomer[]
+  missing_location_count: number
+  ordered_customers: NeshanRouteMapCustomer[]
+  unlocated_customers: NeshanRouteMapCustomer[]
+  has_origin?: boolean
+  polyline: string
+  legs: NeshanRouteLeg[]
+  initial_leg: NeshanRouteLeg | null
+  route_mode: 'sales_priority' | 'shortest' | string
+  visit_location_policy: Record<string, unknown>
+  analytics_available: boolean
+}
+
+export type NeshanRouteMapLegResponse = {
+  polyline: string
+  leg: NeshanRouteLeg | null
 }
