@@ -5,7 +5,7 @@ import hashlib
 import hmac
 import secrets
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.config import Settings
 from app.database import sqlite_connection
@@ -100,7 +100,7 @@ def create_authorization_code(
 def _issue_token_pair(conn, username: str, scope: str, now: int) -> dict[str, object]:
     access_token = secrets.token_urlsafe(48)
     refresh_token = secrets.token_urlsafe(48)
-    created_at = datetime.utcnow().isoformat()
+    created_at = datetime.now(timezone.utc).replace(tzinfo=None).isoformat()
     conn.executemany(
         """INSERT INTO oauth_tokens
            (token_hash, username, token_type, scope, expires_at, revoked, created_at)

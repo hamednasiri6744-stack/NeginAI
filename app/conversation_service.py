@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import uuid4
 
 from app.config import Settings
@@ -13,7 +13,7 @@ DEFAULT_TITLE = "گفت‌وگوی جدید"
 
 
 def _now() -> str:
-    return datetime.utcnow().isoformat()
+    return datetime.now(timezone.utc).replace(tzinfo=None).isoformat()
 
 
 def title_from_message(message: str, limit: int = 54) -> str:

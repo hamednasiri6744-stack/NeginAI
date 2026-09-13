@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.access_control import filter_schema_item, policy_for_user
 from app.database import sqlite_connection
@@ -22,7 +22,7 @@ def _object(settings, schema: str, name: str, columns: list[str]) -> None:
             """INSERT INTO schema_objects
                (schema_name, object_name, object_type, details_json, scanned_at)
                VALUES (?, ?, 'VIEW', ?, ?)""",
-            (schema, name, json.dumps(data), datetime.utcnow().isoformat()),
+            (schema, name, json.dumps(data), datetime.now(timezone.utc).replace(tzinfo=None).isoformat()),
         )
 
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Literal
 from uuid import uuid4
 
@@ -864,11 +864,11 @@ def transition_admin_planning_scenario(
 
 @function_tool
 def get_database_object(
-    ctx: RunContextWrapper[AgentContext], schema: str, name: str
+    ctx: RunContextWrapper[AgentContext], schema_name: str, name: str
 ) -> str:
     """Get verified columns, primary keys and relationships for one exact table or view."""
     ctx.context.schema_checks += 1
-    result = get_schema_object(ctx.context.settings, schema, name)
+    result = get_schema_object(ctx.context.settings, schema_name, name)
     if result and ctx.context.access_policy:
         result = filter_schema_item(ctx.context.access_policy, result)
         if result is None:
@@ -879,7 +879,7 @@ def get_database_object(
             })
     ctx.context.retrieval_trace.append({
         "step": "inspect_database_object",
-        "source": f"{schema}.{name}".casefold(),
+        "source": f"{schema_name}.{name}".casefold(),
         "found": bool(result),
     })
     return _json(result or {"error": "object_not_found"})
@@ -1963,7 +1963,7 @@ def _resolve_conversation_id(
     now: datetime | None = None,
 ) -> str:
     """Keep OAuth action follow-ups together when ChatGPT omits the returned id."""
-    current = now or datetime.utcnow()
+    current = now or datetime.now(timezone.utc).replace(tzinfo=None)
     principal = (username or "").strip()
     can_use_user_fallback = principal not in {"", "local", "action-api-key"}
     selected = requested_id
@@ -2014,7 +2014,7 @@ def _save(
                 sql,
                 json.dumps(sources or []),
                 json.dumps(response, ensure_ascii=False, default=str) if response else None,
-                datetime.utcnow().isoformat(),
+                datetime.now(timezone.utc).replace(tzinfo=None).isoformat(),
             ),
         )
 

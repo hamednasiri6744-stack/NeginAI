@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.database import sqlite_connection
 from app.schema_service import search_schema
@@ -21,8 +21,8 @@ def test_persian_business_term_expands_to_technical_schema_names(client, auth, s
                (schema_name, object_name, object_type, details_json, scanned_at)
                VALUES (?, ?, ?, ?, ?)""",
             [
-                ("dbo", "tblFactor", "TABLE", json.dumps(factor), datetime.utcnow().isoformat()),
-                ("dbo", "Users", "TABLE", json.dumps(unrelated), datetime.utcnow().isoformat()),
+                ("dbo", "tblFactor", "TABLE", json.dumps(factor), datetime.now(timezone.utc).replace(tzinfo=None).isoformat()),
+                ("dbo", "Users", "TABLE", json.dumps(unrelated), datetime.now(timezone.utc).replace(tzinfo=None).isoformat()),
             ],
         )
 
@@ -63,7 +63,7 @@ def test_schema_search_ranks_all_matching_objects_before_limiting(settings):
                 """INSERT INTO schema_objects
                    (schema_name, object_name, object_type, details_json, scanned_at)
                    VALUES (?, ?, ?, ?, ?)""",
-                ("dbo", item["name"], "TABLE", json.dumps(item), datetime.utcnow().isoformat()),
+                ("dbo", item["name"], "TABLE", json.dumps(item), datetime.now(timezone.utc).replace(tzinfo=None).isoformat()),
             )
 
     results = search_schema(settings, "sales", 400)

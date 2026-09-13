@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from app.config import Settings
@@ -26,7 +26,7 @@ def _row(row: Any) -> dict[str, Any]:
 
 
 def create_definition(settings: Settings, payload: DefinitionCreate) -> dict[str, Any]:
-    now = datetime.utcnow().isoformat()
+    now = datetime.now(timezone.utc).replace(tzinfo=None).isoformat()
     with sqlite_connection(settings.sqlite_path) as conn:
         cursor = conn.execute(
             """INSERT INTO definitions
@@ -40,7 +40,7 @@ def create_definition(settings: Settings, payload: DefinitionCreate) -> dict[str
 
 
 def update_definition(settings: Settings, definition_id: int, payload: DefinitionUpdate) -> dict[str, Any] | None:
-    now = datetime.utcnow().isoformat()
+    now = datetime.now(timezone.utc).replace(tzinfo=None).isoformat()
     with sqlite_connection(settings.sqlite_path) as conn:
         cursor = conn.execute(
             """UPDATE definitions SET term=?, definition=?, rules=?, approved_sql=?,

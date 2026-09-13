@@ -4,7 +4,7 @@ import json
 import sqlite3
 import time
 from contextlib import contextmanager
-from datetime import date, datetime, time as dt_time
+from datetime import date, datetime, time as dt_time, timezone
 from decimal import Decimal
 from pathlib import Path
 from typing import Any, Iterator
@@ -607,7 +607,7 @@ def init_sqlite(path: Path) -> None:
             (
                 "وقتی کاربر فروش را بدون تعیین مبنا می‌خواهد، گزارش پیش‌فرض مجموع حواله و فاکتور است. اگر مبنا را صریحاً مشخص کرد، همان مبنا اجرا می‌شود.",
                 "برای سؤال‌های معمول درباره نوع سند سؤال شفاف‌ساز نپرس. فروش خالص از فروش مبنای انتخاب‌شده پس از کسر برگشتی همان بازه محاسبه می‌شود. پیش‌فرض‌ها و تاریخ مبنا را کوتاه در پاسخ اعلام کن.",
-                datetime.utcnow().isoformat(),
+                datetime.now(timezone.utc).replace(tzinfo=None).isoformat(),
                 "%حواله%فاکتور%",
                 "%شفاف‌ساز اجباری%",
             ),
@@ -709,7 +709,7 @@ def record_audit(
             """INSERT INTO query_audit
                (sql_text, succeeded, row_count, execution_time, sources_json, error_text, created_at)
                VALUES (?, ?, ?, ?, ?, ?, ?)""",
-            (sql, int(succeeded), row_count, execution_time, json.dumps(sources), error, datetime.utcnow().isoformat()),
+            (sql, int(succeeded), row_count, execution_time, json.dumps(sources), error, datetime.now(timezone.utc).replace(tzinfo=None).isoformat()),
         )
 
 
@@ -739,7 +739,7 @@ def record_oauth_client_diagnostic(
                 int(client_secret_present),
                 max(0, client_secret_length),
                 int(client_secret_match),
-                datetime.utcnow().isoformat(),
+                datetime.now(timezone.utc).replace(tzinfo=None).isoformat(),
             ),
         )
         conn.execute(
@@ -766,7 +766,7 @@ def record_chat_failure(
                 (conversation_id or "")[:100] or None,
                 error_type[:200],
                 error_message[:2000],
-                datetime.utcnow().isoformat(),
+                datetime.now(timezone.utc).replace(tzinfo=None).isoformat(),
             ),
         )
         conn.execute(

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import re
 from collections import Counter, defaultdict
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from app.config import Settings
@@ -548,7 +548,7 @@ def _automatic_catalog(item: dict[str, Any]) -> dict[str, Any]:
 
 def sync_schema_catalog(settings: Settings) -> dict[str, int]:
     """Enrich the cached schema and retain any curator-approved catalog overrides."""
-    now = datetime.utcnow().isoformat()
+    now = datetime.now(timezone.utc).replace(tzinfo=None).isoformat()
     with sqlite_connection(settings.sqlite_path) as conn:
         rows = conn.execute("SELECT schema_name, object_name, details_json FROM schema_objects").fetchall()
         # The Varanegar language pack is a first-party vocabulary.  Use a
@@ -772,7 +772,7 @@ def update_catalog_entry(settings: Settings, schema: str, name: str, payload: di
         if current["classification"] not in _CLASSIFICATIONS:
             raise ValueError("classification is not valid")
         current["aliases"] = list(dict.fromkeys(str(value).strip() for value in current["aliases"] if str(value).strip()))
-        now = datetime.utcnow().isoformat()
+        now = datetime.now(timezone.utc).replace(tzinfo=None).isoformat()
         conn.execute(
             """INSERT INTO schema_catalog
                (schema_name, object_name, persian_name, description, domain, seller_access,

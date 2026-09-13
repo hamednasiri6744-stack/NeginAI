@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from app.config import Settings
@@ -142,7 +142,7 @@ def scan_schema(settings: Settings) -> dict[str, int]:
                 "schema": row["target_schema"], "name": row["target_table"],
             })
 
-    now = datetime.utcnow().isoformat()
+    now = datetime.now(timezone.utc).replace(tzinfo=None).isoformat()
     with sqlite_connection(settings.sqlite_path) as conn:
         conn.execute("DELETE FROM schema_objects")
         conn.executemany(

@@ -77,4 +77,4 @@ docs/reports/**/*.zip
 vnext/.tmp_*.b64
 
 vnext/.tmp_*.css
-
+.pytest-runtime/
