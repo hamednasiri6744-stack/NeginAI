@@ -252,3 +252,157 @@ export const neginApi = {
     })
   },
 }
+
+export type SellerVisitAnalytics = {
+  company_invoice_count_12m?: number
+  company_net_sales_12m?: number
+  last_invoice_date?: string
+  seller_invoice_count_12m?: number
+  seller_net_sales_12m?: number
+  purchased_brands?: Array<Record<string, unknown>>
+  line_purchased_brands?: Array<Record<string, unknown>>
+  line_purchase_summary?: Array<Record<string, unknown>>
+  line_brand_count?: number
+  purchased_brand_count?: number
+  visit_score?: number
+  score_breakdown?: Record<string, number>
+}
+
+export type SellerOpenInvoice = {
+  id: number
+  number: string
+  date: string
+  amount: number
+  remaining_amount: number
+}
+
+export type SellerOpenInvoicesResponse = {
+  customer_id: string | number
+  invoice_count: number
+  invoices: SellerOpenInvoice[]
+  source: string
+}
+
+export type SellerChequeIntelligence = {
+  customer_id: string | number
+  summary: Record<string, number | undefined>
+  cheques: Array<Record<string, unknown>>
+  source: string
+  classification?: Record<string, string>
+}
+
+export type SellerVisitWorkspaceResponse = {
+  route: { id: string; title: string }
+  customer: CustomerProfileResponse['customer']
+  analytics: SellerVisitAnalytics
+  open_invoices: SellerOpenInvoicesResponse
+  cheques: SellerChequeIntelligence
+  sources: Record<string, unknown>
+  read_only: boolean
+}
+
+export type SellerVisitReason = {
+  id: string
+  title: string
+  type_id?: string
+}
+
+export type SellerVisitPolicyResponse = {
+  route: { id: string; title: string }
+  customer: {
+    id: string | number
+    name?: string
+    store_name?: string
+    has_location: boolean
+    location_check_exempt: boolean
+  }
+  controls: {
+    enabled?: boolean
+    enforced?: boolean
+    max_distance_meters?: number | null
+    mode?: string
+    [key: string]: unknown
+  }
+  missing_required_fields: string[]
+  start_blockers: string[]
+  order_blockers: string[]
+  can_start_visit: boolean
+  reasons: Record<string, SellerVisitReason[]>
+  visit_status_ids: Record<string, string | null>
+  source: string
+}
+
+export type PrevisitDraftLine = {
+  product_id: string
+  quantity: number
+  unit_price: number
+  discount_amount: number
+  title: string
+}
+
+export type PrevisitVisitDraftResponse = {
+  visit_id: string
+  route_id: string
+  customer_id: string
+  visit_status: string
+  started_at: string
+  idempotency_key: string
+  warehouse_ref: number | null
+  warehouse_name: string
+  lines: PrevisitDraftLine[]
+  line_count: number
+  total_amount: number
+  payment_type: string
+  order_type: string
+  outcome: string
+  outcome_reason: string
+  outcome_reason_id: string | null
+  visit_status_id: string | null
+  start_distance_meters: number | null
+  ngt_send_enabled: boolean
+  ngt_status: string
+}
+
+export type PrevisitVisitStartPayload = {
+  route_id: string
+  customer_id: string
+  latitude?: number | null
+  longitude?: number | null
+  accuracy?: number | null
+}
+
+export type PrevisitOutcomePayload = {
+  outcome: 'order' | 'no_order' | 'no_visit' | 'skipped'
+  reason_id?: string | null
+  reason?: string
+  latitude?: number | null
+  longitude?: number | null
+  accuracy?: number | null
+}
+
+export async function getVisitWorkspace(routeId: string, customerId: string) {
+  return request<SellerVisitWorkspaceResponse>(`/seller-workspace/routes/${encodeURIComponent(routeId)}/customers/${encodeURIComponent(customerId)}/visit-workspace`)
+}
+
+export async function getVisitPolicy(routeId: string, customerId: string) {
+  const params = new URLSearchParams({ path_id: routeId, customer_id: customerId })
+  return request<SellerVisitPolicyResponse>(`/seller-workspace/previsit/policy?${params}`)
+}
+
+export async function startServerVisit(payload: PrevisitVisitStartPayload) {
+  return request<PrevisitVisitDraftResponse>('/seller-workspace/previsit/visits', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function getVisitDraft(visitId: string) {
+  return request<PrevisitVisitDraftResponse>(`/seller-workspace/previsit/visits/${encodeURIComponent(visitId)}`)
+}
+
+export async function completeServerVisit(visitId: string, payload: PrevisitOutcomePayload) {
+  return request<PrevisitVisitDraftResponse>(`/seller-workspace/previsit/visits/${encodeURIComponent(visitId)}/complete`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}

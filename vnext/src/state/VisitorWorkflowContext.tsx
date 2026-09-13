@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
-import type { SellerCustomer } from '../api/neginApi'
+import type { PrevisitVisitDraftResponse, SellerCustomer } from '../api/neginApi'
 
 const WORKFLOW_STORAGE_KEY = 'neginai.visitor.workflow.v2'
 
@@ -45,7 +45,7 @@ type VisitorWorkflowValue = VisitorWorkflowState & {
   }
   hydrateLiveRoute: (routeId: string, customers: SellerCustomer[]) => void
   selectCustomer: (customerId: string | null) => void
-  beginVisit: (customerId: string) => ActiveVisit | null
+  adoptServerVisit: (draft: PrevisitVisitDraftResponse) => ActiveVisit
   completeVisit: (customerId: string, outcome: VisitOutcome) => void
   attachDraft: (draftId: string | null) => void
   resetWorkflow: () => void
@@ -111,10 +111,10 @@ function liveStops(customers: SellerCustomer[]): VisitorRouteStop[] {
     const base: VisitorRouteStop = {
       stopId: index + 1,
       customerId: String(customer.id),
-      name: customer.store_name || customer.name || `مشتری ${customer.code}`,
-      area: address || 'نشانی ثبت نشده',
-      distance: '—',
-      eta: status === 'visited' || status === 'skipped' ? 'انجام شده' : status === 'unlocated' ? 'موقعیت ندارد' : 'در انتظار',
+      name: customer.store_name || customer.name || `ط¸â€¦ط·آ´ط·ع¾ط·آ±ط؛إ’ ${customer.code}`,
+      area: address || 'ط¸â€ ط·آ´ط·آ§ط¸â€ ط؛إ’ ط·آ«ط·آ¨ط·ع¾ ط¸â€ ط·آ´ط·آ¯ط¸â€،',
+      distance: 'أ¢â‚¬â€‌',
+      eta: status === 'visited' || status === 'skipped' ? 'ط·آ§ط¸â€ ط·آ¬ط·آ§ط¸â€¦ ط·آ´ط·آ¯ط¸â€،' : status === 'unlocated' ? 'ط¸â€¦ط¸ث†ط¸â€ڑط·آ¹ط؛إ’ط·ع¾ ط¸â€ ط·آ¯ط·آ§ط·آ±ط·آ¯' : 'ط·آ¯ط·آ± ط·آ§ط¸â€ ط·ع¾ط·آ¸ط·آ§ط·آ±',
       priority: returnedCheques > 0 ? 'A' : 'B',
       score: 0,
       status,
@@ -168,22 +168,24 @@ export function VisitorWorkflowProvider({ children }: { children: ReactNode }) {
     update((current) => ({ ...current, activeCustomerId: customerId }))
   }, [update])
 
-  // Kept as a local seam for the next Live Visit slice. v0.17 UI does not
-  // present a local visit as a server-side success.
-  const beginVisit = useCallback((customerId: string) => {
-    if (state.activeVisit) return state.activeVisit.customerId === customerId ? state.activeVisit : null
-    const stop = state.routeStops.find((item) => item.customerId === customerId)
-    if (!stop || ['visited', 'skipped', 'unlocated'].includes(stop.status) || !state.routeId) return null
-
+  const adoptServerVisit = useCallback((draft: PrevisitVisitDraftResponse) => {
+    const parsedStartedAt = Date.parse(draft.started_at)
     const visit: ActiveVisit = {
-      id: `local-gate-${customerId}-${Date.now()}`,
-      routeId: state.routeId,
-      customerId,
-      startedAt: Date.now(),
+      id: draft.visit_id,
+      routeId: draft.route_id,
+      customerId: String(draft.customer_id),
+      startedAt: Number.isFinite(parsedStartedAt) ? parsedStartedAt : Date.now(),
     }
-    update((current) => ({ ...current, activeCustomerId: customerId, activeVisit: visit, activeDraftId: null }))
+    update((current) => ({
+      ...current,
+      routeId: draft.route_id,
+      activeCustomerId: String(draft.customer_id),
+      activeVisit: visit,
+      activeDraftId: null,
+    }))
     return visit
-  }, [state.activeVisit, state.routeId, state.routeStops, update])
+  }, [update])
+
 
   const completeVisit = useCallback((customerId: string, outcome: VisitOutcome) => {
     update((current) => {
@@ -227,11 +229,11 @@ export function VisitorWorkflowProvider({ children }: { children: ReactNode }) {
     routeSummary,
     hydrateLiveRoute,
     selectCustomer,
-    beginVisit,
+    adoptServerVisit,
     completeVisit,
     attachDraft,
     resetWorkflow,
-  }), [attachDraft, beginVisit, completeVisit, hydrateLiveRoute, resetWorkflow, routeSummary, selectCustomer, state])
+  }), [adoptServerVisit, attachDraft, completeVisit, hydrateLiveRoute, resetWorkflow, routeSummary, selectCustomer, state])
 
   return <VisitorWorkflowContext.Provider value={value}>{children}</VisitorWorkflowContext.Provider>
 }

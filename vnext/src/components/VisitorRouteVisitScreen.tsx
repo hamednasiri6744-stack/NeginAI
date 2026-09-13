@@ -15,6 +15,7 @@ import {
   StoreIcon,
   UserGroupIcon,
 } from './Icons'
+import { completeServerVisit, getVisitPolicy, getVisitWorkspace, startServerVisit, type SellerVisitPolicyResponse, type SellerVisitWorkspaceResponse } from '../api/neginApi'
 import { useVisitorWorkflow } from '../state/VisitorWorkflowContext'
 import { useVisitorAuth } from '../state/VisitorAuthContext'
 import { useVisitorLiveData } from '../state/VisitorLiveDataContext'
@@ -37,7 +38,7 @@ function formatTimer(totalSeconds: number) {
 export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, intent: _intent }: Props) {
   const { unreadCount } = useVisitorNotifications()
   const { profile } = useVisitorAuth()
-  const { loading, error, activeRouteTitle, customerById, reload } = useVisitorLiveData()
+  const { loading, error, activeRouteId, activeRouteTitle, customerById, reload } = useVisitorLiveData()
   const {
     routeStops,
     routeSummary,
@@ -45,6 +46,8 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
     activeVisit,
     activeDraftId,
     selectCustomer,
+    adoptServerVisit,
+    completeVisit,
   } = useVisitorWorkflow()
   const [mode, setMode] = useState<RouteMode>('sales')
   const [selectedCustomerId, setSelectedCustomerId] = useState(() => requestedCustomerId ?? activeVisit?.customerId ?? activeCustomerId ?? routeStops[0]?.customerId ?? '1')
@@ -52,11 +55,53 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
   const [elapsed, setElapsed] = useState(() => activeVisit ? Math.max(0, Math.floor((Date.now() - activeVisit.startedAt) / 1000)) : 0)
   const [outcome, setOutcome] = useState<'sale' | 'no-order' | 'no-visit'>('sale')
   const [notice, setNotice] = useState<string | null>(null)
+  const [policy, setPolicy] = useState<SellerVisitPolicyResponse | null>(null)
+  const [workspace, setWorkspace] = useState<SellerVisitWorkspaceResponse | null>(null)
+  const [selectedReasonId, setSelectedReasonId] = useState('')
+  const [actionBusy, setActionBusy] = useState<'start' | 'complete' | ''>('')
 
   const activeStop = useMemo(
     () => routeStops.find((stop) => stop.customerId === selectedCustomerId) ?? routeStops[0],
     [routeStops, selectedCustomerId],
   )
+
+  const outcomeKey = outcome === 'no-order' ? 'no_order' : outcome === 'no-visit' ? 'no_visit' : null
+  const outcomeReasons = outcomeKey ? policy?.reasons?.[outcomeKey] ?? [] : []
+  const displayedScore = Number(workspace?.analytics.visit_score ?? activeStop?.score ?? 0)
+
+  useEffect(() => {
+    if (!activeRouteId || !activeStop?.customerId) {
+      setPolicy(null)
+      setWorkspace(null)
+      return
+    }
+
+    let cancelled = false
+    setSelectedReasonId('')
+
+    void getVisitPolicy(activeRouteId, activeStop.customerId)
+      .then((nextPolicy) => {
+        if (!cancelled) setPolicy(nextPolicy)
+      })
+      .catch((caught) => {
+        if (!cancelled) {
+          setPolicy(null)
+          setNotice(caught instanceof Error ? caught.message : 'دریافت سیاست ویزیت ناموفق بود.')
+        }
+      })
+
+    void getVisitWorkspace(activeRouteId, activeStop.customerId)
+      .then((nextWorkspace) => {
+        if (!cancelled) setWorkspace(nextWorkspace)
+      })
+      .catch(() => {
+        if (!cancelled) setWorkspace(null)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [activeRouteId, activeStop?.customerId])
 
   useEffect(() => {
     const target = requestedCustomerId ?? activeVisit?.customerId
@@ -93,22 +138,90 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
     selectCustomer(customerId)
   }
 
-  function startVisit() {
-    if (!activeStop) return
-    if (['visited', 'skipped'].includes(activeStop.status)) {
-      flash('این ایستگاه قبلاً در Backend تعیین‌تکلیف شده است')
-      return
+  function readCurrentPosition(required: boolean) {
+    if (!required) return Promise.resolve<GeolocationCoordinates | null>(null)
+    if (!('geolocation' in navigator)) {
+      return Promise.reject(new Error('برای شروع این ویزیت دسترسی GPS لازم است.'))
     }
-    if (activeStop.status === 'unlocated') {
-      flash('برای شروع بازدید ابتدا موقعیت مشتری باید طبق Policy NGT تکمیل شود')
-      return
-    }
-    flash('مسیر و مشتری زنده هستند؛ ثبت واقعی Start Visit در Slice بعدی فعال می‌شود تا چرخه Order نیمه‌کاره نماند')
+    return new Promise<GeolocationCoordinates>((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => resolve(position.coords),
+        () => reject(new Error('موقعیت GPS دریافت نشد؛ مجوز Location و GPS دستگاه را بررسی کنید.')),
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
+      )
+    })
   }
 
-  function confirmOutcome() {
-    flash('ثبت نتیجه ویزیت در v0.17 عمداً غیرفعال است؛ هیچ نتیجه محلی به‌عنوان ثبت سرور نمایش داده نمی‌شود')
-    setVisitState('idle')
+  async function startVisit() {
+    if (!activeStop || !activeRouteId || actionBusy) return
+    if (['visited', 'skipped'].includes(activeStop.status)) {
+      flash('این مشتری امروز تعیین تکلیف شده است.')
+      return
+    }
+
+    setActionBusy('start')
+    try {
+      const latestPolicy = await getVisitPolicy(activeRouteId, activeStop.customerId)
+      setPolicy(latestPolicy)
+      if (!latestPolicy.can_start_visit) {
+        throw new Error(latestPolicy.start_blockers[0] || 'Backend اجازه شروع ویزیت را نداد.')
+      }
+
+      const needsLocation = Boolean(latestPolicy.controls.enforced) && !latestPolicy.customer.location_check_exempt
+      const coords = await readCurrentPosition(needsLocation)
+      const draft = await startServerVisit({
+        route_id: activeRouteId,
+        customer_id: activeStop.customerId,
+        ...(coords ? { latitude: coords.latitude, longitude: coords.longitude, accuracy: coords.accuracy } : {}),
+      })
+
+      adoptServerVisit(draft)
+      setVisitState('active')
+      setElapsed(0)
+      flash('ویزیت با تأیید Backend شروع شد.')
+      void getVisitWorkspace(activeRouteId, activeStop.customerId).then(setWorkspace).catch(() => undefined)
+    } catch (caught) {
+      flash(caught instanceof Error ? caught.message : 'شروع ویزیت ناموفق بود.')
+    } finally {
+      setActionBusy('')
+    }
+  }
+
+  async function confirmOutcome() {
+    if (!activeStop || !activeVisit || actionBusy) return
+
+    if (outcome === 'sale') {
+      setVisitState('active')
+      onNavigate(`/visitor/orders?customer=${activeStop.customerId}&visit=${encodeURIComponent(activeVisit.id)}&returnTo=${encodeURIComponent(`/visitor/route?customer=${activeStop.customerId}`)}`)
+      return
+    }
+
+    const backendOutcome = outcome === 'no-order' ? 'no_order' : 'no_visit'
+    if (!selectedReasonId) {
+      flash('یک دلیل معتبر NGT را انتخاب کنید.')
+      return
+    }
+
+    setActionBusy('complete')
+    try {
+      const result = await completeServerVisit(activeVisit.id, {
+        outcome: backendOutcome,
+        reason_id: selectedReasonId,
+      })
+      if (result.visit_status !== 'completed') {
+        throw new Error('Backend پایان ویزیت را تأیید نکرد.')
+      }
+
+      completeVisit(activeStop.customerId, outcome === 'no-visit' ? 'no-visit' : 'no-order')
+      setSelectedReasonId('')
+      setVisitState('idle')
+      await reload()
+      flash('نتیجه ویزیت در Backend ثبت شد.')
+    } catch (caught) {
+      flash(caught instanceof Error ? caught.message : 'ثبت نتیجه ویزیت ناموفق بود.')
+    } finally {
+      setActionBusy('')
+    }
   }
 
   function callActiveCustomer() {
@@ -194,7 +307,7 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
           </div>
           <div className="vr-active-meta">
             <span><ClockIcon /> {activeStop.eta}</span>
-            {activeStop.score > 0 ? <span><ChartIcon /> امتیاز {activeStop.score}</span> : null}
+            {displayedScore > 0 ? <span><ChartIcon /> امتیاز {displayedScore}</span> : null}
             {activeStop.debtWarning ? <span className="warning">هشدار بدهی</span> : null}
           </div>
 
@@ -205,7 +318,7 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
             </div>
           ) : visitState === 'idle' ? (
             <div className="vr-actions">
-              <button type="button" className="primary" onClick={startVisit}><RouteArrowIcon /> شروع بازدید</button>
+              <button type="button" className="primary" disabled={actionBusy === 'start'} onClick={() => void startVisit()}><RouteArrowIcon /> شروع بازدید</button>
               <button type="button" onClick={callActiveCustomer}><PhoneIcon /> تماس</button>
               <button type="button" onClick={() => onNavigate(`/visitor/customers/${activeStop.customerId}`)}><StoreIcon /> پروفایل</button>
             </div>
@@ -241,11 +354,43 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
               <h2>نتیجه بازدید</h2>
               <p>{activeStop.name} · زمان {formatTimer(elapsed)}</p>
               <div className="vr-outcomes">
-                <button type="button" className={outcome === 'sale' ? 'active' : ''} onClick={() => setOutcome('sale')}><CartIcon /><span>فروش / سفارش</span></button>
-                <button type="button" className={outcome === 'no-order' ? 'active' : ''} onClick={() => setOutcome('no-order')}><CheckCircleIcon /><span>بدون سفارش</span></button>
-                <button type="button" className={outcome === 'no-visit' ? 'active danger' : 'danger'} onClick={() => setOutcome('no-visit')}><PhoneIcon /><span>عدم ویزیت</span></button>
+                <button type="button" className={outcome === 'sale' ? 'active' : ''} onClick={() => { setOutcome('sale'); setSelectedReasonId('') }}><CartIcon /><span>فروش / سفارش</span></button>
+                <button type="button" className={outcome === 'no-order' ? 'active' : ''} onClick={() => { setOutcome('no-order'); setSelectedReasonId('') }}><CheckCircleIcon /><span>بدون سفارش</span></button>
+                <button type="button" className={outcome === 'no-visit' ? 'active danger' : 'danger'} onClick={() => { setOutcome('no-visit'); setSelectedReasonId('') }}><PhoneIcon /><span>عدم ویزیت</span></button>
               </div>
-              <button type="button" className="vr-confirm" onClick={confirmOutcome}>{outcome === 'sale' ? 'ادامه به سفارش' : 'ثبت نتیجه'}</button>
+              {outcomeKey ? (
+
+                <label className="vr-reason">
+
+                  <span>دلیل ثبت در NGT</span>
+
+                  <select value={selectedReasonId} disabled={actionBusy === 'complete'} onChange={(event) => setSelectedReasonId(event.target.value)}>
+
+                    <option value="">انتخاب دلیل</option>
+
+                    {outcomeReasons.map((reason) => <option key={reason.id} value={reason.id}>{reason.title}</option>)}
+
+                  </select>
+
+                </label>
+
+              ) : null}
+
+              <button
+
+                type="button"
+
+                className="vr-confirm"
+
+                disabled={Boolean(actionBusy) || Boolean(outcomeKey && !selectedReasonId)}
+
+                onClick={() => void confirmOutcome()}
+
+              >
+
+                {actionBusy === 'complete' ? 'در حال ثبت...' : outcome === 'sale' ? 'ادامه به سفارش' : 'ثبت نتیجه'}
+
+              </button>
             </section>
           </div>
         ) : null}
