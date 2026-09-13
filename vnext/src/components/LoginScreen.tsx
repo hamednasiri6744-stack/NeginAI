@@ -136,7 +136,6 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                   ref={usernameRef}
                   type="text"
                   inputMode="text"
-                  ref={usernameRef}
                   autoComplete="username"
                   placeholder="نام کاربری یا شماره موبایل"
                   aria-label="نام کاربری یا شماره موبایل"
