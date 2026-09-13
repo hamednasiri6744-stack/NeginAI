@@ -1,5 +1,0 @@
-*,*::before,*::after{box-sizing:border-box}
-html{min-width:320px;background:#06090d;font-family:Vazirmatn,Tahoma,Arial,sans-serif;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased}
-body{margin:0;min-width:320px;min-height:100dvh;color:#f5f7f9;background:#06090d;text-align:right;font-synthesis:none;font-variant-numeric:tabular-nums}
-button,textarea,input,select{font:inherit}button{color:inherit;cursor:pointer}button,a{-webkit-tap-highlight-color:transparent}
-#root{min-height:100dvh}html,body,#root{direction:rtl}[dir='ltr']{direction:ltr;text-align:left}

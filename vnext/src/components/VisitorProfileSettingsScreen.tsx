@@ -1,0 +1,232 @@
+import { useState, type FormEvent } from 'react'
+import {
+  BellIcon,
+  ChartIcon,
+  ChevronLeftIcon,
+  DeviceIcon,
+  HelpIcon,
+  HomeIcon,
+  InfoIcon,
+  LogoutIcon,
+  MapIcon,
+  PinIcon,
+  PlusIcon,
+  SettingsIcon,
+  ShieldIcon,
+  SyncIcon,
+  UserGroupIcon,
+  UserIcon,
+} from './Icons'
+import { useVisitorAuth } from '../state/VisitorAuthContext'
+import { useVisitorLiveData } from '../state/VisitorLiveDataContext'
+import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
+
+type Props = {
+  onNavigate: (path: string) => void
+  onLogout: () => void | Promise<void>
+}
+
+type ToggleKey = 'notifications' | 'offline' | 'autosync'
+
+const settingsKeys: Record<ToggleKey, string> = {
+  notifications: 'neginai.settings.notifications',
+  offline: 'neginai.settings.offline',
+  autosync: 'neginai.settings.autosync',
+}
+
+function initialToggle(key: ToggleKey, fallback = true) {
+  const stored = localStorage.getItem(settingsKeys[key])
+  return stored === null ? fallback : stored === 'true'
+}
+
+export function VisitorProfileSettingsScreen({ onNavigate, onLogout }: Props) {
+  const { unreadCount } = useVisitorNotifications()
+  const { profile, changePassword } = useVisitorAuth()
+  const { activeRouteTitle, loading, reload } = useVisitorLiveData()
+  const [notifications, setNotifications] = useState(() => initialToggle('notifications'))
+  const [offline, setOffline] = useState(() => initialToggle('offline'))
+  const [autosync, setAutosync] = useState(() => initialToggle('autosync'))
+  const [notice, setNotice] = useState<string | null>(null)
+  const [logoutOpen, setLogoutOpen] = useState(false)
+  const [passwordOpen, setPasswordOpen] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordBusy, setPasswordBusy] = useState(false)
+  const [passwordError, setPasswordError] = useState<string | null>(null)
+
+  function flash(message: string) {
+    setNotice(message)
+    window.setTimeout(() => setNotice(null), 2200)
+  }
+
+  function updateToggle(key: ToggleKey, value: boolean) {
+    localStorage.setItem(settingsKeys[key], String(value))
+    if (key === 'notifications') setNotifications(value)
+    if (key === 'offline') setOffline(value)
+    if (key === 'autosync') setAutosync(value)
+  }
+
+  async function refreshLiveData() {
+    await reload()
+    flash('مسیر و مشتریان از Backend دوباره خوانده شدند')
+  }
+
+  async function submitPassword(event: FormEvent) {
+    event.preventDefault()
+    setPasswordError(null)
+    if (newPassword.length < 8) {
+      setPasswordError('رمز جدید باید حداقل ۸ کاراکتر باشد.')
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError('تکرار رمز جدید یکسان نیست.')
+      return
+    }
+    setPasswordBusy(true)
+    try {
+      await changePassword(currentPassword, newPassword)
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+      setPasswordOpen(false)
+      flash('رمز عبور با موفقیت تغییر کرد')
+    } catch (caught) {
+      setPasswordError(caught instanceof Error ? caught.message : 'تغییر رمز انجام نشد.')
+    } finally {
+      setPasswordBusy(false)
+    }
+  }
+
+  return (
+    <main className="vh-page" dir="rtl">
+      <div className="vh-shell vp-shell">
+        <header className="vh-header">
+          <button className="vh-profile active" type="button" aria-current="page">
+            <span className="vh-avatar">و</span>
+            <span className="vh-profile-copy">
+              <strong>{profile?.full_name || profile?.username || 'ویزیتور'}</strong>
+              <small><PinIcon /> {profile?.branch || profile?.sales_line || 'حساب سازمانی'}</small>
+            </span>
+            <ChevronLeftIcon />
+          </button>
+
+          <button className="vh-bell" type="button" aria-label="اعلان‌ها" onClick={() => onNavigate('/visitor/notifications')}>
+            <BellIcon />{unreadCount ? <b>{unreadCount}</b> : null}
+          </button>
+
+          <div className="vh-brand" dir="ltr"><img src="/assets/neginai-logo-transparent.png" alt="Negin AI" /><div><strong>Negin <span>AI</span></strong><small>VISITOR</small></div></div>
+        </header>
+
+        <section className="vp-heading"><div><span>حساب و تنظیمات</span><h1>پروفایل من</h1></div><SettingsIcon /></section>
+
+        <section className="vp-identity">
+          <span className="vp-avatar-large">و</span>
+          <div>
+            <strong>{profile?.full_name || profile?.username || 'کاربر سازمانی'}</strong>
+            <span>کد پرسنلی: {profile?.personnel_id?.toLocaleString('fa-IR') || '—'}</span>
+            <small>{profile?.branch || 'شعبه ثبت نشده'}{profile?.sales_line ? ` · ${profile.sales_line}` : ''}</small>
+          </div>
+          <span className="vp-status">{profile?.active ? 'فعال' : 'نامشخص'}</span>
+        </section>
+
+        <section className="vp-section">
+          <div className="vp-section-title"><UserIcon /><strong>اطلاعات حساب</strong></div>
+          <div className="vp-rows">
+            <div className="vp-row"><span>نام کاربری</span><strong dir="ltr">{profile?.username || '—'}</strong></div>
+            <div className="vp-row"><span>شماره همراه</span><strong dir="ltr">{profile?.phone || '—'}</strong></div>
+            <div className="vp-row"><span>نقش سازمانی</span><strong>{profile?.role || '—'}</strong></div>
+            <div className="vp-row"><span>مسیر فعال</span><strong>{activeRouteTitle || '—'}</strong></div>
+          </div>
+        </section>
+
+        <section className="vp-section">
+          <div className="vp-section-title"><SyncIcon /><strong>داده و همگام‌سازی</strong></div>
+          <button className="vp-action-row" type="button" disabled={loading} onClick={() => void refreshLiveData()}>
+            <span className="vp-row-icon"><SyncIcon /></span>
+            <span><strong>{loading ? 'در حال بازخوانی…' : 'بازخوانی داده زنده'}</strong><small>Route و Customer از Seller Workspace</small></span>
+            <ChevronLeftIcon />
+          </button>
+          <ToggleRow icon={<DeviceIcon />} title="ترجیح ذخیره آفلاین" description="فقط ترجیح UI؛ Cache/Queue عملیاتی هنوز فعال نشده" checked={offline} onChange={(value) => updateToggle('offline', value)} />
+          <ToggleRow icon={<SyncIcon />} title="ترجیح همگام‌سازی خودکار" description="فقط ترجیح UI؛ Sync Queue در Slice بعدی متصل می‌شود" checked={autosync} onChange={(value) => updateToggle('autosync', value)} />
+        </section>
+
+        <section className="vp-section">
+          <div className="vp-section-title"><SettingsIcon /><strong>تنظیمات برنامه</strong></div>
+          <ToggleRow icon={<BellIcon />} title="اعلان‌های درون برنامه" description="هشدارهای مهم فروش و مسیر نمایش داده شوند" checked={notifications} onChange={(value) => updateToggle('notifications', value)} />
+          <div className="vp-static-row"><span>زبان رابط</span><strong>فارسی</strong></div>
+          <div className="vp-static-row"><span>نمایش اعداد</span><strong>فارسی</strong></div>
+          <div className="vp-static-row"><span>پوسته</span><strong>تیره سازمانی</strong></div>
+        </section>
+
+        <section className="vp-section">
+          <div className="vp-section-title"><ShieldIcon /><strong>امنیت و پشتیبانی</strong></div>
+          <button className="vp-action-row" type="button" onClick={() => setPasswordOpen(true)}>
+            <span className="vp-row-icon"><ShieldIcon /></span>
+            <span><strong>تغییر رمز عبور</strong><small>متصل به Auth Service واقعی</small></span>
+            <ChevronLeftIcon />
+          </button>
+          <button className="vp-action-row" type="button" onClick={() => flash('Endpoint ثبت تیکت پشتیبانی هنوز در Backend تعریف نشده است')}>
+            <span className="vp-row-icon"><HelpIcon /></span>
+            <span><strong>پشتیبانی</strong><small>در این نسخه فقط وضعیت اتصال مشخص است</small></span>
+            <ChevronLeftIcon />
+          </button>
+          <div className="vp-info-row"><InfoIcon /><span>نسخه Visitor</span><strong>۰.۱۷.۰</strong></div>
+        </section>
+
+        <button className="vp-logout" type="button" onClick={() => setLogoutOpen(true)}><LogoutIcon /><span>خروج از حساب</span></button>
+        {notice ? <div className="vh-toast" role="status">{notice}</div> : null}
+
+        {passwordOpen ? (
+          <div className="vp-modal-backdrop" role="presentation" onClick={() => setPasswordOpen(false)}>
+            <form className="vp-modal vp-password-modal" role="dialog" aria-modal="true" aria-label="تغییر رمز" onSubmit={submitPassword} onClick={(event) => event.stopPropagation()}>
+              <span className="vp-modal-icon"><ShieldIcon /></span>
+              <h2>تغییر رمز عبور</h2>
+              <p>رمز جدید پس از تأیید، نشست‌های قبلی حساب را باطل می‌کند.</p>
+              <label><span>رمز فعلی</span><input type="password" autoComplete="current-password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} required /></label>
+              <label><span>رمز جدید</span><input type="password" autoComplete="new-password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} minLength={8} required /></label>
+              <label><span>تکرار رمز جدید</span><input type="password" autoComplete="new-password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} minLength={8} required /></label>
+              {passwordError ? <div className="login-message login-error" role="alert">{passwordError}</div> : null}
+              <div><button type="button" className="secondary" onClick={() => setPasswordOpen(false)}>انصراف</button><button type="submit" className="danger" disabled={passwordBusy}>{passwordBusy ? 'در حال ثبت…' : 'تغییر رمز'}</button></div>
+            </form>
+          </div>
+        ) : null}
+
+        {logoutOpen ? (
+          <div className="vp-modal-backdrop" role="presentation" onClick={() => setLogoutOpen(false)}>
+            <section className="vp-modal" role="dialog" aria-modal="true" aria-label="تأیید خروج" onClick={(event) => event.stopPropagation()}>
+              <span className="vp-modal-icon"><LogoutIcon /></span><h2>از حساب خارج می‌شوی؟</h2><p>نشست Backend باطل می‌شود و برای ورود دوباره باید اطلاعات حساب را وارد کنی.</p>
+              <div><button type="button" className="secondary" onClick={() => setLogoutOpen(false)}>انصراف</button><button type="button" className="danger" onClick={() => void onLogout()}>خروج</button></div>
+            </section>
+          </div>
+        ) : null}
+
+        <nav className="vh-nav" aria-label="ناوبری ویزیتور">
+          <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/home')}><HomeIcon /><span>خانه</span></button>
+          <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/route')}><MapIcon /><span>مسیر</span></button>
+          <button className="vh-order" type="button" onClick={() => onNavigate('/visitor/orders')}><PlusIcon /><span>سفارش</span></button>
+          <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/customers')}><UserGroupIcon /><span>مشتریان</span></button>
+          <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/reports')}><ChartIcon /><span>گزارش‌ها</span></button>
+        </nav>
+      </div>
+    </main>
+  )
+}
+
+type ToggleRowProps = {
+  icon: React.ReactNode
+  title: string
+  description: string
+  checked: boolean
+  onChange: (value: boolean) => void
+}
+
+function ToggleRow({ icon, title, description, checked, onChange }: ToggleRowProps) {
+  return (
+    <div className="vp-toggle-row">
+      <span className="vp-row-icon">{icon}</span>
+      <span><strong>{title}</strong><small>{description}</small></span>
+      <button type="button" className={checked ? 'vp-switch active' : 'vp-switch'} aria-pressed={checked} aria-label={title} onClick={() => onChange(!checked)}><span /></button>
+    </div>
+  )
+}

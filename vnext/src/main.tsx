@@ -1,18 +1,28 @@
-import '@fontsource/vazirmatn/400.css'
-import '@fontsource/vazirmatn/500.css'
-import '@fontsource/vazirmatn/600.css'
-import '@fontsource/vazirmatn/700.css'
-import '@fontsource/vazirmatn/800.css'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
-import { AppProviders } from './app/AppProviders'
+import { RouterProvider } from 'react-router'
+import { router } from './router'
+import { PersianDigitsLayer } from './components/PersianDigitsLayer'
+import './styles/global.css'
 
-createRoot(document.getElementById('root')!).render(
+const root = document.getElementById('root')
+
+if (!root) {
+  throw new Error('NeginAI root element was not found')
+}
+
+createRoot(root).render(
   <StrictMode>
-    <AppProviders>
-      <App />
-    </AppProviders>
+    <PersianDigitsLayer />
+    <RouterProvider router={router} />
   </StrictMode>,
 )
+
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {
+      // The prototype remains usable when service workers are unavailable (for example over plain HTTP LAN/Tailscale URLs).
+    })
+  })
+}

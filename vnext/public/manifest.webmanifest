@@ -1,0 +1,26 @@
+{
+  "name": "Negin AI",
+  "short_name": "Negin AI",
+  "description": "سامانه هوشمند نگین پخش",
+  "lang": "fa",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#03101d",
+  "theme_color": "#03101d",
+  "icons": [
+    {
+      "src": "/assets/neginai-logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/neginai-logo-transparent.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
