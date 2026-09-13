@@ -14,11 +14,11 @@ export default defineConfig({
     port: 4183,
     strictPort: true,
     proxy: {
-      '/auth': 'http://127.0.0.1:8001',
-      '/seller-workspace': 'http://127.0.0.1:8001',
-      '/chat': 'http://127.0.0.1:8001',
-      '/audio': 'http://127.0.0.1:8001',
-      '/attachments': 'http://127.0.0.1:8001',
+      '/auth': 'https://ai.neginpakhsh.com',
+      '/seller-workspace': 'https://ai.neginpakhsh.com',
+      '/chat': 'https://ai.neginpakhsh.com',
+      '/audio': 'https://ai.neginpakhsh.com',
+      '/attachments': 'https://ai.neginpakhsh.com',
     },
   },
   preview: {
@@ -30,4 +30,5 @@ export default defineConfig({
     target: 'baseline-widely-available',
   },
 })
+
 
