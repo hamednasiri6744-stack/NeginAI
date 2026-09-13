@@ -230,7 +230,7 @@ export type PrevisitVisitDraftResponse = {
   idempotency_key: string
   warehouse_ref: number | null
   warehouse_name: string
-  lines: Array<Record<string, unknown>>
+  lines: PrevisitDraftLine[]
   line_count: number
   total_amount: number
   payment_type: string
@@ -242,4 +242,127 @@ export type PrevisitVisitDraftResponse = {
   start_distance_meters: number | null
   ngt_send_enabled: boolean
   ngt_status: string
+}
+
+export type PrevisitOrderType = {
+  id: number
+  name: string
+}
+
+export type PrevisitPaymentType = {
+  id: string
+  name: string
+  buy_type_ref: number
+  payment_deadline?: number
+  payment_time?: number
+  is_cash?: boolean
+  check_credit?: boolean
+  check_debit?: boolean
+}
+
+export type PrevisitWarehouse = {
+  id: string
+  ref: number
+  name: string
+  dc_ref?: number
+}
+
+export type PrevisitWarehouseInventory = {
+  on_hand_qty?: number
+  reserved_qty?: number
+  available_qty?: number
+}
+
+export type PrevisitProduct = {
+  id: string
+  unique_id?: string
+  code?: string
+  name: string
+  brand?: string
+  barcode?: string
+  description?: string
+  group_id?: string
+  group?: string
+  group_parent_id?: string
+  group_parent?: string
+  smallest_group_id?: string
+  smallest_group?: string
+  manufacturer?: string
+  stock_name?: string
+  stock_unique_id?: string
+  stock_ref?: string
+  unit?: string
+  sale_units?: Array<Record<string, unknown>>
+  on_hand_qty?: number
+  reserved_qty?: number
+  available_qty?: number
+  carton_size?: number
+  min_order_qty?: number
+  max_order_qty?: number
+  tax_percent?: number
+  charge_percent?: number
+  indicative_price?: number
+  consumer_price?: number
+  manufacturer_price?: number
+  catalog_tax_percent?: number
+  catalog_tax_inclusive_price?: number
+  indicative_order_type_ref?: number
+  indicative_prices?: Record<string, number>
+  consumer_prices?: Record<string, number>
+  manufacturer_prices?: Record<string, number>
+  warehouse_inventory?: Record<string, PrevisitWarehouseInventory>
+}
+
+export type PrevisitContextResponse = {
+  seller: { personnel_id: number; full_name: string }
+  route: { id: string; title: string }
+  customer: SellerCustomer
+  order_types: PrevisitOrderType[]
+  payment_types: PrevisitPaymentType[]
+  warehouses: PrevisitWarehouse[]
+  warehouse_selection: {
+    enabled: boolean
+    default_ref: number
+    source: string
+  }
+  products: PrevisitProduct[]
+  grouped_catalogs: Array<Record<string, unknown>>
+  grouped_catalog_count: number
+  catalog_count: number
+  catalog_filters: {
+    brands: string[]
+    groups: Array<{ id: string; name: string }>
+  }
+  inventory: {
+    show_stock_level: boolean
+    online_refresh: boolean
+    applies_current_orders: boolean
+    source: string
+  }
+  preview: {
+    available: boolean
+    authoritative: boolean
+    creates_order: boolean
+  }
+  pricing: {
+    catalog_kind: string
+    catalog_order_type_ref: number
+    catalog_cache_seconds: number
+    official_preview_depends_on: string[]
+    official_source: string
+  }
+  credit_control: {
+    checked_on_registration: boolean
+    advanced_control: boolean
+    allow_cash_without_advanced_control: boolean
+    source: string
+  }
+}
+
+export type PrevisitDraftLine = {
+  product_id: string
+  quantity: number
+  unit_price: number
+  discount_amount: number
+  title: string
 }

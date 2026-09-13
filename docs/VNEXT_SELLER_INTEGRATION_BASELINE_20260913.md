@@ -28,9 +28,9 @@ Varanegar write registration exists as a separate gated bridge and is intentiona
 | Visit workspace | `/seller-workspace/routes/{path_id}/customers/{customer_id}/visit-workspace` | GET | LIVE_INTEGRATED |
 | Visit policy | `/seller-workspace/previsit/policy?path_id=...&customer_id=...` | GET | LIVE_INTEGRATED |
 | Start visit | `/seller-workspace/previsit/visits` | POST | LIVE_INTEGRATED |
-| Previsit context/catalog | `/seller-workspace/previsit/context` | GET | NEXT |
+| Previsit context/catalog | `/seller-workspace/previsit/context` | GET | LIVE_INTEGRATED |
 | Preview | `/seller-workspace/previsit/preview` | POST | NEXT |
-| Draft | `/seller-workspace/previsit/visits/{visit_id}/draft` | PUT | NEXT |
+| Draft | `/seller-workspace/previsit/visits/{visit_id}/draft` | PUT | LIVE_INTEGRATED |
 | Saved requests | `/seller-workspace/previsit/visits/{visit_id}/saved-requests` | GET/POST | NEXT |
 | Complete visit | `/seller-workspace/previsit/visits/{visit_id}/complete` | POST | FINAL_PRE_WRITE |
 | Neshan map config | `/seller-workspace/map-config` | GET | NEEDS_VALIDATION |
