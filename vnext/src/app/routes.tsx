@@ -38,7 +38,7 @@ export const appRoutes: readonly AppRouteDefinition[] = [
   { id: 'seller-routes', path: '/seller/routes', primary: 'modules', screen: SellerRoutesScreen, traceId: 'SEL-01', contractStatus: 'VERIFIED' },
   { id: 'seller-day-route', path: '/seller/day-route', primary: 'modules', screen: SellerDayRouteScreen, traceId: 'SEL-02', contractStatus: 'VERIFIED' },
   { id: 'seller-customers', path: '/seller/customers', primary: 'modules', screen: SellerRouteCustomersScreen, traceId: 'SEL-03', contractStatus: 'VERIFIED' },
-  { id: 'seller-map', path: '/seller/map', primary: 'modules', screen: SellerMapScreen, traceId: 'MAP-01', contractStatus: 'NEEDS_VALIDATION' },
+  { id: 'seller-map', path: '/seller/map', primary: 'modules', screen: SellerMapScreen, traceId: 'MAP-01', contractStatus: 'VERIFIED' },
   { id: 'seller-customer', path: '/seller/customer', primary: 'modules', screen: Customer360Screen, traceId: 'CUS-01', contractStatus: 'VERIFIED' },
   { id: 'seller-visit', path: '/seller/visit', primary: 'modules', screen: VisitScreen, traceId: 'VIS-01', contractStatus: 'VERIFIED' },
   { id: 'seller-catalog', path: '/seller/catalog', primary: 'modules', screen: CatalogScreen, traceId: 'ORD-01', contractStatus: 'VERIFIED' },

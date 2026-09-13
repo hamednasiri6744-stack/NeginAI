@@ -33,16 +33,16 @@ Varanegar write registration exists as a separate gated bridge and is intentiona
 | Draft | `/seller-workspace/previsit/visits/{visit_id}/draft` | PUT | LIVE_INTEGRATED |
 | Saved requests | `/seller-workspace/previsit/visits/{visit_id}/saved-requests` | GET/POST/PUT | LIVE_INTEGRATED + SERVER_CANONICALIZED |
 | Complete visit | `/seller-workspace/previsit/visits/{visit_id}/complete` | POST | LIVE_INTEGRATED (VARANEGAR WRITE DEFERRED) |
-| Neshan map config | `/seller-workspace/map-config` | GET | LIVE_INTEGRATED / RUNTIME_BLOCKED: NESHAN_CONFIG_MISSING |
-| Route map plan | `/seller-workspace/routes/{path_id}/map-plan` | GET | LIVE_INTEGRATED / RUNTIME_BLOCKED: NESHAN_CONFIG_MISSING |
-| Route map leg | `/seller-workspace/routes/{path_id}/map-leg` | GET | LIVE_INTEGRATED / RUNTIME_BLOCKED: NESHAN_CONFIG_MISSING |
+| Neshan map config | `/seller-workspace/map-config` | GET | LIVE_INTEGRATED / RUNTIME_VERIFIED |
+| Route map plan | `/seller-workspace/routes/{path_id}/map-plan` | GET | LIVE_INTEGRATED / RUNTIME_VERIFIED |
+| Route map leg | `/seller-workspace/routes/{path_id}/map-leg` | GET | LIVE_INTEGRATED / RUNTIME_VERIFIED |
 | Varanegar order registration | existing gated bridge | internal backend call | FINAL_PHASE_ONLY |
 
 ## Map integration closure
 
 vNext Seller Map now uses the existing Neshan MapLibre 5.24.3 integration and the confirmed backend map contracts. It supports live GPS, sales-priority/shortest modes, active-leg refresh, route polyline, day-customer status, Customer 360/Visit navigation, NGT-policy-backed no-visit completion, saved-request summary, and navigation voice fallback.
 
-Runtime verification on both active local NeginAI instances returned `neshan_web_configured=false`, `neshan_service_configured=false`, and HTTP 503 from `/seller-workspace/map-config`. The implementation is complete; real map rendering/routing is explicitly blocked until Neshan runtime configuration is supplied.
+Runtime verification now reports both Neshan configuration flags enabled. `/seller-workspace/map-config` returns HTTP 200, and the protected `/health/neshan` probe reports `configured=true`, `service_reachable=true`, and no error without exposing provider keys or payloads.
 
 ## Navigation contract
 
@@ -75,7 +75,7 @@ Write activation is the final phase after full contract parity, preview/validati
 - `npm run build`: PASS
 - `git diff --check`: PASS
 - `tests/test_seller_workspace.py`: 37 PASS
-- Neshan runtime: BLOCKED (configuration absent; map-config returns 503)
+- Neshan runtime: VERIFIED (map-config HTTP 200; protected provider probe reachable)
 - `tests/test_seller_workspace.py`: 37 passed
 
 Known non-blocking pre-existing test warnings are explicitly deferred from this frontend integration slice:

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Request
 
 from app.routes.chat import model_resource_policy
 from app.routes.dependencies import require_user_or_local
+from app.seller_workspace_service import _neshan_direction
 
 router = APIRouter(tags=["health"])
 
@@ -12,6 +13,43 @@ async def health() -> dict[str, object]:
     return {
         "status": "ok",
         "service": "NeginAI",
+    }
+
+
+@router.get(
+    "/health/neshan",
+    operation_id="getNeshanHealth",
+    dependencies=[Depends(require_user_or_local)],
+)
+def neshan_health(request: Request) -> dict[str, object]:
+    """Protected provider probe without exposing map credentials or provider payloads."""
+    settings = request.app.state.settings
+    web_configured = bool(settings.neshan_web_api_key)
+    service_configured = bool(settings.neshan_service_api_key)
+    if not service_configured:
+        return {
+            "configured": web_configured and service_configured,
+            "web_configured": web_configured,
+            "service_configured": service_configured,
+            "service_reachable": False,
+            "error_type": "not_configured",
+        }
+    try:
+        result = _neshan_direction(settings, 35.7219, 51.3347, 35.6892, 51.3890)
+    except Exception as exc:
+        return {
+            "configured": web_configured and service_configured,
+            "web_configured": web_configured,
+            "service_configured": service_configured,
+            "service_reachable": False,
+            "error_type": type(exc).__name__,
+        }
+    return {
+        "configured": web_configured and service_configured,
+        "web_configured": web_configured,
+        "service_configured": service_configured,
+        "service_reachable": bool(result.get("leg") or result.get("polyline")),
+        "error_type": None,
     }
 
 

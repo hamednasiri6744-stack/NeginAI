@@ -105,3 +105,35 @@ def test_dashboard_stats_and_history_are_protected(client, auth):
     history = client.get("/history", headers=auth)
     assert history.status_code == 200
     assert set(history.json()) == {"total", "items"}
+
+
+def test_neshan_health_probe_is_protected_and_does_not_expose_keys(client, auth, settings, monkeypatch):
+    from dataclasses import replace
+    from app.main import app
+
+    assert client.get("/health/neshan").status_code == 401
+    original = app.state.settings
+    app.state.settings = replace(
+        settings,
+        neshan_web_api_key="web-test-key",
+        neshan_service_api_key="service-test-key",
+    )
+    monkeypatch.setattr(
+        "app.routes.health._neshan_direction",
+        lambda *_args: {"polyline": "encoded", "leg": {"distance": {"text": "1 km"}}},
+    )
+    try:
+        response = client.get("/health/neshan", headers=auth)
+    finally:
+        app.state.settings = original
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "configured": True,
+        "web_configured": True,
+        "service_configured": True,
+        "service_reachable": True,
+        "error_type": None,
+    }
+    assert "web-test-key" not in response.text
+    assert "service-test-key" not in response.text
