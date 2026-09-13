@@ -133,8 +133,10 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
               <label className={usernameError ? 'field has-error' : 'field'}>
                 <UserIcon className="field-icon" />
                 <input
+                  ref={usernameRef}
                   type="text"
                   inputMode="text"
+                  ref={usernameRef}
                   autoComplete="username"
                   placeholder="نام کاربری یا شماره موبایل"
                   aria-label="نام کاربری یا شماره موبایل"
@@ -151,6 +153,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
               <label className={passwordError ? 'field has-error' : 'field'}>
                 <LockIcon className="field-icon" />
                 <input
+                  ref={passwordRef}
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
                   placeholder="رمز عبور"
