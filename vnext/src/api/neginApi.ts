@@ -1,4 +1,4 @@
-export type AuthProfile = {
+﻿export type AuthProfile = {
   authenticated?: boolean
   username: string
   personnel_id: number | null
@@ -173,7 +173,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
       cache: 'no-store',
     })
   } catch {
-    throw new NeginApiError(0, 'ارتباط با سرور NeginAI برقرار نشد.')
+    throw new NeginApiError(0, 'ط§ط±طھط¨ط§ط· ط¨ط§ ط³ط±ظˆط± NeginAI ط¨ط±ظ‚ط±ط§ط± ظ†ط´ط¯.')
   }
 
   const raw = await response.text()
@@ -192,7 +192,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
       : typeof payload === 'string'
         ? payload
         : ''
-    throw new NeginApiError(response.status, detail || `خطای سرور (${response.status})`)
+    throw new NeginApiError(response.status, detail || `ط®ط·ط§غŒ ط³ط±ظˆط± (${response.status})`)
   }
 
   return payload as T
@@ -416,7 +416,7 @@ export type NeshanRouteMapLegResponse = { polyline: string; leg: NeshanRouteLeg 
 
 export async function getNeshanMapConfig() { return request<NeshanMapConfigResponse>('/seller-workspace/map-config') }
 export async function getRouteMapPlan(routeId: string, routeMode: 'sales_priority' | 'shortest', origin?: { latitude: number; longitude: number } | null) {
-  const params = new URLSearchParams({ route_mode: routeMode, start_day_route: 'true' })
+  const params = new URLSearchParams({ route_mode: routeMode, start_day_route: 'false' })
   if (origin) { params.set('origin_latitude', String(origin.latitude)); params.set('origin_longitude', String(origin.longitude)) }
   return request<NeshanRouteMapPlanResponse>(`/seller-workspace/routes/${encodeURIComponent(routeId)}/map-plan?${params}`)
 }
@@ -424,3 +424,4 @@ export async function getRouteMapLeg(routeId: string, customerId: string, origin
   const params = new URLSearchParams({ destination_id: customerId, origin_latitude: String(origin.latitude), origin_longitude: String(origin.longitude) })
   return request<NeshanRouteMapLegResponse>(`/seller-workspace/routes/${encodeURIComponent(routeId)}/map-leg?${params}`)
 }
+

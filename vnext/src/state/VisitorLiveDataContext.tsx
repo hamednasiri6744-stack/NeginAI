@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+﻿import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { neginApi, type RouteCustomersResponse, type SellerCustomer, type SellerRoute, type SellerRoutesResponse } from '../api/neginApi'
 import { useVisitorAuth } from './VisitorAuthContext'
 import { useVisitorWorkflow } from './VisitorWorkflowContext'
@@ -34,13 +34,16 @@ export function VisitorLiveDataProvider({ children }: { children: ReactNode }) {
       const routes = await neginApi.routes()
       setRoutesData(routes)
       const selectedRoute = routes.day_route?.id
-        ? routes.routes.find((route) => route.id === routes.day_route?.id) ?? routes.routes.find((route) => route.can_start_visit)
+        ? routes.routes.find((route) => route.id === routes.day_route?.id)
+          ?? routes.routes.find((route) => route.can_start_visit)
+          ?? routes.routes[0]
         : routes.routes.find((route) => route.can_start_visit)
+          ?? routes.routes[0]
 
       if (!selectedRoute) {
         setCustomersData(null)
         hydrateLiveRoute('', [])
-        setError('برای امروز مسیر فعالی در NGT تعیین نشده است.')
+        setError('ط¨ط±ط§غŒ ط§ظ…ط±ظˆط² ظ…ط³غŒط± ظپط¹ط§ظ„غŒ ط¯ط± NGT طھط¹غŒغŒظ† ظ†ط´ط¯ظ‡ ط§ط³طھ.')
         return
       }
 
@@ -48,7 +51,7 @@ export function VisitorLiveDataProvider({ children }: { children: ReactNode }) {
       setCustomersData(customers)
       hydrateLiveRoute(selectedRoute.id, customers.customers)
     } catch (caught) {
-      const message = caught instanceof Error ? caught.message : 'دریافت اطلاعات زنده ویزیتور انجام نشد.'
+      const message = caught instanceof Error ? caught.message : 'ط¯ط±غŒط§ظپطھ ط§ط·ظ„ط§ط¹ط§طھ ط²ظ†ط¯ظ‡ ظˆغŒط²غŒطھظˆط± ط§ظ†ط¬ط§ظ… ظ†ط´ط¯.'
       setRoutesData(null)
       setCustomersData(null)
       hydrateLiveRoute('', [])
@@ -99,3 +102,5 @@ export function useVisitorLiveData() {
   if (!value) throw new Error('useVisitorLiveData must be used inside VisitorLiveDataProvider')
   return value
 }
+
+
