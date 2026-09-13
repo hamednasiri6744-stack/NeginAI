@@ -630,7 +630,7 @@ button { cursor: pointer; }
 .vc-chips::-webkit-scrollbar { display: none; }
 .vc-chips button {
   min-width: 62px;
-  height: 31px;
+  height: 44px;
   padding: 0 12px;
   flex: 0 0 auto;
   border-radius: 11px;
@@ -655,7 +655,7 @@ button { cursor: pointer; }
   min-height: 119px;
   padding: 11px;
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) 34px;
+  grid-template-columns: 40px minmax(0, 1fr) 44px;
   gap: 9px;
   align-items: start;
   border-radius: 19px;
@@ -687,7 +687,7 @@ button { cursor: pointer; }
 .vc-commerce span svg { width: 11px; color: #cfa84e; }
 .vc-commerce strong { color: #cbd6e0; font-size: 12.5px; white-space: nowrap; }
 .vc-card-actions { display: grid; gap: 4px; }
-.vc-card-actions button { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 10px; border: 1px solid rgba(158,188,212,.10); color: #8fa1b2; background: rgba(255,255,255,.022); }
+.vc-card-actions button { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 10px; border: 1px solid rgba(158,188,212,.10); color: #8fa1b2; background: rgba(255,255,255,.022); }
 .vc-card-actions button:nth-child(1) { color: #efc45a; }
 .vc-card-actions button:nth-child(2) { color: #69aef1; }
 .vc-card-actions svg { width: 15px; }
@@ -699,9 +699,9 @@ button { cursor: pointer; }
 @media (max-width: 350px) {
   .vc-heading h1 { font-size: 21px; }
   .vc-heading > button { padding-inline: 9px; }
-  .vc-card { grid-template-columns: 36px minmax(0,1fr) 31px; padding: 9px; gap: 7px; }
+  .vc-card { grid-template-columns: 36px minmax(0,1fr) 44px; padding: 9px; gap: 7px; }
   .vc-customer-icon { width: 36px; height: 36px; }
-  .vc-card-actions button { width: 29px; height: 29px; }
+  .vc-card-actions button { width: 44px; height: 44px; }
 }
 
 /* === Cumulative Prototype v0.7 — Visitor Customer 360 === */
@@ -1558,3 +1558,4 @@ button:focus-visible,a:focus-visible { outline:2px solid rgba(240,193,82,.72); o
 }
 
 .vh-kpi-route-value { direction:rtl !important; unicode-bidi:plaintext; font-size:14px; line-height:1.45; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; overflow-wrap:anywhere; }
+
