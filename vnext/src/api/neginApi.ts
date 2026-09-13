@@ -152,7 +152,7 @@ export class NeginApiError extends Error {
 }
 
 function userFacingApiDetail(status: number, detail: string) {
-  const clean = detail.trim()
+  const clean = repairMojibakeText(detail.trim())
   if (status === 401) return '\u0646\u0634\u0633\u062a \u0634\u0645\u0627 \u0645\u0639\u062a\u0628\u0631 \u0646\u06cc\u0633\u062a. \u062f\u0648\u0628\u0627\u0631\u0647 \u0648\u0627\u0631\u062f \u0634\u0648\u06cc\u062f.'
   if (status === 403) return '\u0628\u0631\u0627\u06cc \u0627\u06cc\u0646 \u0628\u062e\u0634 \u062f\u0633\u062a\u0631\u0633\u06cc \u0644\u0627\u0632\u0645 \u0648\u062c\u0648\u062f \u0646\u062f\u0627\u0631\u062f.'
   if (status >= 500 || /internal server error/i.test(clean)) return '\u0633\u0631\u0648\u06cc\u0633 \u062f\u0627\u062f\u0647 \u0645\u0648\u0642\u062a\u0627\u064b \u062f\u0631 \u062f\u0633\u062a\u0631\u0633 \u0646\u06cc\u0633\u062a. \u062f\u0648\u0628\u0627\u0631\u0647 \u062a\u0644\u0627\u0634 \u06a9\u0646\u06cc\u062f.'
@@ -168,6 +168,66 @@ function apiUrl(path: string) {
   return `${apiBase()}${normalized}`
 }
 
+const CP1256_HIGH_BYTES: Record<number, number> = {8364:128,1662:129,8218:130,402:131,8222:132,8230:133,8224:134,8225:135,710:136,8240:137,1657:138,8249:139,338:140,1670:141,1688:142,1672:143,1711:144,8216:145,8217:146,8220:147,8221:148,8226:149,8211:150,8212:151,1705:152,8482:153,1681:154,8250:155,339:156,8204:157,8205:158,1722:159,160:160,1548:161,162:162,163:163,164:164,165:165,166:166,167:167,168:168,169:169,1726:170,171:171,172:172,173:173,174:174,175:175,176:176,177:177,178:178,179:179,180:180,181:181,182:182,183:183,184:184,185:185,1563:186,187:187,188:188,189:189,190:190,1567:191,1729:192,1569:193,1570:194,1571:195,1572:196,1573:197,1574:198,1575:199,1576:200,1577:201,1578:202,1579:203,1580:204,1581:205,1582:206,1583:207,1584:208,1585:209,1586:210,1587:211,1588:212,1589:213,1590:214,215:215,1591:216,1592:217,1593:218,1594:219,1600:220,1601:221,1602:222,1603:223,224:224,1604:225,226:226,1605:227,1606:228,1607:229,1608:230,231:231,232:232,233:233,234:234,235:235,1609:236,1610:237,238:238,239:239,1611:240,1612:241,1613:242,1614:243,244:244,1615:245,1616:246,247:247,1617:248,249:249,1618:250,251:251,252:252,8206:253,8207:254,1746:255}
+
+function cp1256ByteFor(char: string) {
+  const codePoint = char.codePointAt(0)
+  if (codePoint === undefined) return undefined
+  if (codePoint < 128) return codePoint
+  return CP1256_HIGH_BYTES[codePoint]
+}
+
+function mojibakeScore(value: string) {
+  const suspicious = /[\u0637\u0638\u063A\u0622\u0623\u00E2\u0152\u20AC\u00B3\u00B1\u00A2\u2026]/g
+  return value.match(suspicious)?.length ?? 0
+}
+
+export function repairMojibakeText(value: string) {
+  if (mojibakeScore(value) === 0) return value
+
+  let current = value
+  for (let pass = 0; pass < 3; pass += 1) {
+    const chars = Array.from(current)
+    const bytes = new Uint8Array(chars.length)
+    let encodable = true
+
+    chars.forEach((char, index) => {
+      const byte = cp1256ByteFor(char)
+      if (byte === undefined) {
+        encodable = false
+        return
+      }
+      bytes[index] = byte
+    })
+
+    if (!encodable) break
+
+    let candidate: string
+    try {
+      candidate = new TextDecoder('utf-8', { fatal: true }).decode(bytes)
+    } catch {
+      break
+    }
+
+    if (candidate === current || mojibakeScore(candidate) >= mojibakeScore(current)) break
+    current = candidate
+  }
+
+  return current
+}
+
+function normalizeApiPayload(value: unknown): unknown {
+  if (typeof value === 'string') return repairMojibakeText(value)
+  if (Array.isArray(value)) return value.map(normalizeApiPayload)
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>).map(([key, nested]) => [key, normalizeApiPayload(nested)]),
+    )
+  }
+  return value
+}
+
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers)
   if (init.body !== undefined && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
@@ -181,7 +241,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
       cache: 'no-store',
     })
   } catch {
-    throw new NeginApiError(0, 'ط§ط±طھط¨ط§ط· ط¨ط§ ط³ط±ظˆط± NeginAI ط¨ط±ظ‚ط±ط§ط± ظ†ط´ط¯.')
+    throw new NeginApiError(0, 'ارتباط با سرور NeginAI برقرار نشد.')
   }
 
   const raw = await response.text()
@@ -203,7 +263,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     throw new NeginApiError(response.status, userFacingApiDetail(response.status, detail))
   }
 
-  return payload as T
+  return normalizeApiPayload(payload) as T
 }
 
 export const neginApi = {

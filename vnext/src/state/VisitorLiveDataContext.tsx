@@ -43,7 +43,7 @@ export function VisitorLiveDataProvider({ children }: { children: ReactNode }) {
       if (!selectedRoute) {
         setCustomersData(null)
         hydrateLiveRoute('', [])
-        setError('ط¨ط±ط§غŒ ط§ظ…ط±ظˆط² ظ…ط³غŒط± ظپط¹ط§ظ„غŒ ط¯ط± NGT طھط¹غŒغŒظ† ظ†ط´ط¯ظ‡ ط§ط³طھ.')
+        setError('برای امروز مسیر فعالی در NGT تعیین نشده است.')
         return
       }
 
@@ -51,7 +51,7 @@ export function VisitorLiveDataProvider({ children }: { children: ReactNode }) {
       setCustomersData(customers)
       hydrateLiveRoute(selectedRoute.id, customers.customers)
     } catch (caught) {
-      const message = caught instanceof Error ? caught.message : 'ط¯ط±غŒط§ظپطھ ط§ط·ظ„ط§ط¹ط§طھ ط²ظ†ط¯ظ‡ ظˆغŒط²غŒطھظˆط± ط§ظ†ط¬ط§ظ… ظ†ط´ط¯.'
+      const message = caught instanceof Error ? caught.message : 'دریافت اطلاعات زنده ویزیتور انجام نشد.'
       setRoutesData(null)
       setCustomersData(null)
       hydrateLiveRoute('', [])
