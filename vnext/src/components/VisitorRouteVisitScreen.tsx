@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   BellIcon,
   CartIcon,
@@ -29,6 +29,13 @@ type Props = {
 }
 type RouteMode = 'sales' | 'shortest'
 type VisitState = 'idle' | 'active' | 'outcome'
+
+function joinRouteMeta(area: string, distance: string) {
+  const parts = [area, distance]
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0 && !/^[-\u2013\u2014]+$/.test(value))
+  return parts.join(' \u00b7 ')
+}
 
 function formatTimer(totalSeconds: number) {
   const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0')
@@ -61,6 +68,7 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
   const [selectedReasonId, setSelectedReasonId] = useState('')
   const [actionBusy, setActionBusy] = useState<'start' | 'complete' | ''>('')
   const [mapRecenterNonce, setMapRecenterNonce] = useState(0)
+  const outcomeDialogRef = useRef<HTMLElement | null>(null)
 
   const activeStop = useMemo(
     () => routeStops.find((stop) => stop.customerId === selectedCustomerId) ?? routeStops[0],
@@ -126,6 +134,32 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
     return () => window.clearInterval(interval)
   }, [activeVisit, visitState])
 
+  useEffect(() => {
+    if (visitState !== 'outcome') return
+    const dialog = outcomeDialogRef.current
+    const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    dialog?.focus()
+    const handleOutcomeKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        setVisitState('active')
+        return
+      }
+      if (event.key !== 'Tab' || !dialog) return
+      const controls = Array.from(dialog.querySelectorAll<HTMLElement>('button:not([disabled]), select:not([disabled]), [href], [tabindex]:not([tabindex=-1])'))
+        .filter((element) => element.offsetParent !== null)
+      if (!controls.length) { event.preventDefault(); return }
+      const first = controls[0]
+      const last = controls[controls.length - 1]
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus() }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
+    }
+    document.addEventListener('keydown', handleOutcomeKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleOutcomeKeyDown)
+      previous?.focus()
+    }
+  }, [visitState])
   const flash = useCallback((message: string) => {
     setNotice(message)
     window.setTimeout(() => setNotice(null), 2200)
@@ -271,8 +305,8 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
         </section>
 
         <section className="vr-mode" aria-label="حالت برنامه‌ریزی مسیر">
-          <button type="button" className={mode === 'sales' ? 'active' : ''} onClick={() => setMode('sales')}>اولویت فروش</button>
-          <button type="button" className={mode === 'shortest' ? 'active' : ''} onClick={() => setMode('shortest')}>کوتاه‌ترین مسیر</button>
+          <button type="button" aria-pressed={mode === 'sales'} className={mode === 'sales' ? 'active' : ''} onClick={() => setMode('sales')}>اولویت فروش</button>
+          <button type="button" aria-pressed={mode === 'shortest'} className={mode === 'shortest' ? 'active' : ''} onClick={() => setMode('shortest')}>کوتاه‌ترین مسیر</button>
         </section>
 
         <section className="vr-map-card" aria-label="نمای شماتیک مسیر امروز">
@@ -296,7 +330,7 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
         <section className="vr-active-card">
           <div className="vr-active-top">
             <span className="vr-store"><StoreIcon /></span>
-            <div><small>ایستگاه انتخاب‌شده</small><strong>{activeStop.name}</strong><span>{activeStop.area} · {activeStop.distance}</span></div>
+            <div><small>ایستگاه انتخاب‌شده</small><strong>{activeStop.name}</strong><span>{joinRouteMeta(activeStop.area, activeStop.distance)}</span></div>
             <span className={`vr-priority p-${activeStop.priority.toLowerCase()}`}>{activeStop.priority}</span>
           </div>
           <div className="vr-active-meta">
@@ -334,7 +368,7 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
             {routeStops.map((stop, index) => (
               <button type="button" key={stop.stopId} className={`vr-stop-row ${stop.status} ${selectedCustomerId === stop.customerId ? 'selected' : ''}`} onClick={() => selectStop(stop.customerId)}>
                 <span className="vr-index">{stop.status === 'visited' ? <CheckCircleIcon /> : stop.status === 'skipped' ? '×' : index + 1}</span>
-                <span className="vr-stop-copy"><strong>{stop.name}</strong><small>{stop.area} · {stop.distance}</small></span>
+                <span className="vr-stop-copy"><strong>{stop.name}</strong><small>{joinRouteMeta(stop.area, stop.distance)}</small></span>
                 <span className="vr-stop-state">{stop.status === 'visited' ? (stop.outcome === 'order-draft' ? 'سفارش پیش‌نویس' : 'ویزیت شد') : stop.status === 'active' ? 'بعدی' : stop.status === 'unlocated' ? 'بدون موقعیت' : stop.status === 'skipped' ? 'عدم ویزیت' : stop.eta}</span>
               </button>
             ))}
