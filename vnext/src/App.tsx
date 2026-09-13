@@ -1,5 +1,3 @@
-import './design-system/components/auth.css'
-import './design-system/components/nui-001-login.css'
 import './design-system/v2/styles.css'
 import { AppShell } from './components/AppShell'
 import { NetworkStatus } from './components/NetworkStatus'
