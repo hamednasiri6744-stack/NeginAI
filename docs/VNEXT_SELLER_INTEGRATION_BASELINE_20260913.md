@@ -24,7 +24,7 @@ Varanegar write registration exists as a separate gated bridge and is intentiona
 | Seller routes | `/seller-workspace/routes` | GET | LIVE_INTEGRATED |
 | Route customers | `/seller-workspace/routes/{path_id}/customers` | GET | LIVE_INTEGRATED |
 | Day route | route id from `/seller-workspace/routes`, customer state from route customers | GET | LIVE_INTEGRATED |
-| Customer profile | `/seller-workspace/routes/{path_id}/customers/{customer_id}/profile` | GET | NEXT |
+| Customer profile | `/seller-workspace/routes/{path_id}/customers/{customer_id}/profile` | GET | LIVE_INTEGRATED |
 | Visit workspace | `/seller-workspace/routes/{path_id}/customers/{customer_id}/visit-workspace` | GET | NEXT |
 | Visit policy | `/seller-workspace/previsit/policy?path_id=...&customer_id=...` | GET | NEXT |
 | Start visit | `/seller-workspace/previsit/visits` | POST | NEXT |

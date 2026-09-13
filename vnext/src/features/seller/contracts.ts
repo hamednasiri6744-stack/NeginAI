@@ -79,3 +79,56 @@ export function visitStatusLabel(customer: SellerCustomer) {
   if (resolution.outcome === 'skipped') return 'رد شده'
   return 'تکمیل‌شده'
 }
+
+export type SellerFinancialSnapshot = {
+  bed_credit?: number
+  remaining_bed_credit?: number
+  asn_credit?: number
+  remaining_asn_credit?: number
+  has_bed_credit?: boolean
+  has_asn_credit?: boolean
+  combined_remaining?: number
+  customer_remaining?: number
+  open_cheque_count?: number
+  open_cheque_amount?: number
+  returned_cheque_count?: number
+  returned_cheque_amount?: number
+  dc_ref?: number | null
+  updated_at?: string
+  source?: string
+}
+
+export type SellerCustomerProfile = SellerCustomer & {
+  unique_id?: string
+  alarm?: string
+  activity_name?: string
+  category_name?: string
+  level_name?: string
+  owner_type_name?: string
+  state_name?: string
+  city_name?: string
+  county_name?: string
+  visit_count?: number
+  order_count?: number
+  order_line_count?: number
+  sum_order_amount?: number
+  avg_successful_visit?: number
+  ngt_updated_at?: string
+  editable?: Record<string, unknown>
+  financial_snapshot?: SellerFinancialSnapshot
+}
+
+export type SellerCustomerProfileResponse = {
+  route: { id: string; title: string }
+  customer: SellerCustomerProfile
+  lookups: Record<string, Array<Record<string, unknown>>>
+  draft: Record<string, unknown> | null
+  draft_updated_at: string | null
+  visit_controls: Record<string, unknown>
+  editable_contract: {
+    fields: string[]
+    active_fields: string[]
+    source: string
+    write_mode: string
+  }
+}
