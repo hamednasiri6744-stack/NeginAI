@@ -51,3 +51,18 @@ These values are identifiers only; no business data is encoded into navigation s
 
 The Varanegar order bridge stays disabled throughout UI/read integration and launch-parity work.
 Write activation is the final phase after full contract parity, preview/validation, idempotency, transaction, numbering, permission, rollback, and production verification.
+
+## Closure validation
+
+- `npm run lint`: PASS
+- `npm run build`: PASS
+- `git diff --check`: PASS
+- `tests/test_seller_workspace.py`: 37 passed
+
+Known non-blocking pre-existing test warnings are explicitly deferred from this frontend integration slice:
+
+- Pydantic warning for a `schema` field shadowing `BaseModel.schema`.
+- `datetime.utcnow()` deprecation warning in `app/database.py`.
+- Windows pytest temporary-directory cleanup permission warning after the test suite has already passed.
+
+These warnings do not change Seller contract behavior and are not launch blockers for this slice; they should be handled in a dedicated backend/tooling maintenance change rather than mixed into the vNext Seller integration commit.
