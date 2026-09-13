@@ -815,12 +815,12 @@ button { cursor: pointer; }
 .c360-info-grid dd { margin: 4px 0 0; color: #c3cfda; font-size: 12.5px; line-height: 1.5; }
 
 .c360-location-body { margin-top: 8px; display: grid; grid-template-columns: 38px minmax(0,1fr) auto; align-items: center; gap: 8px; }
-.c360-pin { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 13px; color: #d4ab4d; background: rgba(226,169,53,.055); border: 1px solid rgba(226,169,53,.10); }
+.c360-pin { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 13px; color: #d4ab4d; background: rgba(226,169,53,.055); border: 1px solid rgba(226,169,53,.10); }
 .c360-pin svg { width: 17px; }
 .c360-location-body > div:nth-child(2) { min-width: 0; display: grid; gap: 3px; }
 .c360-location-body strong { color: #cbd5de; font-size: 12.5px; }
 .c360-location-body span { color: #6f8295; font-size: 12px; }
-.c360-location-body button { height: 34px; padding: 0 8px; border-radius: 11px; border: 1px solid rgba(91,160,224,.14); color: #82b7e8; background: rgba(43,110,171,.055); display: inline-flex; align-items: center; gap: 4px; font-size: 12px; }
+.c360-location-body button { height: 44px; padding: 0 8px; border-radius: 11px; border: 1px solid rgba(91,160,224,.14); color: #82b7e8; background: rgba(43,110,171,.055); display: inline-flex; align-items: center; gap: 4px; font-size: 12px; }
 .c360-location-body button svg { width: 12px; }
 
 .c360-ai-card { border-color: rgba(226,169,53,.12); background: radial-gradient(circle at 100% 0, rgba(226,169,53,.07), transparent 28%), rgba(7,22,35,.82); }
