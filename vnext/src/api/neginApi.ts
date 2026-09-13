@@ -406,3 +406,21 @@ export async function completeServerVisit(visitId: string, payload: PrevisitOutc
     body: JSON.stringify(payload),
   })
 }
+export type NeshanMapConfigResponse = Record<string, string>
+export type NeshanRouteMetric = { text?: string; value?: number; [key: string]: unknown }
+export type NeshanRouteStep = { instruction?: string; distance?: NeshanRouteMetric; duration?: NeshanRouteMetric; start_location?: number[]; [key: string]: unknown }
+export type NeshanRouteLeg = { distance?: NeshanRouteMetric; duration?: NeshanRouteMetric; steps?: NeshanRouteStep[]; [key: string]: unknown }
+export type NeshanRouteMapCustomer = SellerCustomer & { visit_score: number; analysis: Record<string, unknown>; priority_tier: string }
+export type NeshanRouteMapPlanResponse = { route: { id: string; title: string }; customers: NeshanRouteMapCustomer[]; missing_location_count: number; ordered_customers: NeshanRouteMapCustomer[]; unlocated_customers: NeshanRouteMapCustomer[]; has_origin?: boolean; polyline: string; legs: NeshanRouteLeg[]; initial_leg: NeshanRouteLeg | null; route_mode: string; visit_location_policy: Record<string, unknown>; analytics_available: boolean }
+export type NeshanRouteMapLegResponse = { polyline: string; leg: NeshanRouteLeg | null }
+
+export async function getNeshanMapConfig() { return request<NeshanMapConfigResponse>('/seller-workspace/map-config') }
+export async function getRouteMapPlan(routeId: string, routeMode: 'sales_priority' | 'shortest', origin?: { latitude: number; longitude: number } | null) {
+  const params = new URLSearchParams({ route_mode: routeMode, start_day_route: 'true' })
+  if (origin) { params.set('origin_latitude', String(origin.latitude)); params.set('origin_longitude', String(origin.longitude)) }
+  return request<NeshanRouteMapPlanResponse>(`/seller-workspace/routes/${encodeURIComponent(routeId)}/map-plan?${params}`)
+}
+export async function getRouteMapLeg(routeId: string, customerId: string, origin: { latitude: number; longitude: number }) {
+  const params = new URLSearchParams({ destination_id: customerId, origin_latitude: String(origin.latitude), origin_longitude: String(origin.longitude) })
+  return request<NeshanRouteMapLegResponse>(`/seller-workspace/routes/${encodeURIComponent(routeId)}/map-leg?${params}`)
+}

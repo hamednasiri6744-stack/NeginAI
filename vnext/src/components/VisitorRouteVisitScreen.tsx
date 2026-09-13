@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   BellIcon,
   CartIcon,
@@ -16,6 +16,7 @@ import {
   UserGroupIcon,
 } from './Icons'
 import { completeServerVisit, getVisitPolicy, getVisitWorkspace, startServerVisit, type SellerVisitPolicyResponse, type SellerVisitWorkspaceResponse } from '../api/neginApi'
+import { VisitorNeshanMap } from './VisitorNeshanMap'
 import { useVisitorWorkflow } from '../state/VisitorWorkflowContext'
 import { useVisitorAuth } from '../state/VisitorAuthContext'
 import { useVisitorLiveData } from '../state/VisitorLiveDataContext'
@@ -59,6 +60,7 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
   const [workspace, setWorkspace] = useState<SellerVisitWorkspaceResponse | null>(null)
   const [selectedReasonId, setSelectedReasonId] = useState('')
   const [actionBusy, setActionBusy] = useState<'start' | 'complete' | ''>('')
+  const [mapRecenterNonce, setMapRecenterNonce] = useState(0)
 
   const activeStop = useMemo(
     () => routeStops.find((stop) => stop.customerId === selectedCustomerId) ?? routeStops[0],
@@ -124,19 +126,19 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
     return () => window.clearInterval(interval)
   }, [activeVisit, visitState])
 
-  function flash(message: string) {
+  const flash = useCallback((message: string) => {
     setNotice(message)
     window.setTimeout(() => setNotice(null), 2200)
-  }
+  }, [])
 
-  function selectStop(customerId: string) {
+  const selectStop = useCallback((customerId: string) => {
     if (activeVisit && activeVisit.customerId !== customerId) {
       flash('ابتدا بازدید فعال را تکمیل یا متوقف کن')
       return
     }
     setSelectedCustomerId(customerId)
     selectCustomer(customerId)
-  }
+  }, [activeVisit, flash, selectCustomer])
 
   function readCurrentPosition(required: boolean) {
     if (!required) return Promise.resolve<GeolocationCoordinates | null>(null)
@@ -276,25 +278,17 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
         <section className="vr-map-card" aria-label="نمای شماتیک مسیر امروز">
           <div className="vr-map-head">
             <div><MapIcon /><strong>مسیر زنده</strong></div>
-            <button type="button" onClick={() => flash('مرکز کردن GPS پس از اتصال نقشه واقعی فعال می‌شود')}><PinIcon /> مرکز روی من</button>
+            <button type="button" onClick={() => setMapRecenterNonce((value) => value + 1)}><PinIcon /> مرکز روی من</button>
           </div>
           <div className="vr-map-canvas">
-            <span className="vr-route-line vr-line-1" />
-            <span className="vr-route-line vr-line-2" />
-            <span className="vr-route-line vr-line-3" />
-            <span className="vr-route-line vr-line-4" />
-            <button type="button" className="vr-user-dot" aria-label="موقعیت من" onClick={() => flash('سرویس موقعیت مکانی هنوز متصل نیست')}>●</button>
-            {routeStops.slice(0, 4).map((stop, index) => (
-              <button
-                type="button"
-                key={stop.stopId}
-                className={`vr-stop-dot stop-${index + 1} ${stop.status} ${selectedCustomerId === stop.customerId ? 'selected' : ''}`}
-                onClick={() => selectStop(stop.customerId)}
-                aria-label={stop.name}
-              >
-                {stop.status === 'visited' ? <CheckCircleIcon /> : index + 1}
-              </button>
-            ))}
+            <VisitorNeshanMap
+              routeId={activeRouteId}
+              mode={mode}
+              selectedCustomerId={selectedCustomerId}
+              recenterNonce={mapRecenterNonce}
+              onSelectCustomer={selectStop}
+              onNotice={flash}
+            />
             <div className="vr-map-caption">{mode === 'sales' ? 'مشتریان واقعی NGT · Map Plan در Slice نقشه فعال می‌شود' : 'حالت کوتاه‌ترین مسیر هنوز به Map Plan متصل نشده'}</div>
           </div>
         </section>
