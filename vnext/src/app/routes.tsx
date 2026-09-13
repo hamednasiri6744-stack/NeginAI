@@ -40,7 +40,7 @@ export const appRoutes: readonly AppRouteDefinition[] = [
   { id: 'seller-customers', path: '/seller/customers', primary: 'modules', screen: SellerRouteCustomersScreen, traceId: 'SEL-03', contractStatus: 'VERIFIED' },
   { id: 'seller-map', path: '/seller/map', primary: 'modules', screen: SellerMapScreen, traceId: 'MAP-01', contractStatus: 'NEEDS_VALIDATION' },
   { id: 'seller-customer', path: '/seller/customer', primary: 'modules', screen: Customer360Screen, traceId: 'CUS-01', contractStatus: 'VERIFIED' },
-  { id: 'seller-visit', path: '/seller/visit', primary: 'modules', screen: VisitScreen, traceId: 'VIS-01', contractStatus: 'NEEDS_VALIDATION' },
+  { id: 'seller-visit', path: '/seller/visit', primary: 'modules', screen: VisitScreen, traceId: 'VIS-01', contractStatus: 'VERIFIED' },
   { id: 'seller-catalog', path: '/seller/catalog', primary: 'modules', screen: CatalogScreen, traceId: 'ORD-01', contractStatus: 'NEEDS_VALIDATION' },
   { id: 'seller-cart', path: '/seller/cart', primary: 'modules', screen: CartScreen, traceId: 'ORD-04', contractStatus: 'NEEDS_VALIDATION' },
   { id: 'design-system', path: '/design-system', primary: 'more', screen: DesignSystemLab, traceId: 'NG-DS-V2-LAB', contractStatus: 'NEEDS_VALIDATION' },

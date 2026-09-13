@@ -58,7 +58,7 @@ export type SellerRouteCustomersResponse = {
   live_assignment?: boolean
 }
 
-export function routeQueryValue(name: 'pathId' | 'customerId') {
+export function routeQueryValue(name: 'pathId' | 'customerId' | 'visitId') {
   return new URLSearchParams(window.location.search).get(name)?.trim() ?? ''
 }
 
@@ -131,4 +131,115 @@ export type SellerCustomerProfileResponse = {
     source: string
     write_mode: string
   }
+}
+
+export type SellerVisitAnalytics = {
+  company_invoice_count_12m?: number
+  company_net_sales_12m?: number
+  last_invoice_date?: string
+  seller_invoice_count_12m?: number
+  seller_net_sales_12m?: number
+  purchased_brands?: Array<Record<string, unknown>>
+  line_purchased_brands?: Array<Record<string, unknown>>
+  line_purchase_summary?: Array<Record<string, unknown>>
+  line_brand_count?: number
+  purchased_brand_count?: number
+  visit_score?: number
+  score_breakdown?: Record<string, number>
+}
+
+export type SellerOpenInvoice = {
+  id: number
+  number: string
+  date: string
+  amount: number
+  remaining_amount: number
+}
+
+export type SellerOpenInvoicesResponse = {
+  customer_id: string | number
+  invoice_count: number
+  invoices: SellerOpenInvoice[]
+  source: string
+}
+
+export type SellerChequeSummary = {
+  paid_12m_count?: number
+  paid_12m_amount?: number
+  active_returned_count?: number
+  active_returned_amount?: number
+  collected_after_return_count?: number
+  collected_after_return_amount?: number
+  refunded_after_return_count?: number
+  refunded_after_return_amount?: number
+  legal_returned_count?: number
+  legal_returned_amount?: number
+  fully_settled_returned_count?: number
+  returned_settlement_amount?: number
+}
+
+export type SellerChequeIntelligence = {
+  customer_id: string | number
+  summary: SellerChequeSummary
+  cheques: Array<Record<string, unknown>>
+  source: string
+  classification?: Record<string, string>
+}
+
+export type SellerVisitWorkspaceResponse = {
+  route: { id: string; title: string }
+  customer: SellerCustomerProfile
+  analytics: SellerVisitAnalytics
+  open_invoices: SellerOpenInvoicesResponse
+  cheques: SellerChequeIntelligence
+  sources: Record<string, unknown>
+  read_only: boolean
+}
+
+export type SellerVisitPolicyResponse = {
+  route: { id: string; title: string }
+  customer: {
+    id: string | number
+    name?: string
+    store_name?: string
+    has_location: boolean
+    location_check_exempt: boolean
+  }
+  controls: {
+    enabled?: boolean
+    enforced?: boolean
+    max_distance_meters?: number | null
+    mode?: string
+    [key: string]: unknown
+  }
+  missing_required_fields: string[]
+  start_blockers: string[]
+  order_blockers: string[]
+  can_start_visit: boolean
+  reasons?: Record<string, Array<Record<string, unknown>>>
+  visit_status_ids?: Record<string, string | null>
+  source: string
+}
+
+export type PrevisitVisitDraftResponse = {
+  visit_id: string
+  route_id: string
+  customer_id: string
+  visit_status: string
+  started_at: string
+  idempotency_key: string
+  warehouse_ref: number | null
+  warehouse_name: string
+  lines: Array<Record<string, unknown>>
+  line_count: number
+  total_amount: number
+  payment_type: string
+  order_type: string
+  outcome: string
+  outcome_reason: string
+  outcome_reason_id: string | null
+  visit_status_id: string | null
+  start_distance_meters: number | null
+  ngt_send_enabled: boolean
+  ngt_status: string
 }
