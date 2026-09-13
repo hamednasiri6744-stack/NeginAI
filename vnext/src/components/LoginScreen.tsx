@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { DownloadIcon, EyeIcon, EyeOffIcon, GlobeIcon, LockIcon, UserIcon } from './Icons'
 
 type LoginScreenProps = {
@@ -21,6 +21,8 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
   const [loading, setLoading] = useState(false)
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [isInstalled, setIsInstalled] = useState(() => window.matchMedia('(display-mode: standalone)').matches)
+  const usernameRef = useRef<HTMLInputElement>(null)
+  const passwordRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (event: Event) => {
@@ -81,7 +83,12 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
     setMessage(null)
     setLoginError(null)
 
-    if (!canSubmit || loading) return
+    if (!canSubmit) {
+      if (username.trim().length === 0) usernameRef.current?.focus()
+      else passwordRef.current?.focus()
+      return
+    }
+    if (loading) return
 
     setLoading(true)
     try {
