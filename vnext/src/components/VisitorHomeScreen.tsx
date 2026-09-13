@@ -41,6 +41,12 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
   const [notice, setNotice] = useState<string | null>(null)
   const { routeStops, routeSummary } = useVisitorWorkflow()
   const nextStop = routeStops.find((stop) => ['active', 'pending'].includes(stop.status)) ?? routeStops.find((stop) => stop.status === 'unlocated')
+  const nextStopMeta = nextStop
+    ? [nextStop.distance, nextStop.eta]
+      .map((value) => value.trim())
+      .filter((value) => value.length > 0 && !/^[-\u2013\u2014]+$/.test(value))
+      .join(' \u00b7 ') || nextStop.eta
+    : '\u2014'
   const kpis: Kpi[] = [
     { label: 'مسیر امروز', value: activeRouteTitle || '—', hint: liveAssignment ? 'NGT زنده' : 'بدون تخصیص', icon: <MapIcon />, tone: 'gold' },
     { label: 'مشتریان مسیر', value: String(routeSummary.total), hint: `${routeSummary.remaining} باقی‌مانده`, icon: <StoreIcon />, tone: 'mint' },
@@ -94,7 +100,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
               <h1 id="visitor-greeting">سلام {profile?.full_name ? `، ${profile.full_name}` : ''}</h1>
               <p>{loading ? 'در حال دریافت مسیر واقعی امروز…' : error ? 'داده زنده مسیر در دسترس نیست.' : `${routeSummary.visited} بازدید تعیین‌تکلیف شده و ${routeSummary.remaining} ایستگاه باقی مانده.`}</p>
             </div>
-            <div className="vh-progress" aria-label={`${routeSummary.progress} درصد مسیر انجام شده`}>
+            <div className="vh-progress" style={{ '--vh-progress': `${routeSummary.progress}%` } as React.CSSProperties} aria-label={`${routeSummary.progress} درصد مسیر انجام شده`}>
               <span>{routeSummary.progress}٪</span>
             </div>
           </div>
@@ -121,11 +127,11 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
         ) : null}
 
         <section className="vh-kpis" aria-label="خلاصه امروز">
-          {kpis.map((kpi) => (
+          {kpis.map((kpi, index) => (
             <article className={`vh-kpi vh-kpi-${kpi.tone ?? 'gold'}`} key={kpi.label}>
               <span className="vh-kpi-icon">{kpi.icon}</span>
               <span className="vh-kpi-label">{kpi.label}</span>
-              <strong>{kpi.value}</strong>
+              <strong className={index === 0 ? 'vh-kpi-route-value' : undefined}>{kpi.value}</strong>
               <small>{kpi.hint}</small>
             </article>
           ))}
@@ -142,7 +148,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
             <div className="vh-next-copy">
               <strong>{nextStop?.name ?? 'مسیر امروز تکمیل شده'}</strong>
               <span>{nextStop ? nextStop.area : 'ایستگاه فعالی باقی نمانده'}</span>
-              <small>{nextStop ? `${nextStop.distance} · ${nextStop.eta}` : '—'}</small>
+              <small>{nextStopMeta}</small>
             </div>
             <button className="vh-mini-action" type="button" aria-label="شروع مسیریابی" onClick={() => nextStop ? onNavigate(`/visitor/route?customer=${nextStop.customerId}`) : flash('ایستگاه فعالی باقی نمانده')}>
               <RouteArrowIcon />
