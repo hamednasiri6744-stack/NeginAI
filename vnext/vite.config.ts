@@ -1,4 +1,4 @@
-import babel from '@rolldown/plugin-babel'
+﻿import babel from '@rolldown/plugin-babel'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
@@ -14,11 +14,11 @@ export default defineConfig({
     port: 4183,
     strictPort: true,
     proxy: {
-      '/auth': 'http://127.0.0.1:8000',
-      '/seller-workspace': 'http://127.0.0.1:8000',
-      '/chat': 'http://127.0.0.1:8000',
-      '/audio': 'http://127.0.0.1:8000',
-      '/attachments': 'http://127.0.0.1:8000',
+      '/auth': 'http://127.0.0.1:8001',
+      '/seller-workspace': 'http://127.0.0.1:8001',
+      '/chat': 'http://127.0.0.1:8001',
+      '/audio': 'http://127.0.0.1:8001',
+      '/attachments': 'http://127.0.0.1:8001',
     },
   },
   preview: {
@@ -30,3 +30,4 @@ export default defineConfig({
     target: 'baseline-widely-available',
   },
 })
+
