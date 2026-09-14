@@ -62,7 +62,7 @@ function draw(map:any,encoded:string){
 }
 
 export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,onSelectCustomer,onPrimaryCustomer,onNotice}:Props){
-  const host=useRef<HTMLDivElement|null>(null),map=useRef<any>(null),markers=useRef<any[]>([]),manualViewportRef=useRef(false),sdkRef=useRef<ML|null>(null)
+  const host=useRef<HTMLDivElement|null>(null),map=useRef<any>(null),markers=useRef<any[]>([]),sdkRef=useRef<ML|null>(null)
   const selectedIdRef=useRef(selectedCustomerId),selectCustomerRef=useRef(onSelectCustomer),primaryCustomerRef=useRef(onPrimaryCustomer)
   const trustedCustomersRef=useRef<NeshanRouteMapPlanResponse['ordered_customers']>([]),trustedPosRef=useRef<Pos|null>(null),polyRef=useRef('')
   const keyRef=useRef(''),focusTokenRef=useRef(''),needsRecoveryRef=useRef(false),retryAttemptRef=useRef(0),retryTimerRef=useRef<number|null>(null)
@@ -91,7 +91,7 @@ export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,
     void Promise.all([loadSdk(),loadProxiedStyle(key)]).then(([sdk,proxiedStyle])=>{if(dead||!host.current||map.current)return
       const first=trustedCustomersRef.current[0],initialPos=trustedPosRef.current
       local=new sdk.Map({container:host.current,style:proxiedStyle,center:initialPos?[initialPos.longitude,initialPos.latitude]:first?[Number(first.longitude),Number(first.latitude)]:[51.4,35.7],zoom:initialPos?13:10,apiKey:key,rtl:{lazy:false}})
-      sdkRef.current=sdk;map.current=local;local.addControl(new sdk.NavigationControl());local.on('dragstart',(event:any)=>{if(event?.originalEvent)manualViewportRef.current=true});local.on('zoomstart',(event:any)=>{if(event?.originalEvent)manualViewportRef.current=true})
+      sdkRef.current=sdk;map.current=local;local.addControl(new sdk.NavigationControl())
       observer=new ResizeObserver(()=>{if(!dead)window.requestAnimationFrame(()=>local?.resize?.())});observer.observe(host.current)
       local.on('error',(event:any)=>{if(dead)return;const message=String(event?.error?.message||'Neshan map rendering failed');console.warn('[Neshan map]',message);const transient=/tile request failed|failed to fetch|network|timeout/i.test(message);if(!transient)return;needsRecoveryRef.current=true;if(retryTimerRef.current||!navigator.onLine||!keyRef.current)return;retryAttemptRef.current+=1;const delay=Math.min(12000,1200*(2**Math.min(retryAttemptRef.current-1,3)));retryTimerRef.current=window.setTimeout(()=>{retryTimerRef.current=null;if(dead||map.current!==local||!navigator.onLine||!keyRef.current)return;const center=local.getCenter?.(),zoom=local.getZoom?.(),bearing=local.getBearing?.(),pitch=local.getPitch?.();void loadProxiedStyle(keyRef.current).then(style=>{if(dead||map.current!==local)return;local.setStyle?.(style);local.once?.('styledata',()=>{if(dead||map.current!==local)return;needsRecoveryRef.current=false;retryAttemptRef.current=0;if(center)local.jumpTo?.({center:[center.lng,center.lat],zoom,bearing,pitch});draw(local,polyRef.current)})}).catch(()=>undefined)},delay)})
       local.on('load',()=>{if(dead)return;retryAttemptRef.current=0;needsRecoveryRef.current=false;setError('');setMapReady(true);window.requestAnimationFrame(()=>local?.resize?.())})
@@ -109,7 +109,7 @@ export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,
 
   useEffect(()=>{if(!host.current)return;host.current.querySelectorAll<HTMLElement>('.vr-map-live-marker').forEach(el=>{const selectedNow=el.dataset.customerId===selectedCustomerId;el.classList.toggle('selected',selectedNow);el.setAttribute('aria-pressed',String(selectedNow))})},[selectedCustomerId,mapReady,trustedCustomers])
 
-  useEffect(()=>{if(!mapReady||!map.current||manualViewportRef.current)return;const first=trustedCustomers[0],focus=trustedCustomers.find(c=>String(c.id)===selectedCustomerId)??first;if(!focus)return
+  useEffect(()=>{if(!mapReady||!map.current)return;const first=trustedCustomers[0],focus=trustedCustomers.find(c=>String(c.id)===selectedCustomerId)??first;if(!focus)return
     const token=`${routeId??''}|${mode}|${selectedCustomerId}`;if(focusTokenRef.current===token)return;focusTokenRef.current=token
     if(trustedPos&&distanceKm(trustedPos,{latitude:Number(focus.latitude),longitude:Number(focus.longitude)})<=80){map.current.fitBounds([[trustedPos.longitude,trustedPos.latitude],[Number(focus.longitude),Number(focus.latitude)]],{padding:48,maxZoom:15.5,duration:0})}
     else{map.current.jumpTo({center:[Number(focus.longitude),Number(focus.latitude)],zoom:15})}
@@ -129,7 +129,7 @@ export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,
 
   useEffect(()=>{if(mapReady)draw(map.current,poly)},[poly,mapReady])
   useEffect(()=>{if(!routeId||!trustedPos||!selected){setLeg('');return}let off=false;void getRouteMapLeg(routeId,String(selected.id),trustedPos).then(r=>{if(!off)setLeg(r.polyline||'')}).catch(e=>{if(!off)onNotice(e instanceof Error?e.message:'Live route unavailable')});return()=>{off=true}},[routeId,trustedPos,selected,onNotice])
-  useEffect(()=>{if(!recenterNonce)return;let off=false;void geo().then(p=>{if(off)return;if(!p){onNotice('دسترسی GPS برقرار نیست یا موقعیت دریافت نشد.');return}setPos(p);if(!plan||gpsMatchesPlan(p,plan)){manualViewportRef.current=false;map.current?.flyTo({center:[p.longitude,p.latitude],zoom:15.5,duration:650,essential:true})}else{onNotice('موقعیت GPS با محدوده مسیر همخوان نیست و نادیده گرفته شد.')}});return()=>{off=true}},[recenterNonce,onNotice])
+  useEffect(()=>{if(!recenterNonce)return;let off=false;void geo().then(p=>{if(off)return;if(!p){onNotice('دسترسی GPS برقرار نیست یا موقعیت دریافت نشد.');return}setPos(p);if(!plan||gpsMatchesPlan(p,plan)){map.current?.flyTo({center:[p.longitude,p.latitude],zoom:15.5,duration:650,essential:true})}else{onNotice('موقعیت GPS با محدوده مسیر همخوان نیست و نادیده گرفته شد.')}});return()=>{off=true}},[recenterNonce,onNotice])
 
   return <div className="vr-map-live-shell"><div ref={host} className="vr-map-live" aria-label="نقشه زنده مسیر فروش"/>{!plan&&!error?<span className="vr-map-live-state">در حال بارگذاری نقشه…</span>:null}{error?<button type="button" className="vr-map-live-state error" onClick={()=>onNotice(error)}>نقشه در دسترس نیست</button>:null}</div>
 }
