@@ -1747,3 +1747,33 @@ button:focus-visible,a:focus-visible { outline:2px solid rgba(240,193,82,.72); o
 }
 .vr-map-live-marker.selected{color:#fff}
 @media (prefers-reduced-motion:reduce){.vr-map-live-marker.selected::before{animation:none}}
+
+/* === Route Map Marker Simplification v5 === */
+.vr-map-live-marker::before,
+.vr-map-live-marker.tier-high::before,
+.vr-map-live-marker.tier-medium::before,
+.vr-map-live-marker.tier-low::before,
+.vr-map-live-marker.tier-a::before,
+.vr-map-live-marker.tier-b::before,
+.vr-map-live-marker.tier-c::before{
+  border-color:#fff0bd;
+  background:linear-gradient(145deg,#ffe99b,#e9af3f 66%,#ad6a1d);
+  box-shadow:0 4px 14px rgba(99,55,8,.34),0 0 0 2px rgba(255,214,103,.12);
+}
+@keyframes vr-selected-customer-red-pulse{
+  0%,100%{transform:rotate(-45deg) scale(1);box-shadow:0 4px 14px rgba(99,7,18,.34),0 0 0 4px rgba(255,67,84,.18),0 0 18px rgba(255,67,84,.48)}
+  50%{transform:rotate(-45deg) scale(1.16);box-shadow:0 5px 20px rgba(99,7,18,.42),0 0 0 11px rgba(255,67,84,.05),0 0 34px rgba(255,67,84,.86)}
+}
+.vr-map-live-marker.selected::before,
+.vr-map-live-marker.selected.tier-high::before,
+.vr-map-live-marker.selected.tier-medium::before,
+.vr-map-live-marker.selected.tier-low::before,
+.vr-map-live-marker.selected.tier-a::before,
+.vr-map-live-marker.selected.tier-b::before,
+.vr-map-live-marker.selected.tier-c::before{
+  border-color:#ffd5d9;
+  background:linear-gradient(145deg,#ff8d99,#ff4054 64%,#a70f24);
+  animation:vr-selected-customer-red-pulse 1.15s ease-in-out infinite;
+}
+.vr-map-live-marker.selected{color:#fff}
+@media (prefers-reduced-motion:reduce){.vr-map-live-marker.selected::before{animation:none}}
