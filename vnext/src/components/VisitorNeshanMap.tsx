@@ -45,12 +45,14 @@ export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,
     return()=>{off=true}
   },[routeId,mode])
 
-  useEffect(()=>{if(!plan||!key||!host.current)return;let dead=false,local:any=null
+  useEffect(()=>{if(!plan||!key||!host.current)return;let dead=false,local:any=null,observer:ResizeObserver|null=null
     void loadSdk().then(sdk=>{if(dead||!host.current)return
       const first=plan.ordered_customers.find(c=>c.latitude!=null&&c.longitude!=null)
       local=new sdk.Map({container:host.current,style:STYLE,center:pos?[pos.longitude,pos.latitude]:first?[Number(first.longitude),Number(first.latitude)]:[51.4,35.7],zoom:pos?13:10,apiKey:key,rtl:{lazy:false}})
       map.current=local;local.addControl(new sdk.NavigationControl())
-      local.on('load',()=>{if(dead)return;markers.current.forEach(m=>m.remove());markers.current=[]
+      observer=new ResizeObserver(()=>{if(!dead)window.requestAnimationFrame(()=>local?.resize?.())});observer.observe(host.current)
+      local.on('error',(event:any)=>{if(dead)return;const message=event?.error?.message||'Neshan map rendering failed';setError(String(message))})
+      local.on('load',()=>{if(dead)return;setError('');window.requestAnimationFrame(()=>local?.resize?.());markers.current.forEach(m=>m.remove());markers.current=[]
         const pts:Array<[number,number]>=[]
         plan.ordered_customers.forEach((c,n)=>{if(c.latitude==null||c.longitude==null)return;const el=document.createElement('button');el.type='button';el.className='vr-map-live-marker'+(String(c.id)===selectedCustomerId?' selected':'');el.textContent=String(n+1);el.setAttribute('aria-label',String(c.name||('Customer '+(n+1))));el.setAttribute('aria-pressed',String(String(c.id)===selectedCustomerId));el.onclick=()=>onSelectCustomer(String(c.id));const xy:[number,number]=[Number(c.longitude),Number(c.latitude)];markers.current.push(new sdk.Marker({element:el}).setLngLat(xy).addTo(local));pts.push(xy)})
         if(pos){const el=document.createElement('span');el.className='vr-map-live-seller';markers.current.push(new sdk.Marker({element:el}).setLngLat([pos.longitude,pos.latitude]).addTo(local));pts.push([pos.longitude,pos.latitude])}
@@ -58,7 +60,7 @@ export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,
         draw(local,poly)
       })
     }).catch(e=>setError(e instanceof Error?e.message:'Neshan SDK unavailable'))
-    return()=>{dead=true;markers.current.forEach(m=>m.remove());markers.current=[];local?.remove();if(map.current===local)map.current=null}
+    return()=>{dead=true;observer?.disconnect();markers.current.forEach(m=>m.remove());markers.current=[];local?.remove();if(map.current===local)map.current=null}
   },[key,plan,pos,selectedCustomerId,onSelectCustomer])
 
   useEffect(()=>{draw(map.current,poly)},[poly])

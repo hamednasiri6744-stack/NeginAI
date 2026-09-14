@@ -1544,9 +1544,9 @@ button:focus-visible,a:focus-visible { outline:2px solid rgba(240,193,82,.72); o
 .vai-message.assistant small { color:#65d9b5; }
 .vai-message.pending { opacity:.76; }
 
-.vr-map-live-shell{position:absolute;inset:0;z-index:0}
-.vr-map-live{position:absolute;inset:0}
-.vr-map-live-state{position:absolute;inset:auto 10px 10px 10px;z-index:4;padding:6px 9px;border:1px solid rgba(151,181,205,.12);border-radius:9px;background:rgba(1,10,17,.78);color:#90a4b6;font-size:11px;text-align:center}
+.vr-map-live-shell{position:absolute;inset:0;z-index:1}
+.vr-map-live{position:absolute;inset:0;width:100%;height:100%}
+.vr-map-live-state{position:absolute;inset:auto 10px 10px 10px;z-index:6;padding:6px 9px;border:1px solid rgba(151,181,205,.12);border-radius:9px;background:rgba(1,10,17,.78);color:#90a4b6;font-size:11px;text-align:center}
 .vr-map-live-state.error{color:#ff939b;min-height:44px}
 .vr-map-live-marker{width:44px;height:44px;position:relative;display:grid;place-items:center;border:0;border-radius:50%;background:transparent;color:#201300;font:800 12px/1 Inter,Arial,sans-serif;box-shadow:none;isolation:isolate}
 .vr-map-live-marker::before{content:"";position:absolute;width:29px;height:29px;border-radius:50%;border:2px solid #f0c159;background:linear-gradient(180deg,#ffe08a,#d99b33);box-shadow:0 0 14px rgba(227,170,55,.28);z-index:-1}
