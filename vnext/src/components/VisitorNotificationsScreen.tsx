@@ -92,14 +92,14 @@ export function VisitorNotificationsScreen({ onNavigate }: Props) {
         </section>
 
         <section className="vn-tabs" role="tablist" aria-label="فیلتر اعلان‌ها">
-          <button className={filter === 'all' ? 'active' : ''} type="button" onClick={() => setFilter('all')}>همه</button>
-          <button className={filter === 'unread' ? 'active' : ''} type="button" onClick={() => setFilter('unread')}>خوانده‌نشده</button>
-          <button className={filter === 'high' ? 'active' : ''} type="button" onClick={() => setFilter('high')}>مهم</button>
+          <button className={filter === 'all' ? 'active' : ''} type="button" role="tab" aria-selected={filter === 'all'} onClick={() => setFilter('all')}>همه</button>
+          <button className={filter === 'unread' ? 'active' : ''} type="button" role="tab" aria-selected={filter === 'unread'} onClick={() => setFilter('unread')}>خوانده‌نشده</button>
+          <button className={filter === 'high' ? 'active' : ''} type="button" role="tab" aria-selected={filter === 'high'} onClick={() => setFilter('high')}>مهم</button>
         </section>
 
-        <section className="vn-kind-strip" aria-label="نوع اعلان">
+        <section className="vn-kind-strip" role="group" aria-label="نوع اعلان">
           {(['all', 'price', 'promotion', 'stock', 'customer', 'kpi', 'route'] as const).map((value) => (
-            <button key={value} className={kind === value ? 'active' : ''} type="button" onClick={() => setKind(value)}>
+            <button key={value} className={kind === value ? 'active' : ''} type="button" aria-pressed={kind === value} onClick={() => setKind(value)}>
               {value === 'all' ? 'همه نوع‌ها' : kindLabel(value)}
             </button>
           ))}

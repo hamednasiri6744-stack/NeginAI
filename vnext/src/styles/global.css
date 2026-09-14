@@ -1568,3 +1568,8 @@ button:focus-visible,a:focus-visible { outline:2px solid rgba(240,193,82,.72); o
 .vo-stepper,.vo-cart-stepper{overflow:visible}
 .vo-stepper button,.vo-cart-stepper button{position:relative}
 .vo-stepper button::after,.vo-cart-stepper button::after{content:"";position:absolute;left:0;right:0;top:50%;height:44px;transform:translateY(-50%)}
+
+
+/* UXQA Reports/Notifications/Profile: visual-safe touch targets */
+.vrep-heading>button,.vrep-period button,.vrep-section-head>button,.vrep-ai-card button,.vn-heading>button,.vn-tabs button,.vn-kind-strip button,.vn-card-foot button,.vp-switch,.vp-modal button{position:relative}
+.vrep-heading>button::after,.vrep-period button::after,.vrep-section-head>button::after,.vrep-ai-card button::after,.vn-heading>button::after,.vn-tabs button::after,.vn-kind-strip button::after,.vn-card-foot button::after,.vp-switch::after,.vp-modal button::after{content:"";position:absolute;left:50%;top:50%;width:max(100%,44px);height:max(100%,44px);transform:translate(-50%,-50%)}

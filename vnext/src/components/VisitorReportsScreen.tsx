@@ -99,9 +99,9 @@ export function VisitorReportsScreen({ onNavigate }: Props) {
         </section>
 
         <section className="vrep-period" role="tablist" aria-label="بازه گزارش">
-          <button type="button" className={period === 'today' ? 'active' : ''} onClick={() => setPeriod('today')}>امروز</button>
-          <button type="button" className={period === 'week' ? 'active' : ''} onClick={() => setPeriod('week')}>این هفته</button>
-          <button type="button" className={period === 'month' ? 'active' : ''} onClick={() => setPeriod('month')}>این ماه</button>
+          <button type="button" role="tab" aria-selected={period === 'today'} className={period === 'today' ? 'active' : ''} onClick={() => setPeriod('today')}>امروز</button>
+          <button type="button" role="tab" aria-selected={period === 'week'} className={period === 'week' ? 'active' : ''} onClick={() => setPeriod('week')}>این هفته</button>
+          <button type="button" role="tab" aria-selected={period === 'month'} className={period === 'month' ? 'active' : ''} onClick={() => setPeriod('month')}>این ماه</button>
         </section>
 
         <section className="vrep-primary-kpis" aria-label="شاخص‌های اصلی عملکرد">

@@ -10,6 +10,7 @@ import { VisitorReportsScreen } from './components/VisitorReportsScreen'
 import { VisitorNotificationsScreen } from './components/VisitorNotificationsScreen'
 import { VisitorProfileSettingsScreen } from './components/VisitorProfileSettingsScreen'
 import { VisitorAiScreen } from './components/VisitorAiScreen'
+import { ProfileModalA11yBridge } from './components/ProfileModalA11yBridge'
 import { VisitorNavigationProvider, clearVisitorNavigationState, useVisitorNavigation } from './navigation/VisitorNavigationContext'
 import { VisitorWorkflowProvider, useVisitorWorkflow } from './state/VisitorWorkflowContext'
 import { VisitorLiveDataProvider } from './state/VisitorLiveDataContext'
@@ -29,6 +30,7 @@ export function AppShellRoute() {
         <VisitorWorkflowProvider>
           <VisitorLiveDataProvider>
             <VisitorNotificationsProvider>
+              <ProfileModalA11yBridge />
               <Outlet />
             </VisitorNotificationsProvider>
           </VisitorLiveDataProvider>
