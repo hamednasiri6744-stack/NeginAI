@@ -93,7 +93,7 @@ export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,
       local=new sdk.Map({container:host.current,style:proxiedStyle,center:initialPos?[initialPos.longitude,initialPos.latitude]:first?[Number(first.longitude),Number(first.latitude)]:[51.4,35.7],zoom:initialPos?13:10,apiKey:key,rtl:{lazy:false}})
       sdkRef.current=sdk;map.current=local;local.addControl(new sdk.NavigationControl())
       observer=new ResizeObserver(()=>{if(!dead)window.requestAnimationFrame(()=>local?.resize?.())});observer.observe(host.current)
-      local.on('error',(event:any)=>{if(dead)return;needsRecoveryRef.current=true;const message=String(event?.error?.message||'Neshan map rendering failed');console.warn('[Neshan map]',message)})
+      local.on('error',(event:any)=>{if(dead)return;const message=String(event?.error?.message||'Neshan map rendering failed');if(!/tile request failed/i.test(message))needsRecoveryRef.current=true;console.warn('[Neshan map]',message)})
       local.on('load',()=>{if(dead)return;retryAttemptRef.current=0;needsRecoveryRef.current=false;setError('');setMapReady(true);window.requestAnimationFrame(()=>local?.resize?.())})
     }).catch(e=>{if(dead)return;map.current=null;sdkRef.current=null;setMapReady(false);setError(e instanceof Error?e.message:'Neshan SDK unavailable');retryAttemptRef.current+=1
       if(navigator.onLine){const delay=Math.min(15000,1000*(2**Math.min(retryAttemptRef.current,4)));if(retryTimerRef.current)window.clearTimeout(retryTimerRef.current);retryTimerRef.current=window.setTimeout(()=>setInitNonce(value=>value+1),delay)}
