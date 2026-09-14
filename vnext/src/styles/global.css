@@ -1589,3 +1589,4 @@ button:focus-visible,a:focus-visible { outline:2px solid rgba(240,193,82,.72); o
   .vr-stops{position:relative;z-index:1}
 }
 @media (max-height:700px) and (max-width:719px){.vr-map-canvas{height:285px;min-height:285px}}
+@keyframes vr-selected-customer-pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 4px rgba(72,198,255,.16),0 0 16px rgba(72,198,255,.42)}50%{transform:scale(1.12);box-shadow:0 0 0 10px rgba(72,198,255,.04),0 0 28px rgba(72,198,255,.72)}}.vr-map-live-marker.selected{color:#04131d}.vr-map-live-marker.selected::before{border-color:#78dcff;background:linear-gradient(180deg,#b7efff,#48c6ff 68%,#1987c7);box-shadow:0 0 0 4px rgba(72,198,255,.16),0 0 18px rgba(72,198,255,.48);animation:vr-selected-customer-pulse 1.35s ease-in-out infinite}@media (prefers-reduced-motion:reduce){.vr-map-live-marker.selected::before{animation:none}}
