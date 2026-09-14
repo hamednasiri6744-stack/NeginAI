@@ -1,7 +1,7 @@
-﻿import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { getNeshanMapConfig, getRouteMapLeg, getRouteMapPlan, type NeshanRouteMapPlanResponse } from '../api/neginApi'
 
-type Props={routeId:string|null;mode:'sales'|'shortest';selectedCustomerId:string;recenterNonce:number;onSelectCustomer:(id:string)=>void;onPrimaryCustomer:(id:string)=>void;onNotice:(m:string)=>void}
+type Props={routeId:string|null;mode:'sales'|'shortest';selectedCustomerId:string;recenterNonce:number;onSelectCustomer:(id:string)=>void;onPrimaryCustomer:(id:string)=>void;onNotice:(m:string)=>void;onOrderChange:(ids:string[])=>void}
 type Pos={latitude:number;longitude:number}
 type ML={Map:new(o:Record<string,unknown>)=>any;Marker:new(o?:Record<string,unknown>)=>any;NavigationControl:new()=>unknown}
 const CSS='https://static.neshan.org/sdk/maplibre/5.24.3/neshan-maplibre-sdk.css'
@@ -61,12 +61,12 @@ function draw(map:any,encoded:string){
   map.addLayer({id:'v017-route',type:'line',source:'v017-route',paint:{'line-color':'#e8b64f','line-width':5,'line-opacity':.9}})
 }
 
-export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,onSelectCustomer,onPrimaryCustomer,onNotice}:Props){
+export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,onSelectCustomer,onPrimaryCustomer,onNotice,onOrderChange}:Props){
   const host=useRef<HTMLDivElement|null>(null),map=useRef<any>(null),markers=useRef<any[]>([]),sdkRef=useRef<ML|null>(null)
-  const selectedIdRef=useRef(selectedCustomerId),selectCustomerRef=useRef(onSelectCustomer),primaryCustomerRef=useRef(onPrimaryCustomer)
+  const selectedIdRef=useRef(selectedCustomerId),selectCustomerRef=useRef(onSelectCustomer),primaryCustomerRef=useRef(onPrimaryCustomer),orderChangeRef=useRef(onOrderChange)
   const trustedCustomersRef=useRef<NeshanRouteMapPlanResponse['ordered_customers']>([]),trustedPosRef=useRef<Pos|null>(null),polyRef=useRef('')
   const keyRef=useRef(''),focusTokenRef=useRef(''),needsRecoveryRef=useRef(false),retryAttemptRef=useRef(0),retryTimerRef=useRef<number|null>(null)
-  selectedIdRef.current=selectedCustomerId;selectCustomerRef.current=onSelectCustomer;primaryCustomerRef.current=onPrimaryCustomer
+  selectedIdRef.current=selectedCustomerId;selectCustomerRef.current=onSelectCustomer;primaryCustomerRef.current=onPrimaryCustomer;orderChangeRef.current=onOrderChange
   const [plan,setPlan]=useState<NeshanRouteMapPlanResponse|null>(null),[key,setKey]=useState(''),[pos,setPos]=useState<Pos|null>(null),[leg,setLeg]=useState(''),[error,setError]=useState(''),[mapReady,setMapReady]=useState(false),[initNonce,setInitNonce]=useState(0)
   const trustedCustomers=useMemo(()=>plan?routeCluster(plan):[],[plan])
   const trustedPos=useMemo(()=>pos&&plan&&String(plan.route.id)===String(routeId)&&gpsMatchesPlan(pos,plan)?pos:null,[pos,plan,routeId])
@@ -83,7 +83,7 @@ export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,
 
   useEffect(()=>{if(!routeId)return;let off=false;setError('');setLeg('')
     void Promise.all([getNeshanMapConfig(),getRouteMapPlan(routeId,mode==='sales'?'sales_priority':'shortest',trustedPos)])
-      .then(([c,p])=>{if(!off){setKey(c.api_key ?? '');setPlan(p);const first=routeCluster(p)[0];if(first)primaryCustomerRef.current(String(first.id))}}).catch(e=>{if(!off)setError(e instanceof Error?e.message:'Neshan map unavailable')})
+      .then(([c,p])=>{if(!off){setKey(c.api_key ?? '');setPlan(p);orderChangeRef.current([...p.ordered_customers,...p.unlocated_customers].map(customer=>String(customer.id)));const first=routeCluster(p)[0];if(first)primaryCustomerRef.current(String(first.id))}}).catch(e=>{if(!off)setError(e instanceof Error?e.message:'Neshan map unavailable')})
     return()=>{off=true}
   },[routeId,mode,trustedPos])
 

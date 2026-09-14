@@ -68,11 +68,28 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
   const [selectedReasonId, setSelectedReasonId] = useState('')
   const [actionBusy, setActionBusy] = useState<'start' | 'complete' | ''>('')
   const [mapRecenterNonce, setMapRecenterNonce] = useState(0)
+  const [planOrderCustomerIds, setPlanOrderCustomerIds] = useState<string[]>([])
   const outcomeDialogRef = useRef<HTMLElement | null>(null)
 
+  const sortedRouteStops = useMemo(() => {
+    if (!planOrderCustomerIds.length) return routeStops
+    const rank = new Map(planOrderCustomerIds.map((customerId, index) => [customerId, index]))
+    return routeStops
+      .map((stop, originalIndex) => ({ stop, originalIndex }))
+      .sort((left, right) => {
+        const leftRank = rank.get(left.stop.customerId)
+        const rightRank = rank.get(right.stop.customerId)
+        if (leftRank !== undefined && rightRank !== undefined) return leftRank - rightRank
+        if (leftRank !== undefined) return -1
+        if (rightRank !== undefined) return 1
+        return left.originalIndex - right.originalIndex
+      })
+      .map(({ stop }) => stop)
+  }, [routeStops, planOrderCustomerIds])
+
   const activeStop = useMemo(
-    () => routeStops.find((stop) => stop.customerId === selectedCustomerId) ?? routeStops[0],
-    [routeStops, selectedCustomerId],
+    () => routeStops.find((stop) => stop.customerId === selectedCustomerId) ?? sortedRouteStops[0],
+    [routeStops, sortedRouteStops, selectedCustomerId],
   )
 
   const outcomeKey = outcome === 'no-order' ? 'no_order' : outcome === 'no-visit' ? 'no_visit' : null
@@ -164,6 +181,18 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
     setNotice(message)
     window.setTimeout(() => setNotice(null), 2200)
   }, [])
+
+  const handlePlanOrder = useCallback((customerIds: string[]) => {
+    setPlanOrderCustomerIds((current) =>
+      current.length === customerIds.length && current.every((customerId, index) => customerId === customerIds[index])
+        ? current
+        : customerIds,
+    )
+  }, [])
+
+  useEffect(() => {
+    setPlanOrderCustomerIds([])
+  }, [activeRouteId, mode])
 
   const selectPlanPrimary = useCallback((customerId: string) => {
     if (activeVisit) return
@@ -329,6 +358,7 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
               recenterNonce={mapRecenterNonce}
               onSelectCustomer={selectStop}
               onPrimaryCustomer={selectPlanPrimary}
+              onOrderChange={handlePlanOrder}
               onNotice={flash}
             />
           </div>
@@ -370,9 +400,9 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
         </section>
 
         <section className="vr-stops">
-          <div className="vr-section-head"><strong>ایستگاه‌های مسیر</strong><span>{routeStops.length} مشتری</span></div>
+          <div className="vr-section-head"><strong>ایستگاه‌های مسیر</strong><span>{sortedRouteStops.length} مشتری</span></div>
           <div className="vr-stop-list">
-            {routeStops.map((stop, index) => (
+            {sortedRouteStops.map((stop, index) => (
               <button type="button" key={stop.stopId} className={`vr-stop-row ${stop.status} ${selectedCustomerId === stop.customerId ? 'selected' : ''}`} onClick={() => selectStop(stop.customerId)}>
                 <span className="vr-index">{stop.status === 'visited' ? <CheckCircleIcon /> : stop.status === 'skipped' ? '×' : index + 1}</span>
                 <span className="vr-stop-copy"><strong>{stop.name}</strong><small>{joinRouteMeta(stop.area, stop.distance)}</small></span>
