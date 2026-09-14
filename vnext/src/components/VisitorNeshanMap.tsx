@@ -68,7 +68,7 @@ export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,
       local=new sdk.Map({container:host.current,style:STYLE,center:trustedPos?[trustedPos.longitude,trustedPos.latitude]:first?[Number(first.longitude),Number(first.latitude)]:[51.4,35.7],zoom:trustedPos?13:10,apiKey:key,rtl:{lazy:false}})
       map.current=local;local.addControl(new sdk.NavigationControl())
       observer=new ResizeObserver(()=>{if(!dead)window.requestAnimationFrame(()=>local?.resize?.())});observer.observe(host.current)
-      local.on('error',(event:any)=>{if(dead)return;const message=event?.error?.message||'Neshan map rendering failed';setError(String(message))})
+      local.on('error',(event:any)=>{if(dead)return;const message=String(event?.error?.message||'Neshan map rendering failed');console.warn('[Neshan map]',message)})
       local.on('load',()=>{if(dead)return;setError('');window.requestAnimationFrame(()=>local?.resize?.());markers.current.forEach(m=>m.remove());markers.current=[]
         const pts:Array<[number,number]>=[]
         trustedCustomers.forEach((c,n)=>{const el=document.createElement('button');el.type='button';el.className='vr-map-live-marker'+(String(c.id)===selectedIdRef.current?' selected':'');el.textContent=String(n+1);el.setAttribute('aria-label',String(c.name||('Customer '+(n+1))));el.setAttribute('aria-pressed',String(String(c.id)===selectedIdRef.current));el.dataset.customerId=String(c.id);el.onclick=()=>selectCustomerRef.current(String(c.id));const xy:[number,number]=[Number(c.longitude),Number(c.latitude)];markers.current.push(new sdk.Marker({element:el}).setLngLat(xy).addTo(local));pts.push(xy)})
