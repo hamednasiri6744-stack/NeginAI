@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { getNeshanMapConfig, getRouteMapLeg, getRouteMapPlan, type NeshanRouteMapPlanResponse } from '../api/neginApi'
+import { getNeshanMapConfig, getRouteMapLeg, getRouteMapPlan, type NeshanRouteLeg, type NeshanRouteMapPlanResponse } from '../api/neginApi'
 
 type Props={routeId:string|null;mode:'sales'|'shortest';selectedCustomerId:string;recenterNonce:number;onSelectCustomer:(id:string)=>void;onPrimaryCustomer:(id:string)=>void;onNotice:(m:string)=>void;onOrderChange:(ids:string[])=>void}
 type Pos={latitude:number;longitude:number;accuracy?:number;heading?:number|null}
@@ -65,24 +65,28 @@ function draw(map:any,encoded:string){
   map.addLayer({id:'v017-route-highlight',type:'line',source:'v017-route',layout,paint:{'line-color':'#e5f8ff','line-width':1.1,'line-opacity':.72}})
 }
 function focusPolyline(map:any,encoded:string){const c=decode(encoded);if(!map||c.length<2)return;const lngs=c.map(([lng])=>lng),lats=c.map(([,lat])=>lat);map.fitBounds([[Math.min(...lngs),Math.min(...lats)],[Math.max(...lngs),Math.max(...lats)]],{padding:{top:86,right:52,bottom:126,left:52},maxZoom:16,duration:700,essential:true})}
+function distanceToPolylineMeters(position:Pos,encoded:string){const line=decode(encoded);if(line.length<2)return Infinity;const latScale=111320,lonScale=latScale*Math.cos(position.latitude*Math.PI/180),px=position.longitude*lonScale,py=position.latitude*latScale;let nearest=Infinity;for(let i=1;i<line.length;i++){const a=line[i-1],b=line[i];if(a===undefined||b===undefined)continue;const [aLng,aLat]=a,[bLng,bLat]=b,ax=aLng*lonScale,ay=aLat*latScale,dx=bLng*lonScale-ax,dy=bLat*latScale-ay,len=dx*dx+dy*dy,t=len?Math.max(0,Math.min(1,((px-ax)*dx+(py-ay)*dy)/len)):0;nearest=Math.min(nearest,Math.hypot(px-(ax+t*dx),py-(ay+t*dy)))}return nearest}
+function metricText(metric:any){return String(metric?.text||'').trim()}
 
 export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,onSelectCustomer,onPrimaryCustomer,onNotice,onOrderChange}:Props){
   const shell=useRef<HTMLDivElement|null>(null),host=useRef<HTMLDivElement|null>(null),map=useRef<any>(null),markers=useRef<any[]>([]),sdkRef=useRef<ML|null>(null)
   const selectedIdRef=useRef(selectedCustomerId),selectCustomerRef=useRef(onSelectCustomer),primaryCustomerRef=useRef(onPrimaryCustomer),orderChangeRef=useRef(onOrderChange)
   const trustedCustomersRef=useRef<NeshanRouteMapPlanResponse['ordered_customers']>([]),trustedPosRef=useRef<Pos|null>(null),polyRef=useRef('')
-  const keyRef=useRef(''),focusTokenRef=useRef(''),routeRequestRef=useRef(null as any),routeFocusKeyRef=useRef(''),needsRecoveryRef=useRef(false),retryAttemptRef=useRef(0),retryTimerRef=useRef(null as any)
+  const keyRef=useRef(''),focusTokenRef=useRef(''),routeRequestRef=useRef(null as any),routeFocusKeyRef=useRef(''),followUserRef=useRef(true),offRouteSinceRef=useRef(0),lastRerouteRef=useRef(0),needsRecoveryRef=useRef(false),retryAttemptRef=useRef(0),retryTimerRef=useRef(null as any)
   selectedIdRef.current=selectedCustomerId;selectCustomerRef.current=onSelectCustomer;primaryCustomerRef.current=onPrimaryCustomer;orderChangeRef.current=onOrderChange
-  const [plan,setPlan]=useState<NeshanRouteMapPlanResponse|null>(null),[key,setKey]=useState(''),[pos,setPos]=useState<Pos|null>(null),[leg,setLeg]=useState(''),[error,setError]=useState(''),[mapReady,setMapReady]=useState(false),[initNonce,setInitNonce]=useState(0),[fullscreen,setFullscreen]=useState(false)
+  const [plan,setPlan]=useState<NeshanRouteMapPlanResponse|null>(null),[key,setKey]=useState(''),[pos,setPos]=useState<Pos|null>(null),[leg,setLeg]=useState(''),[routeLeg,setRouteLeg]=useState<NeshanRouteLeg|null>(null),[routing,setRouting]=useState(false),[error,setError]=useState(''),[mapReady,setMapReady]=useState(false),[initNonce,setInitNonce]=useState(0),[fullscreen,setFullscreen]=useState(false)
   const trustedCustomers=useMemo(()=>plan?routeCluster(plan):[],[plan])
   const trustedPos=useMemo(()=>pos&&plan&&String(plan.route.id)===String(routeId)&&gpsMatchesPlan(pos,plan)?pos:null,[pos,plan,routeId])
-  const backendFirst=plan?.ordered_customers.find(c=>c.latitude!=null&&c.longitude!=null)??null
-  const trustedFirst=trustedCustomers[0]??null
-  const poly=leg||(trustedPos&&backendFirst&&trustedFirst&&String(backendFirst.id)===String(trustedFirst.id)&&String(selectedCustomerId)===String(trustedFirst.id)?plan?.polyline||'':'')
+  const poly=leg
   const selected=useMemo(()=>trustedCustomers.find(c=>String(c.id)===selectedCustomerId)??null,[trustedCustomers,selectedCustomerId])
+  const navInstruction=String(routeLeg?.steps?.[0]?.instruction||'').trim()
+  const navDistance=metricText(routeLeg?.distance)
+  const navDuration=metricText(routeLeg?.duration)
   const selectedPlanCustomer=useMemo(()=>plan?.ordered_customers.find(c=>String(c.id)===selectedCustomerId)??plan?.unlocated_customers.find(c=>String(c.id)===selectedCustomerId)??null,[plan,selectedCustomerId])
   const modeLabel=mode==='sales'?'\u0627\u0648\u0644\u0648\u06cc\u062a \u0641\u0631\u0648\u0634':'\u06a9\u0648\u062a\u0627\u0647\u200c\u062a\u0631\u06cc\u0646 \u0645\u0633\u06cc\u0631'
   const locatedCount=plan?.ordered_customers.filter(c=>c.latitude!=null&&c.longitude!=null).length??0
   const missingCount=plan?.missing_location_count??0
+  const hasTrustedPos=Boolean(trustedPos)
   trustedCustomersRef.current=trustedCustomers;trustedPosRef.current=trustedPos;polyRef.current=poly;keyRef.current=key
 
   useEffect(()=>{if(!routeId||pos||!navigator.geolocation||!navigator.permissions)return;let off=false
@@ -91,23 +95,25 @@ export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,
   },[routeId,pos])
 
   useEffect(()=>{if(!routeId||!navigator.geolocation)return;let dead=false
-    const watchId=navigator.geolocation.watchPosition(position=>{if(dead)return;const next:Pos={latitude:position.coords.latitude,longitude:position.coords.longitude,accuracy:position.coords.accuracy,heading:position.coords.heading};setPos(current=>!current||distanceKm(current,next)*1000>=5?next:current)},()=>undefined,{enableHighAccuracy:true,maximumAge:5000,timeout:20000})
+    const watchId=navigator.geolocation.watchPosition(position=>{if(dead)return;const next:Pos={latitude:position.coords.latitude,longitude:position.coords.longitude,accuracy:position.coords.accuracy,heading:position.coords.heading};setPos(current=>!current||distanceKm(current,next)*1000>=4?next:current);if(followUserRef.current&&map.current&&polyRef.current){const heading=Number.isFinite(Number(next.heading))&&Number(next.heading)>=0?Number(next.heading):map.current.getBearing?.()||0;map.current.easeTo?.({center:[next.longitude,next.latitude],zoom:16.2,bearing:heading,pitch:42,duration:420,essential:true})}},()=>undefined,{enableHighAccuracy:true,maximumAge:3000,timeout:20000})
     return()=>{dead=true;navigator.geolocation.clearWatch(watchId)}
   },[routeId])
 
   useEffect(()=>{const onFullscreen=()=>{setFullscreen(document.fullscreenElement===shell.current);window.setTimeout(()=>map.current?.resize?.(),80)};document.addEventListener('fullscreenchange',onFullscreen);return()=>document.removeEventListener('fullscreenchange',onFullscreen)},[])
 
   useEffect(()=>{if(!routeId)return;let off=false;setError('');setLeg('')
-    void Promise.all([getNeshanMapConfig(),getRouteMapPlan(routeId,mode==='sales'?'sales_priority':'shortest',trustedPos)])
+    void Promise.all([getNeshanMapConfig(),getRouteMapPlan(routeId,mode==='sales'?'sales_priority':'shortest',trustedPosRef.current)])
       .then(([c,p])=>{if(!off){setKey(c.api_key ?? '');setPlan(p);orderChangeRef.current([...p.ordered_customers,...p.unlocated_customers].map(customer=>String(customer.id)));const first=routeCluster(p)[0];if(first)primaryCustomerRef.current(String(first.id))}}).catch(e=>{if(!off)setError(e instanceof Error?e.message:'Neshan map unavailable')})
     return()=>{off=true}
-  },[routeId,mode,trustedPos])
+  },[routeId,mode,hasTrustedPos])
 
   useEffect(()=>{if(!key||!host.current||map.current)return;let dead=false,local:any=null,observer:ResizeObserver|null=null
     void loadSdk().then(sdk=>{if(dead||!host.current||map.current)return
       const first=trustedCustomersRef.current[0],initialPos=trustedPosRef.current
       local=new sdk.Map({container:host.current,style:STYLE,center:initialPos?[initialPos.longitude,initialPos.latitude]:first?[Number(first.longitude),Number(first.latitude)]:[51.4,35.7],zoom:initialPos?13:10,apiKey:key,rtl:{lazy:false}})
       sdkRef.current=sdk;map.current=local
+      local.on('dragstart',(event:any)=>{if(event?.originalEvent)followUserRef.current=false})
+      local.on('zoomstart',(event:any)=>{if(event?.originalEvent)followUserRef.current=false})
       observer=new ResizeObserver(()=>{if(!dead)window.requestAnimationFrame(()=>local?.resize?.())});observer.observe(host.current)
       local.on('error',(event:any)=>{if(dead)return;const message=String(event?.error?.message||'Neshan map rendering failed');if(!/tile request failed/i.test(message))needsRecoveryRef.current=true;console.warn('[Neshan map]',message)})
       local.on('load',()=>{if(dead)return;retryAttemptRef.current=0;needsRecoveryRef.current=false;setError('');setMapReady(true);window.requestAnimationFrame(()=>local?.resize?.())})
@@ -143,15 +149,17 @@ export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,
   },[])
 
   useEffect(()=>{if(mapReady)draw(map.current,poly)},[poly,mapReady])
-  useEffect(()=>{if(!routeId||!trustedPos||!selected){setLeg('');routeRequestRef.current=null;return}const key=`${routeId}:${selected.id}`,previous=routeRequestRef.current,moved=previous?distanceKm(previous.position,trustedPos)*1000:Infinity,elapsed=previous?Date.now()-previous.at:Infinity;if(previous?.key===key&&moved<35&&elapsed<20000)return;let off=false;const shouldFocus=routeFocusKeyRef.current!==key;routeRequestRef.current={key,position:trustedPos,at:Date.now()};void getRouteMapLeg(routeId,String(selected.id),trustedPos).then(r=>{if(off)return;const next=r.polyline||'';setLeg(next);if(next&&shouldFocus){routeFocusKeyRef.current=key;window.setTimeout(()=>focusPolyline(map.current,next),0)}}).catch(e=>{if(!off)onNotice(e instanceof Error?e.message:'Live route unavailable')});return()=>{off=true}},[routeId,trustedPos,selected,onNotice])
+  useEffect(()=>{if(!routeId||!selected)return;routeRequestRef.current=null;routeFocusKeyRef.current='';offRouteSinceRef.current=0;setLeg('');setRouteLeg(null);setRouting(true);followUserRef.current=true;let off=false;void geo().then(next=>{if(off)return;if(next)setPos(next);else setRouting(false)});return()=>{off=true}},[routeId,selectedCustomerId])
+  useEffect(()=>{if(!routeId||!trustedPos||!selected){setLeg('');setRouteLeg(null);setRouting(false);routeRequestRef.current=null;offRouteSinceRef.current=0;return}const key=`${routeId}:${selected.id}`,previous=routeRequestRef.current,threshold=Math.max(65,Number(trustedPos.accuracy||0)*1.5),offRoute=Boolean(leg)&&distanceToPolylineMeters(trustedPos,leg)>threshold;if(offRoute){if(!offRouteSinceRef.current)offRouteSinceRef.current=Date.now()}else{offRouteSinceRef.current=0}const sustainedOffRoute=Boolean(offRouteSinceRef.current)&&Date.now()-offRouteSinceRef.current>=5000;if(previous?.key===key&&!sustainedOffRoute)return;if(sustainedOffRoute&&Date.now()-lastRerouteRef.current<15000)return;let off=false;const shouldFocus=routeFocusKeyRef.current!==key;routeRequestRef.current={key,position:trustedPos,at:Date.now()};setRouting(true);void getRouteMapLeg(routeId,String(selected.id),trustedPos).then(r=>{if(off)return;const next=r.polyline||'';setLeg(next);setRouteLeg(r.leg||null);setRouting(false);offRouteSinceRef.current=0;lastRerouteRef.current=Date.now();if(next&&shouldFocus){routeFocusKeyRef.current=key;followUserRef.current=true;window.setTimeout(()=>focusPolyline(map.current,next),0)}else if(next&&sustainedOffRoute&&followUserRef.current){window.setTimeout(()=>map.current?.easeTo?.({center:[trustedPos.longitude,trustedPos.latitude],zoom:16.2,pitch:42,duration:500,essential:true}),0)}}).catch(e=>{if(off)return;setRouting(false);routeRequestRef.current=null;onNotice(e instanceof Error?e.message:'Live route unavailable')});return()=>{off=true}},[routeId,trustedPos,selected,onNotice,leg])
   useEffect(()=>{if(!recenterNonce)return;let off=false;void geo().then(p=>{if(off)return;if(!p){onNotice('\u062f\u0633\u062a\u0631\u0633\u06cc GPS \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06cc\u0633\u062a \u06cc\u0627 \u0645\u0648\u0642\u0639\u06cc\u062a \u062f\u0631\u06cc\u0627\u0641\u062a \u0646\u0634\u062f.');return}setPos(p);if(!plan||gpsMatchesPlan(p,plan)){map.current?.flyTo({center:[p.longitude,p.latitude],zoom:14,duration:650,essential:true})}else{onNotice('\u0645\u0648\u0642\u0639\u06cc\u062a GPS \u0628\u0627 \u0645\u062d\u062f\u0648\u062f\u0647 \u0645\u0633\u06cc\u0631 \u0627\u0646\u062a\u062e\u0627\u0628\u200c\u0634\u062f\u0647 \u0647\u0645\u062e\u0648\u0627\u0646 \u0646\u06cc\u0633\u062a \u0648 \u0646\u0627\u062f\u06cc\u062f\u0647 \u06af\u0631\u0641\u062a\u0647 \u0634\u062f.')}});return()=>{off=true}},[recenterNonce,onNotice,plan])
 
   function fitRouteView(){const points=(plan?.ordered_customers??[]).filter(c=>c.latitude!=null&&c.longitude!=null);if(!points.length||!map.current)return;const lngs=points.map(c=>Number(c.longitude)),lats=points.map(c=>Number(c.latitude));map.current.fitBounds([[Math.min(...lngs),Math.min(...lats)],[Math.max(...lngs),Math.max(...lats)]],{padding:{top:96,right:52,bottom:128,left:52},maxZoom:15,duration:650})}
   async function toggleFullscreen(){const target=shell.current;if(!target)return;if(document.fullscreenElement){await document.exitFullscreen?.();return}await target.requestFullscreen?.()}
-  function centerOnMe(){void geo().then(p=>{if(!p){onNotice('\u062f\u0633\u062a\u0631\u0633\u06cc GPS \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06cc\u0633\u062a.');return}setPos(p);if(plan){if(!gpsMatchesPlan(p,plan)){onNotice('\u0645\u0648\u0642\u0639\u06cc\u062a GPS \u0628\u0627 \u0645\u0633\u06cc\u0631 \u0627\u0646\u062a\u062e\u0627\u0628\u200c\u0634\u062f\u0647 \u0647\u0645\u062e\u0648\u0627\u0646 \u0646\u06cc\u0633\u062a.');return}}map.current?.flyTo({center:[p.longitude,p.latitude],zoom:14,duration:650,essential:true})})}
+  function centerOnMe(){followUserRef.current=true;void geo().then(p=>{if(!p){onNotice('\u062f\u0633\u062a\u0631\u0633\u06cc GPS \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06cc\u0633\u062a.');return}setPos(p);if(plan){if(!gpsMatchesPlan(p,plan)){onNotice('\u0645\u0648\u0642\u0639\u06cc\u062a GPS \u0628\u0627 \u0645\u0633\u06cc\u0631 \u0627\u0646\u062a\u062e\u0627\u0628\u200c\u0634\u062f\u0647 \u0647\u0645\u062e\u0648\u0627\u0646 \u0646\u06cc\u0633\u062a.');return}}map.current?.easeTo?.({center:[p.longitude,p.latitude],zoom:16.2,bearing:Number.isFinite(Number(p.heading))&&Number(p.heading)>=0?Number(p.heading):0,pitch:42,duration:550,essential:true})})}
 
   return <div ref={shell} className={'vr-map-live-shell'+(fullscreen?' is-fullscreen':'')}>
     <div ref={host} className="vr-map-live" aria-label={'\u0646\u0642\u0634\u0647 \u0632\u0646\u062f\u0647 \u0645\u0633\u06cc\u0631 \u0641\u0631\u0648\u0634'}/>
+    {(routing||routeLeg)?<div className="vr-map-navigation-card" dir="rtl"><div><strong>{routing?'\u062f\u0631 \u062d\u0627\u0644 \u0645\u062d\u0627\u0633\u0628\u0647 \u0645\u0633\u06cc\u0631\u2026':(navInstruction||'\u0645\u0633\u06cc\u0631 \u0622\u0645\u0627\u062f\u0647 \u0627\u0633\u062a')}</strong><span>{selectedPlanCustomer?.store_name||selectedPlanCustomer?.name||''}</span></div><div className="vr-map-navigation-meta">{navDistance?<b>{navDistance}</b>:null}{navDuration?<b>{navDuration}</b>:null}</div></div>:null}
     <details className="vr-map-mobile-tools">
       <summary aria-label={'\u0644\u0627\u06cc\u0647\u200c\u0647\u0627 \u0648 \u062a\u062d\u0644\u06cc\u0644 \u0646\u0642\u0634\u0647'}><span aria-hidden="true">{'\u2630'}</span><b>{'\u0644\u0627\u06cc\u0647\u200c\u0647\u0627'}</b></summary>
       <div className="vr-map-mobile-tools-panel">
