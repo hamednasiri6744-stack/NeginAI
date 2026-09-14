@@ -1,4 +1,4 @@
-﻿import babel from '@rolldown/plugin-babel'
+import babel from '@rolldown/plugin-babel'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
@@ -19,6 +19,11 @@ export default defineConfig({
       '/chat': 'https://ai.neginpakhsh.com',
       '/audio': 'https://ai.neginpakhsh.com',
       '/attachments': 'https://ai.neginpakhsh.com',
+      '/neshan-basemap': {
+        target: 'https://api.neshan.org',
+        changeOrigin: true,
+        rewrite: (path) => path.slice(15),
+      },
     },
   },
   preview: {

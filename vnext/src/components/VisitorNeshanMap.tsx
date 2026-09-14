@@ -65,7 +65,7 @@ export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,
   useEffect(()=>{if(!plan||!key||!host.current)return;let dead=false,local:any=null,observer:ResizeObserver|null=null
     void loadSdk().then(sdk=>{if(dead||!host.current)return
       const first=trustedCustomers[0]
-      local=new sdk.Map({container:host.current,style:STYLE,center:trustedPos?[trustedPos.longitude,trustedPos.latitude]:first?[Number(first.longitude),Number(first.latitude)]:[51.4,35.7],zoom:trustedPos?13:10,apiKey:key,rtl:{lazy:false}})
+      local=new sdk.Map({container:host.current,style:STYLE,center:trustedPos?[trustedPos.longitude,trustedPos.latitude]:first?[Number(first.longitude),Number(first.latitude)]:[51.4,35.7],zoom:trustedPos?13:10,apiKey:key,rtl:{lazy:false},transformRequest:(url:string)=>url.startsWith('https://api.neshan.org/basemap/')?{url:url.replace('https://api.neshan.org','/neshan-basemap')}:{url}})
       map.current=local;local.addControl(new sdk.NavigationControl())
       observer=new ResizeObserver(()=>{if(!dead)window.requestAnimationFrame(()=>local?.resize?.())});observer.observe(host.current)
       local.on('error',(event:any)=>{if(dead)return;const message=String(event?.error?.message||'Neshan map rendering failed');console.warn('[Neshan map]',message)})
