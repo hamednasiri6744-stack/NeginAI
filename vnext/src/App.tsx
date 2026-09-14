@@ -19,8 +19,9 @@ import { VisitorNotificationsProvider, useVisitorNotifications } from './state/V
 import { clearPrototypeDrafts } from './state/visitorDraftStore'
 import { clearVisitorOrderWorkspace } from './state/visitorOrderWorkspaceStore'
 
-function protectedView(authenticated: boolean, node: React.ReactNode) {
-  return authenticated ? node : <Navigate to="/" replace />
+function protectedView(authenticated: boolean, restoringSession: boolean, node: React.ReactNode) {
+  if (restoringSession) return null
+  return authenticated ? node : <Navigate to={'/'} replace />
 }
 
 export function AppShellRoute() {
@@ -42,10 +43,11 @@ export function AppShellRoute() {
 
 export function LoginRoute() {
   const { go } = useVisitorNavigation()
-  const { authenticated, signIn } = useVisitorAuth()
+  const { authenticated, restoringSession, signIn } = useVisitorAuth()
   const { resetWorkflow } = useVisitorWorkflow()
   const { resetNotifications } = useVisitorNotifications()
 
+  if (restoringSession) return null
   if (authenticated) return <Navigate to="/visitor/home" replace />
 
   return (
@@ -67,16 +69,15 @@ export function LoginRoute() {
 
 export function VisitorHomeRoute() {
   const { go } = useVisitorNavigation()
-  const { authenticated } = useVisitorAuth()
-  return protectedView(authenticated, <VisitorHomeScreen onNavigate={(path) => go(path)} />)
+  const { authenticated, restoringSession } = useVisitorAuth()
+  return protectedView(authenticated, restoringSession, <VisitorHomeScreen onNavigate={(path) => go(path)} />)
 }
 
 export function VisitorAiRoute() {
   const { go, back } = useVisitorNavigation()
-  const { authenticated } = useVisitorAuth()
+  const { authenticated, restoringSession } = useVisitorAuth()
   const [searchParams] = useSearchParams()
-  return protectedView(authenticated,
-    <VisitorAiScreen
+  return protectedView(authenticated, restoringSession, <VisitorAiScreen
       context={searchParams.get('context') ?? 'home'}
       customerId={searchParams.get('customer') ?? undefined}
       visitId={searchParams.get('visit') ?? undefined}
@@ -90,10 +91,9 @@ export function VisitorAiRoute() {
 
 export function VisitorRouteVisitRoute() {
   const { go } = useVisitorNavigation()
-  const { authenticated } = useVisitorAuth()
+  const { authenticated, restoringSession } = useVisitorAuth()
   const [searchParams] = useSearchParams()
-  return protectedView(authenticated,
-    <VisitorRouteVisitScreen
+  return protectedView(authenticated, restoringSession, <VisitorRouteVisitScreen
       onNavigate={(path) => go(path)}
       requestedCustomerId={searchParams.get('customer') ?? undefined}
       intent={searchParams.get('intent') ?? undefined}
@@ -103,10 +103,9 @@ export function VisitorRouteVisitRoute() {
 
 export function VisitorOrdersRoute() {
   const { go } = useVisitorNavigation()
-  const { authenticated } = useVisitorAuth()
+  const { authenticated, restoringSession } = useVisitorAuth()
   const [searchParams] = useSearchParams()
-  return protectedView(authenticated,
-    <VisitorOrdersScreen
+  return protectedView(authenticated, restoringSession, <VisitorOrdersScreen
       customerId={searchParams.get('customer') ?? undefined}
       draftId={searchParams.get('draft') ?? undefined}
       visitId={searchParams.get('visit') ?? undefined}
@@ -118,34 +117,33 @@ export function VisitorOrdersRoute() {
 
 export function VisitorOrderArchiveRoute() {
   const { go } = useVisitorNavigation()
-  const { authenticated } = useVisitorAuth()
-  return protectedView(authenticated, <VisitorOrderArchiveScreen onNavigate={(path) => go(path)} />)
+  const { authenticated, restoringSession } = useVisitorAuth()
+  return protectedView(authenticated, restoringSession, <VisitorOrderArchiveScreen onNavigate={(path) => go(path)} />)
 }
 
 export function VisitorReportsRoute() {
   const { go } = useVisitorNavigation()
-  const { authenticated } = useVisitorAuth()
-  return protectedView(authenticated, <VisitorReportsScreen onNavigate={(path) => go(path)} />)
+  const { authenticated, restoringSession } = useVisitorAuth()
+  return protectedView(authenticated, restoringSession, <VisitorReportsScreen onNavigate={(path) => go(path)} />)
 }
 
 export function VisitorNotificationsRoute() {
   const { go } = useVisitorNavigation()
-  const { authenticated } = useVisitorAuth()
-  return protectedView(authenticated, <VisitorNotificationsScreen onNavigate={(path) => go(path)} />)
+  const { authenticated, restoringSession } = useVisitorAuth()
+  return protectedView(authenticated, restoringSession, <VisitorNotificationsScreen onNavigate={(path) => go(path)} />)
 }
 
 export function VisitorCustomersRoute() {
   const { go } = useVisitorNavigation()
-  const { authenticated } = useVisitorAuth()
-  return protectedView(authenticated, <VisitorCustomersScreen onNavigate={(path) => go(path)} />)
+  const { authenticated, restoringSession } = useVisitorAuth()
+  return protectedView(authenticated, restoringSession, <VisitorCustomersScreen onNavigate={(path) => go(path)} />)
 }
 
 export function VisitorCustomer360Route() {
   const { go, back } = useVisitorNavigation()
-  const { authenticated } = useVisitorAuth()
+  const { authenticated, restoringSession } = useVisitorAuth()
   const { customerId } = useParams()
-  return protectedView(authenticated,
-    <VisitorCustomer360Screen
+  return protectedView(authenticated, restoringSession, <VisitorCustomer360Screen
       customerId={customerId ?? '1'}
       onNavigate={(path) => go(path)}
       onBack={() => back('/visitor/customers')}
@@ -155,11 +153,10 @@ export function VisitorCustomer360Route() {
 
 export function VisitorProfileSettingsRoute() {
   const { go } = useVisitorNavigation()
-  const { authenticated, signOut } = useVisitorAuth()
+  const { authenticated, restoringSession, signOut } = useVisitorAuth()
   const { resetWorkflow } = useVisitorWorkflow()
   const { resetNotifications } = useVisitorNotifications()
-  return protectedView(authenticated,
-    <VisitorProfileSettingsScreen
+  return protectedView(authenticated, restoringSession, <VisitorProfileSettingsScreen
       onNavigate={(path) => go(path)}
       onLogout={async () => {
         clearPrototypeDrafts()
@@ -175,6 +172,7 @@ export function VisitorProfileSettingsRoute() {
 }
 
 export function NotFoundRoute() {
-  const { authenticated } = useVisitorAuth()
+  const { authenticated, restoringSession } = useVisitorAuth()
+  if (restoringSession) return null
   return <Navigate to={authenticated ? '/visitor/home' : '/'} replace />
 }

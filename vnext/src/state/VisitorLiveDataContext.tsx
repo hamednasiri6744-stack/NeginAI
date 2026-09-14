@@ -1,4 +1,4 @@
-﻿import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { neginApi, type RouteCustomersResponse, type SellerCustomer, type SellerRoute, type SellerRoutesResponse } from '../api/neginApi'
 import { useVisitorAuth } from './VisitorAuthContext'
 import { useVisitorWorkflow } from './VisitorWorkflowContext'
@@ -19,7 +19,7 @@ type VisitorLiveDataValue = {
 const VisitorLiveDataContext = createContext<VisitorLiveDataValue | null>(null)
 
 export function VisitorLiveDataProvider({ children }: { children: ReactNode }) {
-  const { authenticated } = useVisitorAuth()
+  const { authenticated, restoringSession } = useVisitorAuth()
   const { hydrateLiveRoute, resetWorkflow } = useVisitorWorkflow()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -71,7 +71,7 @@ export function VisitorLiveDataProvider({ children }: { children: ReactNode }) {
       return
     }
     void load()
-  }, [authenticated, load, resetWorkflow])
+  }, [authenticated, load, resetWorkflow, restoringSession])
 
   const activeRouteId = customersData?.route.id ?? routesData?.day_route?.id ?? null
   const activeRouteTitle = customersData?.route.title ?? routesData?.day_route?.title ?? ''
