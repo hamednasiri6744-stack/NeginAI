@@ -1590,3 +1590,28 @@ button:focus-visible,a:focus-visible { outline:2px solid rgba(240,193,82,.72); o
 }
 @media (max-height:700px) and (max-width:719px){.vr-map-canvas{height:285px;min-height:285px}}
 @keyframes vr-selected-customer-pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 4px rgba(72,198,255,.16),0 0 16px rgba(72,198,255,.42)}50%{transform:scale(1.12);box-shadow:0 0 0 10px rgba(72,198,255,.04),0 0 28px rgba(72,198,255,.72)}}.vr-map-live-marker.selected{color:#04131d}.vr-map-live-marker.selected::before{border-color:#78dcff;background:linear-gradient(180deg,#b7efff,#48c6ff 68%,#1987c7);box-shadow:0 0 0 4px rgba(72,198,255,.16),0 0 18px rgba(72,198,255,.48);animation:vr-selected-customer-pulse 1.35s ease-in-out infinite}@media (prefers-reduced-motion:reduce){.vr-map-live-marker.selected::before{animation:none}}
+
+/* === Route Map Professional UX v2 === */
+.vr-map-hud{position:absolute;top:66px;left:12px;right:12px;z-index:15;display:flex;flex-wrap:wrap;gap:6px;align-items:center;pointer-events:none;direction:rtl}
+.vr-map-hud>span{min-height:28px;display:inline-flex;align-items:center;padding:0 9px;border:1px solid rgba(156,190,216,.14);border-radius:999px;background:rgba(3,17,29,.80);box-shadow:0 8px 22px rgba(0,0,0,.22);backdrop-filter:blur(12px);color:#a9bac8;font-size:10.5px;font-weight:700}
+.vr-map-hud .vr-map-mode-chip{color:#f2c861;border-color:rgba(232,188,80,.24);background:linear-gradient(180deg,rgba(54,42,16,.82),rgba(16,26,33,.82))}
+.vr-map-hud .warning{color:#ffb0a5;border-color:rgba(255,119,105,.18)}
+.vr-map-toolbox{position:absolute;left:12px;top:108px;z-index:16;display:grid;gap:7px;direction:rtl}
+.vr-map-toolbox button{min-width:44px;min-height:42px;display:flex;align-items:center;gap:7px;padding:0 10px;border:1px solid rgba(157,193,221,.15);border-radius:13px;background:rgba(3,17,29,.86);box-shadow:0 10px 26px rgba(0,0,0,.25),inset 0 1px rgba(255,255,255,.04);backdrop-filter:blur(14px);color:#d5e0e8;font:700 10.5px/1.1 inherit}
+.vr-map-toolbox button:active{transform:scale(.97)}
+.vr-map-toolbox b{width:18px;height:18px;display:grid;place-items:center;color:#69cef7;font-size:16px;line-height:1}
+.vr-map-selected-card{position:absolute;left:12px;right:12px;bottom:34px;z-index:15;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:62px;padding:10px 12px;border:1px solid rgba(151,186,211,.16);border-radius:16px;background:linear-gradient(145deg,rgba(5,23,38,.94),rgba(5,18,30,.88));box-shadow:0 14px 34px rgba(0,0,0,.35),inset 0 1px rgba(255,255,255,.04);backdrop-filter:blur(16px);direction:rtl}
+.vr-map-selected-card>div:first-child{min-width:0;display:grid;gap:3px}
+.vr-map-selected-card strong{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#f0f4f7;font-size:12.5px}
+.vr-map-selected-card span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#8296a7;font-size:10.5px}
+.vr-map-selected-metrics{flex:0 0 auto;display:flex;gap:6px}
+.vr-map-selected-metrics span{display:grid;gap:2px;min-width:58px;padding:5px 7px;border:1px solid rgba(151,186,211,.10);border-radius:10px;background:rgba(255,255,255,.025);text-align:center}
+.vr-map-selected-metrics b{color:#f1c65f;font-size:11px}
+.vr-map-live-shell:fullscreen,.vr-map-live-shell.is-fullscreen{background:#03111d;border-radius:0}
+.vr-map-live-shell:fullscreen .vr-map-hud,.vr-map-live-shell.is-fullscreen .vr-map-hud{top:max(18px,env(safe-area-inset-top))}
+.vr-map-live-shell:fullscreen .vr-map-toolbox,.vr-map-live-shell.is-fullscreen .vr-map-toolbox{top:72px}
+.vr-map-live-shell:fullscreen .vr-map-selected-card,.vr-map-live-shell.is-fullscreen .vr-map-selected-card{bottom:max(42px,calc(18px + env(safe-area-inset-bottom)))}
+.vr-map-live-shell .maplibregl-ctrl-bottom-left,.vr-map-live-shell .maplibregl-ctrl-bottom-right{bottom:3px}
+@media (max-width:380px){.vr-map-toolbox button span{display:none}.vr-map-toolbox button{width:42px;padding:0;justify-content:center}.vr-map-selected-card{gap:7px}.vr-map-selected-metrics span{min-width:50px;padding-inline:5px}.vr-map-hud>span{font-size:10px;padding-inline:7px}}
+@media (prefers-reduced-motion:reduce){.vr-map-toolbox button{transition:none}}
+

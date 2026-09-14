@@ -55,31 +55,39 @@ function gpsMatchesPlan(p:Pos,plan:NeshanRouteMapPlanResponse){return routeClust
 function draw(map:any,encoded:string){
   if(!map?.isStyleLoaded())return
   if(map.getLayer('v017-route'))map.removeLayer('v017-route')
+  if(map.getLayer('v017-route-casing'))map.removeLayer('v017-route-casing')
   if(map.getSource('v017-route'))map.removeSource('v017-route')
   const c=decode(encoded);if(c.length<2)return
   map.addSource('v017-route',{type:'geojson',data:{type:'Feature',properties:{},geometry:{type:'LineString',coordinates:c}}})
-  map.addLayer({id:'v017-route',type:'line',source:'v017-route',paint:{'line-color':'#e8b64f','line-width':5,'line-opacity':.9}})
+  map.addLayer({id:'v017-route-casing',type:'line',source:'v017-route',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#07111d','line-width':9,'line-opacity':.72}})
+  map.addLayer({id:'v017-route',type:'line',source:'v017-route',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#f0bf55','line-width':5.5,'line-opacity':.96,'line-blur':.25}})
 }
 
 export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,onSelectCustomer,onPrimaryCustomer,onNotice,onOrderChange}:Props){
-  const host=useRef<HTMLDivElement|null>(null),map=useRef<any>(null),markers=useRef<any[]>([]),sdkRef=useRef<ML|null>(null)
+  const shell=useRef<HTMLDivElement|null>(null),host=useRef<HTMLDivElement|null>(null),map=useRef<any>(null),markers=useRef<any[]>([]),sdkRef=useRef<ML|null>(null)
   const selectedIdRef=useRef(selectedCustomerId),selectCustomerRef=useRef(onSelectCustomer),primaryCustomerRef=useRef(onPrimaryCustomer),orderChangeRef=useRef(onOrderChange)
   const trustedCustomersRef=useRef<NeshanRouteMapPlanResponse['ordered_customers']>([]),trustedPosRef=useRef<Pos|null>(null),polyRef=useRef('')
   const keyRef=useRef(''),focusTokenRef=useRef(''),needsRecoveryRef=useRef(false),retryAttemptRef=useRef(0),retryTimerRef=useRef<number|null>(null)
   selectedIdRef.current=selectedCustomerId;selectCustomerRef.current=onSelectCustomer;primaryCustomerRef.current=onPrimaryCustomer;orderChangeRef.current=onOrderChange
-  const [plan,setPlan]=useState<NeshanRouteMapPlanResponse|null>(null),[key,setKey]=useState(''),[pos,setPos]=useState<Pos|null>(null),[leg,setLeg]=useState(''),[error,setError]=useState(''),[mapReady,setMapReady]=useState(false),[initNonce,setInitNonce]=useState(0)
+  const [plan,setPlan]=useState<NeshanRouteMapPlanResponse|null>(null),[key,setKey]=useState(''),[pos,setPos]=useState<Pos|null>(null),[leg,setLeg]=useState(''),[error,setError]=useState(''),[mapReady,setMapReady]=useState(false),[initNonce,setInitNonce]=useState(0),[fullscreen,setFullscreen]=useState(false)
   const trustedCustomers=useMemo(()=>plan?routeCluster(plan):[],[plan])
   const trustedPos=useMemo(()=>pos&&plan&&String(plan.route.id)===String(routeId)&&gpsMatchesPlan(pos,plan)?pos:null,[pos,plan,routeId])
   const backendFirst=plan?.ordered_customers.find(c=>c.latitude!=null&&c.longitude!=null)??null
   const trustedFirst=trustedCustomers[0]??null
   const poly=leg||(trustedPos&&backendFirst&&trustedFirst&&String(backendFirst.id)===String(trustedFirst.id)&&String(selectedCustomerId)===String(trustedFirst.id)?plan?.polyline||'':'')
   const selected=useMemo(()=>trustedCustomers.find(c=>String(c.id)===selectedCustomerId)??null,[trustedCustomers,selectedCustomerId])
+  const selectedPlanCustomer=useMemo(()=>plan?.ordered_customers.find(c=>String(c.id)===selectedCustomerId)??plan?.unlocated_customers.find(c=>String(c.id)===selectedCustomerId)??null,[plan,selectedCustomerId])
+  const modeLabel=mode==='sales'?'\u0627\u0648\u0644\u0648\u06cc\u062a \u0641\u0631\u0648\u0634':'\u06a9\u0648\u062a\u0627\u0647\u200c\u062a\u0631\u06cc\u0646 \u0645\u0633\u06cc\u0631'
+  const locatedCount=plan?.ordered_customers.filter(c=>c.latitude!=null&&c.longitude!=null).length??0
+  const missingCount=plan?.missing_location_count??0
   trustedCustomersRef.current=trustedCustomers;trustedPosRef.current=trustedPos;polyRef.current=poly;keyRef.current=key
 
   useEffect(()=>{if(!routeId||pos||!navigator.geolocation||!navigator.permissions)return;let off=false
     void navigator.permissions.query({name:'geolocation'}).then(status=>{if(off||status.state!=='granted')return;return geo().then(p=>{if(!off&&p)setPos(p)})}).catch(()=>undefined)
     return()=>{off=true}
   },[routeId,pos])
+
+  useEffect(()=>{const onFullscreen=()=>{setFullscreen(document.fullscreenElement===shell.current);window.setTimeout(()=>map.current?.resize?.(),80)};document.addEventListener('fullscreenchange',onFullscreen);return()=>document.removeEventListener('fullscreenchange',onFullscreen)},[])
 
   useEffect(()=>{if(!routeId)return;let off=false;setError('');setLeg('')
     void Promise.all([getNeshanMapConfig(),getRouteMapPlan(routeId,mode==='sales'?'sales_priority':'shortest',trustedPos)])
@@ -130,7 +138,16 @@ export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,
   useEffect(()=>{if(!routeId||!trustedPos||!selected){setLeg('');return}let off=false;void getRouteMapLeg(routeId,String(selected.id),trustedPos).then(r=>{if(!off)setLeg(r.polyline||'')}).catch(e=>{if(!off)onNotice(e instanceof Error?e.message:'Live route unavailable')});return()=>{off=true}},[routeId,trustedPos,selected,onNotice])
   useEffect(()=>{if(!recenterNonce)return;let off=false;void geo().then(p=>{if(off)return;if(!p){onNotice('\u062f\u0633\u062a\u0631\u0633\u06cc GPS \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06cc\u0633\u062a \u06cc\u0627 \u0645\u0648\u0642\u0639\u06cc\u062a \u062f\u0631\u06cc\u0627\u0641\u062a \u0646\u0634\u062f.');return}setPos(p);if(!plan||gpsMatchesPlan(p,plan)){map.current?.flyTo({center:[p.longitude,p.latitude],zoom:14,duration:650,essential:true})}else{onNotice('\u0645\u0648\u0642\u0639\u06cc\u062a GPS \u0628\u0627 \u0645\u062d\u062f\u0648\u062f\u0647 \u0645\u0633\u06cc\u0631 \u0627\u0646\u062a\u062e\u0627\u0628\u200c\u0634\u062f\u0647 \u0647\u0645\u062e\u0648\u0627\u0646 \u0646\u06cc\u0633\u062a \u0648 \u0646\u0627\u062f\u06cc\u062f\u0647 \u06af\u0631\u0641\u062a\u0647 \u0634\u062f.')}});return()=>{off=true}},[recenterNonce,onNotice,plan])
 
-  return <div className="vr-map-live-shell"><div ref={host} className="vr-map-live" aria-label={'\u0646\u0642\u0634\u0647 \u0632\u0646\u062f\u0647 \u0645\u0633\u06cc\u0631 \u0641\u0631\u0648\u0634'}/>{!plan&&!error?<span className="vr-map-live-state">{'\u062f\u0631 \u062d\u0627\u0644 \u0628\u0627\u0631\u06af\u0630\u0627\u0631\u06cc \u0646\u0642\u0634\u0647\u2026'}</span>:null}{error?<button type="button" className="vr-map-live-state error" onClick={()=>onNotice(error)}>{'\u0646\u0642\u0634\u0647 \u062f\u0631 \u062f\u0633\u062a\u0631\u0633 \u0646\u06cc\u0633\u062a'}</button>:null}</div>
+  function fitRouteView(){const points=(plan?.ordered_customers??[]).filter(c=>c.latitude!=null&&c.longitude!=null);if(!points.length||!map.current)return;const lngs=points.map(c=>Number(c.longitude)),lats=points.map(c=>Number(c.latitude));map.current.fitBounds([[Math.min(...lngs),Math.min(...lats)],[Math.max(...lngs),Math.max(...lats)]],{padding:{top:96,right:52,bottom:128,left:52},maxZoom:15,duration:650})}
+  async function toggleFullscreen(){const target=shell.current;if(!target)return;if(document.fullscreenElement){await document.exitFullscreen?.();return}await target.requestFullscreen?.()}
+
+  return <div ref={shell} className={'vr-map-live-shell'+(fullscreen?' is-fullscreen':'')}>
+    <div ref={host} className="vr-map-live" aria-label={'\u0646\u0642\u0634\u0647 \u0632\u0646\u062f\u0647 \u0645\u0633\u06cc\u0631 \u0641\u0631\u0648\u0634'}/>
+    <div className="vr-map-hud"><span className="vr-map-mode-chip">{modeLabel}</span><span>{locatedCount} {'\u0645\u0634\u062a\u0631\u06cc \u0631\u0648\u06cc \u0646\u0642\u0634\u0647'}</span>{missingCount>0?<span className="warning">{missingCount} {'\u0628\u062f\u0648\u0646 \u0644\u0648\u06a9\u06cc\u0634\u0646'}</span>:null}</div>
+    <div className="vr-map-toolbox"><button type="button" onClick={fitRouteView} aria-label={'\u0646\u0645\u0627\u06cc\u0634 \u06a9\u0644 \u0645\u0633\u06cc\u0631'}><b>\u2317</b><span>{'\u06a9\u0644 \u0645\u0633\u06cc\u0631'}</span></button><button type="button" onClick={()=>void toggleFullscreen()} aria-label={'\u0646\u0642\u0634\u0647 \u062a\u0645\u0627\u0645 \u0635\u0641\u062d\u0647'}><b>{fullscreen?'\u2715':'\u26f6'}</b><span>{fullscreen?'\u0628\u0633\u062a\u0646':'\u062a\u0645\u0627\u0645 \u0635\u0641\u062d\u0647'}</span></button></div>
+    {selectedPlanCustomer?<div className="vr-map-selected-card"><div><strong>{selectedPlanCustomer.store_name||selectedPlanCustomer.name}</strong><span>{selectedPlanCustomer.address||selectedPlanCustomer.name}</span></div><div className="vr-map-selected-metrics"><span>{'\u0627\u0648\u0644\u0648\u06cc\u062a'} <b>{selectedPlanCustomer.priority_tier||'--'}</b></span><span>{'\u0627\u0645\u062a\u06cc\u0627\u0632'} <b>{Number(selectedPlanCustomer.visit_score||0).toLocaleString('fa-IR')}</b></span></div></div>:null}
+    {!plan&&!error?<span className="vr-map-live-state">{'\u062f\u0631 \u062d\u0627\u0644 \u0628\u0627\u0631\u06af\u0630\u0627\u0631\u06cc \u0646\u0642\u0634\u0647\u2026'}</span>:null}{error?<button type="button" className="vr-map-live-state error" onClick={()=>onNotice(error)}>{'\u0646\u0642\u0634\u0647 \u062f\u0631 \u062f\u0633\u062a\u0631\u0633 \u0646\u06cc\u0633\u062a'}</button>:null}
+  </div>
 }
 
 
