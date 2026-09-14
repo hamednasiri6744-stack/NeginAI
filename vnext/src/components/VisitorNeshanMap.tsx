@@ -111,8 +111,8 @@ export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,
 
   useEffect(()=>{if(!mapReady||!map.current)return;const first=trustedCustomers[0],focus=trustedCustomers.find(c=>String(c.id)===selectedCustomerId)??first;if(!focus)return
     const token=`${routeId??''}|${mode}|${selectedCustomerId}`;if(focusTokenRef.current===token)return;focusTokenRef.current=token
-    if(trustedPos&&distanceKm(trustedPos,{latitude:Number(focus.latitude),longitude:Number(focus.longitude)})<=80){map.current.fitBounds([[trustedPos.longitude,trustedPos.latitude],[Number(focus.longitude),Number(focus.latitude)]],{padding:48,maxZoom:15.5,duration:0})}
-    else{map.current.jumpTo({center:[Number(focus.longitude),Number(focus.latitude)],zoom:15})}
+    if(trustedPos&&distanceKm(trustedPos,{latitude:Number(focus.latitude),longitude:Number(focus.longitude)})<=80){map.current.fitBounds([[trustedPos.longitude,trustedPos.latitude],[Number(focus.longitude),Number(focus.latitude)]],{padding:48,maxZoom:14,duration:0})}
+    else{map.current.jumpTo({center:[Number(focus.longitude),Number(focus.latitude)],zoom:14})}
   },[mapReady,routeId,mode,selectedCustomerId,trustedCustomers,trustedPos])
 
   useEffect(()=>{const recover=()=>{if(document.visibilityState==='hidden')return;const current=map.current
@@ -129,7 +129,7 @@ export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,
 
   useEffect(()=>{if(mapReady)draw(map.current,poly)},[poly,mapReady])
   useEffect(()=>{if(!routeId||!trustedPos||!selected){setLeg('');return}let off=false;void getRouteMapLeg(routeId,String(selected.id),trustedPos).then(r=>{if(!off)setLeg(r.polyline||'')}).catch(e=>{if(!off)onNotice(e instanceof Error?e.message:'Live route unavailable')});return()=>{off=true}},[routeId,trustedPos,selected,onNotice])
-  useEffect(()=>{if(!recenterNonce)return;let off=false;void geo().then(p=>{if(off)return;if(!p){onNotice('دسترسی GPS برقرار نیست یا موقعیت دریافت نشد.');return}setPos(p);if(!plan||gpsMatchesPlan(p,plan)){map.current?.flyTo({center:[p.longitude,p.latitude],zoom:15.5,duration:650,essential:true})}else{onNotice('موقعیت GPS با محدوده مسیر همخوان نیست و نادیده گرفته شد.')}});return()=>{off=true}},[recenterNonce,onNotice])
+  useEffect(()=>{if(!recenterNonce)return;let off=false;void geo().then(p=>{if(off)return;if(!p){onNotice('دسترسی GPS برقرار نیست یا موقعیت دریافت نشد.');return}setPos(p);if(!plan||gpsMatchesPlan(p,plan)){map.current?.flyTo({center:[p.longitude,p.latitude],zoom:14,duration:650,essential:true})}else{onNotice('موقعیت GPS با محدوده مسیر همخوان نیست و نادیده گرفته شد.')}});return()=>{off=true}},[recenterNonce,onNotice])
 
   return <div className="vr-map-live-shell"><div ref={host} className="vr-map-live" aria-label="نقشه زنده مسیر فروش"/>{!plan&&!error?<span className="vr-map-live-state">در حال بارگذاری نقشه…</span>:null}{error?<button type="button" className="vr-map-live-state error" onClick={()=>onNotice(error)}>نقشه در دسترس نیست</button>:null}</div>
 }
