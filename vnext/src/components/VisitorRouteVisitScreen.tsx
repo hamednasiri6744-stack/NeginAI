@@ -165,6 +165,13 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
     window.setTimeout(() => setNotice(null), 2200)
   }, [])
 
+  const selectPlanPrimary = useCallback((customerId: string) => {
+    if (activeVisit) return
+    if (!routeStops.some((stop) => stop.customerId === customerId)) return
+    setSelectedCustomerId(customerId)
+    selectCustomer(customerId)
+  }, [activeVisit, routeStops, selectCustomer])
+
   const selectStop = useCallback((customerId: string) => {
     if (activeVisit && activeVisit.customerId !== customerId) {
       flash('ابتدا بازدید فعال را تکمیل یا متوقف کن')
@@ -321,6 +328,7 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
               selectedCustomerId={selectedCustomerId}
               recenterNonce={mapRecenterNonce}
               onSelectCustomer={selectStop}
+              onPrimaryCustomer={selectPlanPrimary}
               onNotice={flash}
             />
           </div>

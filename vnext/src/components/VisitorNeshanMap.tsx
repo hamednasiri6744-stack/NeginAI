@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { getNeshanMapConfig, getRouteMapLeg, getRouteMapPlan, type NeshanRouteMapPlanResponse } from '../api/neginApi'
 
-type Props={routeId:string|null;mode:'sales'|'shortest';selectedCustomerId:string;recenterNonce:number;onSelectCustomer:(id:string)=>void;onNotice:(m:string)=>void}
+type Props={routeId:string|null;mode:'sales'|'shortest';selectedCustomerId:string;recenterNonce:number;onSelectCustomer:(id:string)=>void;onPrimaryCustomer:(id:string)=>void;onNotice:(m:string)=>void}
 type Pos={latitude:number;longitude:number}
 type ML={Map:new(o:Record<string,unknown>)=>any;Marker:new(o?:Record<string,unknown>)=>any;NavigationControl:new()=>unknown}
 const CSS='https://static.neshan.org/sdk/maplibre/5.24.3/neshan-maplibre-sdk.css'
@@ -33,17 +33,22 @@ function draw(map:any,encoded:string){
   map.addLayer({id:'v017-route',type:'line',source:'v017-route',paint:{'line-color':'#e8b64f','line-width':5,'line-opacity':.9}})
 }
 
-export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,onSelectCustomer,onNotice}:Props){
+export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,onSelectCustomer,onPrimaryCustomer,onNotice}:Props){
   const host=useRef<HTMLDivElement|null>(null),map=useRef<any>(null),markers=useRef<any[]>([])
   const [plan,setPlan]=useState<NeshanRouteMapPlanResponse|null>(null),[key,setKey]=useState(''),[pos,setPos]=useState<Pos|null>(null),[leg,setLeg]=useState(''),[error,setError]=useState('')
   const poly=leg||plan?.polyline||''
   const selected=useMemo(()=>plan?.ordered_customers.find(c=>String(c.id)===selectedCustomerId)??null,[plan,selectedCustomerId])
 
-  useEffect(()=>{if(!routeId)return;let off=false;setError('');setLeg('')
-    void Promise.all([getNeshanMapConfig(),getRouteMapPlan(routeId,mode==='sales'?'sales_priority':'shortest',null)])
-      .then(([c,p])=>{if(!off){setKey(c.api_key ?? '');setPlan(p)}}).catch(e=>{if(!off)setError(e instanceof Error?e.message:'Neshan map unavailable')})
+  useEffect(()=>{if(!routeId||pos||!navigator.geolocation||!navigator.permissions)return;let off=false
+    void navigator.permissions.query({name:'geolocation'}).then(status=>{if(off||status.state!=='granted')return;return geo().then(p=>{if(!off&&p)setPos(p)})}).catch(()=>undefined)
     return()=>{off=true}
-  },[routeId,mode])
+  },[routeId,pos])
+
+  useEffect(()=>{if(!routeId)return;let off=false;setError('');setLeg('')
+    void Promise.all([getNeshanMapConfig(),getRouteMapPlan(routeId,mode==='sales'?'sales_priority':'shortest',pos)])
+      .then(([c,p])=>{if(!off){setKey(c.api_key ?? '');setPlan(p);const first=p.ordered_customers.find(item=>item.latitude!=null&&item.longitude!=null);if(first)onPrimaryCustomer(String(first.id))}}).catch(e=>{if(!off)setError(e instanceof Error?e.message:'Neshan map unavailable')})
+    return()=>{off=true}
+  },[routeId,mode,pos,onPrimaryCustomer])
 
   useEffect(()=>{if(!plan||!key||!host.current)return;let dead=false,local:any=null,observer:ResizeObserver|null=null
     void loadSdk().then(sdk=>{if(dead||!host.current)return
