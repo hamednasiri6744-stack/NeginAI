@@ -109,11 +109,10 @@ export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,
 
   useEffect(()=>{if(!host.current)return;host.current.querySelectorAll<HTMLElement>('.vr-map-live-marker').forEach(el=>{const selectedNow=el.dataset.customerId===selectedCustomerId;el.classList.toggle('selected',selectedNow);el.setAttribute('aria-pressed',String(selectedNow))})},[selectedCustomerId,mapReady,trustedCustomers])
 
-  useEffect(()=>{if(!mapReady||!map.current)return;const first=trustedCustomers[0],focus=trustedCustomers.find(c=>String(c.id)===selectedCustomerId)??first;if(!focus)return
+  useEffect(()=>{if(!mapReady||!map.current)return;const first=trustedCustomers[0]??plan?.ordered_customers.find(c=>c.latitude!=null&&c.longitude!=null),focus=plan?.ordered_customers.find(c=>String(c.id)===selectedCustomerId&&c.latitude!=null&&c.longitude!=null)??first;if(!focus)return
     const token=`${routeId??''}|${mode}|${selectedCustomerId}`;if(focusTokenRef.current===token)return;focusTokenRef.current=token
-    if(trustedPos&&distanceKm(trustedPos,{latitude:Number(focus.latitude),longitude:Number(focus.longitude)})<=80){map.current.fitBounds([[trustedPos.longitude,trustedPos.latitude],[Number(focus.longitude),Number(focus.latitude)]],{padding:48,maxZoom:14,duration:0})}
-    else{map.current.jumpTo({center:[Number(focus.longitude),Number(focus.latitude)],zoom:14})}
-  },[mapReady,routeId,mode,selectedCustomerId,trustedCustomers,trustedPos])
+    map.current.easeTo({center:[Number(focus.longitude),Number(focus.latitude)],zoom:15,duration:550,essential:true})
+  },[mapReady,routeId,mode,selectedCustomerId,trustedCustomers,plan])
 
   useEffect(()=>{const recover=()=>{if(document.visibilityState==='hidden')return;const current=map.current
       if(!current){setInitNonce(value=>value+1);return}
@@ -129,9 +128,9 @@ export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,
 
   useEffect(()=>{if(mapReady)draw(map.current,poly)},[poly,mapReady])
   useEffect(()=>{if(!routeId||!trustedPos||!selected){setLeg('');return}let off=false;void getRouteMapLeg(routeId,String(selected.id),trustedPos).then(r=>{if(!off)setLeg(r.polyline||'')}).catch(e=>{if(!off)onNotice(e instanceof Error?e.message:'Live route unavailable')});return()=>{off=true}},[routeId,trustedPos,selected,onNotice])
-  useEffect(()=>{if(!recenterNonce)return;let off=false;void geo().then(p=>{if(off)return;if(!p){onNotice('ط¯ط³طھط±ط³غŒ GPS ط¨ط±ظ‚ط±ط§ط± ظ†غŒط³طھ غŒط§ ظ…ظˆظ‚ط¹غŒطھ ط¯ط±غŒط§ظپطھ ظ†ط´ط¯.');return}setPos(p);if(!plan||gpsMatchesPlan(p,plan)){map.current?.flyTo({center:[p.longitude,p.latitude],zoom:14,duration:650,essential:true})}else{onNotice('ظ…ظˆظ‚ط¹غŒطھ GPS ط¨ط§ ظ…ط­ط¯ظˆط¯ظ‡ ظ…ط³غŒط± ظ‡ظ…ط®ظˆط§ظ† ظ†غŒط³طھ ظˆ ظ†ط§ط¯غŒط¯ظ‡ ع¯ط±ظپطھظ‡ ط´ط¯.')}});return()=>{off=true}},[recenterNonce,onNotice])
+  useEffect(()=>{if(!recenterNonce)return;let off=false;void geo().then(p=>{if(off)return;if(!p){onNotice('\u062f\u0633\u062a\u0631\u0633\u06cc GPS \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06cc\u0633\u062a \u06cc\u0627 \u0645\u0648\u0642\u0639\u06cc\u062a \u062f\u0631\u06cc\u0627\u0641\u062a \u0646\u0634\u062f.');return}setPos(p);if(!plan||gpsMatchesPlan(p,plan)){map.current?.flyTo({center:[p.longitude,p.latitude],zoom:14,duration:650,essential:true})}else{onNotice('\u0645\u0648\u0642\u0639\u06cc\u062a GPS \u0628\u0627 \u0645\u062d\u062f\u0648\u062f\u0647 \u0645\u0633\u06cc\u0631 \u0627\u0646\u062a\u062e\u0627\u0628\u200c\u0634\u062f\u0647 \u0647\u0645\u062e\u0648\u0627\u0646 \u0646\u06cc\u0633\u062a \u0648 \u0646\u0627\u062f\u06cc\u062f\u0647 \u06af\u0631\u0641\u062a\u0647 \u0634\u062f.')}});return()=>{off=true}},[recenterNonce,onNotice,plan])
 
-  return <div className="vr-map-live-shell"><div ref={host} className="vr-map-live" aria-label="ظ†ظ‚ط´ظ‡ ط²ظ†ط¯ظ‡ ظ…ط³غŒط± ظپط±ظˆط´"/>{!plan&&!error?<span className="vr-map-live-state">ط¯ط± ط­ط§ظ„ ط¨ط§ط±ع¯ط°ط§ط±غŒ ظ†ظ‚ط´ظ‡â€¦</span>:null}{error?<button type="button" className="vr-map-live-state error" onClick={()=>onNotice(error)}>ظ†ظ‚ط´ظ‡ ط¯ط± ط¯ط³طھط±ط³ ظ†غŒط³طھ</button>:null}</div>
+  return <div className="vr-map-live-shell"><div ref={host} className="vr-map-live" aria-label={'\u0646\u0642\u0634\u0647 \u0632\u0646\u062f\u0647 \u0645\u0633\u06cc\u0631 \u0641\u0631\u0648\u0634'}/>{!plan&&!error?<span className="vr-map-live-state">{'\u062f\u0631 \u062d\u0627\u0644 \u0628\u0627\u0631\u06af\u0630\u0627\u0631\u06cc \u0646\u0642\u0634\u0647\u2026'}</span>:null}{error?<button type="button" className="vr-map-live-state error" onClick={()=>onNotice(error)}>{'\u0646\u0642\u0634\u0647 \u062f\u0631 \u062f\u0633\u062a\u0631\u0633 \u0646\u06cc\u0633\u062a'}</button>:null}</div>
 }
 
 

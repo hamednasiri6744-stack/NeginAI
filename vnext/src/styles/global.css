@@ -1573,3 +1573,19 @@ button:focus-visible,a:focus-visible { outline:2px solid rgba(240,193,82,.72); o
 /* UXQA Reports/Notifications/Profile: visual-safe touch targets */
 .vrep-heading>button,.vrep-period button,.vrep-section-head>button,.vrep-ai-card button,.vn-heading>button,.vn-tabs button,.vn-kind-strip button,.vn-card-foot button,.vp-switch,.vp-modal button{position:relative}
 .vrep-heading>button::after,.vrep-period button::after,.vrep-section-head>button::after,.vrep-ai-card button::after,.vn-heading>button::after,.vn-tabs button::after,.vn-kind-strip button::after,.vn-card-foot button::after,.vp-switch::after,.vp-modal button::after{content:"";position:absolute;left:50%;top:50%;width:max(100%,44px);height:max(100%,44px);transform:translate(-50%,-50%)}
+
+/* === Route Map Persistent UX v1 === */
+.vr-map-card{position:relative;padding:0;overflow:visible}
+.vr-map-canvas{height:clamp(300px,42dvh,420px);min-height:300px;margin-top:0;border-radius:22px}
+.vr-map-head{position:absolute;top:12px;left:12px;right:12px;z-index:14;min-height:46px;pointer-events:none}
+.vr-map-head>div,.vr-map-head>button{pointer-events:auto;min-height:42px;padding:0 12px;border:1px solid rgba(151,181,205,.16);border-radius:13px;background:rgba(3,17,29,.82);box-shadow:0 8px 24px rgba(0,0,0,.25);backdrop-filter:blur(12px)}
+.vr-map-head>div{display:inline-flex;align-items:center;gap:7px;width:max-content}
+.vr-map-head>button{margin-inline-start:auto}
+.vr-map-canvas .maplibregl-ctrl-top-right{top:58px}
+.vr-map-live-state{left:12px;right:12px;bottom:12px;max-width:calc(100% - 24px)}
+@media (max-width:719px){
+  .vr-map-card{position:sticky;top:max(8px,env(safe-area-inset-top));z-index:32;margin-inline:-2px}
+  .vr-map-canvas{height:clamp(290px,40dvh,380px);min-height:290px}
+  .vr-stops{position:relative;z-index:1}
+}
+@media (max-height:700px) and (max-width:719px){.vr-map-canvas{height:285px;min-height:285px}}
