@@ -356,6 +356,7 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
               mode={mode}
               selectedCustomerId={selectedCustomerId}
               recenterNonce={mapRecenterNonce}
+              routeStops={routeStops}
               onSelectCustomer={selectStop}
               onPrimaryCustomer={selectPlanPrimary}
               onOrderChange={handlePlanOrder}

@@ -1780,3 +1780,22 @@ button:focus-visible,a:focus-visible { outline:2px solid rgba(240,193,82,.72); o
 
 /* === Route Navigation Session v6 === */
 .vr-map-navigation-card{position:absolute;top:14px;left:72px;right:72px;z-index:24;min-height:58px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 12px;border:1px solid rgba(111,205,244,.18);border-radius:16px;background:linear-gradient(145deg,rgba(3,22,37,.96),rgba(3,15,26,.92));box-shadow:0 12px 34px rgba(0,0,0,.32),inset 0 1px rgba(255,255,255,.045);backdrop-filter:blur(16px);pointer-events:none}.vr-map-navigation-card>div:first-child{min-width:0;display:grid;gap:3px}.vr-map-navigation-card strong,.vr-map-navigation-card span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.vr-map-navigation-card strong{color:#eff8fc;font-size:12px}.vr-map-navigation-card span{color:#7892a5;font-size:10px}.vr-map-navigation-meta{flex:0 0 auto;display:flex;gap:6px}.vr-map-navigation-meta b{min-width:54px;padding:7px 8px;border:1px solid rgba(86,198,242,.14);border-radius:11px;background:rgba(72,198,255,.06);color:#7cdcff;font:800 10.5px/1 Inter,Arial;text-align:center}.vr-map-live-shell:fullscreen .vr-map-navigation-card,.vr-map-live-shell.is-fullscreen .vr-map-navigation-card{top:max(18px,env(safe-area-inset-top));left:80px;right:80px}@media(max-width:719px){.vr-map-navigation-card{left:68px;right:12px;top:12px;min-height:54px;padding:8px 10px}.vr-map-navigation-card strong{font-size:11px}.vr-map-navigation-meta{gap:4px}.vr-map-navigation-meta b{min-width:46px;padding-inline:6px;font-size:9.5px}.vr-map-live-shell:fullscreen .vr-map-navigation-card,.vr-map-live-shell.is-fullscreen .vr-map-navigation-card{left:68px;right:68px}}
+
+/* === Operational Map Layers v7 === */
+.vr-map-ops-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.vr-map-ops-summary span{min-width:0;display:grid;gap:3px;justify-items:center;padding:8px 5px;border:1px solid rgba(137,181,207,.1);border-radius:11px;background:rgba(255,255,255,.022);color:#7890a2;font-size:9.5px}
+.vr-map-ops-summary b{color:#e9f1f5;font:800 13px/1 Inter,Arial}
+.vr-map-filter-row{display:flex;gap:6px;overflow-x:auto;padding:2px 0 4px;scrollbar-width:none}
+.vr-map-filter-row::-webkit-scrollbar{display:none}
+.vr-map-filter-row button{flex:0 0 auto;min-height:34px;display:flex;align-items:center;gap:7px;padding:0 10px;border:1px solid rgba(133,179,207,.11);border-radius:11px;background:rgba(255,255,255,.025);color:#8298a9;font:inherit;font-size:10px}
+.vr-map-filter-row button b{min-width:18px;height:18px;display:grid;place-items:center;border-radius:99px;background:rgba(255,255,255,.055);color:#b8c8d3;font:800 9px/1 Inter,Arial}
+.vr-map-filter-row button.active{border-color:rgba(231,184,80,.36);background:rgba(231,184,80,.09);color:#efc75f}
+.vr-map-live-marker::after{content:'';position:absolute;right:1px;bottom:9px;width:8px;height:8px;border:2px solid #f8e2a0;border-radius:50%;background:#7d8c98;box-shadow:0 0 0 2px rgba(4,18,29,.75)}
+.vr-map-live-marker.status-visited::after{background:#43c994}
+.vr-map-live-marker.status-active::after{background:#55cfff}
+.vr-map-live-marker.status-skipped::after{background:#9b7b85}
+.vr-map-live-marker.status-pending::after{background:#e3b64b}
+.vr-map-live-marker.has-debt:not(.selected){filter:drop-shadow(0 0 5px rgba(255,99,90,.32))}
+.vr-map-live-marker.has-debt::after{box-shadow:0 0 0 2px rgba(4,18,29,.75),0 0 8px rgba(255,80,74,.75)}
+.vr-map-live-marker.selected::after{background:#ffced3;border-color:#fff;box-shadow:0 0 0 2px rgba(99,7,18,.55)}
+@media(max-width:719px){.vr-map-ops-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.vr-map-filter-row button{min-height:32px;padding-inline:9px}}

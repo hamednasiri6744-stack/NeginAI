@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { getNeshanMapConfig, getRouteMapLeg, getRouteMapPlan, type NeshanRouteLeg, type NeshanRouteMapPlanResponse } from '../api/neginApi'
+import type { VisitorRouteStop } from '../state/VisitorWorkflowContext'
 
-type Props={routeId:string|null;mode:'sales'|'shortest';selectedCustomerId:string;recenterNonce:number;onSelectCustomer:(id:string)=>void;onPrimaryCustomer:(id:string)=>void;onNotice:(m:string)=>void;onOrderChange:(ids:string[])=>void}
+type Props={routeId:string|null;mode:'sales'|'shortest';selectedCustomerId:string;recenterNonce:number;routeStops:VisitorRouteStop[];onSelectCustomer:(id:string)=>void;onPrimaryCustomer:(id:string)=>void;onNotice:(m:string)=>void;onOrderChange:(ids:string[])=>void}
+type MapFilter='all'|'remaining'|'visited'|'skipped'|'debt'
 type Pos={latitude:number;longitude:number;accuracy?:number;heading?:number|null}
 type ML={Map:new(o:Record<string,unknown>)=>any;Marker:new(o?:Record<string,unknown>)=>any;NavigationControl:new()=>unknown}
 const CSS='https://static.neshan.org/sdk/maplibre/5.24.3/neshan-maplibre-sdk.css'
@@ -69,14 +71,30 @@ function focusPolyline(map:any,encoded:string){const c=decode(encoded);if(!map||
 function distanceToPolylineMeters(position:Pos,encoded:string){const line=decode(encoded);if(line.length<2)return Infinity;const latScale=111320,lonScale=latScale*Math.cos(position.latitude*Math.PI/180),px=position.longitude*lonScale,py=position.latitude*latScale;let nearest=Infinity;for(let i=1;i<line.length;i++){const a=line[i-1],b=line[i];if(a===undefined||b===undefined)continue;const [aLng,aLat]=a,[bLng,bLat]=b,ax=aLng*lonScale,ay=aLat*latScale,dx=bLng*lonScale-ax,dy=bLat*latScale-ay,len=dx*dx+dy*dy,t=len?Math.max(0,Math.min(1,((px-ax)*dx+(py-ay)*dy)/len)):0;nearest=Math.min(nearest,Math.hypot(px-(ax+t*dx),py-(ay+t*dy)))}return nearest}
 function metricText(metric:any){return String(metric?.text||'').trim()}
 
-export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,onSelectCustomer,onPrimaryCustomer,onNotice,onOrderChange}:Props){
+export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,routeStops,onSelectCustomer,onPrimaryCustomer,onNotice,onOrderChange}:Props){
   const shell=useRef<HTMLDivElement|null>(null),host=useRef<HTMLDivElement|null>(null),map=useRef<any>(null),markers=useRef<any[]>([]),sdkRef=useRef<ML|null>(null)
   const selectedIdRef=useRef(selectedCustomerId),selectCustomerRef=useRef(onSelectCustomer),primaryCustomerRef=useRef(onPrimaryCustomer),orderChangeRef=useRef(onOrderChange)
   const trustedCustomersRef=useRef<NeshanRouteMapPlanResponse['ordered_customers']>([]),trustedPosRef=useRef<Pos|null>(null),polyRef=useRef('')
   const keyRef=useRef(''),focusTokenRef=useRef(''),routeRequestRef=useRef(null as any),routeFocusKeyRef=useRef(''),planOriginRef=useRef(null as any),routeLegCacheRef=useRef(new Map<string,{position:Pos;polyline:string;leg:NeshanRouteLeg|null;at:number}>()),followUserRef=useRef(true),offRouteSinceRef=useRef(0),lastRerouteRef=useRef(0),needsRecoveryRef=useRef(false),retryAttemptRef=useRef(0),retryTimerRef=useRef(null as any)
   selectedIdRef.current=selectedCustomerId;selectCustomerRef.current=onSelectCustomer;primaryCustomerRef.current=onPrimaryCustomer;orderChangeRef.current=onOrderChange
-  const [plan,setPlan]=useState<NeshanRouteMapPlanResponse|null>(null),[key,setKey]=useState(''),[pos,setPos]=useState<Pos|null>(null),[leg,setLeg]=useState(''),[routeLeg,setRouteLeg]=useState<NeshanRouteLeg|null>(null),[routing,setRouting]=useState(false),[error,setError]=useState(''),[mapReady,setMapReady]=useState(false),[initNonce,setInitNonce]=useState(0),[fullscreen,setFullscreen]=useState(false)
+  const [plan,setPlan]=useState<NeshanRouteMapPlanResponse|null>(null),[key,setKey]=useState(''),[pos,setPos]=useState<Pos|null>(null),[leg,setLeg]=useState(''),[routeLeg,setRouteLeg]=useState<NeshanRouteLeg|null>(null),[routing,setRouting]=useState(false),[error,setError]=useState(''),[mapReady,setMapReady]=useState(false),[initNonce,setInitNonce]=useState(0),[fullscreen,setFullscreen]=useState(false),[mapFilter,setMapFilter]=useState<MapFilter>('all')
+  const stopByCustomerId=useMemo(()=>new Map(routeStops.map(stop=>[String(stop.customerId),stop])),[routeStops])
+  const mapStats=useMemo(()=>({
+    total:routeStops.length,
+    remaining:routeStops.filter(stop=>stop.status==='pending'||stop.status==='active').length,
+    visited:routeStops.filter(stop=>stop.status==='visited').length,
+    skipped:routeStops.filter(stop=>stop.status==='skipped').length,
+    debt:routeStops.filter(stop=>Boolean(stop.debtWarning)).length,
+  }),[routeStops])
   const trustedCustomers=useMemo(()=>plan?routeCluster(plan):[],[plan])
+  const visibleCustomers=useMemo(()=>trustedCustomers.filter(customer=>{
+    const stop=stopByCustomerId.get(String(customer.id))
+    if(mapFilter==='all')return true
+    if(mapFilter==='remaining')return stop?.status==='pending'||stop?.status==='active'
+    if(mapFilter==='visited')return stop?.status==='visited'
+    if(mapFilter==='skipped')return stop?.status==='skipped'
+    return Boolean(stop?.debtWarning)
+  }),[trustedCustomers,stopByCustomerId,mapFilter])
   const trustedPos=useMemo(()=>pos&&usableGps(pos)&&plan&&String(plan.route.id)===String(routeId)&&gpsMatchesPlan(pos,plan)?pos:null,[pos,plan,routeId])
   const poly=leg
   const selected=useMemo(()=>trustedCustomers.find(c=>String(c.id)===selectedCustomerId)??null,[trustedCustomers,selectedCustomerId])
@@ -127,9 +145,9 @@ export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,
 
   useEffect(()=>{if(!mapReady||!map.current||!sdkRef.current)return;const current=map.current,sdk=sdkRef.current
     markers.current.forEach(marker=>marker.remove());markers.current=[]
-    trustedCustomers.forEach((customer,index)=>{const el=document.createElement('button');el.type='button';const tier=String(customer.priority_tier||'').toLowerCase().replace(/[^a-z0-9_-]/g,'');el.className='vr-map-live-marker'+(tier?' tier-'+tier:'')+(String(customer.id)===selectedIdRef.current?' selected':'');el.textContent=String(index+1);el.setAttribute('aria-label',String(customer.name||('Customer '+(index+1))));el.setAttribute('aria-pressed',String(String(customer.id)===selectedIdRef.current));el.dataset.customerId=String(customer.id);el.onclick=()=>selectCustomerRef.current(String(customer.id));markers.current.push(new sdk.Marker({element:el,anchor:'bottom'}).setLngLat([Number(customer.longitude),Number(customer.latitude)]).addTo(current))})
+    visibleCustomers.forEach((customer,index)=>{const el=document.createElement('button');el.type='button';const stop=stopByCustomerId.get(String(customer.id)),status=String(stop?.status||'');el.className='vr-map-live-marker'+(status?' status-'+status:'')+(stop?.debtWarning?' has-debt':'')+(String(customer.id)===selectedIdRef.current?' selected':'');const orderIndex=plan?.ordered_customers.findIndex(item=>String(item.id)===String(customer.id))??index;el.textContent=String(orderIndex>=0?orderIndex+1:index+1);el.setAttribute('aria-label',String(customer.name||('Customer '+(index+1))));el.setAttribute('aria-pressed',String(String(customer.id)===selectedIdRef.current));el.dataset.customerId=String(customer.id);el.dataset.status=status;el.onclick=()=>selectCustomerRef.current(String(customer.id));markers.current.push(new sdk.Marker({element:el,anchor:'bottom'}).setLngLat([Number(customer.longitude),Number(customer.latitude)]).addTo(current))})
     if(trustedPos){const el=document.createElement('span');el.className='vr-map-live-seller';markers.current.push(new sdk.Marker({element:el}).setLngLat([trustedPos.longitude,trustedPos.latitude]).addTo(current))}
-  },[mapReady,trustedCustomers,trustedPos])
+  },[mapReady,visibleCustomers,trustedPos,stopByCustomerId,plan])
 
   useEffect(()=>{if(!host.current)return;host.current.querySelectorAll<HTMLElement>('.vr-map-live-marker').forEach(el=>{const selectedNow=el.dataset.customerId===selectedCustomerId;el.classList.toggle('selected',selectedNow);el.setAttribute('aria-pressed',String(selectedNow))})},[selectedCustomerId,mapReady,trustedCustomers])
 
@@ -167,6 +185,8 @@ export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,
       <summary aria-label={'\u0644\u0627\u06cc\u0647\u200c\u0647\u0627 \u0648 \u062a\u062d\u0644\u06cc\u0644 \u0646\u0642\u0634\u0647'}><span aria-hidden="true">{'\u2630'}</span><b>{'\u0644\u0627\u06cc\u0647\u200c\u0647\u0627'}</b></summary>
       <div className="vr-map-mobile-tools-panel">
         <div className="vr-map-hud"><span className="vr-map-mode-chip">{modeLabel}</span><span>{locatedCount} {'\u0645\u0634\u062a\u0631\u06cc \u0631\u0648\u06cc \u0646\u0642\u0634\u0647'}</span>{missingCount>0?<span className="warning">{missingCount} {'\u0628\u062f\u0648\u0646 \u0644\u0648\u06a9\u06cc\u0634\u0646'}</span>:null}</div>
+        <div className="vr-map-ops-summary"><span><b>{mapStats.remaining}</b>{'\u0645\u0627\u0646\u062f\u0647'}</span><span><b>{mapStats.visited}</b>{'\u0648\u06cc\u0632\u06cc\u062a\u200c\u0634\u062f\u0647'}</span><span><b>{mapStats.skipped}</b>{'\u0639\u062f\u0645 \u0648\u06cc\u0632\u06cc\u062a'}</span><span><b>{mapStats.debt}</b>{'\u0647\u0634\u062f\u0627\u0631 \u0628\u062f\u0647\u06cc'}</span></div>
+        <div className="vr-map-filter-row" role="group" aria-label={'\u0641\u06cc\u0644\u062a\u0631 \u0645\u0634\u062a\u0631\u06cc\u0627\u0646 \u0631\u0648\u06cc \u0646\u0642\u0634\u0647'}>{([['all','\u0647\u0645\u0647',mapStats.total],['remaining','\u0645\u0627\u0646\u062f\u0647',mapStats.remaining],['visited','\u0627\u0646\u062c\u0627\u0645\u200c\u0634\u062f\u0647',mapStats.visited],['skipped','\u0639\u062f\u0645 \u0648\u06cc\u0632\u06cc\u062a',mapStats.skipped],['debt','\u0628\u062f\u0647\u06cc',mapStats.debt]] as const).map(([id,label,count])=><button key={id} type="button" className={mapFilter===id?'active':''} aria-pressed={mapFilter===id} onClick={()=>setMapFilter(id)}><span>{label}</span><b>{count}</b></button>)}</div>
         {selectedPlanCustomer?<div className="vr-map-selected-card"><div><strong>{selectedPlanCustomer.store_name||selectedPlanCustomer.name}</strong><span>{selectedPlanCustomer.address||selectedPlanCustomer.name}</span></div><div className="vr-map-selected-metrics"><span>{'\u0627\u0648\u0644\u0648\u06cc\u062a'} <b>{selectedPlanCustomer.priority_tier||'--'}</b></span><span>{'\u0627\u0645\u062a\u06cc\u0627\u0632'} <b>{Number(selectedPlanCustomer.visit_score||0).toLocaleString('fa-IR')}</b></span></div></div>:null}
       </div>
     </details>
