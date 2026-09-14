@@ -56,7 +56,7 @@ export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,
         const pts:Array<[number,number]>=[]
         plan.ordered_customers.forEach((c,n)=>{if(c.latitude==null||c.longitude==null)return;const el=document.createElement('button');el.type='button';el.className='vr-map-live-marker'+(String(c.id)===selectedCustomerId?' selected':'');el.textContent=String(n+1);el.setAttribute('aria-label',String(c.name||('Customer '+(n+1))));el.setAttribute('aria-pressed',String(String(c.id)===selectedCustomerId));el.onclick=()=>onSelectCustomer(String(c.id));const xy:[number,number]=[Number(c.longitude),Number(c.latitude)];markers.current.push(new sdk.Marker({element:el}).setLngLat(xy).addTo(local));pts.push(xy)})
         if(pos){const el=document.createElement('span');el.className='vr-map-live-seller';markers.current.push(new sdk.Marker({element:el}).setLngLat([pos.longitude,pos.latitude]).addTo(local));pts.push([pos.longitude,pos.latitude])}
-        if(pts.length>1){const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);local.fitBounds([[Math.min(...xs),Math.min(...ys)],[Math.max(...xs),Math.max(...ys)]],{padding:42,maxZoom:14,duration:0})}
+        const focus=plan.ordered_customers.find(c=>String(c.id)===selectedCustomerId&&c.latitude!=null&&c.longitude!=null)??first; if(pos&&focus){local.fitBounds([[pos.longitude,pos.latitude],[Number(focus.longitude),Number(focus.latitude)]],{padding:48,maxZoom:15.5,duration:0})}else if(focus){local.jumpTo({center:[Number(focus.longitude),Number(focus.latitude)],zoom:15})}
         draw(local,poly)
       })
     }).catch(e=>setError(e instanceof Error?e.message:'Neshan SDK unavailable'))

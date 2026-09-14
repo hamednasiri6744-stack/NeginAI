@@ -323,7 +323,6 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
               onSelectCustomer={selectStop}
               onNotice={flash}
             />
-            <div className="vr-map-caption">{mode === 'sales' ? 'مشتریان واقعی NGT · Map Plan در Slice نقشه فعال می‌شود' : 'کوتاه‌ترین مسیر بر اساس Map Plan زنده'}</div>
           </div>
         </section>
 
