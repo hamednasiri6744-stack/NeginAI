@@ -16,7 +16,7 @@ import {
   UserGroupIcon,
 } from './Icons'
 import { completeServerVisit, getVisitPolicy, getVisitWorkspace, startServerVisit, type SellerVisitPolicyResponse, type SellerVisitWorkspaceResponse } from '../api/neginApi'
-import { VisitorMapLibreMap } from './VisitorMapLibreMap'
+import { VisitorNeshanMap } from './VisitorNeshanMap'
 import { useVisitorWorkflow } from '../state/VisitorWorkflowContext'
 import { useVisitorAuth } from '../state/VisitorAuthContext'
 import { useVisitorLiveData } from '../state/VisitorLiveDataContext'
@@ -322,7 +322,7 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
             <button type="button" onClick={() => setMapRecenterNonce((value) => value + 1)}><PinIcon /> مرکز روی من</button>
           </div>
           <div className="vr-map-canvas">
-            <VisitorMapLibreMap
+            <VisitorNeshanMap
               routeId={activeRouteId}
               mode={mode}
               selectedCustomerId={selectedCustomerId}
