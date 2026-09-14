@@ -270,20 +270,20 @@ export function VisitorOrdersScreen({ onNavigate, customerId, draftId, visitId, 
         </button>
 
         <section className="vo-tabs" role="tablist" aria-label="بخش سفارش">
-          <button type="button" className={view === 'products' ? 'active' : ''} onClick={() => setView('products')}>محصولات</button>
-          <button type="button" className={view === 'catalog' ? 'active' : ''} onClick={() => setView('catalog')}>کاتالوگ</button>
-          <button type="button" className={view === 'cart' ? 'active cart-tab' : 'cart-tab'} onClick={() => setView('cart')}>سبد <b>{cartCount}</b></button>
+          <button type="button" role="tab" aria-selected={view === 'products'} className={view === 'products' ? 'active' : ''} onClick={() => setView('products')}>محصولات</button>
+          <button type="button" role="tab" aria-selected={view === 'catalog'} className={view === 'catalog' ? 'active' : ''} onClick={() => setView('catalog')}>کاتالوگ</button>
+          <button type="button" role="tab" aria-selected={view === 'cart'} className={view === 'cart' ? 'active cart-tab' : 'cart-tab'} onClick={() => setView('cart')}>سبد <b>{cartCount}</b></button>
         </section>
 
         {view === 'products' ? (
           <section className="vo-products">
             <div className="vo-search-row">
-              <label className="vo-search"><SearchIcon /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="نام، کد یا برند کالا" /></label>
-              <button type="button" className={inStockOnly ? 'active' : ''} onClick={() => setInStockOnly((current) => !current)}><FilterIcon /><span>موجود</span></button>
+              <label className="vo-search"><SearchIcon /><input aria-label="جست‌وجوی کالا" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="نام، کد یا برند کالا" /></label>
+              <button type="button" aria-pressed={inStockOnly} className={inStockOnly ? 'active' : ''} onClick={() => setInStockOnly((current) => !current)}><FilterIcon /><span>موجود</span></button>
             </div>
 
-            <div className="vo-filter-strip" aria-label="فیلتر برند">
-              {brands.map((item) => <button type="button" key={item} className={brand === item ? 'active' : ''} onClick={() => setBrand(item)}>{item}</button>)}
+            <div className="vo-filter-strip" role="group" aria-label="فیلتر برند">
+              {brands.map((item) => <button type="button" key={item} aria-pressed={brand === item} className={brand === item ? 'active' : ''} onClick={() => setBrand(item)}>{item}</button>)}
             </div>
 
             {group !== 'همه' ? <div className="vo-active-filter"><TagIcon /><span>گروه: {group}</span><button type="button" onClick={() => setGroup('همه')}>×</button></div> : null}
@@ -308,9 +308,9 @@ export function VisitorOrdersScreen({ onNavigate, customerId, draftId, visitId, 
                       {product.stock > 0 ? (
                         quantity > 0 ? (
                           <div className="vo-stepper" aria-label={`تعداد ${product.name}`}>
-                            <button type="button" onClick={() => setQuantity(product, quantity - 1)}>−</button>
+                            <button type="button" aria-label={`کاهش تعداد ${product.name}`} onClick={() => setQuantity(product, quantity - 1)}>−</button>
                             <strong>{quantity}</strong>
-                            <button type="button" onClick={() => setQuantity(product, quantity + 1)}>+</button>
+                            <button type="button" aria-label={`افزایش تعداد ${product.name}`} onClick={() => setQuantity(product, quantity + 1)}>+</button>
                           </div>
                         ) : <button type="button" className="vo-add" onClick={() => setQuantity(product, 1)}><PlusIcon /> افزودن</button>
                       ) : <span className="vo-out">ناموجود</span>}
@@ -349,7 +349,7 @@ export function VisitorOrdersScreen({ onNavigate, customerId, draftId, visitId, 
                   <span className="vo-cart-icon"><BoxIcon /></span>
                   <div className="vo-cart-copy"><strong>{line.name}</strong><span>{line.brand} · {line.unit}</span><small>{money(line.price)} × {line.quantity}</small></div>
                   <button type="button" className="vo-trash" onClick={() => setQuantity(line, 0)} aria-label={`حذف ${line.name}`}><TrashIcon /></button>
-                  <div className="vo-cart-stepper"><button type="button" onClick={() => setQuantity(line, line.quantity - 1)}>−</button><strong>{line.quantity}</strong><button type="button" onClick={() => setQuantity(line, line.quantity + 1)}>+</button></div>
+                  <div className="vo-cart-stepper" aria-label={`تعداد ${line.name}`}><button type="button" aria-label={`کاهش تعداد ${line.name}`} onClick={() => setQuantity(line, line.quantity - 1)}>−</button><strong>{line.quantity}</strong><button type="button" aria-label={`افزایش تعداد ${line.name}`} onClick={() => setQuantity(line, line.quantity + 1)}>+</button></div>
                   <strong className="vo-line-total">{money(Math.round(line.price * line.quantity * (1 - line.discount / 100)))}</strong>
                 </article>
               ))}
@@ -358,17 +358,17 @@ export function VisitorOrdersScreen({ onNavigate, customerId, draftId, visitId, 
             <section className="vo-choice-block">
               <div><strong>نوع پرداخت</strong><span>براساس دسترسی و شرایط مشتری</span></div>
               <div className="vo-choice-row">
-                <button type="button" className={payment === 'credit' ? 'active' : ''} onClick={() => setPayment('credit')}>اعتباری</button>
-                <button type="button" className={payment === 'cash' ? 'active' : ''} onClick={() => setPayment('cash')}>نقدی</button>
-                <button type="button" className={payment === 'cheque' ? 'active' : ''} onClick={() => setPayment('cheque')}>چک</button>
+                <button type="button" aria-pressed={payment === 'credit'} className={payment === 'credit' ? 'active' : ''} onClick={() => setPayment('credit')}>اعتباری</button>
+                <button type="button" aria-pressed={payment === 'cash'} className={payment === 'cash' ? 'active' : ''} onClick={() => setPayment('cash')}>نقدی</button>
+                <button type="button" aria-pressed={payment === 'cheque'} className={payment === 'cheque' ? 'active' : ''} onClick={() => setPayment('cheque')}>چک</button>
               </div>
             </section>
 
             <section className="vo-choice-block compact">
               <div><strong>نوع سفارش</strong></div>
               <div className="vo-choice-row two">
-                <button type="button" className={orderType === 'sale' ? 'active' : ''} onClick={() => setOrderType('sale')}>فروش</button>
-                <button type="button" className={orderType === 'request' ? 'active' : ''} onClick={() => setOrderType('request')}>درخواست / پیش‌فاکتور</button>
+                <button type="button" aria-pressed={orderType === 'sale'} className={orderType === 'sale' ? 'active' : ''} onClick={() => setOrderType('sale')}>فروش</button>
+                <button type="button" aria-pressed={orderType === 'request'} className={orderType === 'request' ? 'active' : ''} onClick={() => setOrderType('request')}>درخواست / پیش‌فاکتور</button>
               </div>
             </section>
 

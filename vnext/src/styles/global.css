@@ -1560,3 +1560,11 @@ button:focus-visible,a:focus-visible { outline:2px solid rgba(240,193,82,.72); o
 
 .vh-kpi-route-value { direction:rtl !important; unicode-bidi:plaintext; font-size:14px; line-height:1.45; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; overflow-wrap:anywhere; }
 
+
+
+/* UXQA Orders: expand touch hit areas without changing visible control geometry */
+.vo-heading-actions button,.vo-tabs button,.vo-search-row>button,.vo-filter-strip button,.vo-add,.vo-cart-head button,.vo-trash,.vo-choice-row button,.vo-submit-row button,.vo-empty button,.vo-success>button,.vo-active-filter button{position:relative}
+.vo-heading-actions button::after,.vo-tabs button::after,.vo-search-row>button::after,.vo-filter-strip button::after,.vo-add::after,.vo-cart-head button::after,.vo-trash::after,.vo-choice-row button::after,.vo-submit-row button::after,.vo-empty button::after,.vo-success>button::after,.vo-active-filter button::after{content:"";position:absolute;left:50%;top:50%;width:max(100%,44px);height:max(100%,44px);transform:translate(-50%,-50%)}
+.vo-stepper,.vo-cart-stepper{overflow:visible}
+.vo-stepper button,.vo-cart-stepper button{position:relative}
+.vo-stepper button::after,.vo-cart-stepper button::after{content:"";position:absolute;left:0;right:0;top:50%;height:44px;transform:translateY(-50%)}
