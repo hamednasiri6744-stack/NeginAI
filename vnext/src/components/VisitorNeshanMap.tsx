@@ -24,6 +24,10 @@ function geo():Promise<Pos|null>{
   return new Promise(r=>navigator.geolocation.getCurrentPosition(p=>r({latitude:p.coords.latitude,longitude:p.coords.longitude}),()=>r(null),{enableHighAccuracy:true,maximumAge:15000,timeout:15000}))
 }
 function decode(s:string){const out:Array<[number,number]>=[];let i=0,lat=0,lng=0;while(i<s.length){let sh=0,r=0,b=0;do{b=s.charCodeAt(i++)-63;r|=(b&31)<<sh;sh+=5}while(b>=32);lat+=r&1?~(r>>1):r>>1;sh=0;r=0;do{b=s.charCodeAt(i++)-63;r|=(b&31)<<sh;sh+=5}while(b>=32);lng+=r&1?~(r>>1):r>>1;out.push([lng/1e5,lat/1e5])}return out}
+const MAX_ROUTE_GPS_DISTANCE_KM=500
+function distanceKm(a:Pos,b:{latitude:number;longitude:number}){const r=6371,toRad=(v:number)=>v*Math.PI/180,dLat=toRad(b.latitude-a.latitude),dLon=toRad(b.longitude-a.longitude),la1=toRad(a.latitude),la2=toRad(b.latitude);const h=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return 2*r*Math.asin(Math.min(1,Math.sqrt(h)))}
+function gpsMatchesPlan(p:Pos,plan:NeshanRouteMapPlanResponse){const located=plan.ordered_customers.filter(c=>c.latitude!=null&&c.longitude!=null);return located.some(c=>distanceKm(p,{latitude:Number(c.latitude),longitude:Number(c.longitude)})<=MAX_ROUTE_GPS_DISTANCE_KM)}
+
 function draw(map:any,encoded:string){
   if(!map?.isStyleLoaded())return
   if(map.getLayer('v017-route'))map.removeLayer('v017-route')
@@ -36,6 +40,7 @@ function draw(map:any,encoded:string){
 export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,onSelectCustomer,onPrimaryCustomer,onNotice}:Props){
   const host=useRef<HTMLDivElement|null>(null),map=useRef<any>(null),markers=useRef<any[]>([])
   const [plan,setPlan]=useState<NeshanRouteMapPlanResponse|null>(null),[key,setKey]=useState(''),[pos,setPos]=useState<Pos|null>(null),[leg,setLeg]=useState(''),[error,setError]=useState('')
+  const trustedPos=useMemo(()=>pos&&plan&&String(plan.route.id)===String(routeId)&&gpsMatchesPlan(pos,plan)?pos:null,[pos,plan,routeId])
   const poly=leg||plan?.polyline||''
   const selected=useMemo(()=>plan?.ordered_customers.find(c=>String(c.id)===selectedCustomerId)??null,[plan,selectedCustomerId])
 
@@ -45,32 +50,32 @@ export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,
   },[routeId,pos])
 
   useEffect(()=>{if(!routeId)return;let off=false;setError('');setLeg('')
-    void Promise.all([getNeshanMapConfig(),getRouteMapPlan(routeId,mode==='sales'?'sales_priority':'shortest',pos)])
+    void Promise.all([getNeshanMapConfig(),getRouteMapPlan(routeId,mode==='sales'?'sales_priority':'shortest',trustedPos)])
       .then(([c,p])=>{if(!off){setKey(c.api_key ?? '');setPlan(p);const first=p.ordered_customers.find(item=>item.latitude!=null&&item.longitude!=null);if(first)onPrimaryCustomer(String(first.id))}}).catch(e=>{if(!off)setError(e instanceof Error?e.message:'Neshan map unavailable')})
     return()=>{off=true}
-  },[routeId,mode,pos,onPrimaryCustomer])
+  },[routeId,mode,trustedPos,onPrimaryCustomer])
 
   useEffect(()=>{if(!plan||!key||!host.current)return;let dead=false,local:any=null,observer:ResizeObserver|null=null
     void loadSdk().then(sdk=>{if(dead||!host.current)return
       const first=plan.ordered_customers.find(c=>c.latitude!=null&&c.longitude!=null)
-      local=new sdk.Map({container:host.current,style:STYLE,center:pos?[pos.longitude,pos.latitude]:first?[Number(first.longitude),Number(first.latitude)]:[51.4,35.7],zoom:pos?13:10,apiKey:key,rtl:{lazy:false}})
+      local=new sdk.Map({container:host.current,style:STYLE,center:trustedPos?[trustedPos.longitude,trustedPos.latitude]:first?[Number(first.longitude),Number(first.latitude)]:[51.4,35.7],zoom:trustedPos?13:10,apiKey:key,rtl:{lazy:false}})
       map.current=local;local.addControl(new sdk.NavigationControl())
       observer=new ResizeObserver(()=>{if(!dead)window.requestAnimationFrame(()=>local?.resize?.())});observer.observe(host.current)
       local.on('error',(event:any)=>{if(dead)return;const message=event?.error?.message||'Neshan map rendering failed';setError(String(message))})
       local.on('load',()=>{if(dead)return;setError('');window.requestAnimationFrame(()=>local?.resize?.());markers.current.forEach(m=>m.remove());markers.current=[]
         const pts:Array<[number,number]>=[]
         plan.ordered_customers.forEach((c,n)=>{if(c.latitude==null||c.longitude==null)return;const el=document.createElement('button');el.type='button';el.className='vr-map-live-marker'+(String(c.id)===selectedCustomerId?' selected':'');el.textContent=String(n+1);el.setAttribute('aria-label',String(c.name||('Customer '+(n+1))));el.setAttribute('aria-pressed',String(String(c.id)===selectedCustomerId));el.onclick=()=>onSelectCustomer(String(c.id));const xy:[number,number]=[Number(c.longitude),Number(c.latitude)];markers.current.push(new sdk.Marker({element:el}).setLngLat(xy).addTo(local));pts.push(xy)})
-        if(pos){const el=document.createElement('span');el.className='vr-map-live-seller';markers.current.push(new sdk.Marker({element:el}).setLngLat([pos.longitude,pos.latitude]).addTo(local));pts.push([pos.longitude,pos.latitude])}
-        const focus=plan.ordered_customers.find(c=>String(c.id)===selectedCustomerId&&c.latitude!=null&&c.longitude!=null)??first; if(pos&&focus){local.fitBounds([[pos.longitude,pos.latitude],[Number(focus.longitude),Number(focus.latitude)]],{padding:48,maxZoom:15.5,duration:0})}else if(focus){local.jumpTo({center:[Number(focus.longitude),Number(focus.latitude)],zoom:15})}
+        if(trustedPos){const el=document.createElement('span');el.className='vr-map-live-seller';markers.current.push(new sdk.Marker({element:el}).setLngLat([trustedPos.longitude,trustedPos.latitude]).addTo(local));pts.push([trustedPos.longitude,trustedPos.latitude])}
+        const focus=plan.ordered_customers.find(c=>String(c.id)===selectedCustomerId&&c.latitude!=null&&c.longitude!=null)??first; if(trustedPos&&focus){local.fitBounds([[trustedPos.longitude,trustedPos.latitude],[Number(focus.longitude),Number(focus.latitude)]],{padding:48,maxZoom:15.5,duration:0})}else if(focus){local.jumpTo({center:[Number(focus.longitude),Number(focus.latitude)],zoom:15})}
         draw(local,poly)
       })
     }).catch(e=>setError(e instanceof Error?e.message:'Neshan SDK unavailable'))
     return()=>{dead=true;observer?.disconnect();markers.current.forEach(m=>m.remove());markers.current=[];local?.remove();if(map.current===local)map.current=null}
-  },[key,plan,pos,selectedCustomerId,onSelectCustomer])
+  },[key,plan,trustedPos,selectedCustomerId,onSelectCustomer])
 
   useEffect(()=>{draw(map.current,poly)},[poly])
-  useEffect(()=>{if(!routeId||!pos||!selected){setLeg('');return}let off=false;void getRouteMapLeg(routeId,String(selected.id),pos).then(r=>{if(!off)setLeg(r.polyline||'')}).catch(e=>{if(!off)onNotice(e instanceof Error?e.message:'Live route unavailable')});return()=>{off=true}},[routeId,pos,selected,onNotice])
-  useEffect(()=>{if(!recenterNonce)return;let off=false;void geo().then(p=>{if(off)return;if(!p){onNotice('دسترسی GPS برقرار نیست یا موقعیت دریافت نشد.');return}setPos(p);map.current?.flyTo({center:[p.longitude,p.latitude],zoom:15.5,duration:650,essential:true})});return()=>{off=true}},[recenterNonce,onNotice])
+  useEffect(()=>{if(!routeId||!trustedPos||!selected){setLeg('');return}let off=false;void getRouteMapLeg(routeId,String(selected.id),trustedPos).then(r=>{if(!off)setLeg(r.polyline||'')}).catch(e=>{if(!off)onNotice(e instanceof Error?e.message:'Live route unavailable')});return()=>{off=true}},[routeId,trustedPos,selected,onNotice])
+  useEffect(()=>{if(!recenterNonce)return;let off=false;void geo().then(p=>{if(off)return;if(!p){onNotice('دسترسی GPS برقرار نیست یا موقعیت دریافت نشد.');return}setPos(p);if(!plan||gpsMatchesPlan(p,plan)){map.current?.flyTo({center:[p.longitude,p.latitude],zoom:15.5,duration:650,essential:true})}else{onNotice('موقعیت GPS با محدوده مسیر همخوان نیست و نادیده گرفته شد.')}});return()=>{off=true}},[recenterNonce,onNotice])
 
   return <div className="vr-map-live-shell"><div ref={host} className="vr-map-live" aria-label="نقشه زنده مسیر فروش"/>{!plan&&!error?<span className="vr-map-live-state">در حال بارگذاری نقشه…</span>:null}{error?<button type="button" className="vr-map-live-state error" onClick={()=>onNotice(error)}>نقشه در دسترس نیست</button>:null}</div>
 }
