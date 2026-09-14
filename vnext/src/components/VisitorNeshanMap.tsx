@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+﻿import { useEffect, useMemo, useRef, useState } from 'react'
 import { getNeshanMapConfig, getRouteMapLeg, getRouteMapPlan, type NeshanRouteMapPlanResponse } from '../api/neginApi'
 
 type Props={routeId:string|null;mode:'sales'|'shortest';selectedCustomerId:string;recenterNonce:number;onSelectCustomer:(id:string)=>void;onPrimaryCustomer:(id:string)=>void;onNotice:(m:string)=>void}
@@ -88,9 +88,9 @@ export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,
   },[routeId,mode,trustedPos])
 
   useEffect(()=>{if(!key||!host.current||map.current)return;let dead=false,local:any=null,observer:ResizeObserver|null=null
-    void Promise.all([loadSdk(),loadProxiedStyle(key)]).then(([sdk,proxiedStyle])=>{if(dead||!host.current||map.current)return
+    void loadSdk().then(sdk=>{if(dead||!host.current||map.current)return
       const first=trustedCustomersRef.current[0],initialPos=trustedPosRef.current
-      local=new sdk.Map({container:host.current,style:proxiedStyle,center:initialPos?[initialPos.longitude,initialPos.latitude]:first?[Number(first.longitude),Number(first.latitude)]:[51.4,35.7],zoom:initialPos?13:10,apiKey:key,rtl:{lazy:false}})
+      local=new sdk.Map({container:host.current,style:STYLE,center:initialPos?[initialPos.longitude,initialPos.latitude]:first?[Number(first.longitude),Number(first.latitude)]:[51.4,35.7],zoom:initialPos?13:10,apiKey:key,rtl:{lazy:false}})
       sdkRef.current=sdk;map.current=local;local.addControl(new sdk.NavigationControl())
       observer=new ResizeObserver(()=>{if(!dead)window.requestAnimationFrame(()=>local?.resize?.())});observer.observe(host.current)
       local.on('error',(event:any)=>{if(dead)return;const message=String(event?.error?.message||'Neshan map rendering failed');if(!/tile request failed/i.test(message))needsRecoveryRef.current=true;console.warn('[Neshan map]',message)})
@@ -129,7 +129,12 @@ export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,
 
   useEffect(()=>{if(mapReady)draw(map.current,poly)},[poly,mapReady])
   useEffect(()=>{if(!routeId||!trustedPos||!selected){setLeg('');return}let off=false;void getRouteMapLeg(routeId,String(selected.id),trustedPos).then(r=>{if(!off)setLeg(r.polyline||'')}).catch(e=>{if(!off)onNotice(e instanceof Error?e.message:'Live route unavailable')});return()=>{off=true}},[routeId,trustedPos,selected,onNotice])
-  useEffect(()=>{if(!recenterNonce)return;let off=false;void geo().then(p=>{if(off)return;if(!p){onNotice('دسترسی GPS برقرار نیست یا موقعیت دریافت نشد.');return}setPos(p);if(!plan||gpsMatchesPlan(p,plan)){map.current?.flyTo({center:[p.longitude,p.latitude],zoom:14,duration:650,essential:true})}else{onNotice('موقعیت GPS با محدوده مسیر همخوان نیست و نادیده گرفته شد.')}});return()=>{off=true}},[recenterNonce,onNotice])
+  useEffect(()=>{if(!recenterNonce)return;let off=false;void geo().then(p=>{if(off)return;if(!p){onNotice('ط¯ط³طھط±ط³غŒ GPS ط¨ط±ظ‚ط±ط§ط± ظ†غŒط³طھ غŒط§ ظ…ظˆظ‚ط¹غŒطھ ط¯ط±غŒط§ظپطھ ظ†ط´ط¯.');return}setPos(p);if(!plan||gpsMatchesPlan(p,plan)){map.current?.flyTo({center:[p.longitude,p.latitude],zoom:14,duration:650,essential:true})}else{onNotice('ظ…ظˆظ‚ط¹غŒطھ GPS ط¨ط§ ظ…ط­ط¯ظˆط¯ظ‡ ظ…ط³غŒط± ظ‡ظ…ط®ظˆط§ظ† ظ†غŒط³طھ ظˆ ظ†ط§ط¯غŒط¯ظ‡ ع¯ط±ظپطھظ‡ ط´ط¯.')}});return()=>{off=true}},[recenterNonce,onNotice])
 
-  return <div className="vr-map-live-shell"><div ref={host} className="vr-map-live" aria-label="نقشه زنده مسیر فروش"/>{!plan&&!error?<span className="vr-map-live-state">در حال بارگذاری نقشه…</span>:null}{error?<button type="button" className="vr-map-live-state error" onClick={()=>onNotice(error)}>نقشه در دسترس نیست</button>:null}</div>
+  return <div className="vr-map-live-shell"><div ref={host} className="vr-map-live" aria-label="ظ†ظ‚ط´ظ‡ ط²ظ†ط¯ظ‡ ظ…ط³غŒط± ظپط±ظˆط´"/>{!plan&&!error?<span className="vr-map-live-state">ط¯ط± ط­ط§ظ„ ط¨ط§ط±ع¯ط°ط§ط±غŒ ظ†ظ‚ط´ظ‡â€¦</span>:null}{error?<button type="button" className="vr-map-live-state error" onClick={()=>onNotice(error)}>ظ†ظ‚ط´ظ‡ ط¯ط± ط¯ط³طھط±ط³ ظ†غŒط³طھ</button>:null}</div>
 }
+
+
+
+
+
