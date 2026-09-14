@@ -9,6 +9,28 @@ const JS='https://static.neshan.org/sdk/maplibre/5.24.3/neshan-maplibre-sdk.umd.
 const STYLE='https://static.neshan.org/sdk/maplibre/styles/light.json'
 
 function fromWindow(){const v=(window as unknown as{maplibregl?:ML&{default?:ML}}).maplibregl;return v?.default??v??null}
+let proxiedStylePromise:Promise<any>|null=null
+let proxiedStyleKey=''
+function loadProxiedStyle(key:string){
+  if(proxiedStylePromise&&proxiedStyleKey===key)return proxiedStylePromise
+  proxiedStyleKey=key
+  proxiedStylePromise=fetch(STYLE,{cache:'force-cache'}).then(async response=>{
+    if(!response.ok)throw new Error('Neshan map style unavailable')
+    const style=await response.json() as {sources?:Record<string,{tiles?:string[]}>}
+    const prefix='nsh://api.neshan.org/'
+    Object.values(style.sources??{}).forEach(source=>{
+      if(!Array.isArray(source.tiles))return
+      source.tiles=source.tiles.map(url=>{
+        if(!url.startsWith(prefix))return url
+        const rest=url.slice(prefix.length)
+        const sep=rest.includes('?')?'&':'?'
+        return '/neshan-basemap/'+rest+sep+'key='+encodeURIComponent(key)
+      })
+    })
+    return style
+  }).catch(error=>{proxiedStylePromise=null;proxiedStyleKey='';throw error})
+  return proxiedStylePromise
+}
 async function loadSdk():Promise<ML>{
   const old=fromWindow();if(old)return old
   if(!document.querySelector(`link[href="${CSS}"]`)){const l=document.createElement('link');l.rel='stylesheet';l.href=CSS;document.head.appendChild(l)}
@@ -63,9 +85,9 @@ export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,
   },[routeId,mode,trustedPos])
 
   useEffect(()=>{if(!plan||!key||!host.current)return;let dead=false,local:any=null,observer:ResizeObserver|null=null
-    void loadSdk().then(sdk=>{if(dead||!host.current)return
+    void Promise.all([loadSdk(),loadProxiedStyle(key)]).then(([sdk,proxiedStyle])=>{if(dead||!host.current)return
       const first=trustedCustomers[0]
-      local=new sdk.Map({container:host.current,style:STYLE,center:trustedPos?[trustedPos.longitude,trustedPos.latitude]:first?[Number(first.longitude),Number(first.latitude)]:[51.4,35.7],zoom:trustedPos?13:10,apiKey:key,rtl:{lazy:false}})
+      local=new sdk.Map({container:host.current,style:proxiedStyle,center:trustedPos?[trustedPos.longitude,trustedPos.latitude]:first?[Number(first.longitude),Number(first.latitude)]:[51.4,35.7],zoom:trustedPos?13:10,apiKey:key,rtl:{lazy:false}})
       map.current=local;local.addControl(new sdk.NavigationControl())
       observer=new ResizeObserver(()=>{if(!dead)window.requestAnimationFrame(()=>local?.resize?.())});observer.observe(host.current)
       local.on('error',(event:any)=>{if(dead)return;const message=String(event?.error?.message||'Neshan map rendering failed');console.warn('[Neshan map]',message)})
