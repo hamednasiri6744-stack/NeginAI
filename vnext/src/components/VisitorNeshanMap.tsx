@@ -41,6 +41,8 @@ function draw(map:any,encoded:string){
 
 export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,onSelectCustomer,onPrimaryCustomer,onNotice}:Props){
   const host=useRef<HTMLDivElement|null>(null),map=useRef<any>(null),markers=useRef<any[]>([])
+  const selectedIdRef=useRef(selectedCustomerId),selectCustomerRef=useRef(onSelectCustomer),primaryCustomerRef=useRef(onPrimaryCustomer)
+  selectedIdRef.current=selectedCustomerId;selectCustomerRef.current=onSelectCustomer;primaryCustomerRef.current=onPrimaryCustomer
   const [plan,setPlan]=useState<NeshanRouteMapPlanResponse|null>(null),[key,setKey]=useState(''),[pos,setPos]=useState<Pos|null>(null),[leg,setLeg]=useState(''),[error,setError]=useState('')
   const trustedCustomers=useMemo(()=>plan?routeCluster(plan):[],[plan])
   const trustedPos=useMemo(()=>pos&&plan&&String(plan.route.id)===String(routeId)&&gpsMatchesPlan(pos,plan)?pos:null,[pos,plan,routeId])
@@ -56,9 +58,9 @@ export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,
 
   useEffect(()=>{if(!routeId)return;let off=false;setError('');setLeg('')
     void Promise.all([getNeshanMapConfig(),getRouteMapPlan(routeId,mode==='sales'?'sales_priority':'shortest',trustedPos)])
-      .then(([c,p])=>{if(!off){setKey(c.api_key ?? '');setPlan(p);const first=routeCluster(p)[0];if(first)onPrimaryCustomer(String(first.id))}}).catch(e=>{if(!off)setError(e instanceof Error?e.message:'Neshan map unavailable')})
+      .then(([c,p])=>{if(!off){setKey(c.api_key ?? '');setPlan(p);const first=routeCluster(p)[0];if(first)primaryCustomerRef.current(String(first.id))}}).catch(e=>{if(!off)setError(e instanceof Error?e.message:'Neshan map unavailable')})
     return()=>{off=true}
-  },[routeId,mode,trustedPos,onPrimaryCustomer])
+  },[routeId,mode,trustedPos])
 
   useEffect(()=>{if(!plan||!key||!host.current)return;let dead=false,local:any=null,observer:ResizeObserver|null=null
     void loadSdk().then(sdk=>{if(dead||!host.current)return
@@ -69,14 +71,14 @@ export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,
       local.on('error',(event:any)=>{if(dead)return;const message=event?.error?.message||'Neshan map rendering failed';setError(String(message))})
       local.on('load',()=>{if(dead)return;setError('');window.requestAnimationFrame(()=>local?.resize?.());markers.current.forEach(m=>m.remove());markers.current=[]
         const pts:Array<[number,number]>=[]
-        trustedCustomers.forEach((c,n)=>{const el=document.createElement('button');el.type='button';el.className='vr-map-live-marker'+(String(c.id)===selectedCustomerId?' selected':'');el.textContent=String(n+1);el.setAttribute('aria-label',String(c.name||('Customer '+(n+1))));el.setAttribute('aria-pressed',String(String(c.id)===selectedCustomerId));el.onclick=()=>onSelectCustomer(String(c.id));const xy:[number,number]=[Number(c.longitude),Number(c.latitude)];markers.current.push(new sdk.Marker({element:el}).setLngLat(xy).addTo(local));pts.push(xy)})
+        trustedCustomers.forEach((c,n)=>{const el=document.createElement('button');el.type='button';el.className='vr-map-live-marker'+(String(c.id)===selectedIdRef.current?' selected':'');el.textContent=String(n+1);el.setAttribute('aria-label',String(c.name||('Customer '+(n+1))));el.setAttribute('aria-pressed',String(String(c.id)===selectedIdRef.current));el.dataset.customerId=String(c.id);el.onclick=()=>selectCustomerRef.current(String(c.id));const xy:[number,number]=[Number(c.longitude),Number(c.latitude)];markers.current.push(new sdk.Marker({element:el}).setLngLat(xy).addTo(local));pts.push(xy)})
         if(trustedPos){const el=document.createElement('span');el.className='vr-map-live-seller';markers.current.push(new sdk.Marker({element:el}).setLngLat([trustedPos.longitude,trustedPos.latitude]).addTo(local));pts.push([trustedPos.longitude,trustedPos.latitude])}
-        const focus=trustedCustomers.find(c=>String(c.id)===selectedCustomerId)??first; if(trustedPos&&focus){local.fitBounds([[trustedPos.longitude,trustedPos.latitude],[Number(focus.longitude),Number(focus.latitude)]],{padding:48,maxZoom:15.5,duration:0})}else if(focus){local.jumpTo({center:[Number(focus.longitude),Number(focus.latitude)],zoom:15})}
+        const focus=trustedCustomers.find(c=>String(c.id)===selectedIdRef.current)??first; if(trustedPos&&focus&&distanceKm(trustedPos,{latitude:Number(focus.latitude),longitude:Number(focus.longitude)})<=80){local.fitBounds([[trustedPos.longitude,trustedPos.latitude],[Number(focus.longitude),Number(focus.latitude)]],{padding:48,maxZoom:15.5,duration:0})}else if(focus){local.jumpTo({center:[Number(focus.longitude),Number(focus.latitude)],zoom:15})}
         draw(local,poly)
       })
     }).catch(e=>setError(e instanceof Error?e.message:'Neshan SDK unavailable'))
     return()=>{dead=true;observer?.disconnect();markers.current.forEach(m=>m.remove());markers.current=[];local?.remove();if(map.current===local)map.current=null}
-  },[key,plan,trustedCustomers,trustedPos,selectedCustomerId,onSelectCustomer])
+  },[key,plan,trustedPos])
 
   useEffect(()=>{draw(map.current,poly)},[poly])
   useEffect(()=>{if(!routeId||!trustedPos||!selected){setLeg('');return}let off=false;void getRouteMapLeg(routeId,String(selected.id),trustedPos).then(r=>{if(!off)setLeg(r.polyline||'')}).catch(e=>{if(!off)onNotice(e instanceof Error?e.message:'Live route unavailable')});return()=>{off=true}},[routeId,trustedPos,selected,onNotice])
