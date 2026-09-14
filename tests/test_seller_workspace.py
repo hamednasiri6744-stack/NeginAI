@@ -480,6 +480,44 @@ def test_temporary_override_allows_only_assigned_routes_for_configured_seller(se
         )
 
 
+def test_route_destination_lookup_is_light_and_preserves_saved_location(settings, monkeypatch):
+    from app.database import sqlite_connection
+    from app.seller_workspace_service import _seller_route_destination_location
+
+    route_id = "11111111-1111-1111-1111-111111111111"
+    captured_sql: list[str] = []
+    monkeypatch.setattr(
+        "app.seller_workspace_service._seller_profile",
+        lambda *_args: {"personnel_id": 22, "supervisor_personnel_id": 1},
+    )
+
+    def fake_query_rows(_settings, sql):
+        captured_sql.append(sql)
+        return [{"BackOfficeId": "2647417", "Latitude": 35.70, "Longitude": 51.40}]
+
+    monkeypatch.setattr("app.seller_workspace_service._query_rows", fake_query_rows)
+    monkeypatch.setattr(
+        "app.seller_workspace_service.seller_route_customers",
+        lambda *_args: (_ for _ in ()).throw(AssertionError("heavy route query must not run")),
+    )
+    with sqlite_connection(settings.sqlite_path) as connection:
+        connection.execute(
+            "INSERT INTO customer_geo_locations (customer_id, latitude, longitude, source, updated_by, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+            ("2647417", 35.721, 51.421, "salesperson_pinned", "A.kamran", "2026-09-14T00:00:00+00:00"),
+        )
+        connection.commit()
+
+    latitude, longitude = _seller_route_destination_location(
+        settings, "A.kamran", route_id, "2647417"
+    )
+
+    assert (latitude, longitude) == (35.721, 51.421)
+    assert len(captured_sql) == 1
+    assert "Acc.tblCustRemInfo" not in captured_sql[0]
+    assert "Acc.vwRcvSaleReview" not in captured_sql[0]
+    assert "customer.BackOfficeId" in captured_sql[0]
+
+
 def test_sales_priority_route_keeps_high_and_medium_probability_customers_first(settings, monkeypatch):
     from app.seller_workspace_service import seller_route_map_plan
 

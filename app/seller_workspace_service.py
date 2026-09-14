@@ -1168,16 +1168,72 @@ def _optimize_route_group(settings: Any, origin: dict[str, Any] | None, customer
     return ordered or customers
 
 
+def _seller_route_destination_location(
+    settings: Any, username: str, path_id: str, destination_id: str
+) -> tuple[float, float]:
+    """Resolve one assigned route destination without financial enrichment."""
+    profile = _seller_profile(settings, username)
+    personnel_id = int(profile["personnel_id"])
+    try:
+        clean_path_id = str(UUID(str(path_id)))
+    except (ValueError, TypeError, AttributeError) as exc:
+        raise SellerRouteNotFound("Current seller route was not found") from exc
+    clean_destination_id = _sql_text(destination_id)
+    destination_sql = f"""
+SELECT TOP 1 customer.BackOfficeId, customer.Latitude, customer.Longitude
+FROM NGT.Personnels AS personnel
+INNER JOIN NGT.VisitTemplates AS template ON template.Id = personnel.VisitTemplateUniqueId
+INNER JOIN NGT.VisitTemplatePaths AS path ON path.VisitTemplateUniqueId = template.Id
+INNER JOIN (
+  SELECT VisitTemplatePathUniqueId, CustomerUniqueId
+  FROM NGT.VisitTemplatePathCustomers
+  WHERE ISNULL(IsRemoved, 0) = 0
+  UNION
+  SELECT VisitTemplatePathUniqueId, CustomerUniqueId
+  FROM NGT.VisitTemplatePathSecondaryCustomers
+  WHERE ISNULL(IsRemoved, 0) = 0
+) AS assigned ON assigned.VisitTemplatePathUniqueId = path.Id
+INNER JOIN NGT.Customers AS customer ON customer.Id = assigned.CustomerUniqueId
+WHERE personnel.BackOfficeId = N'{personnel_id}'
+  AND path.Id = CAST(N'{clean_path_id}' AS uniqueidentifier)
+  AND CONVERT(nvarchar(100), customer.BackOfficeId) = N'{clean_destination_id}'
+  AND ISNULL(personnel.IsRemoved, 0) = 0
+  AND ISNULL(personnel.PersonnelIsActive, 1) = 1
+  AND ISNULL(template.IsRemoved, 0) = 0
+  AND ISNULL(path.IsRemoved, 0) = 0
+  AND ISNULL(customer.IsRemoved, 0) = 0
+  AND ISNULL(customer.IsActive, 1) = 1
+""".strip()
+    rows = _query_rows(settings, destination_sql)
+    if not rows:
+        raise SellerRouteNotFound("Current seller route destination was not found")
+    row = rows[0]
+    customer_id = str(row.get("BackOfficeId") or destination_id)
+    with sqlite_connection(settings.sqlite_path) as connection:
+        saved = connection.execute(
+            "SELECT latitude, longitude FROM customer_geo_locations WHERE customer_id = ?",
+            (customer_id,),
+        ).fetchone()
+    saved_latitude = _coordinate(saved["latitude"]) if saved is not None else None
+    saved_longitude = _coordinate(saved["longitude"]) if saved is not None else None
+    latitude = saved_latitude or _coordinate(row.get("Latitude"))
+    longitude = saved_longitude or _coordinate(row.get("Longitude"))
+    if latitude is None or longitude is None:
+        raise SellerRouteNotFound("Current seller route destination was not found")
+    return latitude, longitude
+
+
 def seller_route_map_leg(
     settings: Any, username: str, path_id: str, destination_id: str, origin_latitude: float, origin_longitude: float
 ) -> dict[str, Any]:
     if not settings.neshan_service_api_key:
         raise SellerWorkspaceError("Neshan route service is not configured")
-    route = seller_route_customers(settings, username, path_id)
-    destination = next((item for item in route["customers"] if str(item["id"]) == str(destination_id)), None)
-    if not destination or destination["latitude"] is None or destination["longitude"] is None:
-        raise SellerRouteNotFound("Current seller route destination was not found")
-    return _neshan_direction(settings, origin_latitude, origin_longitude, destination["latitude"], destination["longitude"])
+    destination_latitude, destination_longitude = _seller_route_destination_location(
+        settings, username, path_id, destination_id
+    )
+    return _neshan_direction(
+        settings, origin_latitude, origin_longitude, destination_latitude, destination_longitude
+    )
 
 
 def seller_route_day_analytics(settings: Any, username: str, path_id: str) -> dict[str, Any]:
