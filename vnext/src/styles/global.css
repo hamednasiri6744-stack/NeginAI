@@ -1668,3 +1668,22 @@ button:focus-visible,a:focus-visible { outline:2px solid rgba(240,193,82,.72); o
   .vr-map-live-state{bottom:12px;left:58px;right:58px}
 }
 @media (prefers-reduced-motion:reduce){.vr-map-live-marker.selected::before{animation:none}.vr-map-quick-actions button{transition:none}}
+
+/* === Route Map Fullscreen Customer Drawer v5 === */
+.vr-map-fullscreen-customers{display:none}
+.vr-map-live-shell:fullscreen .vr-map-fullscreen-customers,.vr-map-live-shell.is-fullscreen .vr-map-fullscreen-customers{display:block;position:absolute;inset:0;z-index:26;pointer-events:none}
+.vr-map-fullscreen-customers>summary{position:absolute;top:max(18px,env(safe-area-inset-top));right:18px;z-index:29;width:46px;height:46px;display:flex;align-items:center;justify-content:center;gap:3px;list-style:none;pointer-events:auto;cursor:pointer;border:1px solid rgba(139,190,220,.2);border-radius:14px;background:rgba(3,17,29,.91);box-shadow:0 12px 30px rgba(0,0,0,.34),inset 0 1px rgba(255,255,255,.05);backdrop-filter:blur(14px);color:#d8e8f1}
+.vr-map-fullscreen-customers>summary::-webkit-details-marker{display:none}
+.vr-map-fullscreen-customers>summary span{font-size:18px;line-height:1}.vr-map-fullscreen-customers>summary b{min-width:14px;height:14px;display:grid;place-items:center;border-radius:99px;background:#e9b850;color:#151007;font:800 9px/1 Inter,Arial;position:absolute;right:-3px;top:-3px}
+.vr-map-fullscreen-customers-panel{position:absolute;top:max(74px,calc(env(safe-area-inset-top) + 62px));right:18px;width:min(360px,calc(100% - 36px));max-height:min(72dvh,620px);display:grid;grid-template-rows:auto minmax(0,1fr);pointer-events:auto;border:1px solid rgba(143,188,216,.17);border-radius:20px;background:linear-gradient(155deg,rgba(5,24,39,.98),rgba(3,14,24,.97));box-shadow:0 24px 60px rgba(0,0,0,.48),inset 0 1px rgba(255,255,255,.05);backdrop-filter:blur(18px);overflow:hidden;transform:translateX(20px);opacity:0;visibility:hidden;transition:transform .22s ease,opacity .18s ease}
+.vr-map-fullscreen-customers[open]>.vr-map-fullscreen-customers-panel{transform:translateX(0);opacity:1;visibility:visible}
+.vr-map-fullscreen-customers-head{min-height:58px;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(148,185,211,.1)}
+.vr-map-fullscreen-customers-head strong{color:#edf4f8;font-size:13px}.vr-map-fullscreen-customers-head span{color:#7f94a6;font-size:10.5px}
+.vr-map-fullscreen-customers-list{overflow:auto;padding:6px}
+.vr-map-fullscreen-customers-list button{width:100%;min-height:58px;display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:9px;align-items:center;border:0;border-bottom:1px solid rgba(145,181,207,.07);border-radius:11px;background:transparent;color:#c8d5de;text-align:right;padding:7px 8px}
+.vr-map-fullscreen-customers-list button:last-child{border-bottom:0}.vr-map-fullscreen-customers-list button.selected{background:linear-gradient(90deg,rgba(72,198,255,.03),rgba(72,198,255,.11));box-shadow:inset 0 0 0 1px rgba(72,198,255,.12)}
+.vr-map-fullscreen-customers-list i{width:28px;height:28px;display:grid;place-items:center;border-radius:9px;background:rgba(255,255,255,.035);color:#8fa3b3;font:800 11px/1 Inter,Arial;font-style:normal}.vr-map-fullscreen-customers-list button.selected i{color:#06141d;background:#5bd0ff}
+.vr-map-fullscreen-customers-list button>span{min-width:0;display:grid;gap:3px}.vr-map-fullscreen-customers-list strong,.vr-map-fullscreen-customers-list small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.vr-map-fullscreen-customers-list strong{color:#e7eef3;font-size:12px}.vr-map-fullscreen-customers-list small{color:#71889a;font-size:10px}.vr-map-fullscreen-customers-list em{color:#e8bd57;font:800 10px/1 Inter,Arial;font-style:normal}
+.vr-map-live-marker{transition:filter .18s ease,opacity .18s ease}.vr-map-live-marker:hover{filter:brightness(1.08)}
+@media(max-width:719px){.vr-map-live-shell:fullscreen .vr-map-fullscreen-customers-panel,.vr-map-live-shell.is-fullscreen .vr-map-fullscreen-customers-panel{right:12px;width:calc(100% - 24px);max-height:68dvh}.vr-map-live-shell:fullscreen .vr-map-fullscreen-customers>summary,.vr-map-live-shell.is-fullscreen .vr-map-fullscreen-customers>summary{right:12px}}
+@media(prefers-reduced-motion:reduce){.vr-map-fullscreen-customers-panel,.vr-map-live-marker{transition:none}}

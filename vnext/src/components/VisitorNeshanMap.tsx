@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { getNeshanMapConfig, getRouteMapLeg, getRouteMapPlan, type NeshanRouteMapPlanResponse } from '../api/neginApi'
 
 type Props={routeId:string|null;mode:'sales'|'shortest';selectedCustomerId:string;recenterNonce:number;onSelectCustomer:(id:string)=>void;onPrimaryCustomer:(id:string)=>void;onNotice:(m:string)=>void;onOrderChange:(ids:string[])=>void}
-type Pos={latitude:number;longitude:number}
+type Pos={latitude:number;longitude:number;accuracy?:number;heading?:number|null}
 type ML={Map:new(o:Record<string,unknown>)=>any;Marker:new(o?:Record<string,unknown>)=>any;NavigationControl:new()=>unknown}
 const CSS='https://static.neshan.org/sdk/maplibre/5.24.3/neshan-maplibre-sdk.css'
 const JS='https://static.neshan.org/sdk/maplibre/5.24.3/neshan-maplibre-sdk.umd.js'
@@ -43,7 +43,7 @@ async function loadSdk():Promise<ML>{
 }
 function geo():Promise<Pos|null>{
   if(!navigator.geolocation)return Promise.resolve(null)
-  return new Promise(r=>navigator.geolocation.getCurrentPosition(p=>r({latitude:p.coords.latitude,longitude:p.coords.longitude}),()=>r(null),{enableHighAccuracy:true,maximumAge:15000,timeout:15000}))
+  return new Promise(r=>navigator.geolocation.getCurrentPosition(p=>r({latitude:p.coords.latitude,longitude:p.coords.longitude,accuracy:p.coords.accuracy,heading:p.coords.heading}),()=>r(null),{enableHighAccuracy:true,maximumAge:15000,timeout:15000}))
 }
 function decode(s:string){const out:Array<[number,number]>=[];let i=0,lat=0,lng=0;while(i<s.length){let sh=0,r=0,b=0;do{b=s.charCodeAt(i++)-63;r|=(b&31)<<sh;sh+=5}while(b>=32);lat+=r&1?~(r>>1):r>>1;sh=0;r=0;do{b=s.charCodeAt(i++)-63;r|=(b&31)<<sh;sh+=5}while(b>=32);lng+=r&1?~(r>>1):r>>1;out.push([lng/1e5,lat/1e5])}return out}
 const ROUTE_CLUSTER_RADIUS_KM=200
@@ -54,20 +54,23 @@ function gpsMatchesPlan(p:Pos,plan:NeshanRouteMapPlanResponse){return routeClust
 
 function draw(map:any,encoded:string){
   if(!map?.isStyleLoaded())return
-  if(map.getLayer('v017-route'))map.removeLayer('v017-route')
-  if(map.getLayer('v017-route-casing'))map.removeLayer('v017-route-casing')
+  for(const id of ['v017-route-highlight','v017-route','v017-route-casing','v017-route-glow'])if(map.getLayer(id))map.removeLayer(id)
   if(map.getSource('v017-route'))map.removeSource('v017-route')
   const c=decode(encoded);if(c.length<2)return
   map.addSource('v017-route',{type:'geojson',data:{type:'Feature',properties:{},geometry:{type:'LineString',coordinates:c}}})
-  map.addLayer({id:'v017-route-casing',type:'line',source:'v017-route',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#07111d','line-width':9,'line-opacity':.72}})
-  map.addLayer({id:'v017-route',type:'line',source:'v017-route',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#f0bf55','line-width':5.5,'line-opacity':.96,'line-blur':.25}})
+  const layout={'line-cap':'round','line-join':'round'}
+  map.addLayer({id:'v017-route-glow',type:'line',source:'v017-route',layout,paint:{'line-color':'#48c6ff','line-width':8.5,'line-opacity':.18,'line-blur':1.8}})
+  map.addLayer({id:'v017-route-casing',type:'line',source:'v017-route',layout,paint:{'line-color':'#071827','line-width':6.2,'line-opacity':.88}})
+  map.addLayer({id:'v017-route',type:'line',source:'v017-route',layout,paint:{'line-color':'#46c8ff','line-width':4,'line-opacity':.98}})
+  map.addLayer({id:'v017-route-highlight',type:'line',source:'v017-route',layout,paint:{'line-color':'#e5f8ff','line-width':1.1,'line-opacity':.72}})
 }
+function focusPolyline(map:any,encoded:string){const c=decode(encoded);if(!map||c.length<2)return;const lngs=c.map(([lng])=>lng),lats=c.map(([,lat])=>lat);map.fitBounds([[Math.min(...lngs),Math.min(...lats)],[Math.max(...lngs),Math.max(...lats)]],{padding:{top:86,right:52,bottom:126,left:52},maxZoom:16,duration:700,essential:true})}
 
 export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,onSelectCustomer,onPrimaryCustomer,onNotice,onOrderChange}:Props){
   const shell=useRef<HTMLDivElement|null>(null),host=useRef<HTMLDivElement|null>(null),map=useRef<any>(null),markers=useRef<any[]>([]),sdkRef=useRef<ML|null>(null)
   const selectedIdRef=useRef(selectedCustomerId),selectCustomerRef=useRef(onSelectCustomer),primaryCustomerRef=useRef(onPrimaryCustomer),orderChangeRef=useRef(onOrderChange)
   const trustedCustomersRef=useRef<NeshanRouteMapPlanResponse['ordered_customers']>([]),trustedPosRef=useRef<Pos|null>(null),polyRef=useRef('')
-  const keyRef=useRef(''),focusTokenRef=useRef(''),needsRecoveryRef=useRef(false),retryAttemptRef=useRef(0),retryTimerRef=useRef<number|null>(null)
+  const keyRef=useRef(''),focusTokenRef=useRef(''),routeRequestRef=useRef(null as any),routeFocusKeyRef=useRef(''),needsRecoveryRef=useRef(false),retryAttemptRef=useRef(0),retryTimerRef=useRef(null as any)
   selectedIdRef.current=selectedCustomerId;selectCustomerRef.current=onSelectCustomer;primaryCustomerRef.current=onPrimaryCustomer;orderChangeRef.current=onOrderChange
   const [plan,setPlan]=useState<NeshanRouteMapPlanResponse|null>(null),[key,setKey]=useState(''),[pos,setPos]=useState<Pos|null>(null),[leg,setLeg]=useState(''),[error,setError]=useState(''),[mapReady,setMapReady]=useState(false),[initNonce,setInitNonce]=useState(0),[fullscreen,setFullscreen]=useState(false)
   const trustedCustomers=useMemo(()=>plan?routeCluster(plan):[],[plan])
@@ -86,6 +89,11 @@ export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,
     void navigator.permissions.query({name:'geolocation'}).then(status=>{if(off||status.state!=='granted')return;return geo().then(p=>{if(!off&&p)setPos(p)})}).catch(()=>undefined)
     return()=>{off=true}
   },[routeId,pos])
+
+  useEffect(()=>{if(!routeId||!navigator.geolocation)return;let dead=false
+    const watchId=navigator.geolocation.watchPosition(position=>{if(dead)return;const next:Pos={latitude:position.coords.latitude,longitude:position.coords.longitude,accuracy:position.coords.accuracy,heading:position.coords.heading};setPos(current=>!current||distanceKm(current,next)*1000>=5?next:current)},()=>undefined,{enableHighAccuracy:true,maximumAge:5000,timeout:20000})
+    return()=>{dead=true;navigator.geolocation.clearWatch(watchId)}
+  },[routeId])
 
   useEffect(()=>{const onFullscreen=()=>{setFullscreen(document.fullscreenElement===shell.current);window.setTimeout(()=>map.current?.resize?.(),80)};document.addEventListener('fullscreenchange',onFullscreen);return()=>document.removeEventListener('fullscreenchange',onFullscreen)},[])
 
@@ -135,7 +143,7 @@ export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,
   },[])
 
   useEffect(()=>{if(mapReady)draw(map.current,poly)},[poly,mapReady])
-  useEffect(()=>{if(!routeId||!trustedPos||!selected){setLeg('');return}let off=false;void getRouteMapLeg(routeId,String(selected.id),trustedPos).then(r=>{if(!off)setLeg(r.polyline||'')}).catch(e=>{if(!off)onNotice(e instanceof Error?e.message:'Live route unavailable')});return()=>{off=true}},[routeId,trustedPos,selected,onNotice])
+  useEffect(()=>{if(!routeId||!trustedPos||!selected){setLeg('');routeRequestRef.current=null;return}const key=`${routeId}:${selected.id}`,previous=routeRequestRef.current,moved=previous?distanceKm(previous.position,trustedPos)*1000:Infinity,elapsed=previous?Date.now()-previous.at:Infinity;if(previous?.key===key&&moved<35&&elapsed<20000)return;let off=false;const shouldFocus=routeFocusKeyRef.current!==key;routeRequestRef.current={key,position:trustedPos,at:Date.now()};void getRouteMapLeg(routeId,String(selected.id),trustedPos).then(r=>{if(off)return;const next=r.polyline||'';setLeg(next);if(next&&shouldFocus){routeFocusKeyRef.current=key;window.setTimeout(()=>focusPolyline(map.current,next),0)}}).catch(e=>{if(!off)onNotice(e instanceof Error?e.message:'Live route unavailable')});return()=>{off=true}},[routeId,trustedPos,selected,onNotice])
   useEffect(()=>{if(!recenterNonce)return;let off=false;void geo().then(p=>{if(off)return;if(!p){onNotice('\u062f\u0633\u062a\u0631\u0633\u06cc GPS \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06cc\u0633\u062a \u06cc\u0627 \u0645\u0648\u0642\u0639\u06cc\u062a \u062f\u0631\u06cc\u0627\u0641\u062a \u0646\u0634\u062f.');return}setPos(p);if(!plan||gpsMatchesPlan(p,plan)){map.current?.flyTo({center:[p.longitude,p.latitude],zoom:14,duration:650,essential:true})}else{onNotice('\u0645\u0648\u0642\u0639\u06cc\u062a GPS \u0628\u0627 \u0645\u062d\u062f\u0648\u062f\u0647 \u0645\u0633\u06cc\u0631 \u0627\u0646\u062a\u062e\u0627\u0628\u200c\u0634\u062f\u0647 \u0647\u0645\u062e\u0648\u0627\u0646 \u0646\u06cc\u0633\u062a \u0648 \u0646\u0627\u062f\u06cc\u062f\u0647 \u06af\u0631\u0641\u062a\u0647 \u0634\u062f.')}});return()=>{off=true}},[recenterNonce,onNotice,plan])
 
   function fitRouteView(){const points=(plan?.ordered_customers??[]).filter(c=>c.latitude!=null&&c.longitude!=null);if(!points.length||!map.current)return;const lngs=points.map(c=>Number(c.longitude)),lats=points.map(c=>Number(c.latitude));map.current.fitBounds([[Math.min(...lngs),Math.min(...lats)],[Math.max(...lngs),Math.max(...lats)]],{padding:{top:96,right:52,bottom:128,left:52},maxZoom:15,duration:650})}
@@ -152,6 +160,13 @@ export function VisitorNeshanMap({routeId,mode,selectedCustomerId,recenterNonce,
       </div>
     </details>
     <div className="vr-map-quick-actions" aria-label={'\u06a9\u0646\u062a\u0631\u0644\u200c\u0647\u0627\u06cc \u0633\u0631\u06cc\u0639 \u0646\u0642\u0634\u0647'}><button type="button" onClick={centerOnMe} aria-label={'\u0645\u0631\u06a9\u0632 \u0631\u0648\u06cc \u0645\u0646'}><b>{'\u25ce'}</b></button><button type="button" onClick={fitRouteView} aria-label={'\u0646\u0645\u0627\u06cc\u0634 \u06a9\u0644 \u0645\u0633\u06cc\u0631'}><b>{'\u2317'}</b></button><button type="button" onClick={()=>void toggleFullscreen()} aria-label={'\u0646\u0642\u0634\u0647 \u062a\u0645\u0627\u0645 \u0635\u0641\u062d\u0647'}><b>{fullscreen?'\u2715':'\u26f6'}</b></button></div>
+    <details className="vr-map-fullscreen-customers">
+      <summary aria-label={'فهرست مشتریان'}><span aria-hidden="true">{'☷'}</span><b>{locatedCount}</b></summary>
+      <div className="vr-map-fullscreen-customers-panel" dir="rtl">
+        <div className="vr-map-fullscreen-customers-head"><strong>مشتریان مسیر</strong><span>{locatedCount} مشتری</span></div>
+        <div className="vr-map-fullscreen-customers-list">{(plan?.ordered_customers??[]).map((customer,index)=><button type="button" key={String(customer.id)} className={String(customer.id)===selectedCustomerId?'selected':''} onClick={(event)=>{selectCustomerRef.current(String(customer.id));(event.currentTarget.closest('details') as HTMLDetailsElement|null)?.removeAttribute('open')}}><i>{index+1}</i><span><strong>{customer.store_name||customer.name}</strong><small>{customer.address||customer.name}</small></span><em>{customer.priority_tier||'--'}</em></button>)}</div>
+      </div>
+    </details>
     {!plan&&!error?<span className="vr-map-live-state">{'\u062f\u0631 \u062d\u0627\u0644 \u0628\u0627\u0631\u06af\u0630\u0627\u0631\u06cc \u0646\u0642\u0634\u0647\u2026'}</span>:null}{error?<button type="button" className="vr-map-live-state error" onClick={()=>onNotice(error)}>{'\u0646\u0642\u0634\u0647 \u062f\u0631 \u062f\u0633\u062a\u0631\u0633 \u0646\u06cc\u0633\u062a'}</button>:null}
   </div>
 }
