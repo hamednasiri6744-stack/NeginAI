@@ -1647,3 +1647,24 @@ button:focus-visible,a:focus-visible { outline:2px solid rgba(240,193,82,.72); o
 @media (prefers-reduced-motion:reduce){
   .vr-map-mobile-tools::before,.vr-map-mobile-tools>.vr-map-mobile-tools-panel{transition:none}
 }
+/* === Route Map Refined Mobile Controls v4 === */
+.vr-map-live .maplibregl-canvas{filter:saturate(.82) contrast(1.07) brightness(.93) sepia(.035)}
+.vr-map-quick-actions{position:absolute;right:12px;bottom:46px;z-index:20;display:grid;gap:7px;direction:rtl}
+.vr-map-quick-actions button{width:42px;height:42px;display:grid;place-items:center;padding:0;border:1px solid rgba(151,190,217,.18);border-radius:13px;background:rgba(3,17,29,.9);box-shadow:0 10px 26px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.05);backdrop-filter:blur(14px);color:#8edcff}
+.vr-map-quick-actions button:active{transform:scale(.96)}
+.vr-map-quick-actions b{font-size:18px;line-height:1;font-weight:800}
+.vr-map-live-marker{width:38px;height:48px;padding:0 0 10px;border-radius:0;color:#1d1406;font-size:11px;text-shadow:0 1px rgba(255,255,255,.28)}
+.vr-map-live-marker::before{width:30px;height:30px;border-radius:50% 50% 50% 8px;transform:rotate(-45deg);border:2px solid rgba(255,235,170,.9);background:linear-gradient(145deg,#ffe38c,#dca23a 70%,#a8671f);box-shadow:0 4px 14px rgba(99,55,8,.34),0 0 0 2px rgba(255,214,103,.12)}
+.vr-map-live-marker.tier-high::before,.vr-map-live-marker.tier-a::before{background:linear-gradient(145deg,#ffe99b,#e9af3f 66%,#ad6a1d);border-color:#fff0bd}
+.vr-map-live-marker.tier-medium::before,.vr-map-live-marker.tier-b::before{background:linear-gradient(145deg,#bde9ff,#5caee8 68%,#27689e);border-color:#e5f7ff}
+.vr-map-live-marker.tier-low::before,.vr-map-live-marker.tier-c::before{background:linear-gradient(145deg,#d4dde5,#8ea1b2 68%,#526272);border-color:#eef3f7}
+@keyframes vr-selected-customer-pin-pulse{0%,100%{transform:rotate(-45deg) scale(1);box-shadow:0 4px 14px rgba(9,91,132,.28),0 0 0 4px rgba(72,198,255,.15),0 0 16px rgba(72,198,255,.42)}50%{transform:rotate(-45deg) scale(1.14);box-shadow:0 5px 18px rgba(9,91,132,.34),0 0 0 10px rgba(72,198,255,.04),0 0 30px rgba(72,198,255,.74)}}
+.vr-map-live-marker.selected::before{border-color:#c8f4ff;background:linear-gradient(145deg,#d6f8ff,#63d5ff 66%,#1688c7);animation:vr-selected-customer-pin-pulse 1.35s ease-in-out infinite}
+@media (min-width:720px){.vr-map-quick-actions{display:none}}
+@media (max-width:719px){
+  .vr-map-mobile-tools-panel .vr-map-toolbox{display:none!important}
+  .vr-map-canvas .maplibregl-ctrl-top-right{display:none!important}
+  .vr-map-quick-actions{display:grid}
+  .vr-map-live-state{bottom:12px;left:58px;right:58px}
+}
+@media (prefers-reduced-motion:reduce){.vr-map-live-marker.selected::before{animation:none}.vr-map-quick-actions button{transition:none}}
