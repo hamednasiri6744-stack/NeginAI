@@ -1,0 +1,41 @@
+/* Shared compact, keyboard-accessible column manager. No global control overrides. */
+.column-layout-dialog{direction:rtl;width:min(520px,calc(100vw - 24px));max-height:86vh;padding:0;border:1px solid #cbd5d1;border-radius:10px;color:#233832;background:#fff;font:13px Vazirmatn,sans-serif;box-shadow:0 16px 64px #122f2933}
+.column-layout-dialog::backdrop{background:#10282066}
+.column-layout-dialog header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #e0e7e3}
+.column-layout-dialog h2{font-size:15px;margin:0}
+.column-layout-dialog button,.column-layout-dialog input,.column-layout-dialog select{font:inherit;min-height:30px;border:1px solid #b9c9c2;border-radius:5px;background:#fff;color:#233832;padding:4px 8px;box-sizing:border-box}
+.column-layout-dialog button{cursor:pointer}
+.column-layout-dialog button:disabled{opacity:.5;cursor:not-allowed}
+.column-layout-dialog :focus-visible{outline:2px solid #13715b;outline-offset:2px}
+.column-layout-dialog [data-layout-save]{background:#13715b;color:white;border-color:#13715b}
+.layout-controls{padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.layout-controls>label{display:flex;flex-direction:column;gap:4px;min-width:0}
+.layout-controls select,.layout-controls input:not([type=checkbox]){width:100%}
+.layout-controls .layout-default{grid-column:1/-1;flex-direction:row;align-items:center}
+.column-layout-dialog input[type=checkbox]{min-height:16px;width:16px;height:16px;accent-color:#13715b;flex:none}
+.layout-actions{grid-column:1/-1;display:flex;gap:8px}
+.layout-controls small{grid-column:1/-1;line-height:1.8;color:#63736e}
+.layout-help{margin:0;padding:8px 14px;background:#eff5f2;font-size:12px;line-height:1.8}
+.layout-columns{max-height:40vh;overflow:auto;padding:4px 14px 12px}
+.layout-column-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(140px,45%);gap:10px;align-items:center;min-height:40px;border-bottom:1px solid #edf1ef}
+.layout-column-row label{display:flex;align-items:center;gap:6px;overflow-wrap:anywhere}
+.layout-column-row select{width:100%;text-overflow:ellipsis}
+.column-dragging{opacity:.45}
+.table-wrap table thead tr:first-child th[data-column-draggable=true]{position:relative;inset-inline-start:auto;padding-inline-end:14px}
+.column-resize-handle{position:absolute;inset-inline-end:0;top:0;bottom:0;width:12px;z-index:4;cursor:col-resize;touch-action:none;user-select:none}
+.column-resize-handle::after{content:'↔';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:12px sans-serif;color:#126d50;opacity:.4;border-inline-end:1px solid #b9c9c2}
+.column-resize-handle:hover::after,.column-resize-handle:focus-visible::after{opacity:1;background:#dceee5}
+.column-resize-handle:focus-visible{outline:2px solid #13715b;outline-offset:-2px}
+body.column-resizing,body.column-resizing *{cursor:col-resize!important;user-select:none!important}
+.column-hidden-tray{display:flex;flex:1 0 100%;flex-wrap:wrap;gap:4px;max-height:96px;overflow:auto;padding:4px 0;border-top:1px solid #e1e7e4}
+.column-hidden-tray[hidden]{display:none}
+.column-hidden-tray button{max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;min-height:28px;padding:3px 8px;border:1px solid #b9c9c2;border-radius:5px;background:#f2f7f4;color:#235846;cursor:pointer}
+.column-hidden-tray button:focus-visible{outline:2px solid #13715b;outline-offset:1px}
+.column-hide-drop-zone{position:fixed;z-index:1000;box-sizing:border-box;min-height:44px;padding:10px 14px;border:2px dashed #a36113;border-radius:8px;background:#fff8e8;color:#71400b;text-align:center;font:12px/1.8 Vazirmatn,sans-serif;pointer-events:auto;box-shadow:0 4px 16px #20342c22}
+.column-hide-drop-zone.is-over{background:#ffedbd;border-style:solid;box-shadow:0 0 0 3px #edbb6840}
+.column-hide-drop-zone[hidden]{display:none}
+.table-wrap th[data-column-draggable=true]{cursor:grab;user-select:none}
+.universal-layout-bar{padding:6px 10px;border-block:1px solid #e0e7e3;background:#f8fbfa;justify-content:flex-start}
+.universal-layout-bar [data-column-manager]{margin-inline-start:auto}
+dialog .universal-layout-bar{position:relative;z-index:1}
+@media(max-width:480px){.layout-controls{grid-template-columns:1fr}.layout-column-row{grid-template-columns:minmax(0,1fr) 44%}.column-layout-dialog{max-height:92vh}.layout-columns{max-height:35vh}}

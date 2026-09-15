@@ -1,0 +1,11 @@
+/* Admin forms flow vertically; the supplier workspace's fixed-height rules do not apply. */
+.sp-main:has(#accountList),#sharedCartableAdmin{height:auto;min-height:0;margin-bottom:24px}
+#cartableAccessPanel>.sp-form.two{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:24px}
+#cartableAccessPanel form,#cartableAccessPanel fieldset{min-width:0}
+#cartableAccessPanel fieldset{border:1px solid var(--line);border-radius:9px;padding:12px;margin:0}
+#cartableAccessPanel legend{padding-inline:6px;font-weight:600}
+#cartableAccessPanel input[type=checkbox]{width:18px;height:18px;vertical-align:middle;accent-color:var(--blue)}
+#cartableAccessPanel label:has(input[type=checkbox]){display:flex;align-items:center;gap:8px;min-height:32px}
+#cartableAccessPanel #scopeChoices{display:grid;gap:10px}
+#accessFeedback:not(:empty){padding:10px;margin-bottom:14px;border:1px solid var(--line);border-radius:8px}
+@media(max-width:900px){#cartableAccessPanel>.sp-form.two{grid-template-columns:1fr}}

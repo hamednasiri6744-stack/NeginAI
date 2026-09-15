@@ -1,0 +1,44 @@
+#orderPortalDialog,#manualEditDialog,#orderDateDialog{max-height:90dvh;overflow:auto}
+#supplierReviewDialog{width:min(1200px,96vw);max-width:96vw;max-height:92dvh;overflow:auto;padding:20px;color:var(--text,#19382e)}
+#supplierReviewDialog header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+#supplierReviewDialog h2{font-size:1.15rem;margin:0}
+#supplierReviewDialog button{min-height:40px;cursor:pointer}
+#supplierReviewDialog button:focus-visible,#supplierReviewDialog input:focus-visible,#supplierReviewDialog textarea:focus-visible,.supplier-review-table:focus-visible{outline:3px solid #176b50;outline-offset:2px}
+#supplierReviewError{color:#a4262c;min-height:24px}
+.supplier-review-notice{padding:12px;border:1px solid #dbc28f;background:#fff7e6;color:#684912;border-radius:8px}
+.supplier-review-dates{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.supplier-review-dates>div{padding:12px;background:#f0f6f3;border:1px solid #c9d9d1;border-radius:8px}
+.supplier-review-dates strong,.supplier-review-dates small{display:block;margin-top:6px}
+.supplier-review-table{max-height:44dvh;overflow:auto;border:1px solid #c9d9d1}
+.supplier-review-table table{width:100%;min-width:850px;border-collapse:collapse}
+.supplier-review-table th,.supplier-review-table td{padding:9px;text-align:right;border-bottom:1px solid #d6e2dc}
+.supplier-review-table th{position:sticky;top:0;background:#edf5f0;z-index:1}
+.supplier-review-changed{background:#fff4db}
+#supplierReviewDecision[hidden]{display:none}
+#supplierReviewDecision>label{display:block;margin:12px 0}
+#supplierReviewComment{display:block;width:100%;box-sizing:border-box;margin-top:6px;font:inherit;border:1px solid #8ca99e;border-radius:6px;padding:8px}
+#supplierReviewDecision .supplier-review-confirm{display:flex;align-items:center;gap:8px}
+.supplier-review-confirm input{width:20px;height:20px;flex:none}
+#supplierReviewDecision .dialog-actions{display:flex;flex-wrap:wrap;gap:10px}
+@media(max-width:700px){.supplier-review-dates{grid-template-columns:1fr}#supplierReviewDialog{padding:12px}#supplierReviewDecision button{min-height:44px;width:100%}}
+#orderPortalError,#manualEditError{color:var(--danger,#a4262c);min-height:24px}
+#manualEditLines{display:grid;gap:16px}
+#manualEditLines input{width:100%;box-sizing:border-box}
+#orderPortalChannel{min-height:44px;font:inherit}
+#preordersView>.panel{margin-bottom:12px}
+.prepared-order-kind{display:flex;flex-wrap:wrap;gap:8px;padding:10px 14px}
+.prepared-order-kind [role="tab"]{min-height:44px;min-width:120px;font:inherit;border:1px solid var(--line);background:var(--card,#fff);color:var(--green);border-radius:8px;cursor:pointer}
+.prepared-order-kind [aria-selected="true"]{background:var(--green);color:#fff;border-color:var(--green)}
+.prepared-order-kind [role="tab"]:focus-visible{outline:3px solid var(--green);outline-offset:3px}
+.prepared-order-kind b{margin-inline-start:8px}
+/* Delivery commitments remain distinct from unapproved supplier proposals. */
+.order-delivery-date{display:block;white-space:nowrap;font-variant-numeric:tabular-nums}
+.order-delivery-pending{display:block;white-space:normal;color:#815300;font-size:.8rem;line-height:1.7;margin-top:.25rem}
+#orderDateError{color:#b42318;min-height:1.5em}
+#orderDateHelp,#orderingDeliveryHelp{color:#526761;line-height:1.7}
+#orderDateForm label{display:grid;gap:.5rem}
+#orderDateForm input{padding:.7rem;border:1px solid #8ca99e;border-radius:.4rem}
+.embedded-delivery-date{display:flex;align-items:end;flex-wrap:wrap;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.embedded-delivery-date label{display:grid;gap:6px}
+.embedded-delivery-date input{font:inherit;padding:8px;border:1px solid var(--line);border-radius:6px;min-height:40px}
+.embedded-delivery-date [role="status"]{align-self:center}

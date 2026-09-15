@@ -1,0 +1,36 @@
+/* Internal account administration follows the warehouse workspace. */
+@font-face{font-family:Vazirmatn;src:url('/static/fonts/vazirmatn/Vazirmatn-Regular.woff2') format('woff2');font-display:swap}
+@font-face{font-family:Vazirmatn;src:url('/static/fonts/vazirmatn/Vazirmatn-Bold.woff2') format('woff2');font-weight:700;font-display:swap}
+body.warehouse-admin{--navy:#123e33;--blue:#176b50;--blue2:#e6f2eb;--line:#dbe5df;--bg:#f4f6f5;--ink:#23483b;--muted:#526b5e;font-family:Vazirmatn,Tahoma,sans-serif;font-size:13px;background:var(--bg)}
+.warehouse-admin .sp-top{min-height:44px;height:auto;padding:6px 12px;box-shadow:none;gap:8px}
+.warehouse-admin .sp-brand img{width:28px;height:28px;border-radius:4px}
+.warehouse-admin .sp-brand strong{font-size:15px}
+.warehouse-admin .sp-top a{padding:4px 8px;min-height:30px;border-radius:4px}
+.warehouse-admin .sp-main{width:calc(100% - 24px);max-width:none;margin:10px auto;height:auto;min-height:0}
+.warehouse-admin .sp-card{border-radius:4px;box-shadow:none;min-width:0}
+.warehouse-admin .sp-card-head{padding:7px 10px;align-items:center;gap:8px;flex-wrap:wrap}
+.warehouse-admin .sp-card-head h2{font-size:16px;line-height:24px}
+.warehouse-admin .sp-card-body{padding:8px 10px}
+.warehouse-admin .sp-card-body>p{margin:0 0 8px;line-height:1.7}
+.warehouse-admin .admin-layout{grid-template-columns:minmax(0,1.5fr) minmax(280px,1fr);gap:10px}
+.warehouse-admin .sp-form{gap:6px 10px}
+.warehouse-admin #accountForm{grid-template-columns:repeat(4,minmax(0,1fr))}
+.warehouse-admin .field{gap:3px}
+.warehouse-admin .field :is(input,select,textarea){padding:4px 7px;min-height:32px;border-radius:4px}
+.warehouse-admin .btn{min-height:32px;padding:4px 9px;border-radius:4px;font-size:12px}
+.warehouse-admin .section-gap{margin-top:10px}
+.warehouse-admin #accountList{max-height:calc(100dvh - 330px);min-height:180px;border-radius:4px;overflow:auto}
+.warehouse-admin #accountList table{width:100%;min-width:900px;font-size:13px}
+.warehouse-admin :is(th,td){padding:5px 8px;line-height:20px}
+.warehouse-admin th{background:#eaf0ed;color:var(--ink);font-size:12px}
+.warehouse-admin tr:hover td{background:#f0f6f2}
+.warehouse-admin #cartableAccessPanel>.sp-form.two{gap:12px}
+.warehouse-admin #cartableAccessPanel fieldset{padding:8px 10px;border-radius:4px}
+.warehouse-admin #cartableAccessPanel #scopeChoices{gap:6px;max-height:360px;overflow:auto}
+.warehouse-admin :is(button,a,input,select,textarea):focus-visible{outline:2px solid #176b50;outline-offset:2px}
+.warehouse-admin .sp-top a:focus-visible{outline-color:#fff}
+@media(max-width:1100px){.warehouse-admin #accountForm{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:800px){.warehouse-admin .admin-layout{grid-template-columns:minmax(0,1fr)}.warehouse-admin .sp-main{width:calc(100% - 12px)}.warehouse-admin .sp-top{flex-wrap:wrap}}
+@media(max-width:420px){.warehouse-admin #accountForm{grid-template-columns:minmax(0,1fr)}}
+@media(pointer:coarse){.warehouse-admin :is(.btn,input:not([type=checkbox]),select){min-height:44px}}
+@media print{.warehouse-admin #accountList{height:auto;max-height:none;overflow:visible}}

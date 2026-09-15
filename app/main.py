@@ -21,11 +21,15 @@ from app.login_rate_limit import LocalLoginRateLimiter, RedisLoginRateLimiter
 from app.observability import configure_observability, monotonic_seconds, record_http
 from app.varanegar_command_worker import process_one as process_one_varanegar_command
 from app.entity_service import sync_entities
-from app.routes import android_app, attachments, automations, audio, auth, chat, context, control, dashboard, definitions, entities, health, oauth, organization_structure, planning, push, schema, seller_workspace, sql, warehouse_assistant
+from app.routes import android_app, attachments, automations, audio, auth, chat, context, control, dashboard, definitions, entities, health, oauth, organization_structure, planning, push, schema, seller_workspace, sql, warehouse_assistant, warehouse_supplier_portal
 from app.organization_structure_service import seed_confirmed_rules
 from app.config import RESOURCE_DIR
 from app.push_service import ensure_vapid_private_key
 from app.schema_service import scan_schema
+from app.warehouse_assistant_service import (
+    automatic_refresh_due,
+    run_automatic_order_cycle,
+)
 
 
 @asynccontextmanager
@@ -119,6 +123,23 @@ async def lifespan(app: FastAPI):
                 app.state.command_worker_last_error = type(exc).__name__
                 await asyncio.sleep(2)
 
+    async def warehouse_automatic_order_loop():
+        await asyncio.sleep(15)
+        while True:
+            try:
+                if await asyncio.to_thread(automatic_refresh_due, settings):
+                    await asyncio.to_thread(
+                        run_automatic_order_cycle,
+                        settings,
+                        "سیستم سفارش ساعتی",
+                        trigger="hourly",
+                        refresh_inventory=True,
+                    )
+            except Exception:
+                # The refresh service persists its own error for the admin UI.
+                pass
+            await asyncio.sleep(60)
+
     sync_task = (
         asyncio.create_task(metadata_sync_loop())
         if settings.metadata_sync_enabled
@@ -134,6 +155,11 @@ async def lifespan(app: FastAPI):
         if settings.command_outbox_enabled and enterprise_store is not None
         else None
     )
+    warehouse_automatic_task = (
+        asyncio.create_task(warehouse_automatic_order_loop())
+        if settings.sql_configured
+        else None
+    )
     try:
         yield
     finally:
@@ -143,12 +169,16 @@ async def lifespan(app: FastAPI):
             automation_task.cancel()
         if command_worker_task is not None:
             command_worker_task.cancel()
+        if warehouse_automatic_task is not None:
+            warehouse_automatic_task.cancel()
         try:
             tasks = [sync_task] if sync_task is not None else []
             if automation_task is not None:
                 tasks.append(automation_task)
             if command_worker_task is not None:
                 tasks.append(command_worker_task)
+            if warehouse_automatic_task is not None:
+                tasks.append(warehouse_automatic_task)
             await asyncio.gather(*tasks)
         except asyncio.CancelledError:
             pass
@@ -212,6 +242,10 @@ app.include_router(organization_structure.router)
 app.include_router(planning.router)
 app.include_router(control.router)
 app.include_router(warehouse_assistant.router)
+app.include_router(warehouse_assistant.public_router)
+app.include_router(warehouse_supplier_portal.staff_router)
+app.include_router(warehouse_supplier_portal.public_router)
+app.include_router(warehouse_supplier_portal.page_router)
 app.include_router(seller_workspace.router)
 app.include_router(audio.router)
 app.include_router(attachments.router)

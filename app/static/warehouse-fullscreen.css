@@ -1,0 +1,14 @@
+.workspace-fullscreen-button{white-space:nowrap;margin-inline-start:auto;flex:none}
+.workspace-fullscreen[open],#orderingView.workspace-fullscreen{
+  position:fixed!important;inset:0!important;margin:0!important;width:100vw!important;max-width:100vw!important;
+  height:100dvh!important;max-height:100dvh!important;border-radius:0!important;box-sizing:border-box;
+  display:flex!important;flex-direction:column!important;background:#fff;overflow:hidden!important;z-index:1000;
+}
+.workspace-fullscreen>.preview-dialog-head,.workspace-fullscreen>.preview-dialog-footer{flex:none}
+.workspace-fullscreen>.table-wrap{flex:1;min-height:0;max-height:none!important;overflow:auto!important}
+#checkbarDialog.workspace-fullscreen .checkbar-body{flex:1;min-height:0;display:flex;flex-direction:column;overflow:auto}
+#checkbarDialog.workspace-fullscreen #checkbarEditor:not([hidden]){flex:1;min-height:160px;display:flex;flex-direction:column}
+#checkbarDialog.workspace-fullscreen #checkbarEditor .table-wrap{flex:1;min-height:120px;max-height:none!important}
+#orderingView.workspace-fullscreen{overflow:auto!important;padding:12px}
+#orderingView.workspace-fullscreen .table-wrap{max-height:75dvh!important}
+#orderingView.workspace-fullscreen[hidden]{display:none!important}

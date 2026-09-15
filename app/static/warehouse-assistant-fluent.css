@@ -1,0 +1,195 @@
+/* Negin Fluent-inspired compact theme. Local assets, existing controls and layout.
+   Keep this separate from behavior/density rules: removing the link rolls it back. */
+body.wa-fluent {
+  --fluent-brand: #126d50;
+  --fluent-brand-hover: #0c573f;
+  --fluent-canvas: #f5f5f5;
+  --fluent-surface: #ffffff;
+  --fluent-subtle: #fafafa;
+  --fluent-selected: #e8f3ee;
+  --fluent-text: #242424;
+  --fluent-secondary: #616161;
+  --fluent-border: #d1d1d1;
+  --fluent-divider: #ebebeb;
+  --fluent-input-border: #949494;
+  --fluent-sidebar: #093e30;
+  --fluent-radius: 4px;
+  --ink: var(--fluent-text);
+  --muted: var(--fluent-secondary);
+  --green: var(--fluent-brand);
+  --green2: var(--fluent-brand);
+  --line: var(--fluent-border);
+  --panel: var(--fluent-surface);
+  --wa-text-primary: var(--fluent-text);
+  --wa-text-secondary: var(--fluent-secondary);
+  --wa-border-default: var(--fluent-border);
+  --wa-bg-canvas: var(--fluent-canvas);
+  --wa-bg-subtle: var(--fluent-subtle);
+  --wa-bg-brand-deep: var(--fluent-sidebar);
+  color: var(--fluent-text);
+  background: var(--fluent-canvas);
+}
+
+/* Opaque surfaces, with elevation reserved for transient panels. */
+.wa-fluent .warehouse-shell .topbar {
+  background: var(--fluent-surface);
+  border-color: var(--fluent-divider);
+  box-shadow: none;
+}
+.wa-fluent .identity h1 { color: var(--fluent-sidebar); font-weight: 600; }
+.wa-fluent .eyebrow { color: var(--fluent-secondary); font-weight: 400; }
+.wa-fluent .warehouse-shell .app-content { background: var(--fluent-canvas); }
+.wa-fluent .warehouse-shell :is(.panel,.formula-panel,.order-card) {
+  border: 1px solid var(--fluent-border);
+  border-radius: 6px;
+  background: var(--fluent-surface);
+  box-shadow: none;
+}
+.wa-fluent .warehouse-shell .panel-head { border-color: var(--fluent-divider); }
+.wa-fluent .warehouse-shell .panel-head h2 { color: var(--fluent-text); font-weight: 600; }
+.wa-fluent .warehouse-shell .panel-head p { color: var(--fluent-secondary); }
+.wa-fluent .warehouse-shell .summary-grid {
+  border: 1px solid var(--fluent-divider);
+  border-radius: 4px;
+  background: var(--fluent-surface);
+  margin-bottom: 6px;
+}
+.wa-fluent .warehouse-shell .summary-grid article { padding-inline: 8px; border-color: var(--fluent-divider); }
+.wa-fluent .warehouse-shell .summary-grid strong { color: var(--fluent-text); font-weight: 600; }
+.wa-fluent .warehouse-shell .summary-grid span { color: var(--fluent-secondary); }
+.wa-fluent .warehouse-shell :is(.result-summary,.automatic-refresh-status) {
+  background: var(--fluent-subtle);
+  border-color: var(--fluent-divider);
+}
+.wa-fluent .warehouse-shell :is(.result-summary,.automatic-refresh-status) span {
+  color: var(--fluent-secondary);
+  border-color: var(--fluent-divider);
+}
+.wa-fluent .warehouse-shell :is(.inventory-commandbar,.filter-grid,.supply-toolbar) {
+  background: var(--fluent-surface);
+  border-color: var(--fluent-divider);
+}
+
+/* Fluent-style navigation retains the established RTL rail and compact breakpoints. */
+.wa-fluent .warehouse-shell .app-sidebar { background: var(--fluent-sidebar); border-color: var(--fluent-sidebar); }
+.wa-fluent .warehouse-shell .sidebar-title { color: #bdd5cb; border-color: #315c4e; }
+.wa-fluent .warehouse-shell .app-sidebar .page-tabs button {
+  border-radius: 4px;
+  color: #e3eee9;
+  background: transparent;
+  box-shadow: none;
+  font-weight: 500;
+}
+.wa-fluent .warehouse-shell .app-sidebar .page-tabs button:hover { background: #18513f; }
+.wa-fluent .warehouse-shell .app-sidebar .page-tabs button.is-active {
+  background: var(--fluent-brand);
+  color: #fff;
+  box-shadow: inset -3px 0 0 #b1e4cd;
+}
+.wa-fluent .warehouse-shell .app-sidebar .page-tabs button small { color: #c8dfd3; opacity: 1; }
+.wa-fluent .warehouse-shell .nav-badge { color: #173b2e; background: #dbf0e5; border-radius: 4px; }
+.wa-fluent .warehouse-shell .sidebar-note { border-radius: 4px; border-color: #315c4e; color: #c8dfd3; }
+
+/* Preserve existing control dimensions, including larger coarse-pointer targets. */
+.wa-fluent .warehouse-shell :is(.primary,.secondary-action,.header-button,.top-actions a),
+.wa-fluent :is(.preorder-preview-dialog,.login-dialog) :is(.primary,.secondary-action,.dialog-close) {
+  border-radius: var(--fluent-radius);
+  box-shadow: none;
+  font-weight: 500;
+}
+.wa-fluent .warehouse-shell .primary,
+.wa-fluent :is(.preorder-preview-dialog,.login-dialog) .primary {
+  color: #fff; background: var(--fluent-brand); border: 1px solid var(--fluent-brand);
+}
+.wa-fluent .warehouse-shell .primary:hover:not(:disabled),
+.wa-fluent :is(.preorder-preview-dialog,.login-dialog) .primary:hover:not(:disabled) { background: var(--fluent-brand-hover); }
+.wa-fluent .warehouse-shell :is(.secondary-action,.header-button,.top-actions a),
+.wa-fluent .preorder-preview-dialog :is(.secondary-action,.dialog-close) {
+  background: var(--fluent-surface); color: var(--fluent-text); border-color: var(--fluent-border);
+}
+.wa-fluent .warehouse-shell :is(.secondary-action,.header-button,.top-actions a):hover:not(:disabled),
+.wa-fluent .preorder-preview-dialog :is(.secondary-action,.dialog-close):hover:not(:disabled) {
+  background: #f0f0f0; border-color: var(--fluent-input-border);
+}
+.wa-fluent .warehouse-shell :is(.column-picker,.workspace-options,.rules-disclosure)>summary {
+  border-radius: 4px; color: var(--fluent-text); border-color: var(--fluent-border); background: #fff;
+}
+.wa-fluent .warehouse-shell .rules-disclosure>summary { border-color: transparent; color: var(--fluent-secondary); }
+.wa-fluent .warehouse-shell :is(.column-picker,.workspace-options,.rules-disclosure)[open]>summary {
+  border-color: var(--fluent-brand); background: var(--fluent-selected);
+}
+.wa-fluent .warehouse-shell :is(.column-picker>div,.workspace-options>.inventory-view-bar,.rules-disclosure>div) {
+  background: #fff; border-color: var(--fluent-border); border-radius: 6px;
+  box-shadow: 0 6px 16px #0000001f, 0 1px 3px #00000014;
+}
+.wa-fluent .warehouse-shell .workspace-options .column-picker>div { box-shadow: none; }
+.wa-fluent .warehouse-shell input:not([type="checkbox"]):not([type="file"]),
+.wa-fluent .warehouse-shell select,
+.wa-fluent :is(.preorder-preview-dialog,.login-dialog) input:not([type="checkbox"]) {
+  color: var(--fluent-text); background: #fff; border: 1px solid var(--fluent-input-border);
+  border-radius: 4px; box-shadow: none;
+}
+.wa-fluent :is(input,select)::placeholder { color: #707070; opacity: 1; }
+.wa-fluent input[type="checkbox"] { accent-color: var(--fluent-brand); }
+.wa-fluent :is(button,a,summary,input,select):focus-visible {
+  outline: 2px solid var(--fluent-brand); outline-offset: 2px; box-shadow: none;
+}
+.wa-fluent .warehouse-shell .app-sidebar .page-tabs button:focus-visible {
+  outline: 2px solid #fff; outline-offset: -3px;
+}
+
+/* Data remains primary: no sizing/visibility rules or column-layout changes here. */
+.wa-fluent .warehouse-shell .table-wrap,
+.wa-fluent .preorder-preview-dialog .table-wrap { background: #fff; border-radius: 0 0 6px 6px; scrollbar-color: #919b96 #f5f5f5; }
+.wa-fluent .warehouse-shell .table-wrap thead,
+.wa-fluent .preorder-preview-dialog thead { background: #f5f5f5; box-shadow: 0 1px 0 var(--fluent-border); }
+.wa-fluent .warehouse-shell .table-wrap th,
+.wa-fluent .preorder-preview-dialog .preview-lines-table th {
+  background: #f5f5f5; color: #424242; border-color: var(--fluent-border); font-weight: 600;
+}
+.wa-fluent .warehouse-shell .table-wrap :is(.inventory-filter-row,.table-filter-row) th { background: #fafafa; }
+.wa-fluent .warehouse-shell .table-wrap td,
+.wa-fluent .preorder-preview-dialog .preview-lines-table td { color: var(--fluent-text); border-color: var(--fluent-divider); }
+.wa-fluent .warehouse-shell .table-wrap tbody tr,
+.wa-fluent .preorder-preview-dialog tbody tr { background: #fff; }
+.wa-fluent .warehouse-shell .table-wrap tbody tr:nth-child(even),
+.wa-fluent .preorder-preview-dialog tbody tr:nth-child(even) { background: #fafafa; }
+.wa-fluent .warehouse-shell .table-wrap tbody tr:hover,
+.wa-fluent .preorder-preview-dialog tbody tr:hover { background: #edf5f1; }
+.wa-fluent .warehouse-shell .table-wrap tbody tr:focus-within,
+.wa-fluent .preorder-preview-dialog tbody tr:focus-within { background: var(--fluent-selected); }
+.wa-fluent .warehouse-shell .ordering-table tr:has(.order-select:checked) { background: var(--fluent-selected); }
+.wa-fluent .warehouse-shell .table-wrap :is(.product-cell strong,.auto-supplier strong,.preorder-supplier strong) { font-weight: 500; }
+.wa-fluent .warehouse-shell .table-wrap :is(.product-code,.quantity) { color: var(--fluent-brand); }
+.wa-fluent .warehouse-shell .table-wrap td.effective-stock { color: var(--fluent-brand); background: #f1f8f4; }
+.wa-fluent .warehouse-shell .table-wrap :is(.applied-note,.auto-supplier small,.maker-cell small) { color: var(--fluent-secondary); }
+.wa-fluent .warehouse-shell .warehouse-chip { color: #424242; background: #f0f0f0; border-radius: 4px; }
+.wa-fluent :is(.auto-status,.preorder-status,.scope-evidence,.all-brands,.system-suggestion,.unadjusted-suggestion) { border-radius: 4px; }
+
+/* Do not wash out business states when replacing decorative greens. */
+.wa-fluent .warehouse-shell .table-wrap td.effective-stock.is-negative { background: #fff1f0; color: #a4262c; }
+.wa-fluent .warehouse-shell .automatic-table tr.auto-dirty td { background: #fff8e8; }
+.wa-fluent .warehouse-shell .automatic-table tr.auto-dirty .auto-supplier small { color: #835b00; }
+.wa-fluent .warehouse-shell .save-settings-button:not(:disabled) { background: #fff4ce; color: #835b00; border-color: #d6b65e; }
+.wa-fluent .warehouse-shell .unsaved-settings-notice { background: #fff4ce; color: #835b00; }
+.wa-fluent .warehouse-shell .danger-action { color: #a4262c; border-color: #d9aaaa; }
+.wa-fluent .warehouse-shell .summary-grid strong.blocked { color: #a4262c; }
+.wa-fluent .warehouse-shell .safety-badge { background: #fff4ce; color: #835b00; border-radius: 4px; font-weight: 500; }
+.wa-fluent .warehouse-shell .user-badge { color: var(--fluent-brand); background: var(--fluent-selected); border-radius: 4px; }
+.wa-fluent :is(button,input,select):disabled { cursor: not-allowed; }
+
+.wa-fluent :is(.preorder-preview-dialog,.login-dialog) {
+  background: #fff; color: var(--fluent-text); border: 1px solid var(--fluent-border);
+  border-radius: 8px; box-shadow: 0 12px 36px #00000029;
+}
+.wa-fluent :is(.preorder-preview-dialog,.login-dialog)::backdrop { background: #00000066; backdrop-filter: none; }
+.wa-fluent .preorder-preview-dialog :is(.preview-dialog-head,.preview-dialog-footer) { background: #fff; border-color: var(--fluent-divider); }
+.wa-fluent .preorder-preview-dialog .preview-summary { background: #fafafa; border-color: var(--fluent-divider); }
+.wa-fluent .preorder-preview-dialog .preview-summary span { border-color: var(--fluent-divider); border-radius: 4px; }
+.wa-fluent .preorder-preview-dialog .preview-summary strong { color: var(--fluent-brand); }
+.wa-fluent .preorder-preview-dialog .preview-edit-note { background: #fff8e8; color: #835b00; }
+
+@media (forced-colors: active) {
+  .wa-fluent .warehouse-shell .app-sidebar .page-tabs button.is-active { outline: 2px solid Highlight; outline-offset: -2px; }
+  .wa-fluent :is(button,a,summary,input,select):focus-visible { outline-color: Highlight; }
+}

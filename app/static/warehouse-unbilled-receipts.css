@@ -1,0 +1,27 @@
+#unbilledView .panel-head{padding:10px 14px;min-height:0}
+#unbilledView .panel-head h2{margin:0;font-size:17px}
+.unbilled-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:end;padding:10px 14px;margin:0;border-bottom:1px solid var(--line)}
+.unbilled-toolbar label{display:flex;flex-direction:column;gap:4px;font-size:12px;min-width:110px;flex:1}
+.unbilled-toolbar label:first-child{flex:0 0 72px;min-width:72px}
+.unbilled-toolbar :is(input,select){width:100%;min-width:0;min-height:34px}
+.unbilled-toolbar .unbilled-search{flex:2;min-width:210px}
+.unbilled-meta,.unbilled-footer{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;padding:8px 14px;font-size:12px;color:var(--muted)}
+.unbilled-footer>div{display:flex;align-items:center;gap:10px}
+#unbilledError{margin:6px 14px;padding:10px;border:1px solid currentColor;border-radius:6px;color:var(--danger);font-size:13px}
+.unbilled-table-scroll{overflow:auto;max-height:calc(100dvh - 300px);min-height:180px;border-block:1px solid var(--line)}
+body.wa-fluent #unbilledTable{width:100%;min-width:980px;table-layout:fixed;border-collapse:collapse;font-size:12px}
+#unbilledTable .ub-number{width:86px}#unbilledTable .ub-date{width:105px}#unbilledTable .ub-stock{width:120px}
+#unbilledTable :is(.ub-supplier,.ub-maker){width:155px}#unbilledTable .ub-status{width:105px}
+#unbilledTable :is(th,td){padding:8px 10px;white-space:normal;overflow-wrap:anywhere;line-height:1.7;vertical-align:top}
+#unbilledTable thead{position:sticky;top:0;background:var(--fluent-subtle,#eef5f1);z-index:1}
+#unbilledTable .ub-comment{white-space:pre-wrap}#unbilledTable .ub-empty{padding:40px 12px;text-align:center;color:var(--muted)}
+#unbilledTable .ub-actions{width:142px}
+#unbilledTable .ub-actions button{font:inherit;white-space:normal;padding:5px 7px}
+#unbilledTable .ub-comment details{margin:0;padding:0;border:0;background:transparent}
+#unbilledTable .ub-comment summary{cursor:pointer;white-space:normal}
+#unbilledTable .ub-comment details>div{white-space:pre-wrap;padding-top:6px}
+#unbilledTable tbody tr:nth-child(even){background:var(--fluent-subtle,#f5f8f6)}
+#unbilledTable td .ub-status{display:inline-block;width:auto;white-space:nowrap;padding:2px 6px;border-radius:4px}
+.ub-confirmed{color:#12523e;background:#e5f2eb}.ub-unconfirmed{color:#805408;background:#fff3d9}
+@media(max-width:800px){.unbilled-table-scroll{max-height:60dvh}.unbilled-toolbar label{flex:1 1 130px}.unbilled-toolbar .unbilled-search{flex-basis:240px}}
+@media(pointer:coarse){#unbilledView :is(input,select,button){min-height:44px}}

@@ -1,0 +1,338 @@
+/* Negin workspace — visual system shared by the web and desktop clients.
+   Layout and presentation only. Business rules remain in the existing modules. */
+body.wa-fluent {
+  --fluent-brand:#12684d; --fluent-brand-hover:#0b523d;
+  --fluent-canvas:#f3f5f7; --fluent-surface:#fff; --fluent-subtle:#f7f9f8;
+  --fluent-selected:#eaf4ee; --fluent-text:#20372f; --fluent-secondary:#5c6f66;
+  --fluent-border:#d8e2dc; --fluent-divider:#e7ede9; --fluent-input-border:#81968b;
+  --fluent-sidebar:#123f34; --fluent-radius:6px;
+  --ng-body-size:12px; --ng-body-line:18px; --ng-caption-size:11px;
+  --ng-title-size:17px; --ng-title-line:25px; --ng-dialog-size:18px;
+  --wa-topbar-height:52px; --wa-sidebar-width:206px;
+  font-size:13px; line-height:1.55;
+}
+body.wa-fluent :is(button,a,summary,input,select,textarea) { -webkit-tap-highlight-color:transparent }
+body.wa-fluent :is(button,a,summary) { transition:background-color .14s,border-color .14s,color .14s }
+body.wa-fluent :is(button,summary) { cursor:pointer }
+body.wa-fluent :is(button,input,select):disabled { cursor:default }
+body.wa-fluent :is(button,a,summary,input,select,textarea):focus-visible { outline:2px solid #13785a;outline-offset:2px }
+body.wa-fluent :is(.primary,.secondary-action,.header-button) { min-height:32px;font-size:12px;line-height:18px;padding:6px 11px }
+body.wa-fluent :is(input,select,textarea) { color:var(--fluent-text);border-radius:6px }
+body.wa-fluent input::placeholder { color:#64766a }
+body.wa-fluent svg { flex-shrink:0 }
+
+/* Quiet navigation: one clearly selected work area, grouped by the warehouse cycle. */
+body.wa-fluent .warehouse-shell .topbar { height:52px;min-height:52px;padding:7px 18px;border-bottom:1px solid var(--fluent-border) }
+body.wa-fluent .identity { gap:10px }
+body.wa-fluent .identity img { width:34px;height:34px;border-radius:8px }
+body.wa-fluent .identity h1 { font-size:16px;font-weight:700;line-height:23px }
+body.wa-fluent .eyebrow { font-size:10px;line-height:15px;color:var(--fluent-secondary) }
+body.wa-fluent .top-actions { gap:7px }
+body.wa-fluent .top-actions :is(button,a) { font-size:11px;padding:5px 9px;min-height:30px }
+body.wa-fluent .top-actions .safety-badge { background:#f0f5f2;color:#456352;border:1px solid #dce7e0;font-size:10px;padding:5px 9px;border-radius:20px }
+body.wa-fluent .user-badge { background:#eaf3ed;color:#12684d;font-size:11px;padding:5px 9px;border-radius:6px }
+body.wa-fluent .warehouse-shell .app-layout { grid-template-columns:206px minmax(0,1fr) }
+body.wa-fluent .warehouse-shell .app-sidebar { top:52px;height:calc(100dvh - 52px);padding:16px 10px 12px;background:#fff;border-inline-end:1px solid var(--fluent-border);color:var(--fluent-text);box-shadow:none;overflow-y:auto }
+body.wa-fluent .warehouse-shell .sidebar-title { display:flex;justify-content:space-between;align-items:center;padding:0 10px 10px;color:var(--fluent-text);border:0;font-size:13px;font-weight:700 }
+body.wa-fluent .warehouse-shell .sidebar-title small { display:block;color:#748078;font-size:10px;font-weight:400 }
+body.wa-fluent .warehouse-shell .app-sidebar .page-tabs { gap:4px;margin:0 }
+body.wa-fluent .warehouse-shell .nav-section-label { display:block;color:#64766a;font-size:10px;font-weight:500;padding:13px 10px 3px }
+body.wa-fluent .warehouse-shell .app-sidebar .page-tabs button { grid-template-columns:25px minmax(0,1fr) auto;min-height:44px;padding:7px 10px;border-radius:7px;color:#465f53;font-size:12px;font-weight:500;gap:8px;text-align:right }
+body.wa-fluent .warehouse-shell .app-sidebar .page-tabs button small { color:#6e7f76;font-size:10px;line-height:14px }
+body.wa-fluent .warehouse-shell .app-sidebar .page-tabs button:hover { background:#f3f7f4 }
+body.wa-fluent .warehouse-shell .app-sidebar .page-tabs button.is-active { background:#eaf4ee;color:#09583e;box-shadow:inset -3px 0 #12684d;font-weight:700 }
+body.wa-fluent .warehouse-shell .app-sidebar .page-tabs button.is-active small { color:#42745b }
+body.wa-fluent .warehouse-shell .app-sidebar .page-tabs button:focus-visible { outline:2px solid #12684d;outline-offset:-2px }
+body.wa-fluent .warehouse-shell .nav-icon { width:24px;height:24px;background:none;color:inherit;border-radius:0 }
+body.wa-fluent .nav-icon svg { width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round }
+body.wa-fluent .warehouse-shell .nav-badge { color:#295740;background:#dceee2;font-size:11px;min-width:23px;border-radius:5px;padding:2px 5px }
+body.wa-fluent .warehouse-shell .sidebar-note { display:block;margin-top:auto;padding:12px 8px 0;border:0;border-top:1px solid var(--fluent-divider);background:none;border-radius:0;color:#5c6f66;font-size:11px }
+body.wa-fluent .sidebar-note summary { padding:5px 0;cursor:pointer }
+body.wa-fluent .sidebar-note span { display:block;color:#5c6f66;font-size:10px;margin-top:5px }
+
+/* Shared work surfaces: readable content, compact status line, consistent controls. */
+body.wa-fluent .warehouse-shell .app-content { padding:12px 16px 20px }
+body.wa-fluent .warehouse-shell .summary-grid { border:0;border-radius:0;background:none;box-shadow:none;margin-bottom:10px;min-height:25px }
+/* Data refresh belongs to inventory; purchase work uses the full panel width. */
+body.wa-fluent #orderingView > .workspace-grid { display:block }
+body.wa-fluent #orderingView > .ordering-formula-help { margin-top:10px;border:1px solid #d8e4dd;border-radius:8px;background:#fff }
+body.wa-fluent .ordering-formula-help > summary { padding:9px 12px;cursor:pointer;color:#245d48 }
+body.wa-fluent .ordering-formula-help .formula-panel { margin:0;border:0;box-shadow:none }
+body.wa-fluent .inventory-data-tools { margin:0 12px 8px;border:1px solid #d8e4dd;border-radius:8px;background:#f6faf8 }
+body.wa-fluent .inventory-data-tools > summary { padding:9px 12px;cursor:pointer;color:#245d48;font-weight:600 }
+body.wa-fluent .inventory-data-body { padding:0 12px 12px;display:grid;grid-template-columns:minmax(240px,1fr) minmax(240px,1fr);gap:12px;align-items:start }
+body.wa-fluent .inventory-data-body > .panel-head { grid-column:1/-1;min-height:0;padding:0 0 8px;background:transparent }
+body.wa-fluent .inventory-data-body h3 { margin:0;font-size:13px }
+body.wa-fluent .inventory-data-body :is(.stack,.backup-import,.security-note) { margin:0;padding:10px }
+body.wa-fluent .inventory-data-body .security-note { grid-column:1/-1 }
+@media(max-width:700px) {
+  body.wa-fluent .inventory-data-body { grid-template-columns:minmax(0,1fr) }
+}
+body.wa-fluent .warehouse-shell .summary-grid article { padding:2px 12px;min-height:25px;border-color:#dae3dd }
+body.wa-fluent .warehouse-shell .summary-grid span { font-size:10px;color:#677a70 }
+body.wa-fluent .warehouse-shell .summary-grid strong { font-size:11px;color:#435f50;font-weight:500 }
+body.wa-fluent .warehouse-shell :is(.panel,.formula-panel,.order-card) { border-color:var(--fluent-border);border-radius:10px;box-shadow:0 2px 4px #17372b03 }
+body.wa-fluent .warehouse-shell .panel-head { padding:12px 16px;min-height:60px;gap:12px }
+body.wa-fluent .warehouse-shell .panel-head h2 { font-size:17px;line-height:25px;font-weight:700 }
+body.wa-fluent .warehouse-shell .panel-head p { font-size:11px;line-height:18px;margin:2px 0 0 }
+body.wa-fluent .warehouse-shell :is(.filter-grid,.inventory-commandbar,.supply-toolbar,.checkbar-archive-toolbar) { padding:8px 12px;gap:9px }
+body.wa-fluent .warehouse-shell :is(.filter-grid,.inventory-filters,.supply-toolbar) label { font-size:11px;line-height:18px }
+body.wa-fluent .warehouse-shell :is(input:not([type=checkbox]),select) { min-height:30px;font-size:12px;border-color:var(--fluent-input-border);border-radius:6px }
+body.wa-fluent .warehouse-shell .table-wrap { border-color:var(--fluent-divider) }
+body.wa-fluent :is(.warehouse-shell,.preorder-preview-dialog) table { font-variant-numeric:tabular-nums }
+body.wa-fluent :is(.warehouse-shell,.preorder-preview-dialog) :is(th,td) { font-size:12px;line-height:18px;padding:7px 9px;border-color:#e6ece8 }
+body.wa-fluent :is(.warehouse-shell,.preorder-preview-dialog) thead th { color:#4b6255;font-weight:600;background:#f0f5f2 }
+body.wa-fluent :is(.warehouse-shell,.preorder-preview-dialog) tbody tr:nth-child(even) { background:#fafcfb }
+body.wa-fluent :is(.warehouse-shell,.preorder-preview-dialog) tbody tr:hover { background:#f0f7f2 }
+body.wa-fluent :is(.warehouse-shell,.preorder-preview-dialog) tbody tr:focus-within { background:#eaf4ee;box-shadow:inset -3px 0 #12684d }
+body.wa-fluent .shared-filter-row th { background:#f8faf9 }
+body.wa-fluent :is(.warehouse-shell,.preorder-preview-dialog) thead input { font-size:11px;min-height:26px!important;height:26px;border-color:#dce5df!important;background:#fff;border-radius:5px }
+body.wa-fluent .checkbar-workflow { padding:9px 14px;gap:20px;background:#f8faf9;color:#5d7166;font-size:11px;border-color:#e7ede9 }
+body.wa-fluent .checkbar-workflow span { display:inline-flex;align-items:center;gap:8px }
+body.wa-fluent #checkbarView .checkbar-archive-toolbar { padding:10px 14px;background:#fff }
+body.wa-fluent #checkbarView .checkbar-archive-toolbar input[type=checkbox] { width:16px;min-height:16px;height:16px }
+body.wa-fluent #checkbarArchiveTable tbody .empty,body.wa-fluent #checkbarArchiveTable tbody td[colspan] { padding:45px 20px;color:#6e8175;font-size:13px;text-align:center }
+body.wa-fluent #checkbarArchiveTable { width:100%!important }
+
+/* Document editor — stable header and actions frame one dominant table. */
+body.wa-fluent .preorder-preview-dialog { border:1px solid #cedbd2;border-radius:10px;box-shadow:0 20px 70px #173e3529 }
+body.wa-fluent .preorder-preview-dialog::backdrop { background:#17382f75;backdrop-filter:blur(2px) }
+body.wa-fluent .preorder-preview-dialog .preview-dialog-head { background:#123f34;color:#fff;padding:9px 15px;min-height:56px;border-bottom:0;gap:10px }
+body.wa-fluent .preorder-preview-dialog .preview-dialog-head h2 { color:#fff;font-size:18px;line-height:26px;font-weight:600 }
+body.wa-fluent .preorder-preview-dialog .preview-dialog-head :is(p,.eyebrow) { color:#d2e5da;font-size:11px;line-height:17px }
+body.wa-fluent .preorder-preview-dialog .preview-dialog-head :is(button,.secondary-action) { border:1px solid #567c69;color:#f1f7f3;background:transparent;border-radius:6px;font-size:11px;min-height:30px;white-space:nowrap }
+body.wa-fluent .preorder-preview-dialog .preview-dialog-head button:hover { background:#285646 }
+body.wa-fluent .preorder-preview-dialog .preview-dialog-head button:focus-visible { outline-color:#c1ecd3 }
+body.wa-fluent .preorder-preview-dialog .preview-dialog-footer { padding:8px 12px;min-height:49px;background:#fff;border-top:1px solid #d4e0d7;box-shadow:0 -3px 12px #17372b06;gap:8px!important }
+body.wa-fluent .preorder-preview-dialog .preview-dialog-footer :is(button,a) { min-height:32px;font-size:12px;padding:6px 11px;border-radius:6px }
+body.wa-fluent .preorder-preview-dialog .preview-dialog-footer>span { font-size:12px;line-height:19px;color:#4f6658 }
+body.wa-fluent #checkbarDialog .document-mark { width:32px;height:34px;display:grid;place-items:center;border:1px solid #4c7965;border-radius:7px;flex:none }
+body.wa-fluent .document-mark svg { width:21px;height:21px;fill:none;stroke:#d5ebdd;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round }
+body.wa-fluent #checkbarDialog .preview-dialog-head>div:has(h2) { flex:1;min-width:0 }
+body.wa-fluent #checkbarDialog .preview-dialog-head p { white-space:normal }
+body.wa-fluent #checkbarDialog .checkbar-notice { padding:6px 14px;font-size:11px;line-height:18px;max-height:13vh }
+body.wa-fluent #checkbarDialog .checkbar-notice.info { background:#fff9e9;color:#785d20;border-color:#dfb850 }
+body.wa-fluent #checkbarDialog .checkbar-selectors { display:flex;flex-wrap:wrap;gap:9px;padding:9px 14px;background:#fff;align-items:center }
+body.wa-fluent #checkbarDialog .checkbar-selectors>label { font-size:11px;gap:6px;color:#5d7165 }
+body.wa-fluent #checkbarDialog .checkbar-selectors select { min-width:145px;max-width:200px;border-color:#c4d2c9 }
+body.wa-fluent #checkbarDialog .checkbar-selectors select:disabled { background:#f2f6f3;color:#234e37;border-color:#dce7df;opacity:1 }
+body.wa-fluent #checkbarDialog #checkbarReselect { font-size:0;width:30px;height:30px;padding:0;border:1px solid #d6e2d9;border-radius:6px;order:1 }
+body.wa-fluent #checkbarReselect svg { width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle }
+body.wa-fluent #checkbarDialog .checkbar-primary-metadata { display:flex;flex:1;gap:10px;flex-wrap:wrap;padding:0;background:none;justify-content:flex-end }
+body.wa-fluent #checkbarDialog .checkbar-primary-metadata label { font-size:11px;gap:6px }
+body.wa-fluent #checkbarDialog .checkbar-primary-metadata input { width:125px;min-height:30px }
+body.wa-fluent #checkbarDialog .checkbar-primary-metadata label:first-child input { width:164px }
+body.wa-fluent #checkbarDialog:has(#checkbarEditor[hidden]) .checkbar-primary-metadata { display:none }
+body.wa-fluent #checkbarDialog:has(#checkbarEditor[hidden]) .checkbar-selectors { padding:20px;gap:16px }
+body.wa-fluent #checkbarDialog:has(#checkbarEditor[hidden]) .checkbar-selectors select { min-width:230px;min-height:36px }
+body.wa-fluent #checkbarOrderPicker { background:#f7faf8;margin:12px 16px;padding:18px!important;border:1px solid #d9e5dc;border-radius:8px }
+body.wa-fluent #checkbarOrderPicker :is(p,label) { font-size:12px;line-height:22px }
+body.wa-fluent #checkbarPrepare { margin-top:12px }
+body.wa-fluent #checkbarDialog .checkbar-toolsbar { padding:6px 12px;gap:6px;background:#f5f8f6;border-color:#dde7df }
+body.wa-fluent #checkbarDialog .checkbar-toolsbar summary { display:flex;align-items:center;gap:6px;padding:5px 9px;background:#fff;color:#385b46;border:1px solid #d4e2d8;min-height:30px;font-size:11px;line-height:18px;border-radius:6px;list-style:none }
+body.wa-fluent #checkbarDialog .checkbar-toolsbar summary::after { content:'⌄';font-size:13px;margin-inline-start:3px }
+body.wa-fluent #checkbarDialog .checkbar-toolsbar summary svg { width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round }
+body.wa-fluent #checkbarDialog #checkbarImagePanel>summary { background:#e5f2ea;border-color:#bad8c4;color:#125537;font-weight:600 }
+body.wa-fluent #checkbarDialog #checkbarImageShowResult { background:#fff3cf;border:1px solid #ad8730;color:#694e12;font-weight:600 }
+body.wa-fluent #checkbarDialog .checkbar-toolsbar details[open]>summary { background:#dceee2;border-color:#387955 }
+body.wa-fluent #checkbarDialog .checkbar-corebar { padding:0 8px;background:none;border:0;flex:none }
+body.wa-fluent #checkbarBrandSplitOptions { font-size:11px }
+body.wa-fluent #checkbarBrandSplitSummary { flex-basis:100%;max-width:240px }
+body.wa-fluent #checkbarDialog .checkbar-table-views { padding:2px;background:#e7ede9;border-radius:6px;gap:2px }
+body.wa-fluent #checkbarDialog .checkbar-table-views button { color:#607366;border-color:transparent;background:transparent;padding:3px 9px;min-height:26px;font-size:11px;border-radius:4px }
+body.wa-fluent #checkbarDialog .checkbar-table-views button[aria-pressed=true] { color:#17573a;background:#fff;box-shadow:0 1px 3px #173a2a12;border-color:#dae4dd }
+body.wa-fluent #checkbarDialog .checkbar-manual { padding:6px 12px;gap:9px;background:#fff }
+body.wa-fluent #checkbarDialog .checkbar-items-heading { font-size:13px;color:#224d35;margin-inline-end:5px;white-space:nowrap }
+body.wa-fluent #checkbarDialog .checkbar-manual select { min-width:110px;max-width:148px }
+body.wa-fluent #checkbarDialog .checkbar-quick-search { margin-inline-start:auto }
+body.wa-fluent .checkbar-quick-search>span { position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap }
+body.wa-fluent #checkbarProductSearch { width:195px;background:#f7faf8 }
+body.wa-fluent #checkbarDialog #checkbarAdd { border-color:#8eb99e;color:#135a3a;background:#fff;font-weight:500 }
+body.wa-fluent #checkbarOutstandingSummary { color:#5f7466;background:#f8faf9;padding:4px 14px;font-size:11px;border-bottom:1px solid #e6ede8 }
+body.wa-fluent #checkbarTable :is(th,td) { padding:3px 6px;font-size:12px;line-height:18px }
+body.wa-fluent #checkbarTable td { height:34px;border-bottom:1px solid #e5ece7 }
+body.wa-fluent #checkbarTable td:nth-child(5) { color:#263f31;text-align:start;font-weight:500 }
+body.wa-fluent #checkbarTable td:nth-child(5) small { display:inline;margin-inline-start:7px;font-size:10px;color:#64766a;font-weight:400 }
+body.wa-fluent #checkbarTable td:nth-child(5) small::before { content:'·';margin-inline-end:5px }
+body.wa-fluent #checkbarTable thead tr:first-child th { height:36px;background:#edf3ef;color:#51695a;font-size:11px;line-height:16px }
+body.wa-fluent #checkbarTable .shared-filter-row th { top:36px;background:#f7faf8 }
+body.wa-fluent #checkbarTable td:nth-child(10),body.wa-fluent #checkbarTable td:nth-child(11) { background:#f1f8f3 }
+body.wa-fluent #checkbarTable td input { height:28px;min-height:28px;border:1px solid #81968b;background:#fff;border-radius:5px;font-weight:500;font-size:13px;box-shadow:0 1px 2px #163d2805 }
+body.wa-fluent #checkbarTable td input:focus { background:#fff;outline:2px solid #248050;outline-offset:0 }
+body.wa-fluent #checkbarTable td input:disabled { background:#f3f6f4;border-color:transparent;color:#36533f }
+body.wa-fluent #checkbarTable .checkbar-total { background:#e9f3ec;color:#175733 }
+body.wa-fluent #checkbarTable td button { background:transparent;color:#5a7461;border-color:transparent;padding:3px 5px;min-height:27px;font-size:11px }
+body.wa-fluent #checkbarTable td button:hover { background:#e2efe6;border-color:#b4ccbb }
+body.wa-fluent #checkbarTable td button[data-checkbar-remove] { color:#9c4236 }
+body.wa-fluent #checkbarDelete { color:#9d3d32;border-color:#e5c9c2 }
+body.wa-fluent #checkbarDialog #checkbarMatchingPrepare { border-color:#9ebeaa;color:#175536;background:#edf6f0 }
+body.wa-fluent #checkbarDialog #checkbarIssue:disabled { color:#697d70;background:#e7eee9;border-color:#dbe4de;opacity:1 }
+body.wa-fluent #checkbarDialog #checkbarMatching { padding:8px 12px;background:#f5faf7;border-color:#9fbea9 }
+body.wa-fluent #checkbarMatching>summary { display:inline-block;color:#185b37;background:#e6f2e9;border-color:#c4dbcb;font-weight:600 }
+body.wa-fluent #checkbarMatching>label { background:#fff;padding:8px;border:1px solid #d2e4d7;border-radius:5px;font-size:12px;gap:8px }
+body.wa-fluent #checkbarDialog .compact-disclosure-body { border-color:#a9c5b3;border-radius:8px;padding:14px 16px;box-shadow:0 10px 28px #163d2d26 }
+body.wa-fluent #checkbarImagePanel .checkbar-image-actions { padding:12px;background:#f4f9f6;border:1px dashed #a6c7b1;border-radius:7px }
+body.wa-fluent #checkbarImagePanel .checkbar-image-actions label { font-size:12px;gap:7px }
+body.wa-fluent #checkbarImagePanel input[type=file] { max-width:100%;font-size:11px;border:0;background:transparent }
+body.wa-fluent #checkbarImagePanel input::file-selector-button { color:#1c5b3a;border:1px solid #c1d7c8;background:#fff;padding:5px 9px;border-radius:5px;font-family:inherit;cursor:pointer }
+body.wa-fluent #checkbarExtraMetadata .compact-disclosure-body { gap:12px;background:#fff }
+body.wa-fluent #checkbarExtraMetadata label { display:flex;flex-direction:column;align-items:stretch;gap:5px;color:#4f6859 }
+body.wa-fluent #fulfillmentTable .fulfillment-work-actions { display:flex;flex-wrap:nowrap;align-items:center;gap:5px;justify-content:center }
+body.wa-fluent #fulfillmentTable .fulfillment-work-actions>button { border-color:#aecbb9;color:#175c38;background:#f0f8f3 }
+body.wa-fluent .row-actions-menu { max-width:100%;font-size:11px }
+body.wa-fluent .row-actions-menu>summary { padding:5px 8px;min-height:28px;border:1px solid #d6e2d9;border-radius:5px;background:#fff;white-space:nowrap;color:#4d6556;line-height:18px }
+body.wa-fluent .row-actions-menu[open] { flex-basis:auto }
+body.wa-fluent .row-actions-menu[open]>summary { background:#eff5f1 }
+body.wa-fluent .row-actions-menu>div { display:grid;gap:5px;padding:7px 0 2px }
+body.wa-fluent #fulfillmentTable .row-actions-menu :is(button,a) { white-space:normal;min-height:30px;width:100%;justify-content:center }
+body.wa-fluent #fulfillmentTable .row-actions-menu .danger-action { color:#964639;background:#fff9f7;border-color:#e8d3cd }
+
+/* Balance/history is a full working form, with one vertical scroll region. */
+body.wa-fluent #fulfillmentBalanceDialog[open] { display:flex;flex-direction:column;height:calc(100dvh - 24px);overflow:hidden }
+body.wa-fluent #fulfillmentBalanceDialog .preview-dialog-head h3 { margin:0;font-size:16px;line-height:24px }
+body.wa-fluent #fulfillmentBalanceDialog .preview-dialog-body { flex:1;min-height:0;min-width:0;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:12px }
+body.wa-fluent #fulfillmentBalanceDialog .preview-dialog-body>:is(p,h3) { margin:0 }
+body.wa-fluent #fulfillmentBalanceDialog .preview-dialog-body>label { display:flex;align-items:center;gap:8px;flex-wrap:wrap }
+body.wa-fluent #fulfillmentBalanceDialog :is(select,textarea) { font:inherit;border:1px solid #bccfc3;border-radius:6px;padding:7px 9px;background:#fff;color:#294d3d }
+body.wa-fluent #fulfillmentBalanceReason { flex:1;min-width:180px;resize:vertical }
+body.wa-fluent #fulfillmentBalanceNotice { flex:1;min-width:0;margin:0;font-size:12px;line-height:20px }
+body.wa-fluent #fulfillmentBalanceNotice[role=alert] { color:#a12828;font-weight:600 }
+body.wa-fluent #fulfillmentBalanceDialog .table-wrap { flex:none;max-height:none!important;width:100%;min-width:0;overflow:auto }
+body.wa-fluent #fulfillmentBalanceDialog table.fixed-columns { min-width:100% }
+body.wa-fluent #fulfillmentBalanceDialog .fixed-columns :is(th,td) { vertical-align:middle;overflow-wrap:break-word }
+body.wa-fluent #fulfillmentBalanceDialog td:first-child { white-space:nowrap;font-variant-numeric:tabular-nums }
+body.wa-fluent #fulfillmentBalanceDialog td input { width:100%;max-width:100%;min-width:0;box-sizing:border-box }
+body.wa-fluent #fulfillmentBalanceDialog .table-filter-row input { width:100%;max-width:100%;min-width:0;box-sizing:border-box }
+
+@media(max-width:1100px) {
+  body.wa-fluent .warehouse-shell .app-layout { grid-template-columns:66px minmax(0,1fr) }
+  body.wa-fluent .warehouse-shell .app-sidebar { padding:14px 6px }
+  body.wa-fluent .warehouse-shell :is(.sidebar-title,.sidebar-note,.nav-section-label) { display:none }
+  body.wa-fluent .warehouse-shell .app-sidebar .page-tabs button { grid-template-columns:1fr;justify-items:center;padding:10px;min-height:46px }
+  body.wa-fluent .warehouse-shell .app-sidebar .page-tabs button span:not(.nav-icon) { display:none }
+  body.wa-fluent .warehouse-shell .app-content { padding:10px }
+  body.wa-fluent #checkbarDialog .checkbar-primary-metadata { flex-basis:100%;justify-content:flex-start }
+  body.wa-fluent #checkbarDialog .checkbar-corebar { padding-inline:2px }
+  body.wa-fluent #checkbarCatalogCount { display:none }
+}
+@media(max-width:700px) {
+  body.wa-fluent .warehouse-shell .topbar { padding:5px 9px }
+  body.wa-fluent .warehouse-shell .top-actions :is(.safety-badge,a) { display:none }
+  body.wa-fluent .identity h1 { font-size:14px }
+  body.wa-fluent .warehouse-shell .app-layout { display:block }
+  body.wa-fluent .warehouse-shell .app-sidebar { top:52px;width:100%;height:auto;padding:4px 7px;border-bottom:1px solid #d8e2dc;overflow:visible }
+  body.wa-fluent .warehouse-shell .app-sidebar .page-tabs { display:flex;overflow-x:auto;margin:0;gap:4px }
+  body.wa-fluent .warehouse-shell .app-sidebar .page-tabs button { flex:1 0 42px;min-height:44px;padding:9px }
+  body.wa-fluent .warehouse-shell .summary-grid article { flex:0 0 auto }
+  body.wa-fluent .warehouse-shell .summary-grid article:first-child { display:none }
+  body.wa-fluent .warehouse-shell .panel-head { min-height:52px;padding:10px }
+  body.wa-fluent .warehouse-shell .panel-head h2 { font-size:15px }
+  body.wa-fluent #checkbarDialog .preview-dialog-head { padding:8px;gap:6px }
+  body.wa-fluent #checkbarDialog .preview-dialog-head h2 { font-size:15px }
+  body.wa-fluent #checkbarDialog .preview-dialog-head p { display:none }
+  body.wa-fluent #checkbarDialog .document-mark { display:none }
+  body.wa-fluent #checkbarDialog .checkbar-selectors { padding:8px;gap:8px }
+  body.wa-fluent #checkbarDialog .checkbar-selectors>label { flex:1;min-width:130px;flex-direction:column;align-items:stretch }
+  body.wa-fluent #checkbarDialog .checkbar-selectors select { width:100%;max-width:none;min-width:0!important }
+  body.wa-fluent #checkbarDialog .checkbar-primary-metadata label { flex-direction:column;align-items:stretch;white-space:normal }
+  body.wa-fluent #checkbarDialog .checkbar-primary-metadata input,body.wa-fluent #checkbarDialog .checkbar-primary-metadata label:first-child input { width:100%;min-width:0 }
+  body.wa-fluent #checkbarDialog .checkbar-corebar { flex-basis:100%;order:2 }
+  body.wa-fluent #checkbarDialog .checkbar-table-views { margin-inline-start:0;flex-wrap:wrap }
+  body.wa-fluent #checkbarDialog .checkbar-items-heading { flex-basis:100% }
+  body.wa-fluent #checkbarDialog .checkbar-quick-search { flex:1 0 180px }
+  body.wa-fluent #checkbarDialog .checkbar-manual input { max-width:100%;width:100% }
+  body.wa-fluent #checkbarEditor:not([hidden]) { min-height:480px }
+  body.wa-fluent #checkbarExtraMetadata .compact-disclosure-body { grid-template-columns:1fr }
+  body.wa-fluent #checkbarDialog .preview-dialog-footer { padding:6px 8px }
+  body.wa-fluent #checkbarDialog .preview-dialog-footer>span { flex-basis:100% }
+}
+@media(pointer:coarse) {
+  body.wa-fluent :is(.warehouse-shell,.preorder-preview-dialog) :is(button,select,input:not([type=checkbox]),summary) { min-height:44px!important }
+}
+@media(prefers-reduced-motion:reduce) { body.wa-fluent :is(button,a,summary,input,select,textarea) { transition:none } }
+@media print {
+  body.wa-fluent .preorder-preview-dialog .preview-dialog-head { background:#fff;color:#000 }
+  body.wa-fluent .preorder-preview-dialog .preview-dialog-head :is(h2,p) { color:#000 }
+}
+
+/* Task-first workspace: a compact command area, with the table as the main surface. */
+body.wa-fluent #ordersList { display:block;padding:0 }
+body.wa-fluent .manual-order-actions { display:flex;align-items:center;gap:8px;flex-wrap:wrap }
+body.wa-fluent .manual-order-lines { padding:8px;max-width:950px }
+body.wa-fluent .manual-order-lines>div { display:grid;grid-template-columns:110px minmax(200px,1fr) 100px;gap:12px;padding:5px;border-bottom:1px solid #e1e8e3 }
+body.wa-fluent #manualOrdersTable tbody tr>td:last-child:not([colspan]) { position:sticky;inset-inline-end:0;background:#f4f8f5 }
+body.wa-fluent #manualOrdersTable thead th:last-child { position:sticky;inset-inline-end:0;z-index:4;background:#edf4f0 }
+body.wa-fluent #manualOrdersTable .column-filtered-out+tr[id^="manual-order-details-"] { display:none }
+body.wa-fluent #manualOrdersTable small { display:block;color:#567064 }
+body.wa-fluent #checkbarHistoryRows small { display:block;color:#567064 }
+body.wa-fluent .warehouse-shell .app-content { padding:6px 8px 8px }
+body.wa-fluent .warehouse-shell .topbar { gap:12px;padding:4px 10px }
+body.wa-fluent .topbar .summary-grid { order:1;flex:1;justify-content:flex-start;margin:0;min-width:0 }
+body.wa-fluent .topbar .summary-grid article { flex:0 1 auto;padding:0 8px;min-height:0 }
+body.wa-fluent .topbar .summary-grid span { font-size:10px }
+body.wa-fluent .topbar .summary-grid strong { font-size:11px }
+body.wa-fluent .topbar .top-actions { order:2;margin-inline-start:auto }
+body.wa-fluent .top-actions .safety-badge,body.wa-fluent .identity .eyebrow { display:none }
+body.wa-fluent .warehouse-shell .sidebar-title { display:none }
+body.wa-fluent .warehouse-shell .app-sidebar { padding:6px 8px }
+body.wa-fluent .warehouse-shell .nav-section-label { padding:6px 8px 2px }
+body.wa-fluent .warehouse-shell .app-sidebar .page-tabs button { min-height:40px;padding:5px 8px }
+body.wa-fluent .warehouse-shell .panel-head { min-height:42px;padding:5px 10px;gap:8px;position:relative;overflow:visible }
+body.wa-fluent .warehouse-shell .panel-head h2 { font-size:15px;line-height:22px;margin:0 }
+body.wa-fluent .warehouse-shell .panel-actions { gap:5px;align-items:center }
+body.wa-fluent .warehouse-shell .panel-actions :is(button,select) { min-height:30px;padding:4px 8px }
+body.wa-fluent .warehouse-shell .inventory-commandbar { padding:5px 8px;gap:6px }
+body.wa-fluent .warehouse-shell .inventory-filters { padding:0;flex:1 }
+body.wa-fluent .warehouse-shell .inventory-filters label { flex:1;min-width:160px }
+body.wa-fluent .warehouse-shell .inventory-filters input { width:100% }
+body.wa-fluent .warehouse-shell .work-view-bar { padding:4px 8px;gap:4px;min-height:34px }
+body.wa-fluent .warehouse-shell .work-view-bar button { min-height:28px;padding:3px 8px }
+body.wa-fluent .warehouse-shell :is(.result-summary,.automatic-refresh-status) { min-height:24px;padding:2px 8px }
+body.wa-fluent .warehouse-shell .table-wrap :is(th,td) { padding:3px 6px;font-size:12px;line-height:18px;vertical-align:middle }
+body.wa-fluent .warehouse-shell .table-wrap tbody td { height:32px }
+body.wa-fluent .warehouse-shell .table-wrap { scrollbar-gutter:auto;overflow-anchor:none }
+body.wa-fluent .warehouse-shell .table-wrap.viewport-fitted { scrollbar-gutter:auto }
+body.wa-fluent #inventoryView { margin-bottom:0 }
+body.wa-fluent #inventoryView .inventory-more:not(:has(button:not([hidden]))) { display:none }
+body.wa-fluent .inventory-table td[data-column=period_out_qty] { white-space:nowrap }
+body.wa-fluent .inventory-table .demand-audit-details { display:inline-block;margin-inline-start:5px;vertical-align:middle }
+body.wa-fluent .inventory-table .demand-audit-details > summary { font-size:10px;min-height:0;padding:0;line-height:16px }
+body.wa-fluent .inventory-table .demand-audit-details[open] > span { white-space:normal }
+body.wa-fluent .warehouse-shell .table-wrap tbody :is(button,input,select) { min-height:28px;padding:3px 6px }
+body.wa-fluent .warehouse-shell .table-wrap thead th { padding:3px 6px }
+body.wa-fluent .warehouse-shell .table-wrap .table-filter-row th { padding:2px 4px }
+body.wa-fluent .warehouse-shell :is(.inventory-data-tools,.inventory-totals,.page-purpose) { margin:0;border:0;background:none;border-radius:0 }
+body.wa-fluent :is(.inventory-data-tools,.inventory-totals,.page-purpose)>summary { font-size:11px;line-height:18px;min-height:30px;padding:5px 8px;color:#345c49;cursor:pointer;border:1px solid #d8e4dd;border-radius:5px;white-space:nowrap }
+body.wa-fluent :is(.inventory-data-tools,.inventory-totals,.page-purpose)[open]>:not(summary) { position:absolute;inset-inline:8px;top:100%;z-index:24;max-height:55vh;overflow:auto;padding:12px;background:#fff;border:1px solid #c5d8cc;box-shadow:0 6px 20px #173e3524;border-radius:6px;margin:0 }
+body.wa-fluent .inventory-totals #inventorySummary { display:flex;flex-wrap:wrap;gap:10px;min-height:45px }
+body.wa-fluent .column-layout-dialog > :is(.workspace-options,.column-picker) { display:block;width:100%;margin-top:12px }
+body.wa-fluent .column-layout-dialog :is(.workspace-options > .inventory-view-bar,.column-picker > div) { position:static;width:100%;max-width:100%;margin-top:6px;box-shadow:none }
+body.wa-fluent .warehouse-shell :is(th,td):is([data-preorder-column=actions],[data-auto-column=actions]) { position:sticky;inset-inline-end:0;background:#f4f8f5;z-index:2;box-shadow:2px 0 3px #173e3515 }
+body.wa-fluent .warehouse-shell th:is([data-preorder-column=actions],[data-auto-column=actions]) { z-index:5 }
+@media(max-width:1000px){
+ body.wa-fluent .topbar .summary-grid { display:none }
+ body.wa-fluent .warehouse-shell .app-content { padding:4px }
+}
+@media(min-width:701px) and (max-width:1200px){
+ body.wa-fluent .warehouse-shell .app-layout { grid-template-columns:160px minmax(0,1fr) }
+ body.wa-fluent .warehouse-shell .app-sidebar { width:160px }
+ body.wa-fluent .warehouse-shell .app-sidebar .page-tabs button { grid-template-columns:20px minmax(0,1fr) auto;padding:6px;gap:5px }
+ body.wa-fluent .warehouse-shell .app-sidebar .page-tabs button span:not(.nav-icon) { display:block;min-width:0;white-space:normal;font-size:12px;line-height:18px }
+ body.wa-fluent .warehouse-shell .app-sidebar .page-tabs button small { display:none }
+ body.wa-fluent .warehouse-shell .app-sidebar .nav-badge { position:static;inset:auto }
+}
+body.wa-fluent #checkbarDialog .preview-dialog-head { min-height:42px;padding:5px 10px }
+body.wa-fluent #checkbarDialog .preview-dialog-head h2 { font-size:16px;line-height:22px }
+body.wa-fluent #checkbarDialog .preview-dialog-head p { display:none }
+body.wa-fluent #checkbarDialog .checkbar-selectors { padding:5px 10px;gap:7px }
+body.wa-fluent #checkbarDialog .checkbar-toolsbar { padding:4px 8px;gap:4px }
+body.wa-fluent #checkbarDialog .checkbar-manual { padding:4px 8px }
+body.wa-fluent #checkbarDialog .checkbar-toolsbar summary { min-height:28px;padding:3px 7px }
+@media(pointer:coarse){
+ body.wa-fluent .warehouse-shell :is(button,summary,select) { min-height:44px }
+ body.wa-fluent .warehouse-shell .table-wrap tbody td { height:44px }
+}
+.prepared-order-kind{display:flex;gap:6px;padding:8px 12px;border-bottom:1px solid var(--line)}
+.prepared-order-kind button[aria-pressed="true"]{background:var(--green);color:#fff}
+.preorders-manual-only>:not(.prepared-order-kind):not(.manual-orders-block){display:none!important}
+.preorders-manual-only .manual-orders-block{border-top:0}

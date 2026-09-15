@@ -1,0 +1,33 @@
+{
+  "date":"2026-09-13",
+  "database":"127.0.0.1/NeginAI_InterwarehouseBridge_Test",
+  "production_writes":false,
+  "command":".venv/Scripts/python.exe tests/fixtures/interwarehouse_credit/native_price_reserve_proof.py",
+  "exit_code":0,
+  "wall_seconds":3.208,
+  "native_fixture":{
+    "description":"Explicit type76 price-reserve fixture through official create and FRU confirmation, with native triggers enabled",
+    "vocher_id":125436,"vocher_no":1,"type":76,"health_code_type":1009,"health_code":1,
+    "source_stock_ref":2,"quantity":200,
+    "healthy_before":287,"healthy_after":87,"reserved_before":0,"reserved_after":200
+  },
+  "native_credit":{
+    "status":"sent","vocher_id":125437,"vocher_no":4,"confirmed":true,"type":65,
+    "source_stock_ref":2,"destination_stock_ref":1,"quantity":1,
+    "healthy_before":87,"healthy_after":86,"reserved_before":200,"reserved_after":200,
+    "destination_healthy_unchanged":479,"third_warehouse_healthy_unchanged":495,
+    "preflight_no_effect":true,"replay_same_id_no_additional_stock_effect":true
+  },
+  "native_shortage_cases":[
+    {"source":2,"commit":false,"status":"rejected","error_code":51515,"issues":[{"ProductCode":"364509603","RequestedQuantity":87,"OnHandQuantity":86,"ReservedQuantity":200,"ShortageQuantity":1}],"footprint_unchanged":true},
+    {"source":2,"commit":true,"status":"rejected","error_code":51515,"issues":[{"ProductCode":"364509603","RequestedQuantity":87,"OnHandQuantity":86,"ReservedQuantity":200,"ShortageQuantity":1}],"footprint_unchanged":true},
+    {"source":1,"commit":false,"status":"rejected","error_code":51515,"issues":[{"ProductCode":"364509603","RequestedQuantity":480,"OnHandQuantity":479,"ReservedQuantity":0,"ShortageQuantity":1}],"footprint_unchanged":true},
+    {"source":1,"commit":true,"status":"rejected","error_code":51515,"issues":[{"ProductCode":"364509603","RequestedQuantity":480,"OnHandQuantity":479,"ReservedQuantity":0,"ShortageQuantity":1}],"footprint_unchanged":true}
+  ],
+  "footprint_fields":["all three warehouse OnHandQty/ReservedQty","voucher header count","voucher item count","bridge audit count","all voucher number counters"],
+  "release_type41_count":0,"destination_debit_type15_count":0,"final_active_test_policies":0,
+  "wrapper_raw_clone_sha256":"1E052D5C42335F0E60809440E2325C125B65CC36C9158200AE5B02A572FA631F",
+  "wrapper_normalized_activation_sha256":"E6BD3375719B29EAE77C8C5B58902AF5CBCDBADA493C5B7D4FD990463D3B1640",
+  "hash_normalization":"CRLF to LF, trim outer spaces/tab/CR/LF, SHA256 over UTF-16LE native OBJECT_DEFINITION; preserve all internal newline/comment boundaries",
+  "limitations":["Owned schema-native clone with bounded fixture data, not production execution", "No automatic release from price reserve is implemented or authorized by these tests", "App workflow for returning local lines is verified separately"]
+}

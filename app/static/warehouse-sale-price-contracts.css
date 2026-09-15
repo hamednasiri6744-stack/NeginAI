@@ -1,0 +1,35 @@
+body.wa-fluent #salePriceView{font-size:12px;min-width:0}
+#salePriceView .sale-price-toolbar{display:flex;align-items:end;flex-wrap:wrap;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line)}
+#salePriceView label,.sale-price-dialog label{display:flex;flex-direction:column;gap:4px;color:var(--ink);font-size:12px;min-width:0}
+#salePriceView :is(input,select),.sale-price-dialog :is(input,select,textarea){font:inherit;min-height:34px;border:1px solid var(--line);border-radius:5px;padding:5px 8px;background:var(--panel);color:var(--ink);min-width:0;max-width:100%}
+#salePriceView .sale-price-search{flex:1;min-width:190px}
+#salePriceView button,.sale-price-dialog button{font-size:12px;min-height:32px;padding:5px 10px;border:1px solid var(--line);border-radius:5px;cursor:pointer}
+#salePriceView button:not(.primary),.sale-price-dialog button:not(.primary){background:var(--panel);color:var(--ink)}
+#salePriceView button:focus-visible,.sale-price-dialog :is(button,input,select,textarea):focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.sale-price-actions{display:flex;gap:6px}.sale-price-meta{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:6px 12px;color:var(--muted);font-size:11px}
+.sale-price-table-scroll{overflow:auto;max-height:calc(100dvh - 285px);min-height:260px}
+#salePriceView table{width:100%;min-width:900px;border-collapse:collapse;font-size:12px}
+#salePriceView :is(th,td){padding:8px 9px;vertical-align:middle;line-height:1.55}
+#salePriceView thead{position:sticky;top:0;z-index:2;background:var(--fluent-subtle)}
+#salePriceView small{display:block;color:var(--muted)}
+.sale-price-row-actions{display:flex;gap:5px;flex-wrap:wrap}.sale-price-badge{padding:3px 6px;border:1px solid var(--line);border-radius:4px;white-space:nowrap}
+.sale-price-badge.active{color:var(--green);background:var(--fluent-selected)}.sale-price-badge.draft{color:var(--warn);background:var(--fluent-warning)}
+#salePriceMessage{margin:8px 12px;padding:8px 10px;background:var(--fluent-warning);color:var(--fluent-warning-text);border-radius:5px}
+body.wa-fluent dialog.sale-price-dialog{width:min(1240px,96vw);max-width:96vw;max-height:92dvh;padding:0;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink)}
+.sale-price-dialog::backdrop{background:rgb(12 40 30 / 40%)}
+.sale-price-dialog header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:var(--fluent-sidebar);color:white}
+.sale-price-dialog header h2{font-size:17px;margin:0}.sale-price-dialog header button{color:white!important;background:transparent!important}
+.sale-price-dialog form{margin:0}.sale-price-dialog fieldset{margin:0;border:0;padding:14px 16px;min-width:0;max-height:calc(92dvh - 135px);overflow:auto}
+.sale-price-editor-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px}.sale-price-editor-layout>section{min-width:0}.sale-price-editor-layout h3{font-size:14px;margin:0 0 12px}.sale-price-editor-layout>section+section{border-inline-start:1px solid var(--line);padding-inline-start:20px}
+.sale-price-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px}.sale-price-wide{grid-column:1/-1}
+.sale-price-check{flex-direction:row!important;align-items:center;align-self:end;min-height:34px}.sale-price-check input{min-height:18px!important;width:18px;accent-color:var(--green)}
+.sale-price-help{color:var(--muted);font-size:11px;line-height:1.8}.sale-price-dialog details{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:6px}.sale-price-dialog summary{cursor:pointer;font-weight:600}
+.sale-price-sample{display:grid;grid-template-columns:2fr 1fr 1.5fr auto;align-items:end;gap:8px;margin-top:10px}
+.sale-price-selection-actions{display:flex;gap:6px;flex-wrap:wrap}.sale-price-selection-actions input{flex:1;min-width:150px}.sale-price-item-scroll{overflow:auto;max-height:330px;border:1px solid var(--line);margin-top:8px}.sale-price-item-scroll table{width:100%;min-width:0;border-collapse:collapse;font-size:12px;table-layout:fixed}.sale-price-item-scroll th:first-child{width:54px}.sale-price-item-scroll th:nth-child(3){width:28%}.sale-price-item-scroll th:last-child{width:70px}.sale-price-item-scroll :is(th,td){padding:6px 8px;white-space:normal;line-height:1.5}.sale-price-item-scroll thead{position:sticky;top:0;background:var(--fluent-subtle);z-index:1}.sale-price-item-scroll strong,.sale-price-item-scroll small{display:block}.sale-price-item-scroll input[type=checkbox]{min-height:20px;width:20px}
+#saleRulePreviewOutput{display:flex;flex-wrap:wrap;gap:8px 16px;padding-top:12px;font-size:12px}#saleRulePreviewOutput strong{width:100%;color:var(--green)}
+.sale-price-dialog footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-top:1px solid var(--line)}
+#saleRuleError{margin:0;color:var(--danger);font-size:12px}.sale-price-dialog article{border-bottom:1px solid var(--line);padding:12px 16px;font-size:12px}.sale-price-dialog article p{margin:6px 0}
+@media(max-width:960px){.sale-price-editor-layout{grid-template-columns:1fr}.sale-price-editor-layout>section+section{border-inline-start:0;border-top:1px solid var(--line);padding-inline-start:0;padding-top:14px}}
+@media(max-width:700px){.sale-price-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sale-price-sample{grid-template-columns:1fr 1fr}}
+@media(max-width:460px){.sale-price-grid,.sale-price-sample{grid-template-columns:1fr}.sale-price-wide{grid-column:auto}}
+@media(pointer:coarse){#salePriceView button,.sale-price-dialog :is(button,input,select){min-height:44px}}

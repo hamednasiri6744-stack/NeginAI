@@ -1,0 +1,332 @@
+/* Operational density is the final presentation layer. No business-state selectors
+   or disabled controls are changed. Desktop: 12px text, 28px controls, 34px rows. */
+body.wa-fluent{--ng-body-size:13px;--ng-body-line:20px;--ng-title-size:16px;--ng-title-line:24px;--wa-topbar-height:44px;font-size:13px;line-height:1.5}
+body.wa-fluent *,body.wa-fluent *::before,body.wa-fluent *::after{box-sizing:border-box}
+body.wa-fluent :is(button,input,select,textarea,summary){font-family:Vazirmatn,Tahoma,sans-serif;font-size:12px;line-height:17px}
+body.wa-fluent :is(button,.secondary-action,.primary,.header-button,input:not([type=checkbox]),select){min-height:28px;padding:3px 7px}
+body.wa-fluent :is(h2,h3){font-size:14px;line-height:20px}
+body.wa-fluent .warehouse-shell .topbar{height:44px;min-height:44px;padding:4px 12px;background:#123e33;color:#fff;border-bottom:1px solid #123e33}
+body.wa-fluent .warehouse-shell .identity h1{font-size:16px;line-height:24px;color:#fff}
+body.wa-fluent .topbar .summary-grid :is(span,strong){font-size:11px;line-height:18px;color:#d5e5dc}
+body.wa-fluent .topbar .summary-grid strong{font-weight:600;color:#fff}
+body.wa-fluent .top-actions :is(button,a),body.wa-fluent .top-actions .user-badge{font-size:12px;line-height:18px}
+body.wa-fluent{--wa-sidebar-width:176px}
+body.wa-fluent .warehouse-shell .app-layout{grid-template-columns:var(--wa-sidebar-width) minmax(0,1fr)}
+body.wa-fluent .warehouse-shell .app-sidebar{top:44px;width:auto;height:calc(100dvh - 44px);padding:6px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain}
+body.wa-fluent .warehouse-shell .app-content{padding:8px 12px;background:#f4f6f5}
+/* Figma Negin navigation: fixed row rhythm, one-line labels and equal link/button treatment. */
+body.wa-fluent .warehouse-shell .app-sidebar .page-tabs{display:grid;grid-auto-rows:max-content;align-content:start;gap:2px;margin:0;flex:none}
+body.wa-fluent .warehouse-shell .app-sidebar .page-tabs :is(button,.sidebar-nav-link){display:grid;grid-template-columns:18px minmax(0,1fr) auto;align-items:center;justify-items:stretch;width:100%;min-height:32px;padding:5px 7px;gap:7px;border:0;border-radius:5px;background:transparent;color:var(--fluent-text);text-align:right;text-decoration:none;font-size:12px;font-weight:500;line-height:20px;box-shadow:none}
+body.wa-fluent .warehouse-shell .app-sidebar .page-tabs :is(button,.sidebar-nav-link)>span:not(.nav-icon){display:block;min-width:0;white-space:nowrap;font-size:12px;line-height:20px}
+body.wa-fluent .warehouse-shell .app-sidebar .page-tabs :is(button,.sidebar-nav-link) small{display:none}
+body.wa-fluent .warehouse-shell .app-sidebar .page-tabs :is(button,.sidebar-nav-link):hover{background:var(--fluent-subtle);color:var(--fluent-brand)}
+body.wa-fluent .warehouse-shell .app-sidebar .page-tabs button.is-active{background:var(--fluent-selected);color:var(--fluent-brand);font-weight:700;box-shadow:inset -3px 0 var(--fluent-brand)}
+body.wa-fluent .warehouse-shell .app-sidebar .page-tabs :is(button,.sidebar-nav-link):focus-visible{outline:2px dashed #334155;outline-offset:-3px}
+body.wa-fluent .warehouse-shell .app-sidebar .nav-icon{display:grid;width:18px;height:18px;place-items:center;background:none}
+body.wa-fluent .warehouse-shell .app-sidebar .nav-icon svg{width:18px;height:18px;stroke-width:1.6}
+body.wa-fluent .warehouse-shell .app-sidebar .nav-badge{position:static;inset:auto;min-width:20px;max-width:none;padding:0 4px;border-radius:4px;font-size:10px;line-height:20px;font-weight:600;font-variant-numeric:tabular-nums}
+body.wa-fluent .warehouse-shell .nav-section-label{display:block;min-height:22px;padding:5px 7px 1px;color:var(--fluent-secondary);font-size:10px;line-height:16px;font-weight:600}
+body.wa-fluent .warehouse-shell .nav-section-label:not(:first-child){margin-top:4px;border-top:1px solid var(--fluent-divider);padding-top:7px}
+body.wa-fluent .warehouse-shell .sidebar-note{display:block;flex:none;margin-top:10px;padding:6px 7px 0;font-size:10px}
+body.wa-fluent .warehouse-shell .sidebar-note summary{font-size:10px;line-height:18px;padding:2px 0}
+body.wa-fluent .warehouse-shell .panel{border:1px solid #dbe3df;border-radius:8px;box-shadow:0 1px 2px #173f3508}
+body.wa-fluent .warehouse-shell .panel-head{min-height:42px;padding:6px 10px;gap:8px}
+body.wa-fluent .warehouse-shell .panel-head h2{font-size:16px;line-height:24px;color:#1f3d31}
+body.wa-fluent :is(.panel-actions,.filter-grid,.inventory-commandbar,.supply-toolbar,.checkbar-archive-toolbar,.prepared-order-kind,.fulfillment-toolbar){padding:4px 8px;gap:6px}
+body.wa-fluent .prepared-order-kind [role=tab]{min-height:28px;min-width:90px;padding:3px 10px}
+body.wa-fluent :is(.result-summary,.automatic-refresh-status,.checkbar-workflow){padding:3px 8px;min-height:22px;font-size:12px}
+/* One line for view, columns, export and fullscreen instead of separate floors. */
+body.wa-fluent .operation-tools{display:flex;align-items:center;flex-wrap:wrap;gap:4px;padding:3px 6px;min-height:34px;flex:0 0 auto;border-bottom:1px solid var(--fluent-border);background:#f7f9f8}
+body.wa-fluent .operation-tools :is(.work-view-bar,.table-export-bar){display:contents}
+body.wa-fluent .operation-tools :is(.work-view-label,.work-view-custom){display:none}
+body.wa-fluent .operation-tools .table-export-button{min-height:26px!important;padding:3px 7px;font-size:12px;order:2;margin-inline-start:auto}
+body.wa-fluent .operation-tools [data-table-fullscreen]{order:3}
+body.wa-fluent .operation-tools button{min-height:26px;padding:3px 7px;font-size:12px}
+/* Short documents don't grow empty rows; long tables always have a ten-row floor.
+   On smaller/zoomed windows the surface scrolls rather than collapsing the grid. */
+body.wa-fluent .operation-table{min-height:410px;overflow:auto;scroll-padding-block:65px 8px}
+body.wa-fluent .operation-table>table{min-width:100%!important}
+body.wa-fluent :is(.preorder-actions,.manual-order-actions){display:flex;align-items:center;flex-wrap:wrap;gap:4px}
+body.wa-fluent .operation-row-menu{margin:0;padding:0;border:0}
+body.wa-fluent .operation-row-menu summary{min-height:27px;padding:3px 6px;border:1px solid var(--fluent-border);border-radius:4px;white-space:nowrap;color:var(--fluent-text);background:#fff}
+body.wa-fluent .operation-row-menu>div{display:flex;flex-wrap:wrap;gap:4px;padding:4px;background:#f5f8f6}
+body.wa-fluent .operation-table :is(th,td){font-size:12px;line-height:16px;padding:2px 6px;vertical-align:middle}
+body.wa-fluent .operation-table :is(.cell-name,.cell-name summary,.cell-text-details summary){line-height:16px}
+body.wa-fluent .operation-table tbody td{height:34px}
+body.wa-fluent #fulfillmentTable :is(th,td){font-size:12px;line-height:18px;padding:5px 8px}
+body.wa-fluent #fulfillmentTable tbody td{height:48px}
+body.wa-fluent #fulfillmentTable .fulfillment-number{font-size:12px;white-space:normal;overflow-wrap:anywhere}
+body.wa-fluent #fulfillmentTable .fulfillment-number small{display:block;font-size:11px;color:#586c61;direction:rtl}
+body.wa-fluent #fulfillmentTable .fulfillment-status{white-space:normal;font-size:11px;line-height:18px;padding:2px 6px}
+body.wa-fluent #fulfillmentTable :is(th,td)[data-fulfillment-column="actions"]{position:sticky;inset-inline-end:0;background:#fff;box-shadow:2px 0 0 #dbe3df;z-index:3}
+body.wa-fluent #fulfillmentTable th[data-fulfillment-column="actions"]{background:#f4f7f5;z-index:5}
+body.wa-fluent #fulfillmentTable .preorder-actions{flex-wrap:wrap;gap:4px}
+body.wa-fluent #fulfillmentTable [data-fulfillment-column="actions"] :is(button,a){white-space:normal;height:auto;min-height:30px;max-width:100%;font-size:11px;line-height:17px}
+/* Keep the main table tools alongside the page heading, with one search row. */
+body.wa-fluent #fulfillmentView{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start}
+body.wa-fluent #fulfillmentView>.panel-head{grid-column:1;grid-row:1;border:0;min-width:0;flex-wrap:wrap}
+body.wa-fluent #fulfillmentView>.operation-tools{grid-column:2;grid-row:1;border:0;background:transparent;min-height:42px;padding:6px 10px;justify-content:flex-end}
+body.wa-fluent #fulfillmentView>.fulfillment-toolbar{grid-column:1/-1;grid-row:2;background:#fafcfb;padding:7px 10px;border-top:1px solid #e2e9e5}
+body.wa-fluent #fulfillmentView>.fulfillment-workflow-filters{grid-column:1/-1;grid-row:3;padding:6px 10px;gap:6px}
+body.wa-fluent #fulfillmentView>.table-wrap{grid-column:1/-1;grid-row:4;min-width:0}
+body.wa-fluent #fulfillmentView>.fulfillment-footnote{grid-column:1/-1;grid-row:5;font-size:11px;color:#52685b}
+body.wa-fluent #fulfillmentView .fulfillment-search{max-width:440px}
+body.wa-fluent #fulfillmentView .fulfillment-workflow-filters button{min-height:30px;font-size:12px;line-height:18px;border-color:transparent;background:#f3f6f4;color:#465b50}
+body.wa-fluent #fulfillmentView .fulfillment-workflow-filters button[aria-pressed="true"]{background:#e5f2eb;border-color:#94b8a3;color:#174e36}
+body.wa-fluent #fulfillmentSummary{font-size:12px;color:#465b50}
+body.wa-fluent #fulfillmentView [data-layout-preset][aria-pressed="true"]{background:#e5f2eb;border-color:#94b8a3;color:#174e36}
+@media(max-width:1100px){
+ body.wa-fluent #fulfillmentView{grid-template-columns:minmax(0,1fr)}
+ body.wa-fluent #fulfillmentView>.operation-tools{grid-column:1;grid-row:2;justify-content:flex-start;padding-top:0}
+ body.wa-fluent #fulfillmentView>.fulfillment-toolbar{grid-row:3}
+ body.wa-fluent #fulfillmentView>.fulfillment-workflow-filters{grid-row:4}
+ body.wa-fluent #fulfillmentView>.table-wrap{grid-row:5}
+ body.wa-fluent #fulfillmentView>.fulfillment-footnote{grid-row:6}
+}
+body.wa-fluent .operation-table thead th{padding:3px 5px;line-height:16px;overflow-wrap:normal;word-break:normal}
+body.wa-fluent .operation-table thead tr:first-child th{height:34px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.wa-fluent .operation-table thead input{height:25px!important;min-height:25px!important;padding:2px 5px}
+body.wa-fluent .operation-table :is(input:not([type=checkbox]),select,button){height:27px;min-height:27px;padding:2px 5px;font-size:12px;margin-block:0}
+body.wa-fluent .operation-table small{font-size:12px;line-height:16px}
+body.wa-fluent .operation-table .preview-data-value small{display:inline;margin-inline-start:3px}
+body.wa-fluent .operation-table .preview-data-value{white-space:nowrap}
+body.wa-fluent .operation-table .demand-audit-details{margin-inline-start:4px}
+body.wa-fluent .operation-table .system-suggestion{padding:1px 5px;margin:0;line-height:18px}
+/* Draft editors share a bounded workspace, not a fixed minimum-height nested page. */
+body.wa-fluent dialog.draft-editor[open]{overflow:hidden!important}
+body.wa-fluent dialog.draft-editor>.operation-table{flex:1 1 0!important;min-height:0!important;max-height:none!important}
+body.wa-fluent dialog.draft-editor .draft-editor-meta{display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px;padding:3px 8px;flex:none;border-bottom:1px solid var(--fluent-border)}
+body.wa-fluent dialog.draft-editor .draft-editor-meta .embedded-delivery-date{padding:0;border:0;min-height:30px}
+body.wa-fluent dialog.draft-editor .draft-editor-meta .preview-summary{padding:0;min-height:0;margin:0;border:0;flex:1}
+body.wa-fluent dialog.draft-editor .draft-editor-meta .preview-summary>span:nth-child(2),body.wa-fluent dialog.draft-editor .draft-editor-meta .preview-summary>span:nth-child(3){display:none}
+body.wa-fluent dialog.draft-editor .draft-editor-help{position:relative;margin:0;padding:0;flex:none}
+body.wa-fluent dialog.draft-editor .draft-editor-help summary{cursor:pointer;padding:5px}
+body.wa-fluent dialog.draft-editor .draft-editor-help p{position:absolute;inset-inline-end:0;top:100%;width:min(340px,75vw);padding:10px;margin:0;border:1px solid var(--fluent-border);background:#fff;z-index:15;line-height:1.7}
+body.wa-fluent dialog.draft-editor .draft-save-status{flex:1;min-width:150px;font-size:12px;line-height:18px}
+body.wa-fluent #manualEditForm{display:flex;flex-direction:column;height:100%;min-height:0;max-height:none}
+body.wa-fluent #manualEditForm .order-sms-body{display:flex;flex:1;flex-direction:column;min-height:0;padding:0;overflow:hidden}
+body.wa-fluent #manualEditLines{display:flex;flex:1;flex-direction:column;min-height:0;gap:0}
+body.wa-fluent #manualEditLines .operation-table{flex:1;min-height:0;max-height:none!important}
+body.wa-fluent #manualEditLines table{table-layout:fixed;width:100%;min-width:740px!important}
+body.wa-fluent #manualEditLines th:nth-child(1){width:110px}
+body.wa-fluent #manualEditLines th:nth-child(3){width:145px}
+body.wa-fluent #manualEditLines th:nth-child(4){width:110px}
+body.wa-fluent #manualEditLines th:nth-child(5){width:145px}
+body.wa-fluent #manualEditLines td{min-width:0;padding:2px 6px}
+body.wa-fluent #manualEditLines input{max-width:100px;min-height:28px}
+body.wa-fluent #manualEditLines .draft-product-name{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.wa-fluent #manualEditLines .draft-product-name:focus{white-space:normal;overflow:visible}
+body.wa-fluent #manualEditForm header{padding:4px 8px;min-height:38px;flex:none}
+body.wa-fluent #manualEditForm footer{display:flex;align-items:center;gap:8px;min-height:36px;padding:3px 8px;flex:none}
+body.wa-fluent #manualEditError:empty{display:none}
+body.wa-fluent #manualEditError:not(:empty){padding:4px 8px;margin:0;max-height:80px;overflow:auto}
+body.wa-fluent #draftExitDialog{width:min(480px,calc(100vw - 24px));padding:16px;border:1px solid var(--fluent-border);border-radius:6px}
+body.wa-fluent #draftExitDialog h2{margin:0;font-size:16px}
+body.wa-fluent #draftExitDialog p{line-height:1.7}
+body.wa-fluent .draft-exit-actions{display:flex;flex-wrap:wrap;gap:8px}
+body.wa-fluent .draft-exit-actions button{min-height:32px;padding:4px 10px}
+body.wa-fluent #draftExitError:empty{display:none}
+body.wa-fluent #draftExitError{color:#a4262c}
+body.wa-fluent .operation-table .demand-audit-details{display:inline-block;vertical-align:middle;margin:0;padding:0;font-size:12px}
+body.wa-fluent .operation-table .demand-audit-details summary{min-height:20px;padding:0;line-height:18px}
+body.wa-fluent .operation-table .demand-audit-details[open]{white-space:normal}
+body.wa-fluent .operation-table .demand-audit-details[open] .demand-audit-note{width:auto;max-width:none}
+/* Full working dialogs give their single table the remaining height. */
+body.wa-fluent :is(#preorderPreviewDialog,#preorderCatalogDialog,#checkbarCatalogDialog,#fulfillmentReceiptDialog,#supplierReviewDialog,#manualEditDialog)[open]{width:calc(100vw - 12px);max-width:none;height:calc(100dvh - 12px);max-height:calc(100dvh - 12px);margin:6px;padding:0;display:flex;flex-direction:column;overflow:auto;border-radius:6px}
+body.wa-fluent :is(.preorder-preview-dialog,#supplierReviewDialog)>.operation-table{flex:1 0 410px;min-height:410px;max-height:none!important}
+body.wa-fluent :is(.preorder-preview-dialog,#supplierReviewDialog) :is(.preview-dialog-head,header){min-height:38px;padding:4px 8px;gap:8px;align-items:center;flex:none}
+body.wa-fluent .preorder-preview-dialog .preview-dialog-head>div:has(h2){display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+body.wa-fluent .preorder-preview-dialog .preview-dialog-head h2{font-size:14px;line-height:20px;margin:0}
+body.wa-fluent .preorder-preview-dialog .preview-dialog-head :is(p,.eyebrow){font-size:12px;line-height:17px;margin:0}
+body.wa-fluent .preorder-preview-dialog .preview-dialog-head .eyebrow{display:none}
+body.wa-fluent .preorder-preview-dialog .preview-dialog-head button{height:28px;min-height:28px;padding:3px 7px}
+body.wa-fluent .preorder-preview-dialog .preview-summary{padding:2px 8px;gap:4px;min-height:26px;flex:none}
+body.wa-fluent .preorder-preview-dialog .preview-summary span{min-height:22px;padding:1px 5px;font-size:12px;line-height:18px}
+body.wa-fluent .preorder-preview-dialog .preview-summary strong{font-size:12px}
+body.wa-fluent .embedded-delivery-date{align-items:center;gap:6px;padding:3px 8px;min-height:34px;flex:none}
+body.wa-fluent .embedded-delivery-date label{display:flex;align-items:center;gap:6px;font-size:12px}
+body.wa-fluent .embedded-delivery-date input{height:28px;min-height:28px;padding:3px 6px;width:130px}
+body.wa-fluent .embedded-delivery-date [role=status]{font-size:12px}
+body.wa-fluent .preorder-preview-dialog .preview-edit-note{padding:2px 8px;min-height:21px;line-height:17px;font-size:12px;flex:none}
+body.wa-fluent .preview-edit-note>span{display:none}
+body.wa-fluent .preorder-preview-dialog .preview-dialog-footer{min-height:36px;padding:3px 8px;gap:6px!important;flex:none;box-shadow:none}
+body.wa-fluent .preorder-preview-dialog .preview-dialog-footer :is(button,a){min-height:28px;padding:3px 7px;font-size:12px}
+body.wa-fluent :is(.preview-dialog-footer,#manualEditForm footer){position:sticky;bottom:0;background:#fff;z-index:8}
+body.wa-fluent .transfer-actions{gap:6px;padding:3px 8px;min-height:34px;flex:none}
+body.wa-fluent .transfer-actions [role=alert]:empty{display:none}
+body.wa-fluent .transfer-actions>span:first-child{font-size:12px}
+body.wa-fluent .transfer-offer{min-width:0;white-space:nowrap}
+body.wa-fluent .transfer-offer :is(strong,small,label){display:inline;line-height:17px;margin:0}
+body.wa-fluent .transfer-offer small{margin-inline:4px}
+body.wa-fluent .transfer-offer label input{width:54px!important;min-height:27px;height:27px;margin-inline-start:4px}
+body.wa-fluent .transfer-row-control{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+body.wa-fluent .transfer-offer .transfer-row-control label{display:flex;flex-direction:row;align-items:center;gap:3px;margin:0;white-space:nowrap}
+body.wa-fluent .transfer-offer .transfer-row-control label input{width:48px!important;margin:0}
+body.wa-fluent :is(dialog,.panel):has(.operation-tools [data-table-fullscreen]) .workspace-fullscreen-button{display:none}
+body.wa-fluent .transfer-row-control button{white-space:nowrap;border-color:var(--ng-primary,#176b50);color:var(--ng-primary,#176b50)}
+body.wa-fluent .transfer-row-control small{margin:0;font-size:12px;white-space:nowrap}
+body.wa-fluent .transfer-row-error{display:block;white-space:normal;color:var(--error,#b42318);font-size:12px}
+body.wa-fluent .transfer-row-error:empty{display:none}
+body.wa-fluent .transfer-unavailable{border:0;margin:0;padding:0;white-space:normal}
+body.wa-fluent .transfer-unavailable summary{list-style:none;cursor:pointer;min-height:27px;width:30px;text-align:center}
+body.wa-fluent .transfer-unavailable summary::-webkit-details-marker{display:none}
+body.wa-fluent .transfer-unavailable[open] span{display:block;max-width:260px;font-size:12px;line-height:17px}
+body.wa-fluent .operation-table .quantity-editor{display:flex;gap:4px;align-items:center}
+body.wa-fluent .operation-table .quantity-editor input{width:64px!important;flex:1;min-width:45px}
+body.wa-fluent .operation-table .quantity-editor button{flex:none}
+body.wa-fluent #manualEditForm{display:flex;flex-direction:column;flex:1;min-height:0}
+body.wa-fluent #manualEditForm .order-sms-body{padding:0;display:flex;flex-direction:column;flex:1;min-height:0;overflow:auto}
+body.wa-fluent #manualEditForm .order-sms-body>p{margin:0;padding:3px 8px;flex:none}
+body.wa-fluent #manualEditLines{display:flex;flex-direction:column;flex:1;min-height:0}
+body.wa-fluent #manualEditLines>.operation-table{flex:1 0 410px;max-height:none!important}
+body.wa-fluent #manualEditLines td{padding:3px 6px}
+body.wa-fluent #manualEditForm :is(header,footer){padding:4px 8px;min-height:36px;flex:none}
+body.wa-fluent #manualEditError:empty,body.wa-fluent #supplierReviewError:empty{display:none}
+body.wa-fluent .supplier-review-notice{margin:3px 8px;padding:4px 8px;font-size:12px}
+body.wa-fluent .supplier-review-dates{gap:6px;padding:3px 8px}
+body.wa-fluent .supplier-review-dates>div{padding:4px 8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+body.wa-fluent .supplier-review-dates :is(strong,small){display:inline;margin:0}
+body.wa-fluent #supplierReviewDecision>label{margin:4px 8px}
+body.wa-fluent #supplierReviewComment{min-height:32px;height:32px}
+body.wa-fluent #supplierReviewDialog button{min-height:28px;padding:3px 7px;font-size:12px}
+body.wa-fluent #supplierReviewDialog h2{font-size:14px}
+body.wa-fluent #supplierReviewSummary{margin:0;padding:2px 8px;flex:none}
+body.wa-fluent #supplierReviewSummary:empty{display:none}
+body.wa-fluent #supplierReviewContent{display:flex;flex-direction:column;flex:1;min-height:0}
+body.wa-fluent #supplierReviewContent>p{margin:2px 8px;padding:2px 4px;flex:none}
+body.wa-fluent #supplierReviewContent>.operation-table{flex:1 0 410px;max-height:none}
+body.wa-fluent #supplierReviewDecision:not([hidden]){display:grid;grid-template-columns:minmax(220px,1fr) 2fr;gap:2px 8px;flex:none;padding:3px 8px;background:white;position:sticky;bottom:0;z-index:8}
+body.wa-fluent #supplierReviewDecision>label:first-child{grid-row:span 2;margin:0}
+body.wa-fluent #supplierReviewDecision .dialog-actions{padding:0;gap:6px;margin:0}
+body.wa-fluent #checkbarDialog .checkbar-body{overflow:auto}
+body.wa-fluent #checkbarEditor:not([hidden]){min-height:0;flex:1 0 auto}
+body.wa-fluent #checkbarEditor>.operation-table{flex:1 0 410px;min-height:410px}
+body.wa-fluent #checkbarTable :is(th,td){font-size:12px;line-height:16px;padding:2px 6px}
+body.wa-fluent #checkbarTable td small{line-height:16px}
+body.wa-fluent #checkbarMatching .receipt-preview-table-wrap{min-height:410px;max-height:none}
+body.wa-fluent :is(.workspace-fullscreen[open],.workspace-fullscreen:not(dialog)){position:fixed!important;inset:0!important;width:100vw!important;max-width:100vw!important;height:100dvh!important;max-height:100dvh!important;margin:0!important;padding:0;z-index:1000;background:#fff;display:flex;flex-direction:column;overflow:auto!important;border-radius:0!important}
+body.wa-fluent .workspace-fullscreen[hidden]{display:none!important}
+body.wa-fluent .workspace-fullscreen>.operation-table{flex:1 0 410px;max-height:none!important}
+/* Balancing keeps decisions and the editable amount on the same compact row. */
+/* Keep stage switching reachable when the page (or fullscreen panel) scrolls.
+   Sticky positioning retains its layout space; the app header stays above it. */
+body.wa-fluent #transfersView>.transfer-stage-navigation{position:sticky;top:var(--wa-topbar-height,42px);z-index:15;background:var(--fluent-surface,#fff);gap:6px;padding:3px 8px;min-height:34px;box-shadow:0 2px 3px #133a3010}
+body.wa-fluent #transfersView.workspace-fullscreen>.transfer-stage-navigation{top:0}
+body.wa-fluent #transfersView>.transfer-stage-navigation button{white-space:nowrap;flex:0 0 auto}
+body.wa-fluent #transfersView>.transfer-stage-navigation button:focus-visible{outline:2px solid var(--fluent-brand,#176b56);outline-offset:2px}
+body.wa-fluent .balance-navigation{display:flex;justify-content:space-between;flex-wrap:wrap;padding:3px 8px;gap:4px}
+body.wa-fluent .balance-section-title{font-size:12px;margin:3px 8px;font-weight:600}
+body.wa-fluent #transferDocumentDialog[open]{width:calc(100vw - 24px);max-width:none;height:calc(100dvh - 24px);max-height:calc(100dvh - 24px);padding:0;display:flex;flex-direction:column;overflow:auto}
+body.wa-fluent #transferDocumentDialog .table-wrap{overflow:auto;flex:1 0 410px;min-height:410px}
+body.wa-fluent #transferDocumentDialog table{width:100%;min-width:1150px}
+body.wa-fluent #transfersView button[aria-pressed="true"]{border-color:var(--primary,#176b56);background:var(--surface-soft,#edf5f1);color:var(--primary,#176b56);font-weight:700}
+body.wa-fluent .balance-bulk-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:3px 8px;min-height:34px}
+body.wa-fluent .balance-bulk-actions label{display:flex;align-items:center;gap:4px;margin:0}
+body.wa-fluent #balanceBatchError{color:#a52020}
+body.wa-fluent #balanceProposalTable input[data-balance-selected]{width:20px;height:20px;min-height:20px;margin:2px;cursor:pointer}
+body.wa-fluent .balance-navigation .transfer-actions{padding:0;min-height:28px;border:0}
+body.wa-fluent .balance-rule{margin:0;padding:2px 8px;border-block:1px solid #e5ece8}
+body.wa-fluent .balance-rule summary{min-height:22px;padding:0;font-size:11px;color:#4a6358}
+body.wa-fluent .balance-rule p{margin:4px 0}
+body.wa-fluent #balanceProposalTable td{white-space:nowrap;height:34px}
+body.wa-fluent #transferPendingTable{min-width:1930px}
+body.wa-fluent #transferPendingTable td{white-space:nowrap;height:34px}
+body.wa-fluent :is(#transferPendingTable,#transferDocumentsTable) button{white-space:nowrap;width:auto;max-width:none}
+body.wa-fluent #transferDocumentsTable td{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.wa-fluent #transferDocumentsTable td.transfer-document-actions{white-space:normal;overflow:visible;text-overflow:clip}
+body.wa-fluent #transferDocumentsTable td.transfer-document-actions button{margin-block:2px;max-width:100%;white-space:normal}
+body.wa-fluent #transferDocumentItemsTable td{white-space:nowrap;height:34px}
+body.wa-fluent #transferPendingTable input[data-pending-selected]{width:20px;height:20px;min-height:20px;margin:2px;cursor:pointer}
+body.wa-fluent #transferPendingError{color:#a52020}
+body.wa-fluent .balance-product{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.wa-fluent #balanceProposalTable input[data-balance-cartons]{width:100%;min-width:45px}
+body.wa-fluent #balanceProposalTable [data-balance-error]:not(:empty){white-space:normal}
+body.wa-fluent #balanceReflectionDialog{max-width:540px;width:calc(100vw - 32px);padding:14px;border:1px solid #bbcfc4;border-radius:8px}
+body.wa-fluent #balanceReflectionForm>label{display:flex;gap:8px;align-items:center;margin:10px 0}
+body.wa-fluent #balanceReflectionError{color:#a52020}
+@media(max-width:700px){
+ body.wa-fluent #supplierReviewDecision:not([hidden]){display:block}
+ body.wa-fluent .warehouse-shell .app-layout{display:block}
+ body.wa-fluent .warehouse-shell .app-sidebar{position:relative;top:auto;width:100%;height:auto;padding:4px 6px}
+ body.wa-fluent .warehouse-shell .app-sidebar .page-tabs{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:4px;padding:2px;scrollbar-width:thin}
+ body.wa-fluent .warehouse-shell .app-sidebar .page-tabs :is(button,.sidebar-nav-link){flex:0 0 auto;width:auto;min-height:44px;padding:7px 9px;gap:6px}
+ body.wa-fluent .warehouse-shell :is(.nav-section-label,.sidebar-note){display:none}
+ body.wa-fluent .operation-tools{flex-wrap:wrap}
+ body.wa-fluent .embedded-delivery-date{flex-wrap:wrap}
+ body.wa-fluent .transfer-actions{flex-wrap:wrap}
+}
+@media(pointer:coarse){body.wa-fluent :is(button,summary,select,input:not([type=checkbox])){min-height:44px!important}body.wa-fluent .warehouse-shell .app-sidebar .page-tabs .sidebar-nav-link{min-height:44px}body.wa-fluent .operation-table tbody td{height:48px}}
+@media(prefers-reduced-motion:reduce){body.wa-fluent *{scroll-behavior:auto;transition:none}}
+/* Pencil workspace: keep navigation secondary and give documents the viewport. */
+body.wa-fluent .topbar .identity{min-width:0;gap:8px}
+body.wa-fluent .topbar .identity img{width:28px;height:28px;border-radius:4px}
+body.wa-fluent .topbar .top-actions :is(a,button){color:#fff;background:transparent;border:1px solid #6e9180;border-radius:4px}
+body.wa-fluent .topbar .top-actions :is(a,button):hover{background:#285646}
+body.wa-fluent .topbar .user-badge{color:#fff;background:#285646}
+body.wa-fluent #workspaceNavigationToggle{display:grid;place-items:center;width:30px;height:30px;min-height:30px;padding:4px;background:transparent;border:1px solid #6e9180;color:#fff;border-radius:4px;flex:none}
+body.wa-fluent #workspaceNavigationToggle svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+body.wa-fluent .topbar :is(button,a):focus-visible{outline-color:#fff}
+body.wa-fluent .warehouse-shell .app-sidebar .page-tabs :is(button,.sidebar-nav-link){grid-template-columns:16px minmax(0,1fr) auto;gap:5px;padding-inline:5px;border-radius:4px}
+body.wa-fluent .warehouse-shell .app-sidebar .page-tabs .nav-badge{padding:0 3px;min-width:16px;font-size:10px}
+body.wa-fluent .warehouse-shell .app-sidebar .nav-icon,body.wa-fluent .warehouse-shell .app-sidebar .nav-icon svg{width:16px;height:16px}
+body.wa-fluent .warehouse-shell .nav-section-label:not(:first-child){margin-top:2px;border:0;padding-top:5px}
+body.wa-fluent .warehouse-shell .panel{border-radius:4px;box-shadow:none}
+body.wa-fluent .warehouse-shell .panel-head{min-height:44px;padding:5px 10px}
+body.wa-fluent .warehouse-shell .panel-head h2{font-size:19px;line-height:28px}
+body.wa-fluent .operation-table :is(th,td){font-size:13px;line-height:18px;padding:3px 8px}
+body.wa-fluent .operation-table tbody td{height:36px}
+body.wa-fluent .operation-table thead tr:first-child th{font-size:12px;background:#eaf0ed;color:#20372f}
+body.wa-fluent .operation-table .cell-name{font-weight:500}
+body.wa-fluent .operation-tools{background:#f8faf9;padding:4px 8px}
+body.wa-fluent .warehouse-shell .inventory-commandbar{padding:5px 8px}
+body.wa-fluent .warehouse-shell .inventory-filters input{background:#fff;min-height:32px}
+body.wa-fluent #checkbarDialog[open]{width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;margin:0;border:0;border-radius:0;padding:0;overflow:hidden}
+body.wa-fluent #checkbarDialog>.preview-dialog-head{min-height:44px;padding:5px 12px;flex:none}
+body.wa-fluent #checkbarDialog .preview-dialog-head h2{font-size:18px;line-height:26px}
+body.wa-fluent #checkbarDialog .preview-dialog-head p{max-width:900px;font-size:11px;line-height:16px}
+body.wa-fluent #checkbarDialog .document-mark{width:26px;height:28px}
+body.wa-fluent #checkbarFlowSteps{flex:none;min-height:28px;align-items:center;padding:2px 12px;gap:4px 12px}
+body.wa-fluent #checkbarDialog .checkbar-body{display:flex;flex-direction:column;flex:1;min-height:0;overflow:auto}
+body.wa-fluent #checkbarDialog .checkbar-selectors{flex:none;padding:5px 12px;gap:6px 12px}
+body.wa-fluent #checkbarDialog .checkbar-primary-metadata{flex-basis:auto;gap:8px}
+body.wa-fluent #checkbarDialog .checkbar-primary-metadata label{font-size:11px}
+body.wa-fluent #checkbarEditor:not([hidden]){display:flex;flex-direction:column;flex:1;min-height:360px}
+body.wa-fluent #checkbarEditor>.operation-table{flex:1 1 180px;min-height:180px;max-height:none!important}
+body.wa-fluent #checkbarEditor>:not(.operation-table){flex-shrink:0}
+body.wa-fluent #checkbarDialog .checkbar-toolsbar{padding:4px 10px;gap:5px}
+body.wa-fluent #checkbarDialog .checkbar-toolsbar summary{min-height:28px;padding:3px 7px;border-radius:4px}
+body.wa-fluent #checkbarDialog .checkbar-manual{padding:4px 10px;gap:6px}
+body.wa-fluent #checkbarDialog .checkbar-quick-search{flex:1;min-width:160px}
+body.wa-fluent #checkbarProductSearch{width:100%;max-width:none}
+body.wa-fluent #checkbarTable :is(th,td){font-size:13px;line-height:18px;padding:3px 8px}
+body.wa-fluent #checkbarTable td{height:36px}
+body.wa-fluent #checkbarTable td input{height:28px;min-height:28px;font-size:13px;border-radius:3px}
+body.wa-fluent #checkbarDialog .checkbar-guided-footer{flex:none;min-height:44px;padding:5px 12px;background:#fff}
+body.wa-fluent #checkbarDialog .checkbar-guided-footer button{min-height:32px}
+@media(min-width:701px){
+ body.wa-fluent .warehouse-shell .app-content>.panel>.operation-table{height:var(--workspace-table-height,auto);min-height:260px}
+ body.wa-fluent.workspace-navigation-collapsed{--wa-sidebar-width:52px}
+ body.wa-fluent.workspace-navigation-collapsed .warehouse-shell .app-sidebar .page-tabs :is(button,.sidebar-nav-link){grid-template-columns:1fr;justify-items:center;min-height:36px;padding:8px}
+ body.wa-fluent.workspace-navigation-collapsed .warehouse-shell .app-sidebar :is(.nav-section-label,.sidebar-note,.sidebar-title){display:none}
+ body.wa-fluent.workspace-navigation-collapsed .warehouse-shell .app-sidebar .page-tabs :is(button,.sidebar-nav-link)>:not(.nav-icon){display:none}
+ body.wa-fluent.workspace-navigation-collapsed #workspaceNavigationToggle svg{transform:rotate(180deg)}
+}
+@media(max-width:900px){
+ body.wa-fluent .topbar .summary-grid{display:none}
+ body.wa-fluent #checkbarDialog .checkbar-primary-metadata{flex-basis:100%;justify-content:flex-start}
+ body.wa-fluent #checkbarDialog .preview-dialog-head p{display:none}
+}
+@media(max-width:700px){
+ body.wa-fluent .warehouse-shell .topbar{height:auto;min-height:44px;flex-wrap:wrap}
+ body.wa-fluent .warehouse-shell .identity h1{font-size:14px}
+ body.wa-fluent .warehouse-shell .app-sidebar{top:auto;height:auto}
+ body.wa-fluent.workspace-navigation-collapsed .warehouse-shell .app-sidebar{display:none}
+ body.wa-fluent .warehouse-shell .panel-head{flex-wrap:wrap}
+ body.wa-fluent .warehouse-shell .panel-head h2{font-size:17px}
+ body.wa-fluent #checkbarDialog .checkbar-selectors select{min-width:110px;max-width:180px}
+ body.wa-fluent #checkbarDialog .checkbar-primary-metadata{gap:6px}
+ body.wa-fluent #checkbarDialog .checkbar-primary-metadata label{flex-wrap:wrap}
+ body.wa-fluent #checkbarDialog .checkbar-primary-metadata input{max-width:145px}
+}
+@media(pointer:coarse){body.wa-fluent #workspaceNavigationToggle{height:44px;min-height:44px}body.wa-fluent #checkbarTable td{height:48px}}
+@media print{body.wa-fluent #workspaceNavigationToggle,body.wa-fluent .operation-tools{display:none}body.wa-fluent .operation-table{height:auto!important;max-height:none!important;overflow:visible;min-height:0}}

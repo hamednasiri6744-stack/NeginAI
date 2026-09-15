@@ -1,0 +1,70 @@
+/* Compact purchase workspace; scoped styles preserve existing warehouse forms. */
+body.wa-fluent #purchaseView{font-size:12px;min-width:0}
+#purchaseView .purchase-toolbar{display:flex;align-items:end;flex-wrap:wrap;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line)}
+#purchaseView label,.purchase-dialog label{display:flex;flex-direction:column;gap:4px;color:var(--ink);font-size:12px;min-width:0}
+#purchaseView input,#purchaseView select,.purchase-dialog :is(input,select,textarea){font:inherit;min-height:34px;border:1px solid var(--line);border-radius:5px;padding:5px 8px;background:var(--panel);color:var(--ink);min-width:0;max-width:100%}
+#purchaseView .purchase-search{flex:1;min-width:190px}
+#purchaseView button,.purchase-dialog button{font-size:12px;min-height:32px;padding:5px 10px;border:1px solid var(--line);border-radius:5px;cursor:pointer}
+#purchaseView button:not(.primary),.purchase-dialog button:not(.primary){background:var(--panel);color:var(--ink)}
+#purchaseView button:focus-visible,.purchase-dialog :is(button,input,select,textarea):focus-visible{outline:2px solid var(--green);outline-offset:2px}
+#purchaseView [aria-pressed=true]{border-color:var(--green);color:var(--green);background:var(--fluent-selected)}
+#purchaseView .purchase-meta{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:6px 12px;color:var(--muted);font-size:11px}
+#purchaseView .purchase-table-scroll{overflow:auto;max-height:calc(100dvh - 285px);min-height:260px}
+#purchaseView table{width:100%;min-width:960px;table-layout:auto;font-size:12px;border-collapse:collapse}
+#purchaseView :is(th,td){padding:7px 9px;vertical-align:middle;white-space:normal;overflow-wrap:normal;line-height:1.55}
+#purchaseView thead{position:sticky;top:0;z-index:2;background:var(--fluent-subtle)}
+#purchaseView .shared-filter-row input{min-height:28px}
+#purchaseView td:first-child{min-width:160px}#purchaseView td:last-child{min-width:210px}
+#purchaseView small{display:block;font-size:11px;color:var(--muted)}
+#purchaseView .purchase-date{white-space:nowrap;font-variant-numeric:tabular-nums}
+.purchase-actions{display:flex;gap:4px;flex-wrap:wrap}.purchase-badge{padding:3px 6px;border:1px solid var(--line);border-radius:4px;white-space:nowrap}
+.purchase-badge.active{color:var(--green);background:var(--fluent-selected)}.purchase-badge.draft{color:var(--warn);background:var(--fluent-warning)}
+.purchase-missing{color:var(--warn)}#purchaseView .purchase-empty{padding:44px 12px;text-align:center;color:var(--muted)}
+#purchaseMessage{margin:8px 12px;padding:8px 10px;background:var(--fluent-warning);color:var(--fluent-warning-text);border-radius:5px}
+body.wa-fluent dialog.purchase-dialog{width:min(1000px,96vw);max-width:96vw;max-height:92dvh;padding:0;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink)}
+.purchase-dialog::backdrop{background:rgb(12 40 30 / 40%)}
+.purchase-dialog header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:var(--fluent-sidebar);color:white}
+.purchase-dialog header h2{font-size:17px;margin:0}.purchase-dialog header button{color:white!important;background:transparent!important}
+.purchase-dialog form{margin:0}.purchase-dialog fieldset{margin:0;border:0;padding:14px 16px;min-width:0;max-height:calc(92dvh - 135px);overflow:auto}
+.purchase-dialog .contract-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 12px}
+.purchase-dialog .contract-wide{grid-column:1/-1}.purchase-dialog .contract-check{display:flex;flex-direction:row;align-items:center;align-self:end;min-height:34px}
+.purchase-dialog input[type=checkbox]{min-height:18px;width:18px;accent-color:var(--green)}
+.purchase-dialog .contract-help{margin:8px 0;color:var(--muted);font-size:11px;line-height:1.8}
+.purchase-dialog details{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:6px}.purchase-dialog summary{cursor:pointer;font-weight:600}
+.purchase-dialog .contract-sample{display:grid;grid-template-columns:2fr 1.5fr 1fr auto;align-items:end;gap:8px;margin-top:10px}
+.purchase-dialog #contractPreviewOutput{display:flex;flex-wrap:wrap;gap:8px 16px;padding-top:12px;font-size:12px}
+.purchase-dialog #contractPreviewOutput span{display:flex;gap:8px}.purchase-dialog #contractPreviewOutput>strong{width:100%;color:var(--green)}
+.purchase-dialog footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-top:1px solid var(--line)}
+.purchase-dialog #contractError{margin:0;color:var(--danger);font-size:12px;line-height:1.8}
+#purchaseHistoryBody{padding:12px 16px;overflow:auto;max-height:70dvh}#purchaseHistoryBody article{border-bottom:1px solid var(--line);padding:12px 0;font-size:12px}
+#purchaseHistoryBody p{margin:6px 0}
+@media(max-width:700px){.purchase-dialog .contract-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.purchase-dialog .contract-sample{grid-template-columns:1fr 1fr}#purchaseView .purchase-table-scroll{max-height:calc(100dvh - 365px)}}
+@media(max-width:460px){.purchase-dialog .contract-grid{grid-template-columns:1fr}.purchase-dialog .contract-sample{grid-template-columns:1fr}.purchase-dialog .contract-wide{grid-column:auto}}
+@media(pointer:coarse){#purchaseView button,.purchase-dialog :is(button,input,select){min-height:44px}}
+
+body.wa-fluent #purchaseContractDialog{width:min(1240px,96vw)}
+.contract-editor-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.contract-editor-layout>section{min-width:0}
+.contract-editor-layout h3{font-size:14px;margin:0 0 12px}
+.contract-editor-layout>section+section{border-inline-start:1px solid var(--line);padding-inline-start:20px}
+.contract-item-scroll{overflow:auto;max-height:300px;border:1px solid var(--line);margin-top:8px}
+.purchase-dialog .contract-item-scroll table{width:100%;min-width:0;table-layout:fixed;border-collapse:collapse;font-size:12px}
+.contract-item-scroll th:first-child{width:42px}.contract-item-scroll th:nth-child(3){width:28%}.contract-item-scroll th:last-child{width:64px}
+.contract-item-scroll :is(th,td){padding:6px 8px;white-space:normal;line-height:1.5}
+.contract-item-scroll thead{position:sticky;top:0;background:var(--fluent-subtle);z-index:1}
+.contract-item-scroll td:first-child{width:36px}.contract-item-scroll strong,.contract-item-scroll small{display:block}
+.contract-item-scroll .shared-filter-row input{min-height:28px;width:100%}
+.contract-item-scroll input[type=checkbox]{min-height:20px;width:20px}
+#contractItemSearch{flex:1;min-width:150px}
+.contract-editor-layout .contract-sample{grid-template-columns:1fr 1fr}
+@media(max-width:960px){.contract-editor-layout{grid-template-columns:1fr}.contract-editor-layout>section+section{border-inline-start:0;border-top:1px solid var(--line);padding-inline-start:0;padding-top:14px}}
+.purchase-discovery-dialog header p{margin:4px 0 0;font-size:11px;opacity:.82}
+.purchase-discovery-body{padding:16px;overflow:auto;max-height:72dvh}
+.purchase-discovery-summary{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.purchase-discovery-summary span{padding:5px 8px;border:1px solid var(--line);border-radius:5px;color:var(--muted)}
+.purchase-discovery-proposal{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px 16px;padding:12px;margin:8px 0;border:1px solid var(--line);border-radius:7px;background:var(--fluent-subtle)}
+.purchase-discovery-proposal strong,.purchase-discovery-proposal small{display:block}.purchase-discovery-proposal small{margin-top:5px;color:var(--muted)}
+.purchase-discovery-confidence{display:inline-block;margin-inline-start:6px;padding:2px 6px;border-radius:10px;background:var(--fluent-warning);color:var(--fluent-warning-text);font-size:10px}
+.purchase-discovery-confidence.high{background:var(--fluent-selected);color:var(--green)}
+.purchase-discovery-warning{color:var(--warn);font-size:11px;line-height:1.8}
+@media(max-width:600px){.purchase-discovery-proposal{grid-template-columns:1fr}.purchase-discovery-proposal button{justify-self:start}}

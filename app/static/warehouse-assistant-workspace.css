@@ -1,0 +1,45 @@
+/* Negin task-oriented workspace. Figma: FakxPsVIUgRTZQ5WldeRRH / 20:2.
+   Font files are bundled from Vazirmatn v33.003 under SIL OFL 1.1. */
+@font-face{font-family:Vazirmatn;src:url('/static/fonts/vazirmatn/Vazirmatn-Regular.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:Vazirmatn;src:url('/static/fonts/vazirmatn/Vazirmatn-Medium.woff2') format('woff2');font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:Vazirmatn;src:url('/static/fonts/vazirmatn/Vazirmatn-SemiBold.woff2') format('woff2');font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:Vazirmatn;src:url('/static/fonts/vazirmatn/Vazirmatn-Bold.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap}
+body.wa-fluent{
+  --ng-space-4:4px;--ng-space-8:8px;--ng-space-12:12px;--ng-space-16:16px;
+  --ng-radius-4:4px;--ng-radius-6:6px;--ng-radius-8:8px;
+  --ng-control:28px;--ng-row:32px;--ng-touch:36px;--ng-stroke:1px;
+  --ng-body-size:11px;--ng-body-line:16px;--ng-caption-size:10px;--ng-caption-line:16px;
+  --ng-title-size:14px;--ng-title-line:20px;--ng-dialog-size:18px;--ng-dialog-line:28px;
+  --fluent-warning:#fff4ce;--fluent-warning-text:#835b00;--fluent-danger:#fff1f0;--fluent-danger-text:#a4262c;
+  font-family:Vazirmatn,Tahoma,sans-serif;
+}
+body.wa-fluent :is(button,input,select,textarea,table,th,td){font-family:Vazirmatn,Tahoma,sans-serif}
+body.wa-fluent .work-view-bar{
+  display:flex;align-items:center;flex-wrap:wrap;gap:var(--ng-space-4);
+  padding:var(--ng-space-4) var(--ng-space-8);min-width:0;
+  background:var(--fluent-surface);border-block-end:1px solid var(--fluent-divider);
+}
+body.wa-fluent .work-view-bar button{
+  min-height:var(--ng-control);padding:4px 8px;border:1px solid var(--fluent-border);
+  border-radius:var(--ng-radius-4);background:var(--fluent-surface);color:var(--fluent-secondary);
+  font-size:var(--ng-body-size);font-weight:500;line-height:var(--ng-body-line);
+}
+body.wa-fluent .work-view-bar button[aria-pressed="true"]{background:var(--fluent-selected);color:var(--fluent-brand);border-color:var(--fluent-brand);box-shadow:inset 0 -2px var(--fluent-brand)}
+body.wa-fluent .work-view-bar button:hover{background:var(--fluent-subtle)}
+body.wa-fluent .work-view-bar button:focus-visible{outline:2px solid var(--fluent-brand);outline-offset:2px}
+body.wa-fluent :is(.work-view-label,.work-view-custom){font-size:var(--ng-caption-size);color:var(--fluent-secondary);padding-inline:4px}
+body.wa-fluent .work-view-bar .work-view-hidden-filters{color:var(--fluent-warning-text);background:var(--fluent-warning);margin-inline-start:auto}
+body.wa-fluent [hidden]{display:none!important}
+body.wa-fluent .cell-text-details{max-width:100%;font-size:inherit;font-weight:inherit;text-align:start}
+body.wa-fluent .cell-name{font-weight:600;min-width:0;max-width:100%;line-height:var(--ng-body-line)}
+body.wa-fluent .cell-text-details summary{cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;border-radius:2px}
+body.wa-fluent .cell-text-details summary:focus-visible{outline:2px solid var(--fluent-brand);outline-offset:-2px}
+body.wa-fluent .cell-text-details[open] summary{color:var(--fluent-secondary)}
+body.wa-fluent .cell-text-details>span{display:block;white-space:normal;overflow-wrap:anywhere;line-height:var(--ng-body-line);padding-block:4px}
+body.wa-fluent table thead :is(input,select){text-align:center;max-width:100%;margin-inline:auto}
+body.wa-fluent .panel-head h2{font-size:var(--ng-title-size);line-height:var(--ng-title-line)}
+body.wa-fluent .preview-dialog-head h2{font-size:var(--ng-dialog-size);line-height:var(--ng-dialog-line)}
+body.wa-fluent :is(.preview-summary,.summary-grid,.result-summary){font-variant-numeric:tabular-nums}
+@media(pointer:coarse){body.wa-fluent .work-view-bar button{min-height:var(--ng-touch)}}
+@media(max-width:700px){body.wa-fluent .work-view-bar{flex-wrap:nowrap;overflow-x:auto}body.wa-fluent .work-view-bar>*{flex-shrink:0}body.wa-fluent .work-view-label{display:none}}
+@media(forced-colors:active){body.wa-fluent .work-view-bar button[aria-pressed="true"]{outline:2px solid Highlight}}

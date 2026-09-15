@@ -1,0 +1,56 @@
+/* Adapted from Figma Workflow / inventory 20:2: Vazirmatn 11/16,
+   28px controls, 32px rows, 4px radii and existing Negin Fluent tokens. */
+#fulfillmentView .fulfillment-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:8px;border-bottom:1px solid var(--fluent-divider)}
+#fulfillmentView .fulfillment-toolbar label{display:flex;align-items:center;gap:8px;margin:0;white-space:nowrap;font-size:11px}
+#fulfillmentView .fulfillment-search{flex:1;min-width:230px;max-width:480px}
+#fulfillmentView .fulfillment-search input{width:100%;min-width:0}
+#fulfillmentView :is(input,select){height:28px;padding:4px 8px;font-size:11px}
+#fulfillmentSummary{margin-inline-start:auto;color:var(--fluent-secondary);font-size:10px}
+.fulfillment-workflow-filters{display:flex;align-items:center;gap:5px;padding:6px 8px;border-bottom:1px solid var(--fluent-divider);overflow-x:auto;scrollbar-width:thin;background:var(--fluent-surface)}
+.fulfillment-workflow-filters button{display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:4px 9px;border:1px solid var(--fluent-border);border-radius:5px;background:var(--fluent-surface);color:var(--fluent-secondary);font:inherit;font-size:10px;white-space:nowrap;cursor:pointer}
+.fulfillment-workflow-filters button:hover{border-color:var(--fluent-brand);color:var(--fluent-brand)}
+.fulfillment-workflow-filters button:focus-visible{outline:2px solid var(--fluent-brand);outline-offset:1px}
+.fulfillment-workflow-filters button[aria-pressed=true]{border-color:var(--fluent-brand);background:var(--fluent-selected);color:var(--fluent-brand);font-weight:700}
+.fulfillment-workflow-filters b{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:#edf2f0;color:inherit;font-size:9px;font-variant-numeric:tabular-nums}
+.fulfillment-workflow-filters button[aria-pressed=true] b{background:#fff}
+#fulfillmentView .fulfillment-footnote{margin:0;padding:8px 12px;border-top:1px solid var(--fluent-divider);font-size:10px;line-height:16px;color:var(--fluent-secondary)}
+#fulfillmentTable :is(th,td){height:32px;padding:4px 8px;text-align:center;vertical-align:middle;font-size:11px;line-height:16px}
+#fulfillmentTable td[data-fulfillment-column="supplier"]{text-align:right}
+#fulfillmentTable .fulfillment-number{direction:ltr;unicode-bidi:isolate;font-variant-numeric:tabular-nums;font-size:10px}
+#fulfillmentTable .fulfillment-remaining{font-weight:600;color:var(--fluent-brand)}
+#fulfillmentTable .preorder-actions{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:nowrap}
+#fulfillmentTable .preorder-actions>*{flex:0 0 auto}
+#fulfillmentTable .preorder-actions :is(a,button){min-height:28px;padding:4px 8px;font-size:11px;border-radius:4px;white-space:nowrap;text-decoration:none}
+#fulfillmentTable .preorder-actions a{display:inline-flex;align-items:center;color:var(--fluent-secondary);border:1px solid var(--fluent-border);background:var(--fluent-surface)}
+#fulfillmentTable .preorder-actions .fulfillment-primary-link{border-color:var(--fluent-brand);background:var(--fluent-selected);color:var(--fluent-brand);font-weight:700}
+.fulfillment-status{display:inline-flex;align-items:center;gap:5px;border-radius:4px;padding:3px 6px;font-size:10px;white-space:nowrap;background:#f0f0f0;color:#424242}
+.fulfillment-status::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}
+.fulfillment-status.is-partial{background:#fff4ce;color:#835b00}
+.fulfillment-status.is-received{background:var(--fluent-selected);color:var(--fluent-brand)}
+#fulfillmentReceiptDialog{width:min(1020px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:hidden}
+#fulfillmentReceiptDialog[open]{display:flex;flex-direction:column}
+#fulfillmentReceiptDialog .preview-dialog-head{align-items:center;flex-shrink:0;gap:12px;padding:10px 12px}
+#fulfillmentReceiptTitle{font-size:14px;line-height:20px;overflow-wrap:anywhere}
+#fulfillmentReceiptDialog .fulfillment-receipt-help{padding:8px 12px;margin:0;background:var(--fluent-selected);color:var(--fluent-brand);font-size:11px;line-height:18px;flex-shrink:0}
+#fulfillmentReceiptDialog .table-wrap{min-height:96px;max-height:48vh;overflow:auto;flex:1 1 auto}
+#fulfillmentReceiptTable :is(th,td){padding:6px 8px;text-align:center;vertical-align:middle;font-size:11px;line-height:16px}
+#fulfillmentReceiptDialog #fulfillmentReceiptTable{min-width:100%}
+#fulfillmentReceiptTable td:nth-child(2){text-align:right;white-space:normal;overflow-wrap:anywhere}
+#fulfillmentReceiptTable input{width:100%;height:28px;text-align:center;font-variant-numeric:tabular-nums}
+#fulfillmentReceiptTable .receipt-quantity-cell{background:var(--fluent-selected)}
+#fulfillmentReceiptTable .receipt-pack-size{display:block;color:var(--fluent-secondary);font-size:10px;line-height:16px}
+#fulfillmentReceiptTable .receipt-ordered{font-weight:600;font-variant-numeric:tabular-nums}
+#fulfillmentReceiptTable .receipt-full-button{white-space:nowrap;padding:4px 8px;font-size:11px;min-height:28px}
+#fulfillmentReceiptTable input[aria-invalid=true]{border-color:#a4262c;outline:1px solid #a4262c}
+#fulfillmentReceiptDialog .receipt-commandbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 12px;flex-shrink:0;border-bottom:1px solid var(--fluent-divider);font-size:11px}
+#fillAllFulfillmentReceipt{color:var(--fluent-brand);border-color:var(--fluent-brand);background:var(--fluent-selected)}
+#fulfillmentReceiptDialog .fulfillment-reconcile{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:12px;border-top:1px solid var(--fluent-divider);flex-shrink:0}
+#fulfillmentReceiptDialog .fulfillment-reconcile label{display:flex;gap:8px;align-items:center;margin:0;font-size:11px;line-height:18px}
+#fulfillmentReceiptDialog .fulfillment-reconcile input:not([type=checkbox]){width:180px;height:28px}
+#fulfillmentReceiptDialog .fulfillment-check{flex:1;min-width:230px}
+#fulfillmentReceiptDialog .fulfillment-check input{flex-shrink:0}
+#fulfillmentReceiptDialog .preview-dialog-footer{justify-content:space-between;flex-shrink:0;gap:12px;padding:8px 12px}
+#fulfillmentReceiptDialog .preview-dialog-footer span{font-size:10px;color:var(--fluent-secondary)}
+#fulfillmentView .empty-cell{padding:28px 12px;color:var(--fluent-secondary);line-height:22px}
+@media(max-width:650px){#fulfillmentView .fulfillment-search{max-width:none}#fulfillmentSummary{width:100%}.fulfillment-workflow-filters{padding-inline:6px}#fulfillmentReceiptDialog{overflow:auto}#fulfillmentReceiptDialog .table-wrap{flex:none;max-height:40vh}#fulfillmentReceiptDialog .preview-dialog-footer{position:sticky;bottom:0}}
+@media(pointer:coarse){#fulfillmentView :is(button,input,select),#fulfillmentReceiptDialog :is(button,input:not([type=checkbox])){min-height:36px}}

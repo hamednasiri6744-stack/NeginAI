@@ -1,0 +1,10 @@
+.column-filtered-out{display:none!important}
+table .shared-filter-row th{padding:4px!important;text-align:center!important}
+table .shared-filter-row input,table .shared-filter-row select{width:100%;max-width:100%;min-width:0;box-sizing:border-box;text-align:center;height:28px;min-height:28px!important;padding:3px 5px;font-size:11px!important;font-weight:400}
+#checkbarTable .shared-filter-row th{top:42px}
+table th.shared-sortable{cursor:pointer}
+table th.shared-sortable:focus-visible{outline:2px solid var(--green,#156d53);outline-offset:-2px}
+table th.shared-sortable::after{content:' ↕';font-size:11px;color:var(--muted,#5f746c)}
+table th.shared-sortable[aria-sort=descending]::after{content:' ↓';color:var(--green,#156d53)}
+table th.shared-sortable[aria-sort=ascending]::after{content:' ↑';color:var(--green,#156d53)}
+@media(pointer:coarse){table .shared-filter-row input,table .shared-filter-row select{min-height:40px!important}}

@@ -1,0 +1,52 @@
+{
+  "observed_date": "2026-09-13",
+  "target": "127.0.0.1/NeginAI_InterwarehouseBridge_Test",
+  "source_read_only": "127.0.0.1/NeginPakhsh_WebDev",
+  "method": "DBCC CLONEDATABASE NO_STATISTICS NO_QUERYSTORE; bounded base/stock snapshot seed; artificial opening cardex receipt",
+  "production_writes": false,
+  "triggers_disabled": false,
+  "production_config_changed": false,
+  "final_fixture_state":{"clone_retained":true,"all_six_route_policies_enabled":false,"isolated_validation_complete":false,"diagnostic_print_removed":true,"synthetic_sql_suite":"39 passed, 4.43 seconds","opening_fixture_count":3,"confirmed_type65_count":7,"type15_count":0},
+  "native_confirmation_procedure": "FRU.usp_VocherConfirmation",
+  "first_missing_opening_test": {"status":"rejected","error_code":51518,"voucher_count":0,"source_quantity":290,"destination_quantity":481},
+  "successful_native_test": {
+    "document_number":"TR-NATIVE-TEST-000001","transfer_key":"d050d658-f4d1-45a4-8578-fa19938c0500",
+    "status":"sent","vocher_id":125429,"vocher_no":1,"acc_year":1405,
+    "type":65,"health_code_type":1047,"health_code":1,"confirmed":true,
+    "source_stock_ref":2,"destination_stock_ref":1,"quantity":1,
+    "source_before":290,"source_after":289,"destination_before":481,"destination_after":481,
+    "gilan_before":497,"gilan_after":497,"created_debit_type15_count":0,
+    "exact_payload_retry":{"status":"sent","replayed":true,"same_vocher_id":true,"stock_unchanged":true}
+  },
+  "native_success_message_observation":"FRU returned CR LF only; wrapper must treat CR LF TAB as whitespace, not an error",
+  "module_hash_encoding":"SHA256 over UTF-16LE OBJECT_DEFINITION; clone and production were compared read-only and equal for every listed object",
+  "matching_native_modules": {
+    "dbo.usp_DBApi_CreateInvVocher":"90a48806d769a4887c1f7b48ffdda32f7ab8314c0b311c261df9933684756199",
+    "FRU.usp_VocherConfirmation":"9cecea8a9170e07b25a1e41de45b088437c4a2c00fc9aa25b08093d8b5a13906",
+    "dbo.USP_SDSNET_ConfirmVocher":"d9805dfecc6ab80e2114546c77435476e802937d639b6d4ea85ac36f17f170db",
+    "dbo.USP_SDSNET_ConfirmVocherValidation":"cf205393d5ddbc533a9792828822565aa3ae3c3cb6b1b6fb6c270625f9a73cb5",
+    "inv.AfterInvVocherHdr":"3016144e8f7011635ff7b03a10668e7f7f8bc24e4e561be807a1e980cfae5e45",
+    "inv.trg_tblVocherHdr_UpdateStockGoods":"9cdf6434297034c821fe105a9c1e6857ab1972598ee12d1f3a93c0d22de0e324",
+    "inv.Trg_tblVocherHdr_DocConstractor":"43a4821dc26696617e54b7d6e8042d8d869e71aa20fad94978e364819a29ec38",
+    "dbo.GetMaxVocherNo":"3b22572f8095b46b23e921355e995bcb75bca50419efeac64faf78c08a5d2e47"
+  },
+  "all_six_routes_native_test": {
+    "command":".venv/Scripts/python.exe tests/fixtures/interwarehouse_credit/native_six_routes.py",
+    "exit_code":0,"wall_seconds":1.97,"completed_routes":6,
+    "native_create_confirm_and_triggers":true,"quantity_per_route":1,
+    "preflight_stock_unchanged":true,"every_route_source_only_delta":true,
+    "every_route_exact_retry_same_id_and_stock_unchanged":true,
+    "configuration_hash_before_equals_after":true,"disabled_trigger_list_before_equals_after":true,
+    "artificial_opening_cardex_fixtures_added_without_changing_physical_stock":[{"stock_ref":1,"quantity":481,"fixture_id":2000000011},{"stock_ref":9,"quantity":497,"fixture_id":2000000019}],
+    "routes":[
+      {"source":2,"destination":1,"document":"TR-NATIVE-SIX-2-1","key":"d69dfb9c-ed4d-5ec8-8909-3e6789c7ccf6","vocher_id":125430,"vocher_no":2,"before":{"1":481,"2":289,"9":497},"after":{"1":481,"2":288,"9":497}},
+      {"source":2,"destination":9,"document":"TR-NATIVE-SIX-2-9","key":"23d8f12c-38be-5d96-9bcd-e85a12c0d68c","vocher_id":125431,"vocher_no":3,"before":{"1":481,"2":288,"9":497},"after":{"1":481,"2":287,"9":497}},
+      {"source":1,"destination":2,"document":"TR-NATIVE-SIX-1-2","key":"15d3132b-07dc-506e-9166-1ddfb0c78f0d","vocher_id":125432,"vocher_no":1,"before":{"1":481,"2":287,"9":497},"after":{"1":480,"2":287,"9":497}},
+      {"source":1,"destination":9,"document":"TR-NATIVE-SIX-1-9","key":"4524ed36-1f05-5bf3-9ea7-9ef062c043d9","vocher_id":125433,"vocher_no":2,"before":{"1":480,"2":287,"9":497},"after":{"1":479,"2":287,"9":497}},
+      {"source":9,"destination":2,"document":"TR-NATIVE-SIX-9-2","key":"5a2ff7c8-36a9-57ec-a628-16185f50422c","vocher_id":125434,"vocher_no":1,"before":{"1":479,"2":287,"9":497},"after":{"1":479,"2":287,"9":496}},
+      {"source":9,"destination":1,"document":"TR-NATIVE-SIX-9-1","key":"cbb86341-fbc1-5bdb-bcf0-9196043b76f1","vocher_id":125435,"vocher_no":2,"before":{"1":479,"2":287,"9":496},"after":{"1":479,"2":287,"9":495}}
+    ],
+    "final_policy_enabled_count":0,"final_type15_count":0,"production_writes":false
+  },
+  "limitations":["Schema-native clone with limited fixture data, not a full production restore", "Native positive posting exercised all six routes for one non-batch non-serial unit-based item", "Live deployment/login grants and current production inventory are not asserted by this proof"]
+}

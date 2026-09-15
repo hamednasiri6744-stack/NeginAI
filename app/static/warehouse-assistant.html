@@ -6,17 +6,41 @@
   <meta name="theme-color" content="#173f35">
   <title>دستیار مستقل انبار نگین</title>
   <link rel="icon" href="/static/negin-brand-icon-192.png" type="image/png">
-  <link rel="stylesheet" href="/static/warehouse-assistant.css?v=3">
+  <link rel="stylesheet" href="/static/warehouse-assistant.css?v=37">
+  <link rel="stylesheet" href="/static/warehouse-fulfillment.css?v=5">
+  <link rel="stylesheet" href="/static/warehouse-checkbar.css?v=13">
+  <link rel="stylesheet" href="/static/warehouse-preorder-catalog.css?v=1">
+  <link rel="stylesheet" href="/static/warehouse-assistant-fluent.css?v=1">
+  <link rel="stylesheet" href="/static/warehouse-assistant-workspace.css?v=1">
+  <link rel="stylesheet" href="/static/warehouse-column-layouts.css?v=6">
+  <link rel="stylesheet" href="/static/warehouse-table-filters.css?v=2">
+  <link rel="stylesheet" href="/static/warehouse-fullscreen.css?v=1">
+  <link rel="stylesheet" href="/static/warehouse-density.css?v=3">
+  <link rel="stylesheet" href="/static/warehouse-design.css?v=7">
+  <link rel="stylesheet" href="/static/warehouse-sms-settings.css?v=1">
+  <link rel="stylesheet" href="/static/warehouse-order-sms.css?v=1">
+  <link rel="stylesheet" href="/static/warehouse-order-workflow.css?v=6">
+  <link rel="stylesheet" href="/static/warehouse-rebalancing.css?v=1">
+  <link rel="stylesheet" href="/static/warehouse-table-export.css?v=2">
+  <link rel="stylesheet" href="/static/warehouse-purchase-contracts.css?v=4">
+  <link rel="stylesheet" href="/static/warehouse-sale-price-contracts.css?v=1">
+  <link rel="stylesheet" href="/static/warehouse-unbilled-receipts.css?v=2">
+  <link rel="stylesheet" href="/static/warehouse-purchase-invoice.css?v=3">
+  <link rel="stylesheet" href="/static/warehouse-checkbar-flow.css?v=3">
+  <link rel="stylesheet" href="/static/warehouse-operations.css?v=15">
+  <link rel="stylesheet" href="/static/warehouse-pages.css?v=5">
+  <link rel="stylesheet" href="/static/warehouse-purchase-groups.css?v=5">
 </head>
-<body>
+<body class="wa-fluent">
   <div id="warehouseAssistantApp" class="warehouse-shell">
     <header class="topbar">
       <div class="identity">
+        <button id="workspaceNavigationToggle" class="header-button" type="button" aria-label="جمع کردن منوی اصلی" aria-controls="warehouseNavigation" aria-expanded="true" title="جمع کردن منوی اصلی"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4Z M15 5v14 M7 9l3 3-3 3"/></svg></button>
         <img src="/static/negin-brand-icon-192.png" alt="">
         <div>
-          <span class="eyebrow">پایلوت مستقل · بدون اتصال به سفارش فروش</span>
+          <span class="eyebrow">فضای کار انبار و تأمین</span>
           <h1>دستیار انبار نگین</h1>
-          <p>Snapshot موجودی، تحلیل پوشش و پیشنهاد تجدید موجودی</p>
+          <p>موجودی، سفارش‌گذاری و صف تأیید خرید</p>
         </div>
       </div>
       <div class="top-actions">
@@ -28,24 +52,57 @@
       </div>
     </header>
 
-    <main>
+    <div class="app-layout">
+      <aside id="warehouseNavigation" class="app-sidebar" aria-label="منوی اصلی دستیار انبار">
+        <div class="sidebar-title"><span>فضای کار</span><small>نگین</small></div>
+        <nav class="page-tabs" aria-label="بخش‌های دستیار انبار">
+          <span class="nav-section-label">انبار و کالا</span>
+          <button class="is-active" type="button" data-view="inventory" aria-label="اقلام انبار" title="اقلام انبار — موجودی، تعهدات و اطلاعات کالا از ورانگر" aria-current="page"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m3 9 9-6 9 6v12H3Z M8 21v-9h8v9 M8 16h8"/></svg></span><span>اقلام انبار<small>موجودی و تعهدات</small></span></button>
+          <button type="button" data-view="supply" aria-label="تأمین مجاز انبار" title="تأمین مجاز انبار — تأمین‌کنندگان و برندهای مجاز هر انبار"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5Z M3 8v9l9 5 9-5V8 M12 13v9 M7 5.8l9 5"/></svg></span><span>تأمین مجاز انبار<small>تأمین‌کننده و برند مجاز</small></span></button>
+          <button type="button" data-view="transfers" aria-label="انتقال بین انبار" title="انتقال بین انبار — جابه‌جایی کالا بین انبار تهران و کرج"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 7h17l-4-4 M21 17H4l4 4"/></svg></span><span>انتقال بین انبار<small>تهران به کرج · کرج به تهران</small></span></button>
+          <span class="nav-section-label">سفارش خرید</span>
+          <button type="button" data-view="automatic" aria-label="تنظیمات سفارش" title="تنظیمات سفارش — شرایط محاسبه سفارش هر انبار و تأمین‌کننده"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 3v6m0 4v8 M12 3v10m0 4v4 M20 3v2m0 4v12 M1 9h6v4H1Z M9 13h6v4H9Z M17 5h6v4h-6Z"/></svg></span><span>تنظیمات سفارش<small>شرط هر انبار و تأمین‌کننده</small></span></button>
+          <button type="button" data-view="ordering" aria-label="پیشنهاد خرید" title="پیشنهاد خرید — محاسبه و آماده‌سازی سفارش دستی تأمین‌کننده"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 4H5v17h14V4h-3 M9 2h6v4H9Z M8 11h8 M8 16h5"/></svg></span><span>پیشنهاد خرید<small>محاسبه و آماده‌سازی</small></span></button>
+          <button type="button" data-view="preorders" aria-label="پیش‌سفارش‌ها" title="پیش‌سفارش‌ها — پیش‌سفارش‌های دستی و سیستمی؛ بررسی، تأیید و ارسال"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 4H4v17h16V10 M8 13l3 3 10-12"/></svg></span><span>پیش‌سفارش‌ها<small>دستی و سیستمی · تأیید و ارسال</small></span><b id="preorderMenuBadge" class="nav-badge">۰</b></button>
+          <button type="button" data-view="sent" aria-label="کارتابل تأمین‌کننده" title="کارتابل تأمین‌کننده — سفارش‌های ارسال‌شده؛ پیگیری پاسخ و بررسی تغییرات"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 6h11v11H3Z M14 10h4l3 4v3h-7 M6 17a2 2 0 1 0 4 0 M16 17a2 2 0 1 0 4 0"/></svg></span><span>کارتابل تأمین‌کننده<small>پیگیری پاسخ و بررسی تغییرات</small></span><b id="sentMenuBadge" class="nav-badge">۰</b></button>
+          <button type="button" data-view="fulfillment" aria-label="پیگیری تحویل" title="پیگیری تحویل — سفارش‌های در انتظار تحویل، دریافت ناقص و سوابق"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 6h11v11H3Z M14 10h4l3 4v3h-7 M6 17a2 2 0 1 0 4 0 M16 17a2 2 0 1 0 4 0"/></svg></span><span>پیگیری تحویل<small>تأیید تأمین‌کننده، دریافت و سوابق</small></span><b id="fulfillmentMenuBadge" class="nav-badge">۰</b></button>
+          <span class="nav-section-label">دریافت کالا</span>
+          <button type="button" data-view="checkbar" aria-label="چک‌بار" title="چک‌بار — شمارش و تطبیق بار؛ صدور رسید انبار در مرحله بعد"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 4H4v17h16V4h-4 M8 2h8v5H8Z M8 12h8 M8 16h5"/></svg></span><span>چک‌بار<small>کنترل بار همه تأمین‌کنندگان</small></span></button>
+          <button type="button" data-view="unbilled" aria-label="رسیدهای بدون فاکتور" title="رسیدهای بدون فاکتور — رسیدهای انبار بدون فاکتور خرید در ورانگر"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h12v18H6Z M9 7h6 M9 11h6 M9 15h4"/></svg></span><span>رسیدهای بدون فاکتور<small>پیگیری فاکتور رسیدهای ورانگر</small></span></button>
+          <span class="nav-section-label">مدیریت</span>
+          <button type="button" data-view="purchase" aria-label="قراردادهای خرید" title="قراردادهای خرید — قواعد تاریخ‌دار خرید از تأمین‌کننده"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h12v18H6Z M9 7h6 M9 11h6 M9 15h4"/></svg></span><span>قراردادهای خرید<small>قواعد تاریخ‌دار تأمین‌کننده و کالا</small></span></button>
+          <button type="button" data-view="sale-pricing" aria-label="قیمت‌گذاری فروش" title="قیمت‌گذاری فروش — قواعد قیمت فروش به تفکیک انبار و نوع درخواست"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4Z M8 9h8 M8 13h5 M17 16h.01"/></svg></span><span>قیمت‌گذاری فروش<small>قاعدهٔ انبار و نوع درخواست</small></span></button>
+          <a class="sidebar-nav-link" href="/supplier-portal-admin" aria-label="دسترسی تأمین‌کنندگان" title="مدیریت حساب‌ها و دسترسی تأمین‌کنندگان"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4Z M8 9h8 M8 13h5 M15 17h1 M7 17h4"/></svg></span><span>دسترسی تأمین‌کنندگان<small>حساب‌ها و دسترسی مسئولان</small></span></a>
+          <button id="smsSettingsButton" type="button" hidden aria-haspopup="dialog"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 5h18v12H8l-5 4V5Z M7 9h10 M7 13h7"/></svg></span><span>تنظیمات پیامک<small>حساب و خط ارسال آسانک</small></span></button>
+        </nav>
+        <details class="sidebar-note"><summary>دربارهٔ اتصال ورانگر</summary><span>خواندن مستقل اطلاعات ورانگر</span><span>انتقال رسید فقط با اقدام کاربر</span><span>بدون ثبت سفارش در ERP</span></details>
+      </aside>
+
+    <main class="app-content">
       <section id="accessMessage" class="notice" hidden></section>
+      <section id="warehouseVersionNotice" class="notice" role="status" hidden>سرویس انبار هنوز نسخهٔ قبلی است. برای فعال‌شدن خروج دستی از چرخه و عملیات سفارش، سرویس انبار باید راه‌اندازی مجدد شود؛ بازخوانی صفحه به‌تنهایی کافی نیست.</section>
 
       <section class="summary-grid" aria-label="وضعیت دستیار انبار">
-        <article><span>حالت اجرا</span><strong>پایلوت مستقل</strong><small>بدون تغییر در /assistant</small></article>
-        <article><span>آخرین دریافت از ورانگر</span><strong id="snapshotDate">—</strong><small id="snapshotFile">هنوز داده‌ای دریافت نشده است</small></article>
+        <article><span>آخرین به‌روزرسانی اطلاعات</span><strong id="snapshotDate">—</strong><small id="snapshotFile">هنوز داده‌ای دریافت نشده است</small></article>
         <article><span>تعداد کالا</span><strong id="productCount">۰</strong><small>در آخرین دریافت معتبر</small></article>
-        <article><span>خروجی سفارش</span><strong>آماده تحویل</strong><small>متن و Excel جداگانه برای هر تأمین‌کننده</small></article>
       </section>
 
-      <section class="workspace-grid">
-        <aside class="panel import-panel">
+      <section id="inventoryView" class="panel inventory-panel">
+        <div class="panel-head">
+          <div><h2>اقلام انبار</h2><p>تمام اعداد واحد پایه کالا هستند. حواله بدون فاکتور فقط جهت کنترل نمایش داده می‌شود و قبلاً در موجودی عملیاتی اعمال شده است.</p></div>
+          <button id="refreshInventoryButton" class="secondary-action" type="button">بازخوانی جدول</button>
+          <button id="orderFromInventoryButton" class="secondary-action" type="button" hidden>سفارش‌گذاری انبار انتخاب‌شده</button>
+          <button id="inventoryTaxRefresh" class="secondary-action" type="button" hidden>به‌روزرسانی مالیات</button>
+        </div>
+        <details id="inventoryDataTools" class="inventory-data-tools" hidden>
+          <summary>به‌روزرسانی اطلاعات از ورانگر</summary>
+        <div class="inventory-data-body">
           <div class="panel-head">
-            <div><h2>دریافت از ورانگر</h2><p>موجودی جاری و روند خروج را مستقیم و فقط‌خواندنی دریافت کنید.</p></div>
+            <div><h3>به‌روزرسانی داده‌های مبنای سفارش</h3><p>این اطلاعات در موجودی، پیشنهاد خرید و تطبیق دریافت‌ها استفاده می‌شود.</p></div>
           </div>
           <form id="varanegarSyncForm" class="stack">
-            <label class="sync-field">بازه بررسی روند خروج
-              <span><input id="syncPeriodDays" type="number" min="7" max="365" value="60"> روز گذشته</span>
+            <label class="sync-field">بازه فروش قبل از آخرین موجودی
+              <span><input id="syncPeriodDays" type="number" min="60" max="60" value="60" disabled> روز</span>
             </label>
             <button class="primary" type="submit" id="syncButton">دریافت موجودی و خروج از ورانگر</button>
           </form>
@@ -61,61 +118,651 @@
             </form>
           </details>
           <div class="security-note">
-            <strong>مرز ایمنی</strong>
-            <p>اتصال ورانگر فقط SELECT است. داده در پایگاه مستقل دستیار کپی می‌شود و هیچ INSERT، UPDATE، DELETE، EXEC یا ثبت سفارش در ورانگر انجام نمی‌شود.</p>
+            <strong>دربارهٔ این به‌روزرسانی</strong>
+            <p>این عملیات اطلاعات ورانگر را در دستیار به‌روز می‌کند؛ سفارش یا رسیدی در ورانگر ثبت نمی‌کند.</p>
           </div>
-        </aside>
+        </div>
+        </details>
+        <div class="inventory-commandbar">
+        <form id="inventoryFilterForm" class="inventory-filters" role="search">
+          <label>جست‌وجوی کلی<input id="inventorySearch" maxlength="200" placeholder="کد، نام، تولیدکننده، گروه، برند یا بارکد"></label>
+          <button class="primary" type="submit">نمایش اطلاعات</button>
+          <button id="clearInventoryFiltersButton" class="secondary-action" type="button">پاک‌کردن فیلترها</button>
+        </form>
+        <details class="workspace-options" id="inventoryDisplayOptions">
+          <summary>نمای جدول</summary>
+          <div class="inventory-view-bar">
+          <label>طرح‌های من<select id="inventoryViewSelect"><option value="">طرح جاری (ذخیره‌نشده)</option></select></label>
+          <label>نام طرح<input id="inventoryViewName" maxlength="100" placeholder="مثلاً کنترل خرید تهران"></label>
+          <label class="view-default"><input id="inventoryViewDefault" type="checkbox"> پیش‌فرض من</label>
+          <details class="column-picker"><summary>انتخاب ستون‌ها</summary><div id="inventoryColumnChoices"></div></details>
+          <button id="saveInventoryViewButton" class="primary" type="button">ذخیره طرح</button>
+          <button id="deleteInventoryViewButton" class="secondary-action danger-action" type="button" disabled>حذف طرح</button>
+          </div>
+        </details>
+        </div>
+        <details class="rules-disclosure" data-guide="inventory">
+          <summary>راهنمای محاسبات</summary>
+          <div class="inventory-rules">
+          <span><b>موجودی مالکیتی:</b> موجودی عملیاتی + رزرو قیمت</span>
+          <span><b>تعهد باز:</b> درخواست باز + فاکتور آزاد تأییدنشده + سفارش باز قدیمی</span>
+          <span><b>مبنای سفارش با در راه:</b> موجودی مالکیتی − تعهد باز + بار دریافت‌نشده + رسیدِ هنوز منعکس‌نشده</span>
+          <span class="demand-policy-chip"><b>فروش هیجانی:</b> فقط وقتی هم بیش از ۳ برابر مرجع عادی باشد و هم حداقل ۸۰٪ فروش همان روز را یک مشتری ساخته باشد؛ اعضای گروه مشتری امیران کامل لحاظ می‌شوند</span>
+          <span class="demand-policy-chip"><b>فروش آنلاین:</b> انتقال قطعی به انبار آنلاین، کامل به تقاضای انبار مبدأ اضافه می‌شود</span>
+        </div>
+        </details>
+        <p id="inventoryGroupHelp" class="muted">«مشخص نشده» یعنی گروه سطح ۳ در اطلاعات دریافتی کالا وجود ندارد؛ گروه سطح ۲ جایگزین آن نمی‌شود.</p>
+        <details id="inventoryTotals" class="inventory-totals"><summary>جمع مقادیر جدول</summary><div id="inventorySummary" class="result-summary empty">پس از دریافت داده ورانگر، اطلاعات موجودی اینجا نمایش داده می‌شود.</div></details>
+        <div class="table-wrap inventory-table-wrap" data-scroll-key="inventory">
+          <table class="inventory-table">
+            <thead>
+              <tr class="inventory-heading-row">
+                <th data-column="product_code">کد کالا</th>
+                <th data-column="product_name">نام کالا</th>
+                <th data-column="warehouse_name">انبار</th>
+                <th data-column="manufacturer">تولیدکننده</th><th data-column="group_level3">گروه سطح ۳</th>
+                <th data-column="brand">نام تجاری</th>
+                <th data-column="tax_rate">مالیات</th>
+                <th data-column="barcode">بارکد</th>
+                <th data-column="manufacturer_product_code">کد کالای تولیدکننده</th>
+                <th data-column="conversion_rate">ضریب</th>
+                <th data-column="on_hand_qty">موجودی عملیاتی</th>
+                <th data-column="reserved_qty">رزرو قیمت</th>
+                <th data-column="owned_procurement_qty">موجودی مالکیتی</th>
+                <th data-column="open_customer_order_qty">درخواست باز</th>
+                <th data-column="unconfirmed_free_invoice_qty">فاکتور آزاد تأییدنشده</th>
+                <th data-column="legacy_open_order_qty">سفارش باز قدیمی</th>
+                <th data-column="open_order_qty">کل تعهد باز</th>
+                <th data-column="pending_sale_voucher_qty">حواله بدون فاکتور</th>
+                <th data-column="in_transit_qty">موجودی در راه</th><th data-column="pending_receipt_qty">رسیده، منتظر انعکاس موجودی</th><th data-column="effective_procurement_qty">مبنای سفارش با در راه</th>
+                <th data-column="damaged_qty">ضایعات</th>
+                <th data-column="period_out_qty">فروش خالص مبنای سفارش</th>
+                <th data-column="online_transfer_out_qty">انتقال قطعی به انبار آنلاین</th>
+                <th data-column="last_in_stock_date">آخرین روز موجود</th>
+                <th data-column="days_since_last_stock">فاصله از آخرین موجودی</th>
+                <th data-column="sales_window_start">شروع بازه فروش</th>
+                <th data-column="sales_window_end">پایان بازه فروش</th>
+                <th data-column="sale_price">قیمت فروش</th>
+                <th data-column="manufacturer_price">قیمت تولیدکننده</th>
+                <th data-column="consumer_price">قیمت مصرف‌کننده</th>
+                <th data-column="ordering_cycle_active">وضعیت چرخه سفارش</th>
+              </tr>
+              <tr class="inventory-filter-row">
+                <th data-column="product_code"><input data-filter="product_code" aria-label="فیلتر کد کالا"></th>
+                <th data-column="product_name"><input data-filter="product_name" aria-label="فیلتر نام کالا"></th>
+                <th data-column="warehouse_name"><select id="inventoryWarehouseSelect" data-filter="warehouse_name" aria-label="فیلتر انبار"><option value="">همه</option></select></th>
+                <th data-column="manufacturer"><input data-filter="manufacturer" aria-label="فیلتر تولیدکننده"></th><th data-column="group_level3"><input data-filter="group_level3" aria-label="فیلتر گروه سطح ۳"></th>
+                <th data-column="brand"><input data-filter="brand" aria-label="فیلتر نام تجاری"></th>
+                <th data-column="tax_rate"><select data-filter="tax_rate" id="inventoryTaxFilter" aria-label="فیلتر مالیات"><option value="">همه</option><option value="0">۰٪ · معاف</option><option value="10">۱۰٪</option><option value="16">۱۶٪</option><option value="نامشخص">نامشخص / ناسازگار</option></select></th>
+                <th data-column="barcode"><input data-filter="barcode" aria-label="فیلتر بارکد"></th>
+                <th data-column="manufacturer_product_code"><input data-filter="manufacturer_product_code" aria-label="فیلتر کد کالای تولیدکننده"></th>
+                <th data-column="conversion_rate"><input data-filter="conversion_rate" inputmode="decimal" aria-label="فیلتر ضریب"></th>
+                <th data-column="on_hand_qty"><input data-filter="on_hand_qty" inputmode="decimal" aria-label="فیلتر موجودی عملیاتی"></th>
+                <th data-column="reserved_qty"><input data-filter="reserved_qty" inputmode="decimal" aria-label="فیلتر رزرو قیمت"></th>
+                <th data-column="owned_procurement_qty"><input data-filter="owned_procurement_qty" inputmode="decimal" aria-label="فیلتر موجودی مالکیتی"></th>
+                <th data-column="open_customer_order_qty"><input data-filter="open_customer_order_qty" inputmode="decimal" aria-label="فیلتر درخواست باز"></th>
+                <th data-column="unconfirmed_free_invoice_qty"><input data-filter="unconfirmed_free_invoice_qty" inputmode="decimal" aria-label="فیلتر فاکتور آزاد"></th>
+                <th data-column="legacy_open_order_qty"><input data-filter="legacy_open_order_qty" inputmode="decimal" aria-label="فیلتر سفارش باز قدیمی"></th>
+                <th data-column="open_order_qty"><input data-filter="open_order_qty" inputmode="decimal" aria-label="فیلتر کل تعهد باز"></th>
+                <th data-column="pending_sale_voucher_qty"><input data-filter="pending_sale_voucher_qty" inputmode="decimal" aria-label="فیلتر حواله بدون فاکتور"></th>
+                <th data-column="in_transit_qty"><input data-filter="in_transit_qty" inputmode="decimal" aria-label="فیلتر موجودی در راه"></th><th data-column="pending_receipt_qty"><input data-filter="pending_receipt_qty" aria-label="فیلتر رسیده، منتظر انعکاس موجودی"></th><th data-column="effective_procurement_qty"><input data-filter="effective_procurement_qty" inputmode="decimal" aria-label="فیلتر موجودی مبنا"></th>
+                <th data-column="damaged_qty"><input data-filter="damaged_qty" inputmode="decimal" aria-label="فیلتر ضایعات"></th>
+                <th data-column="period_out_qty"><input data-filter="period_out_qty" inputmode="decimal" aria-label="فیلتر فروش خالص"></th>
+                <th data-column="online_transfer_out_qty"><input data-filter="online_transfer_out_qty" inputmode="decimal" aria-label="فیلتر انتقال به انبار آنلاین"></th>
+                <th data-column="last_in_stock_date"><input data-filter="last_in_stock_date" aria-label="فیلتر آخرین روز موجود"></th>
+                <th data-column="days_since_last_stock"><input data-filter="days_since_last_stock" inputmode="numeric" aria-label="فیلتر فاصله از آخرین موجودی"></th>
+                <th data-column="sales_window_start"><input data-filter="sales_window_start" aria-label="فیلتر شروع بازه فروش"></th>
+                <th data-column="sales_window_end"><input data-filter="sales_window_end" aria-label="فیلتر پایان بازه فروش"></th>
+                <th data-column="sale_price"><input data-filter="sale_price" inputmode="decimal" aria-label="فیلتر قیمت فروش"></th>
+                <th data-column="manufacturer_price"><input data-filter="manufacturer_price" inputmode="decimal" aria-label="فیلتر قیمت تولیدکننده"></th>
+                <th data-column="consumer_price"><input data-filter="consumer_price" inputmode="decimal" aria-label="فیلتر قیمت مصرف‌کننده"></th>
+                <th data-column="ordering_cycle_active"><input data-filter="ordering_cycle_active" aria-label="فیلتر وضعیت چرخه سفارش"></th>
+              </tr>
+            </thead>
+            <tbody id="inventoryRows"><tr><td colspan="28" class="empty-cell">داده‌ای برای نمایش نیست.</td></tr></tbody>
+          </table>
+        </div>
+        <div class="inventory-more"><button id="loadMoreInventoryButton" class="secondary-action" type="button" hidden>نمایش ردیف‌های بیشتر</button></div>
+      </section>
+
+      <section id="unbilledView" class="panel" hidden>
+        <div class="panel-head"><h2>رسیدهای بدون فاکتور خرید</h2><button id="unbilledRefresh" type="button" class="primary">دریافت از ورانگر</button></div>
+        <form id="unbilledFilters" class="unbilled-toolbar">
+          <label>سال مالی<input id="unbilledYear" inputmode="numeric" maxlength="4" placeholder="سال جاری" aria-label="سال مالی رسیدها"></label>
+          <label>از تاریخ<input id="unbilledFrom" inputmode="numeric" maxlength="10" placeholder="۱۴۰۵/۰۱/۰۱" dir="ltr"></label>
+          <label>تا تاریخ<input id="unbilledTo" inputmode="numeric" maxlength="10" placeholder="۱۴۰۵/۱۲/۲۹" dir="ltr"></label>
+          <label>انبار<select id="unbilledStock"><option value="">همهٔ انبارها</option></select></label>
+          <label>تولیدکننده<select id="unbilledManufacturer"><option value="">همهٔ تولیدکنندگان</option></select></label>
+          <label>وضعیت رسید<select id="unbilledStatus"><option value="">همه</option><option value="confirmed">تأییدشده</option><option value="unconfirmed">تأییدنشده</option></select></label>
+          <label class="unbilled-search">جست‌وجو<input id="unbilledSearch" type="search" placeholder="شماره رسید، تأمین‌کننده یا توضیحات" maxlength="200"></label>
+          <button id="unbilledClear" type="button" class="secondary-action">پاک کردن فیلترها</button>
+        </form>
+        <div class="unbilled-meta"><span id="unbilledCount" role="status"></span><span id="unbilledReadAt"></span></div>
+        <div class="ub-invoice-selection"><span id="unbilledSelectedCount" role="status">هیچ رسیدی انتخاب نشده</span><button id="unbilledCreateInvoice" type="button" disabled>ساخت یک فاکتور از رسیدهای انتخاب‌شده</button><button id="unbilledClearSelection" type="button" disabled>پاک کردن انتخاب‌ها</button></div>
+        <p id="unbilledError" role="alert" hidden></p>
+        <div class="unbilled-table-scroll" tabindex="0" role="region" aria-label="جدول رسیدهای بدون فاکتور خرید">
+          <table id="unbilledTable"><colgroup><col class="ub-number"><col class="ub-date"><col class="ub-stock"><col class="ub-supplier"><col class="ub-maker"><col class="ub-status"><col><col class="ub-actions"></colgroup><thead><tr><th>شماره رسید</th><th>تاریخ رسید</th><th>انبار</th><th>تأمین‌کننده</th><th>تولیدکننده</th><th>وضعیت رسید</th><th>توضیحات رسید انبار</th><th data-filterable="false">عملیات</th></tr></thead><tbody id="unbilledRows"><tr><td colspan="8">برای نمایش رسیدها، دریافت از ورانگر را بزنید.</td></tr></tbody></table>
+        </div>
+        <div class="unbilled-footer"><span>رسید دارای فاکتور تأییدنشده هم از این فهرست خارج است.</span><div><button id="unbilledPrevious" type="button" disabled>قبلی</button><span id="unbilledPage"></span><button id="unbilledNext" type="button" disabled>بعدی</button></div></div>
+      </section>
+
+      <section id="purchaseView" class="panel" hidden>
+        <div class="panel-head"><div><h2>قراردادهای خرید</h2><p>تأمین‌کننده را انتخاب کنید؛ هر قرارداد، تاریخ و شرایط مشترک برای کالاهای عضو دارد.</p></div><div class="purchase-actions"><button id="purchaseDiscover" type="button" class="secondary-action">کشف قرارداد اولیه</button><button id="purchaseRefresh" type="button" class="secondary-action">دریافت فهرست و مالیات</button><button id="purchaseNew" type="button" class="primary">قرارداد جدید</button></div></div>
+        <div id="purchaseMessage" role="status" hidden></div>
+        <nav id="purchaseSupplierTrail" class="purchase-supplier-trail" aria-label="مسیر قرارداد خرید" hidden><button id="purchaseAllSuppliers" type="button">همهٔ تأمین‌کنندگان</button><span aria-hidden="true">/</span><strong id="purchaseSupplierTitle" tabindex="-1"></strong></nav>
+        <div id="purchaseWarehouseTabs" class="purchase-warehouse-tabs" aria-label="انبارهای تأمین‌کننده" hidden></div>
+        <p id="purchaseWarehouseNotice" class="purchase-warehouse-notice" hidden></p>
+        <div class="purchase-toolbar">
+          <button type="button" data-purchase-tab="contracts" aria-pressed="true">قراردادها</button><button type="button" data-purchase-tab="products" aria-pressed="false">کالاها</button><label id="purchaseCoverageLabel" hidden>وضعیت قرارداد کالا<select id="purchaseCoverage"><option value="all">همهٔ کالاها</option><option value="covered">دارای قرارداد</option><option value="uncovered">فاقد قرارداد</option></select><span id="purchaseUncoveredCount"></span></label>
+          <label>تأمین‌کننده<select id="purchaseSupplier"><option value="">همهٔ تأمین‌کنندگان</option></select></label>
+          <label id="purchaseStatusLabel">وضعیت<select id="purchaseStatus"><option value="">همه</option><option value="active">فعال</option><option value="draft">پیش‌نویس</option><option value="archived">بایگانی</option></select></label>
+          <label id="purchaseStockLabel">انبار قرارداد<select id="purchaseStock"><option value="1">انبار مرکزی کرج</option><option value="2">انبار تهران</option><option value="9">انبار گیلان</option></select></label>
+          <label id="purchaseDateLabel" hidden>تاریخ خرید<input id="purchaseDate" placeholder="۱۴۰۵/۰۶/۱۷" inputmode="numeric" maxlength="10" dir="ltr"></label>
+          <label class="purchase-search">جست‌وجو<input id="purchaseSearch" type="search" placeholder="نام تأمین‌کننده، عنوان قرارداد یا کد کالا" maxlength="200"></label>
+        </div>
+
+        <div id="purchaseSupplierSections" class="purchase-supplier-sections" hidden></div>
+        <div class="purchase-meta"><span id="purchaseCount"></span><span id="purchaseCatalogStatus"></span></div>
+        <div id="purchaseContractsPane" class="purchase-table-scroll"><table aria-label="قراردادهای خرید"><thead><tr><th>عنوان قرارداد / مرجع</th><th>کالاهای عضو</th><th>اعتبار</th><th>قیمت مبنا</th><th>تخفیف ستون</th><th>تخفیف انتهایی</th><th>وضعیت</th><th data-filterable="false">عملیات</th></tr></thead><tbody id="purchaseContractRows"></tbody></table></div>
+        <div id="purchaseProductsPane" hidden><div id="purchaseCoverageTabs" class="purchase-members-toolbar" role="group" aria-label="وضعیت جاری قرارداد کالاهای انبار"><button type="button" data-purchase-coverage-tab="covered" aria-pressed="true">دارای قرارداد فعال جاری</button><button type="button" data-purchase-coverage-tab="uncovered" aria-pressed="false">فاقد قرارداد فعال جاری</button></div><div id="purchaseProductSelectionControls" class="purchase-actions purchase-bulk-actions"><button id="purchaseSelectUncovered" type="button">انتخاب نتایج فاقد قرارداد</button><button id="purchaseClearUncovered" type="button">پاک کردن انتخاب</button><button id="purchaseCreateSelected" type="button" class="primary" disabled>قرارداد برای کالاهای انتخاب‌شده</button><span id="purchaseSelectedCount"></span></div><div class="purchase-table-scroll"><table id="purchaseProductsTable" aria-label="قاعدهٔ خرید هر کالا"><thead><tr><th data-filterable="false">انتخاب</th><th>کد کالا</th><th>کد کالای تولیدکننده</th><th>بارکد</th><th>نام کالا</th><th>برند</th><th>گروه سطح ۳</th><th>مالیات</th><th>قرارداد معتبر</th><th>مبنا</th><th>ستون / انتهایی</th><th data-filterable="false">عملیات</th></tr></thead><tbody id="purchaseProductRows"></tbody></table></div><button id="purchaseMore" type="button" hidden>نمایش بیشتر</button></div>
+      </section>
+
+      <section id="salePriceView" class="panel" hidden>
+        <div class="panel-head"><div><h2>قواعد قیمت فروش</h2><p>قیمت پایهٔ فروش بر اساس تولیدکننده، کالا، انبار و نوع درخواست مرتبط محاسبه می‌شود.</p></div><div class="sale-price-actions"><button id="salePriceNew" type="button" class="primary">قاعدهٔ جدید</button></div></div>
+        <div id="salePriceMessage" role="status" hidden></div>
+        <div class="sale-price-toolbar">
+          <label>انبار<select id="salePriceWarehouseFilter"><option value="">همهٔ انبارها</option></select></label>
+          <label>تولیدکننده<select id="salePriceManufacturerFilter"><option value="">همهٔ تولیدکننده‌ها</option></select></label>
+          <label>وضعیت<select id="salePriceStatusFilter"><option value="active" selected>فعال</option><option value="draft">پیش‌نویس</option><option value="archived">بایگانی</option><option value="">همه</option></select></label>
+          <label class="sale-price-search">جست‌وجو<input id="salePriceSearch" type="search" maxlength="200" placeholder="عنوان، کالا، کد یا نوع درخواست"></label>
+        </div>
+        <div class="sale-price-meta"><span id="salePriceCount"></span><span>قیمت نهایی سفارش ممکن است با تخفیف، جایزه و شرایط مشتری تغییر کند.</span></div>
+        <div class="sale-price-table-scroll"><table aria-label="قراردادهای قیمت فروش"><thead><tr><th>انبار / نوع درخواست</th><th>تولیدکننده / دامنه</th><th>اعتبار</th><th>فرمول قیمت پایه فروش</th><th>وضعیت</th><th data-filterable="false">عملیات</th></tr></thead><tbody id="salePriceRows"></tbody></table></div>
+      </section>
+
+      <section id="supplyView" class="panel supply-panel" hidden>
+        <div class="panel-head">
+          <div>
+            <h2>تأمین مجاز انبار</h2>
+            <p>پیش‌فرض از رسیدهای تأییدشده ۹۰ روز اخیر ورانگر ساخته می‌شود. هر ترکیب انبار، تأمین‌کننده و برند را می‌توانید مستقل تغییر دهید.</p>
+          </div>
+          <div class="panel-actions">
+            <label class="compact-field">انبار<select id="supplyWarehouseSelect"></select></label>
+            <details class="column-picker"><summary>تنظیم ستون‌ها</summary><div id="supplyColumnChoices"></div></details>
+            <button id="refreshSupplyScopeButton" class="secondary-action" type="button">بازخوانی رسیدهای ۹۰ روز</button>
+          </div>
+        </div>
+        <details class="rules-disclosure" data-guide="supply">
+          <summary>راهنمای تأمین</summary>
+        <div class="supply-rules">
+          <span><b>فعال:</b> در سفارش دستی، اتوماتیک و پیش‌سفارش لحاظ می‌شود</span>
+          <span><b>غیرفعال:</b> تولیدکننده یا برند در هیچ مسیر سفارش آن انبار نمایش داده نمی‌شود</span>
+          <span><b>تغییر دستی:</b> در بازخوانی‌های بعدی حفظ می‌شود</span>
+        </div>
+        </details>
+        <div id="supplySummary" class="result-summary empty">بعد از دریافت داده ورانگر، ترکیب‌های تأمین اینجا نمایش داده می‌شود.</div>
+        <div class="supply-toolbar">
+          <label>جست‌وجو<input id="supplySearch" maxlength="200" placeholder="تأمین‌کننده، برند یا نام ثبت‌شده در رسید"></label>
+          <label>وضعیت<select id="supplyStatusFilter"><option value="">همه</option><option value="enabled">فقط فعال</option><option value="disabled">فقط غیرفعال</option><option value="observed">دارای رسید ۹۰ روز اخیر</option><option value="manual">تغییر دستی</option></select></label>
+        </div>
+        <div class="table-wrap supply-table-wrap" data-scroll-key="supply">
+          <table id="supplyTable" class="supply-table">
+            <thead>
+              <tr class="supply-heading-row">
+                <th data-supply-column="enabled">فعال</th>
+                <th data-supply-column="warehouse">انبار</th>
+                <th data-supply-column="supplier">تأمین‌کننده</th>
+                <th data-supply-column="brand">برند</th>
+                <th data-supply-column="product_count">تعداد کالا</th>
+                <th data-supply-column="receipt_count">تعداد رسید</th>
+                <th data-supply-column="receipt_quantity">مقدار رسیده</th>
+                <th data-supply-column="last_receipt_date">آخرین رسید</th>
+                <th data-supply-column="evidence">مبنای فعال‌سازی</th>
+                <th data-supply-column="updated_by">آخرین تغییر</th>
+              </tr>
+              <tr class="supply-filter-row table-filter-row">
+                <th data-supply-column="enabled"></th><th data-supply-column="warehouse"></th>
+                <th data-supply-column="supplier"><input data-supply-filter="supplier" placeholder="فیلتر"></th>
+                <th data-supply-column="brand"><input data-supply-filter="brand" placeholder="فیلتر"></th>
+                <th data-supply-column="product_count"><input data-supply-filter="product_count" inputmode="numeric"></th>
+                <th data-supply-column="receipt_count"><input data-supply-filter="receipt_count" inputmode="numeric"></th>
+                <th data-supply-column="receipt_quantity"><input data-supply-filter="receipt_quantity" inputmode="numeric"></th>
+                <th data-supply-column="last_receipt_date"><input data-supply-filter="last_receipt_date"></th>
+                <th data-supply-column="evidence"><input data-supply-filter="evidence"></th>
+                <th data-supply-column="updated_by"><input data-supply-filter="updated_by"></th>
+              </tr>
+            </thead>
+            <tbody id="supplyRows"><tr><td colspan="10" class="empty-cell">هنوز ماتریس تأمین ساخته نشده است.</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="automaticView" class="panel automatic-panel" hidden>
+        <div class="panel-head">
+          <div>
+            <h2>تنظیمات سفارش</h2>
+            <p>هر تأمین‌کننده در هر انبار تنظیم مستقل دارد. پیش‌فرض همه ردیف‌ها روز پوشش کمتر از ۱۰ روز تا پوشش ۲۰ روز است.</p>
+          </div>
+          <div class="panel-actions automatic-actions">
+            <label>انبار بررسی<select id="automaticWarehouseSelect"></select></label>
+            <details class="column-picker"><summary>تنظیم ستون‌ها</summary><div id="automaticColumnChoices"></div></details>
+            <button id="saveAutomaticSettingsButton" class="secondary-action save-settings-button" type="button" disabled>ذخیره تنظیمات</button>
+            <button id="previewAutomaticButton" class="secondary-action" type="button">محاسبه وضعیت سفارش‌ها</button>
+            <button id="prepareAutomaticButton" class="primary" type="button">بازسازی دستی همه پیش‌سفارش‌ها</button>
+          </div>
+        </div>
+        <details class="rules-disclosure" data-guide="automatic">
+          <summary>راهنمای سفارش خودکار</summary>
+        <div class="automatic-rules">
+          <span><b>شرط ورود:</b> روز پوشش کمتر از روز تعیین‌شده</span>
+          <span><b>هدف:</b> تکمیل موجودی تا پوشش هدف</span>
+          <span><b>حداقل کارتن:</b> فعلاً پیش‌فرض صفر است و هیچ حداقل فرضی اعمال نمی‌شود</span>
+          <span><b>به‌روزرسانی خودکار:</b> هر یک ساعت موجودی تازه خوانده و پیش‌سفارش‌ها بازسازی می‌شوند</span>
+          <span class="demand-policy-chip"><b>کنترل جهش:</b> بزرگی خرید و سهم حداقل ۸۰٪ مشتری باید هم‌زمان برقرار باشند؛ تکرار گسترده بین حداقل ۳ مشتری الگوی عادی است</span>
+          <span><b>حفاظت ارسال:</b> سفارش دارای دستور ارسال در همان روز دوباره ساخته نمی‌شود</span>
+        </div>
+        </details>
+        <div id="automaticRefreshStatus" class="automatic-refresh-status">وضعیت اجرای ساعتی در حال دریافت است.</div>
+        <div id="automaticSummary" class="result-summary empty">تنظیمات همه تأمین‌کننده‌های آخرین دریافت، با پیش‌فرض ۱۰/۲۰، اینجا نمایش داده می‌شود.</div>
+        <div class="table-wrap automatic-table-wrap" data-scroll-key="automatic-settings">
+          <table id="automaticTable" class="automatic-table">
+            <thead>
+              <tr class="automatic-heading-row">
+                <th data-auto-column="enabled">فعال</th>
+                <th data-auto-column="warehouse">انبار</th>
+                <th data-auto-column="supplier">تأمین‌کننده</th>
+                <th data-auto-column="product_count">تعداد کالا</th>
+                <th data-auto-column="reorder_coverage_days">حد شروع سفارش (روز)</th>
+                <th data-auto-column="target_days">پوشش هدف</th>
+                <th data-auto-column="minimum_cartons">حداقل کل سفارش</th>
+                <th data-auto-column="contact_first_name">نام مسئول</th>
+                <th data-auto-column="contact_last_name">نام خانوادگی</th>
+                <th data-auto-column="contact_email">ایمیل</th>
+                <th data-auto-column="contact_mobile">شماره موبایل</th>
+                <th data-auto-column="status">وضعیت آخرین بررسی</th>
+                <th data-auto-column="actions">عملیات</th>
+              </tr>
+              <tr class="automatic-filter-row table-filter-row">
+                <th data-auto-column="enabled"><select data-auto-filter="enabled"><option value="">همه</option><option value="فعال">فعال</option><option value="غیرفعال">غیرفعال</option></select></th>
+                <th data-auto-column="warehouse"></th>
+                <th data-auto-column="supplier"><input data-auto-filter="supplier" placeholder="جست‌وجو"></th>
+                <th data-auto-column="product_count"><input data-auto-filter="product_count" inputmode="numeric"></th>
+                <th data-auto-column="reorder_coverage_days"><input data-auto-filter="reorder_coverage_days" inputmode="numeric"></th>
+                <th data-auto-column="target_days"><input data-auto-filter="target_days" inputmode="numeric"></th>
+                <th data-auto-column="minimum_cartons"><input data-auto-filter="minimum_cartons" inputmode="numeric"></th>
+                <th data-auto-column="contact_first_name"><input data-auto-filter="contact_first_name"></th>
+                <th data-auto-column="contact_last_name"><input data-auto-filter="contact_last_name"></th>
+                <th data-auto-column="contact_email"><input data-auto-filter="contact_email"></th>
+                <th data-auto-column="contact_mobile"><input data-auto-filter="contact_mobile"></th>
+                <th data-auto-column="status"><input data-auto-filter="status"></th>
+                <th data-auto-column="actions"></th>
+              </tr>
+            </thead>
+            <tbody id="automaticRows"><tr><td colspan="13" class="empty-cell">ابتدا داده ورانگر را دریافت کنید.</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <div id="preordersView" hidden>
+        <section class="panel prepared-order-header">
+          <div class="panel-head"><div><h2>پیش‌سفارش‌ها</h2><p>در هر دو بخش: ویرایش، تأیید، لغو تأیید و حذف تا پیش از قرار دادن در کارتابل. تأیید داخلی به‌تنهایی پیامک یا ایمیل نمی‌فرستد.</p></div></div>
+          <div class="prepared-order-kind" role="tablist" aria-label="نوع پیش‌سفارش">
+            <button id="preparedManualTab" type="button" role="tab" data-prepared-kind="manual" aria-selected="true" aria-controls="manualPreparedPanel">دستی <b id="manualPreparedCount">۰</b></button>
+            <button id="preparedSystemTab" type="button" role="tab" data-prepared-kind="system" aria-selected="false" aria-controls="systemPreparedPanel" tabindex="-1">سیستمی <b id="systemPreparedCount">۰</b></button>
+          </div>
+        </section>
+        <section id="manualPreparedPanel" class="manual-orders-block panel" role="tabpanel" aria-labelledby="preparedManualTab">
+          <div class="panel-head"><div><h2>پیش‌سفارش‌های دستی</h2><p>ویرایش سفارش تأییدشده با تأیید شما ابتدا تأیید قبلی را لغو می‌کند. با قرار دادن در کارتابل، سفارش به «کارتابل تأمین‌کننده» منتقل می‌شود؛ اطلاع‌رسانی اختیاری است.</p></div><div class="panel-actions"><label><input id="manualOrdersIncludeDeleted" type="checkbox"> نمایش حذف‌شده‌ها</label><button id="refreshOrdersButton" class="secondary-action" type="button">بازخوانی صف</button></div></div>
+          <div id="ordersList" class="orders-list"><div class="empty-cell">هنوز سندی آماده نشده است.</div></div>
+        </section>
+      <section id="systemPreparedPanel" class="panel preorders-panel" role="tabpanel" aria-labelledby="preparedSystemTab" hidden>
+        <div class="panel-head">
+          <div><h2>پیش‌سفارش‌های سیستمی</h2><p>ویرایش ← تأیید داخلی ← قرار دادن در کارتابل. اطلاع‌رسانی با پیامک و ایمیل اختیاری است؛ تاریخ تا قبل از قرار دادن قابل ویرایش است.</p></div>
+          <div class="panel-actions">
+            <label class="compact-field">انبار<select id="preorderWarehouseFilter"><option value="">همه انبارها</option></select></label>
+            <label class="compact-field">وضعیت<select id="preorderStatusFilter"><option value="">همه وضعیت‌ها</option><option value="awaiting_approval">منتظر تأیید</option><option value="approved">آماده قرار دادن در کارتابل</option><option value="send_requested">دارای دستور یا نتیجه ارسال</option></select></label>
+            <details class="column-picker"><summary>تنظیم ستون‌ها</summary><div id="preorderColumnChoices"></div></details>
+            <button id="manualRefreshPreordersButton" class="primary" type="button">به‌روزرسانی دستی سفارش‌های اتوماتیک</button>
+            <button id="refreshAutomaticPreordersButton" class="secondary-action" type="button">بازخوانی صف</button>
+          </div>
+        </div>
+        <div id="preordersSummary" class="result-summary empty">هنوز پیش‌سفارشی آماده نشده است.</div>
+        <div class="table-wrap preorders-table-wrap" data-scroll-key="automatic-preorders">
+          <table id="preordersTable" class="preorders-table">
+            <thead>
+              <tr class="preorder-heading-row">
+                <th data-preorder-column="status">وضعیت</th><th data-preorder-column="warehouse">انبار</th><th data-preorder-column="supplier">تأمین‌کننده</th><th data-preorder-column="preorder_number">شماره</th><th data-preorder-column="item_count">اقلام</th><th data-preorder-column="total_cartons">کارتن</th><th data-preorder-column="reorder_coverage_days">مرز سفارش</th><th data-preorder-column="target_days">هدف</th><th data-preorder-column="contact">مسئول</th><th data-preorder-column="contact_email">ایمیل</th><th data-preorder-column="created_at">آخرین به‌روزرسانی</th><th data-preorder-column="delivery_date">تاریخ تحویل</th><th data-preorder-column="documents">فایل‌ها</th><th data-preorder-column="actions">عملیات</th>
+              </tr>
+              <tr class="preorder-filter-row table-filter-row">
+                <th data-preorder-column="status"></th><th data-preorder-column="warehouse"></th><th data-preorder-column="supplier"><input data-preorder-filter="supplier" placeholder="جست‌وجو"></th><th data-preorder-column="preorder_number"><input data-preorder-filter="preorder_number"></th><th data-preorder-column="item_count"><input data-preorder-filter="item_count"></th><th data-preorder-column="total_cartons"><input data-preorder-filter="total_cartons"></th><th data-preorder-column="reorder_coverage_days"><input data-preorder-filter="reorder_coverage_days"></th><th data-preorder-column="target_days"><input data-preorder-filter="target_days"></th><th data-preorder-column="contact"><input data-preorder-filter="contact"></th><th data-preorder-column="contact_email"><input data-preorder-filter="contact_email"></th><th data-preorder-column="created_at"><input data-preorder-filter="created_at"></th><th data-preorder-column="delivery_date"><input data-preorder-filter="delivery_date" aria-label="فیلتر تاریخ تحویل"></th><th data-preorder-column="documents"></th><th data-preorder-column="actions"></th>
+              </tr>
+            </thead>
+            <tbody id="automaticPreordersList"><tr><td colspan="14" class="empty-cell">هنوز پیش‌سفارشی آماده نشده است.</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      </div>
+      <section id="fulfillmentView" class="panel" hidden>
+        <div class="panel-head"><div><h2 id="orderStageTitle">پیگیری تحویل</h2><p id="orderStageHelp">سفارش‌های تأییدشده توسط تأمین‌کننده؛ ثبت دریافت کامل یا جزئی</p></div><button id="refreshFulfillmentButton" class="secondary-action" type="button">به‌روزرسانی فهرست</button></div>
+        <div class="fulfillment-toolbar"><label class="fulfillment-search">جست‌وجو <input id="fulfillmentSearch" type="search" placeholder="شماره سفارش، تأمین‌کننده یا انبار"></label><label>نمایش <select id="fulfillmentStatusFilter"><option value="open">سفارش‌های باز این مرحله</option><option value="partial">دریافت ناقص</option><option value="received">دریافت کامل</option><option value="closed">مانده بسته‌شده</option><option value="all">همه و سوابق</option></select></label><span id="fulfillmentSummary" role="status"></span></div>
+        <div id="fulfillmentWorkflowFilters" class="fulfillment-workflow-filters" role="group" aria-label="فیلتر مرحله هماهنگی سفارش">
+          <button type="button" data-workflow-filter="all" aria-pressed="true">همه سفارش‌های این بخش <b data-workflow-count="all">۰</b></button>
+          <button type="button" data-workflow-filter="unviewed" aria-pressed="false">مشاهده‌نشده <b data-workflow-count="unviewed">۰</b></button>
+          <button type="button" data-workflow-filter="awaiting_supplier" aria-pressed="false">منتظر پاسخ تأمین‌کننده <b data-workflow-count="awaiting_supplier">۰</b></button>
+          <button type="button" data-workflow-filter="changes_requested" aria-pressed="false">برگشت برای اصلاح <b data-workflow-count="changes_requested">۰</b></button>
+          <button type="button" data-workflow-filter="awaiting_negin" aria-pressed="false">منتظر تأیید نگین <b data-workflow-count="awaiting_negin">۰</b></button>
+          <button type="button" data-workflow-filter="supplier_confirmed" aria-pressed="false">تأییدشده با تأمین‌کننده <b data-workflow-count="supplier_confirmed">۰</b></button>
+          <button type="button" data-workflow-filter="awaiting_delivery" aria-pressed="false">در انتظار تحویل <b data-workflow-count="awaiting_delivery">۰</b></button>
+        </div>
+        <div class="table-wrap" data-scroll-key="fulfillment"><table id="fulfillmentTable" class="fixed-columns" data-default-columns="number,supplier,supplier-confirmation,warehouse,delivery_date,remaining,actions"><thead><tr><th data-fulfillment-column="number">شماره سفارش</th><th data-fulfillment-column="supplier">تأمین‌کننده</th><th data-fulfillment-column="supplier-confirmation">وضعیت هماهنگی</th><th data-fulfillment-column="warehouse">انبار</th><th data-fulfillment-column="sent">زمان قرار گرفتن در کارتابل</th><th data-fulfillment-column="delivery_date">تاریخ تحویل</th><th data-fulfillment-column="viewed">وضعیت مشاهده</th><th data-fulfillment-column="notification">اطلاع‌رسانی</th><th data-fulfillment-column="remaining">دریافت / مانده</th><th data-fulfillment-column="status">وضعیت دریافت</th><th data-fulfillment-column="actions">عملیات</th></tr></thead><tbody id="fulfillmentRows"></tbody></table></div>
+        <p class="fulfillment-footnote">ماندهٔ سفارش و رسیدهای منتظر انعکاس در موجودی، از نیاز خرید بعدی کم می‌شوند. بستن مانده با حفظ سابقه انجام می‌شود.</p>
+      </section>
+
+      <section id="transfersView" class="panel" hidden aria-labelledby="transfersTitle">
+        <div class="panel-head"><h2 id="transfersTitle">انتقال بین انبار</h2><button id="refreshTransfersButton" type="button" class="secondary-action">بازخوانی وضعیت ورانگر</button></div>
+        <div class="transfer-actions transfer-stage-navigation" role="group" aria-label="مرحله جابه‌جایی"><button type="button" class="secondary-action" data-transfer-stage="proposals" aria-controls="balanceProposalPanel" aria-pressed="true">۱. پیشنهادهای جابه‌جایی</button><button type="button" class="secondary-action" data-transfer-stage="requests" aria-controls="balanceRequestPanel" aria-pressed="false">۲. تأییدشده‌ها</button><button type="button" class="secondary-action" data-transfer-stage="documents" aria-controls="balanceDocumentsPanel" aria-pressed="false">۳. اسناد جابه‌جایی</button></div>
+        <div class="balance-navigation"><div class="transfer-actions" role="group" aria-label="مسیر جابه‌جایی">
+          <button type="button" class="secondary-action" data-transfer-direction="all" aria-pressed="false" hidden>همه مسیرها</button>
+          <button type="button" class="secondary-action" data-transfer-direction="tehran-karaj" aria-pressed="true">تهران به کرج</button>
+          <button type="button" class="secondary-action" data-transfer-direction="tehran-gilan" aria-pressed="false">تهران به گیلان</button>
+          <button type="button" class="secondary-action" data-transfer-direction="karaj-tehran" aria-pressed="false">کرج به تهران</button>
+          <button type="button" class="secondary-action" data-transfer-direction="karaj-gilan" aria-pressed="false">کرج به گیلان</button>
+          <button type="button" class="secondary-action" data-transfer-direction="gilan-tehran" aria-pressed="false">گیلان به تهران</button>
+          <button type="button" class="secondary-action" data-transfer-direction="gilan-karaj" aria-pressed="false">گیلان به کرج</button>
+          <span id="transferRequestCount"></span><span id="transferRequestStatus" role="status"></span>
+        </div></div>
+        <h3 id="balanceSectionTitle" class="balance-section-title">پیشنهادهای جابه‌جایی · تهران به کرج</h3>
+        <details class="balance-rule"><summary id="balanceRuleSummary">مبدأ بالای ۴۵، مقصد زیر ۱۵ روز؛ حداقل ماندگاری مبدأ ۲۰ روز · راهنما</summary><p>موجودی مبنای سفارش و جابه‌جایی‌های تأییدشده ملاک‌اند؛ قیمت مصرف مبدأ باید حداقل برابر مقصد باشد. برای ارسال به گیلان، ابتدا تهران و کرج باید هر دو حداقل ۳۰ روز پوشش داشته باشند و بعد از انتقال هم این حد حفظ شود. گیلان فقط وقتی زیر ۲۰ روز است پیشنهاد می‌گیرد؛ مقدار انتخابی باید آن را حداقل به ۲۰ روز برساند، بدون سقف روز پوشش. مبدأ همچنان باید بالای ۴۵ روز باشد؛ مقدار بر پایه تعادل روز پوشش، موجودی قابل ارسال و کارتن کامل محاسبه می‌شود. مسیرهای دیگر همان قاعده ۴۵/۱۵/۲۰ را دارند. تأیید از مبنای مبدأ کم و به در راه مقصد اضافه می‌کند؛ سند ورانگر صادر نمی‌شود. پس از انتقال کامل، اسناد هر دو طرف را با موجودی جدید تطبیق دهید.</p></details>
+        <div id="balanceProposalPanel">
+          <div class="balance-bulk-actions"><label><input type="checkbox" id="balanceSelectAll"> انتخاب ردیف‌های نمایان</label><span id="balanceSelectionCount" role="status"></span><button id="acceptBalanceSelection" type="button" class="primary" disabled>تأیید انتخاب‌ها</button><span id="balanceBatchError" role="alert"></span></div>
+          <div class="table-wrap"><table id="balanceProposalTable"><thead><tr><th data-user-column-width="45">انتخاب</th><th data-user-column-width="80">کد کالا</th><th data-user-column-width="170">نام کالا</th><th data-user-column-width="110">تولیدکننده</th><th data-user-column-width="90">نام تجاری</th><th data-user-column-width="75">مبنای مبدأ</th><th data-user-column-width="75">مبنای مقصد</th><th data-user-column-width="100">روز مبدأ: قبل / بعد</th><th data-user-column-width="100">روز مقصد: قبل / بعد</th><th data-user-column-width="85">کارتن انتقال</th><th data-user-column-width="100">قیمت مصرف مبدأ / مقصد</th><th data-user-column-width="100">عملیات</th></tr></thead><tbody id="balanceProposalRows"></tbody></table></div>
+        </div>
+        <div id="transferWarehouseFilters" class="balance-bulk-actions" hidden><span>انبار مقصد:</span><div role="group" aria-label="فیلتر انبار مقصد"><button type="button" data-transfer-warehouse="all" aria-pressed="true">همه انبارها</button><button type="button" data-transfer-warehouse="tehran" aria-pressed="false">تهران</button><button type="button" data-transfer-warehouse="karaj" aria-pressed="false">کرج</button><button type="button" data-transfer-warehouse="gilan" aria-pressed="false">گیلان</button></div></div>
+        <div id="balanceRequestPanel" hidden>
+          <div class="balance-bulk-actions"><label><input type="checkbox" id="transferPendingSelectAll"> انتخاب اقلام نمایان</label><span id="transferPendingSelectionCount" role="status"></span><button type="button" id="createTransferDocuments" class="primary" disabled>ساخت سند از انتخاب‌ها</button><button type="button" id="revokeSelectedTransfers" disabled>عدم تأیید انتخاب‌شده‌ها</button><button type="button" id="deleteSelectedTransfers" disabled>حذف انتخاب‌شده‌ها</button><small>مبنا و پوشش: زمان تأیید؛ «—» یعنی سابقه ثبت نشده. حذف یا عدم تأیید، رزرو را آزاد می‌کند.</small><span id="transferPendingError" role="alert"></span></div>
+          <div class="table-wrap"><table id="transferPendingTable" data-layout-key="transfer_pending_context"><thead><tr><th data-user-column-width="45">انتخاب</th><th data-user-column-width="85">کد کالا</th><th data-user-column-width="200">نام کالا</th><th data-user-column-width="120">تولیدکننده</th><th data-user-column-width="100">نام تجاری</th><th data-user-column-width="65">مبدأ</th><th data-user-column-width="65">مقصد</th><th data-user-column-width="90">مبنای مبدأ</th><th data-user-column-width="90">مبنای مقصد</th><th data-user-column-width="115">روز مبدأ: قبل / بعد</th><th data-user-column-width="115">روز مقصد: قبل / بعد</th><th data-user-column-width="85">کارتن انتقال</th><th data-user-column-width="140">قیمت مصرف مبدأ / مقصد</th><th data-user-column-width="85">تعداد (عدد)</th><th data-user-column-width="120">مبلغ تخمینی</th><th data-user-column-width="150">تاریخ تأیید</th><th data-user-column-width="150">عملیات</th></tr></thead><tbody id="transferPendingRows"></tbody></table></div>
+        </div>
+        <div id="balanceDocumentsPanel" hidden>
+          <div class="table-wrap"><table id="transferDocumentsTable" data-layout-key="transfer_documents_lifecycle"><thead><tr><th data-column="internal_number">سند داخلی</th><th data-column="erp_number">بستانکار ورانگر</th><th data-column="erp_status">وضعیت ورانگر</th><th data-column="stage" data-user-column-width="230">مرحله جابه‌جایی</th><th data-column="date">تاریخ سند</th><th data-column="route">مسیر</th><th data-column="items">اقلام</th><th data-column="cartons">کارتن</th><th data-column="quantity">تعداد (عدد)</th><th data-column="estimate">مبلغ تخمینی</th><th data-column="created_by">ثبت‌کننده</th><th data-column="actions" data-user-column-width="230">عملیات</th></tr></thead><tbody id="transferRequestRows"></tbody></table></div>
+        </div>
+      </section>
+      <section id="checkbarView" class="panel" hidden aria-labelledby="checkbarPageTitle">
+        <div class="panel-head"><div><h2 id="checkbarPageTitle">چک‌بار</h2><p>آماده‌سازی و چاپ برگه، کنترل انبار و ساخت رسید</p></div><button id="openCheckbarButton" class="primary" type="button">صدور چک‌بار جدید</button></div>
+        <div class="checkbar-workflow"><span>۱ · انتخاب انبار و تأمین‌کننده</span><span>۲ · ورود اقلام و ذخیره اولیه</span><span>۳ · تأیید و چاپ ← شمارش انبار ← ساخت رسید</span><small>ذخیره و تأیید برگه برای چاپ، مانده سفارش را تغییر نمی‌دهد. پس از شمارش انبار، دریافت ثبت و رسید ورانگر آماده می‌شود. تطبیق با سفارش‌ها اختیاری است.</small></div>
+        <div class="checkbar-archive-toolbar">
+          <label>جست‌وجو <input id="checkbarArchiveSearch" type="search" placeholder="شماره چک‌بار یا سند، تأمین‌کننده"></label>
+          <label>انبار <select id="checkbarArchiveWarehouse"><option value="">همه انبارها</option></select></label>
+          <label>وضعیت <select id="checkbarArchiveState"><option value="">همه وضعیت‌ها</option><option value="worksheet">برگه اولیه؛ منتظر تأیید</option><option value="inspection">منتظر شمارش انبار</option><option value="ready">آماده ثبت</option><option value="pending">در انتظار نتیجه</option><option value="sent">ثبت‌شده</option><option value="review">نیازمند بررسی</option><option value="deleted">چک‌بار حذف‌شده</option></select></label>
+          <label><input id="checkbarIncludeDeleted" type="checkbox"> نمایش حذف‌شده‌ها</label>
+          <button id="checkbarArchiveClear" class="secondary-action" type="button">پاک‌کردن فیلترها</button>
+          <button id="refreshCheckbarPage" class="secondary-action" type="button">بازخوانی سوابق</button>
+          <span id="checkbarArchiveStatus" role="status"></span>
+        </div>
+        <div class="table-wrap" data-scroll-key="checkbar-archive"><table id="checkbarArchiveTable"><thead><tr><th data-default-column-width="150">شماره چک‌بار</th><th data-default-column-width="120">انبار</th><th data-default-column-width="200">تأمین‌کننده</th><th data-default-column-width="150">زمان صدور</th><th data-default-column-width="135">وضعیت ورانگر</th><th data-default-column-width="240">عملیات</th></tr></thead><tbody id="checkbarHistoryRows"></tbody></table></div>
+      </section>
+
+      <div id="orderingView" hidden>
+      <section class="workspace-grid">
+
 
         <section class="panel suggestion-panel">
           <div class="panel-head">
-            <div><h2>آماده‌سازی سفارش تأمین‌کننده</h2><p>ابتدا پیشنهاد را محاسبه کنید، اقلام و تعداد را کنترل کنید و سپس سند خرید بسازید.</p></div>
+            <div><h2>پیشنهاد خرید</h2><p>پیشنهاد خرید را محاسبه کنید، تعدادها را بررسی کنید و سفارش هر تأمین‌کننده را آماده کنید.</p></div>
             <div class="panel-actions">
-              <button id="calculateButton" class="secondary-action" type="button">محاسبه پیشنهاد</button>
-              <button id="createOrderButton" class="primary" type="button" disabled>ساخت سند تأمین‌کننده</button>
+              <details class="column-picker ordering-column-picker"><summary>انتخاب ستون‌های سفارش</summary><div id="orderingColumnChoices"></div></details>
+              <button id="calculateButton" class="secondary-action" type="submit" form="filterForm">محاسبه پیشنهاد</button>
+              <button id="createOrderButton" class="primary" type="button" disabled>آماده‌سازی سفارش تأمین‌کننده</button>
             </div>
           </div>
           <form id="filterForm" class="filter-grid">
             <label>انبار<select id="warehouseSelect"></select></label>
-            <label>تولیدکننده<input id="manufacturerFilter" maxlength="200" placeholder="همه تولیدکننده‌ها"></label>
-            <label>برند<input id="brandFilter" maxlength="200" placeholder="همه برندها"></label>
+            <label>تولیدکننده<select id="manufacturerFilter"><option value="">همه تولیدکننده‌ها</option></select></label>
+            <label>نام تجاری<select id="brandFilter" disabled><option value="">همه نام‌های تجاری</option></select></label>
             <label>کالا یا کد<input id="productSearch" maxlength="200" placeholder="جست‌وجو"></label>
+            <details class="ordering-advanced"><summary>شرایط محاسبه و تحویل <span id="orderingConditionsSummary"></span></summary><div class="ordering-advanced-fields">
+            <label>تاریخ تحویل سفارش (شمسی)<input id="orderingDeliveryDate" type="text" dir="ltr" maxlength="10" placeholder="۱۴۰۵/۰۶/۲۵" aria-describedby="orderingDeliveryHelp"><small id="orderingDeliveryHelp">اختیاری هنگام ساخت؛ در پیش‌سفارش قابل ثبت و ویرایش است.</small></label>
+            <label>حد شروع سفارش (روز پوشش)<input id="reorderCoverageDays" type="number" min="0" max="180" value="15" list="reorderCoveragePresets" placeholder="مثلاً ۱۰ یا ۱۵"><datalist id="reorderCoveragePresets"><option value="7"><option value="10"><option value="15"><option value="20"><option value="30"></datalist></label>
             <label>روز پوشش هدف<input id="targetDays" type="number" min="1" max="180" value="30"></label>
-            <label>روز ذخیره اطمینان<input id="safetyDays" type="number" min="0" max="90" value="7"></label>
-            <label>بازه روند دریافت‌شده<input id="periodDays" type="number" min="7" max="365" value="60" disabled></label>
-            <label class="checkbox"><input id="onlyNeeded" type="checkbox" checked> فقط اقلام نیازمند سفارش</label>
+            <label>بازهٔ فروش مبنا (روز)<input id="periodDays" type="number" min="7" max="365" value="60" disabled></label>
+            <label class="checkbox"><input id="onlyNeeded" type="checkbox" checked> فقط اقلام زیر حد شروع سفارش</label>
+            </div></details>
           </form>
 
-          <div id="resultSummary" class="result-summary empty">بعد از دریافت داده ورانگر، پیشنهاد سفارش را محاسبه کنید.</div>
-          <div class="table-wrap">
-            <table>
+          <div id="resultSummary" class="result-summary empty">انبار و فیلترها را انتخاب کنید، سپس «محاسبه پیشنهاد» را بزنید.</div>
+          <div id="orderingStatus" class="result-summary" role="status" aria-live="polite" hidden></div>
+          <div class="table-wrap" data-scroll-key="ordering">
+            <table id="orderingTable" class="ordering-table">
               <thead>
-                <tr>
-                  <th>انتخاب</th><th>کالا</th><th>تأمین‌کننده / برند</th><th>موجودی</th><th>رزرو</th><th>قابل‌مصرف</th><th>خروج دوره</th><th>پوشش</th><th>ضریب</th><th>تعداد سفارش</th><th>ارزش تخمینی</th>
+                <tr class="ordering-heading-row">
+                  <th>انتخاب</th>
+                  <th data-order-column="product_code">کد کالا</th>
+                  <th data-order-column="manufacturer_product_code">کد کالای تولیدکننده</th>
+                  <th data-order-column="barcode">بارکد</th>
+                  <th data-order-column="product_name">نام کالا</th>
+                  <th data-order-column="conversion_rate">ضریب تبدیل</th>
+                  <th data-order-column="manufacturer">تولیدکننده</th><th data-order-column="group_level3">گروه سطح ۳</th>
+                  <th data-order-column="brand">نام تجاری</th>
+                  <th data-order-column="on_hand_qty">موجودی عملیاتی</th>
+                  <th data-order-column="reserved_qty">رزرو قیمت</th>
+                  <th data-order-column="open_order_qty">تعهد باز</th>
+                  <th data-order-column="effective_procurement_qty">قابل استفاده انبار (بدون در راه)</th>
+                  <th data-order-column="in_transit_qty">بار در راه (عدد)</th><th data-order-column="pending_receipt_qty">رسیده، منتظر انعکاس موجودی</th>
+                  <th data-order-column="inventory_position_qty">مبنای سفارش (با در راه)</th>
+                  <th data-order-column="effective_cartons">قابل استفاده انبار به کارتن</th>
+                  <th data-order-column="average_daily_out">میانگین فروش روزانه تعدیل‌شده</th>
+                  <th data-order-column="period_out_qty">فروش خالص دوره</th>
+                  <th data-order-column="online_transfer_out_qty">انتقال قطعی به انبار آنلاین</th>
+                  <th data-order-column="gross_sales_qty">فروش دوره</th>
+                  <th data-order-column="sales_return_qty">برگشت فروش دوره</th>
+                  <th data-order-column="excluded_seller_qty">فروش حذف‌شده ایمان شریف‌پور</th>
+                  <th data-order-column="sales_rate_days">روزهای قابل فروش</th>
+                  <th data-order-column="stockout_days">روزهای ناموجود</th>
+                  <th data-order-column="last_in_stock_date">آخرین روز موجود</th>
+                  <th data-order-column="days_since_last_stock">فاصله از آخرین موجودی</th>
+                  <th data-order-column="sales_window_start">شروع بازه فروش</th>
+                  <th data-order-column="sales_window_end">پایان بازه فروش</th>
+                  <th data-order-column="coverage_days">پوشش با بار در راه</th>
+                  <th data-order-column="suggested_quantity">پیشنهاد سیستم (عدد)</th>
+                  <th data-order-column="final_order_cartons">سفارش نهایی (کارتن)</th>
+                  
+                </tr>
+                <tr class="ordering-filter-row table-filter-row">
+                  <th></th><th data-order-column="product_code"><input data-order-filter="product_code"></th><th data-order-column="manufacturer_product_code"><input data-order-filter="manufacturer_product_code"></th><th data-order-column="barcode"><input data-order-filter="barcode"></th><th data-order-column="product_name"><input data-order-filter="product_name"></th><th data-order-column="conversion_rate"><input data-order-filter="conversion_rate"></th><th data-order-column="manufacturer"><input data-order-filter="manufacturer"></th><th data-order-column="group_level3"><input data-order-filter="group_level3"></th><th data-order-column="brand"><input data-order-filter="brand"></th><th data-order-column="on_hand_qty"><input data-order-filter="on_hand_qty"></th><th data-order-column="reserved_qty"><input data-order-filter="reserved_qty"></th><th data-order-column="open_order_qty"><input data-order-filter="open_order_qty"></th><th data-order-column="effective_procurement_qty"><input data-order-filter="effective_procurement_qty"></th><th data-order-column="in_transit_qty"><input data-order-filter="in_transit_qty"></th><th data-order-column="pending_receipt_qty"><input data-order-filter="pending_receipt_qty" aria-label="فیلتر رسیده، منتظر انعکاس موجودی"></th><th data-order-column="inventory_position_qty"><input data-order-filter="inventory_position_qty"></th><th data-order-column="effective_cartons"><input data-order-filter="effective_cartons"></th><th data-order-column="average_daily_out"><input data-order-filter="average_daily_out"></th><th data-order-column="period_out_qty"><input data-order-filter="period_out_qty"></th><th data-order-column="online_transfer_out_qty"><input data-order-filter="online_transfer_out_qty"></th><th data-order-column="gross_sales_qty"><input data-order-filter="gross_sales_qty"></th><th data-order-column="sales_return_qty"><input data-order-filter="sales_return_qty"></th><th data-order-column="excluded_seller_qty"><input data-order-filter="excluded_seller_qty"></th><th data-order-column="sales_rate_days"><input data-order-filter="sales_rate_days"></th><th data-order-column="stockout_days"><input data-order-filter="stockout_days"></th><th data-order-column="last_in_stock_date"><input data-order-filter="last_in_stock_date"></th><th data-order-column="days_since_last_stock"><input data-order-filter="days_since_last_stock"></th><th data-order-column="sales_window_start"><input data-order-filter="sales_window_start"></th><th data-order-column="sales_window_end"><input data-order-filter="sales_window_end"></th><th data-order-column="coverage_days"><input data-order-filter="coverage_days"></th><th data-order-column="suggested_quantity"><input data-order-filter="suggested_quantity"></th><th data-order-column="final_order_cartons"></th>
                 </tr>
               </thead>
-              <tbody id="suggestionRows"><tr><td colspan="11" class="empty-cell">داده‌ای برای نمایش نیست.</td></tr></tbody>
+              <tbody id="suggestionRows"><tr><td colspan="28" class="empty-cell">داده‌ای برای نمایش نیست.</td></tr></tbody>
             </table>
           </div>
         </section>
       </section>
 
-      <section class="panel prepared-orders">
-        <div class="panel-head">
-          <div><h2>سفارش‌های آماده تحویل</h2><p>سامانه اقلام را براساس تأمین‌کننده تفکیک می‌کند؛ فایل را دانلود و از کانال موردنظر برای تأمین‌کننده ارسال کنید.</p></div>
-          <button id="refreshOrdersButton" class="secondary-action" type="button">بازخوانی</button>
-        </div>
-        <div id="ordersList" class="orders-list"><div class="empty-cell">هنوز سندی آماده نشده است.</div></div>
-      </section>
-
-      <section class="formula-panel">
-        <h2>فرمول نسخه آزمایشی</h2>
-        <div><span>موجودی قابل‌مصرف</span><code>موجودی − رزرو</code></div>
-        <div><span>مصرف روزانه</span><code>خروج دوره ÷ تعداد روز دوره</code></div>
-        <div><span>نیاز خام</span><code>(پوشش هدف + ذخیره اطمینان) × مصرف روزانه − موجودی قابل‌مصرف</code></div>
-        <div><span>پیشنهاد نهایی</span><code>گردکردن رو به بالا براساس ضریب کارتن</code></div>
-      </section>
+      <details class="ordering-formula-help">
+        <summary>راهنمای محاسبهٔ پیشنهاد خرید</summary>
+        <section class="formula-panel">
+        
+        <div><span>بازه مبنای فروش</span><code>۶۰ روز منتهی به آخرین روز موجودی کالا؛ بیش از ۹۰ روز بدون موجودی = خارج از چرخه سفارش</code></div>
+        <div><span>نرخ فروش تعدیل‌شده</span><code>(فروش − برگشت، بدون فروش ایمان شریف‌پور) ÷ روزهای دارای موجودی در بازه مبنا</code></div>
+        <div><span>مبنای سفارش</span><code>قابل استفاده داخل انبار + بار در راه + رسید منتظر انعکاس موجودی</code></div>
+        <div><span>روز پوشش موجودی</span><code>مبنای سفارش (جمع) ÷ میانگین فروش روزانه تعدیل‌شده</code></div>
+        <div><span>شرط سفارش</span><code>روز پوشش کمتر از حد شروع سفارش (پیش‌فرض ۱۵ روز)</code></div>
+        <div><span>کسری تا هدف</span><code>پوشش هدف × مصرف روزانه − مبنای سفارش (جمع)؛ گرد به کارتن کامل</code></div>
+        </section>
+      </details>
+      </div>
     </main>
+    </div>
   </div>
+  <dialog id="preorderPreviewDialog" class="preorder-preview-dialog draft-editor" aria-labelledby="previewPreorderTitle" aria-describedby="previewPreorderSubtitle">
+    <div class="preview-dialog-head">
+      <div><span class="eyebrow">کنترل قبل از تأیید</span><h2 id="previewPreorderTitle">پیش‌نمایش سفارش</h2><p id="previewPreorderSubtitle"></p></div>
+      <button id="closePreorderPreviewButton" class="dialog-close" type="button" aria-label="بستن پیش‌نمایش">×</button>
+    </div>
+    <div class="draft-editor-meta">
+      <div class="embedded-delivery-date"><label>تاریخ تحویل (شمسی)<input id="previewDeliveryDate" dir="ltr" maxlength="10" placeholder="۱۴۰۵/۰۶/۲۵"></label><button id="previewDeliverySave" type="button" class="secondary-action" hidden>ذخیره تاریخ تحویل</button></div>
+      <div id="previewPreorderSummary" class="preview-summary"></div>
+      <details class="draft-editor-help"><summary>راهنما</summary><p>تعداد نهایی به کارتن است؛ صفر یعنی حذف قلم. تاریخ و تعداد با «ذخیره تغییرات» ثبت می‌شوند. تعداد واحد و ارزش سفارش براساس ضریب کارتن محاسبه می‌شود.</p></details>
+    </div>
+    <div class="table-wrap preview-table-wrap" data-scroll-key="preorder-preview">
+      <table class="preview-lines-table">
+        <thead><tr><th>کد کالا</th><th>نام کالا</th><th>برند</th><th>قابل استفاده انبار (بدون در راه)</th><th>بار در راه</th><th>رسیده، منتظر موجودی</th><th>مبنای سفارش (جمع)</th><th>خروج روزانه و مبنای فروش</th><th>پوشش موجودی (روز)</th><th>بدون تعدیل هیجان</th><th>پیشنهاد سیستم</th><th>تعداد نهایی (کارتن)</th><th>تعداد واحد</th><th>قیمت تولیدکننده</th><th>قیمت مصرف‌کننده</th><th>قیمت حدودی</th><th>ارزش تخمینی</th><th>کد کالای تولیدکننده</th><th>بارکد</th><th>تولیدکننده</th><th>ضریب</th><th>گروه سطح ۳</th></tr></thead>
+        <tbody id="previewPreorderLines"></tbody>
+      </table>
+    </div>
+    
+    <div class="preview-dialog-footer">
+      <span id="previewDeliveryFeedback" class="draft-save-status" role="status"></span><span id="previewEditAudit" class="preview-audit" hidden></span>
+      <button id="addPreorderProductsButton" class="secondary-action" type="button" hidden>افزودن کالا از همین تأمین‌کننده</button>
+      <button id="cancelPreorderPreviewButton" class="secondary-action" type="button">بستن</button>
+      <button id="savePreorderPreviewButton" class="primary" type="button">ذخیره تغییرات</button>
+    </div>
+  </dialog>
+  <dialog id="preorderCatalogDialog" aria-labelledby="preorderCatalogTitle">
+    <div class="preview-dialog-head"><div><h2 id="preorderCatalogTitle">کالاهای تأمین‌کننده</h2><p id="preorderCatalogSource"></p></div><button id="closePreorderCatalog" class="secondary-action" type="button">بازگشت به پیش‌نمایش</button></div>
+    <div class="catalog-search"><input id="preorderCatalogSearch" type="search" aria-label="جست‌وجوی کالای تأمین‌کننده" placeholder="کد، بارکد، نام کالا یا برند"><span id="preorderCatalogCount" role="status"></span></div>
+    <div class="table-wrap"><table id="preorderCatalogTable"><thead><tr><th data-catalog-column="code">کد کالا</th><th data-catalog-column="manufacturer_code">کد کالای تولیدکننده</th><th data-catalog-column="barcode">بارکد</th><th data-catalog-column="name">نام کالا / ضریب</th><th data-catalog-column="stock">موجودی فعلی</th><th data-catalog-column="incoming">در راه</th><th data-catalog-column="basis">مبنای سفارش</th><th data-catalog-column="daily">خروج روزانه</th><th data-catalog-column="coverage">پوشش موجودی (روز)</th><th data-catalog-column="price">قیمت حدودی</th><th data-catalog-column="cartons">کارتن</th><th data-catalog-column="action">عملیات</th><th data-catalog-column="group_level3">گروه سطح ۳</th></tr></thead><tbody id="preorderCatalogRows"></tbody></table></div>
+  </dialog>
+  <dialog id="checkbarDialog" class="preorder-preview-dialog" aria-labelledby="checkbarTitle">
+    <div class="preview-dialog-head"><div class="document-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 4H4v17h16V4h-4 M8 2h8v5H8Z M8 12h8 M8 16h5"/></svg></div><div><h2 id="checkbarTitle">صدور چک‌بار</h2><p>اقلام را از سفارش، عکس حواله یا انتخاب کالا بیاورید؛ برگه را ذخیره، تأیید و چاپ کنید. انباردار سپس شمارش و قیمت‌ها را ثبت می‌کند و رسید انبار ساخته می‌شود.</p></div><button id="closeCheckbar" class="secondary-action" type="button">بستن</button></div>
+    <ol id="checkbarFlowSteps" aria-label="مراحل چک‌بار"><li data-checkbar-step="1" aria-current="step">۱. انتخاب بار</li><li data-checkbar-step="2">۲. ذخیره اولیه</li><li data-checkbar-step="3">۳. تأیید و چاپ</li><li data-checkbar-step="4">۴. شمارش و قیمت انبار</li><li data-checkbar-step="5">۵. رسید ورانگر</li></ol>
+    <div id="checkbarNotice" class="checkbar-notice" role="status" aria-live="polite" aria-atomic="true" tabindex="-1" hidden></div>
+    <div id="checkbarEmptyActions" class="checkbar-empty-actions" hidden><button id="checkbarRemoveEmpty" type="button" class="primary">حذف ردیف‌های خالی و ادامه</button><button id="checkbarCompleteEmpty" type="button" class="secondary-action">بازگشت و تکمیل تعداد</button></div>
+    <div class="checkbar-body">
+      <div class="checkbar-selectors"><label>انبار<select id="checkbarWarehouse"></select></label><label>تأمین‌کننده<select id="checkbarSupplier"><option value="">انتخاب کنید</option></select></label><button id="checkbarReselect" type="button" class="secondary-action" title="تغییر انبار یا تأمین‌کننده" aria-label="تغییر انبار یا تأمین‌کننده" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11a9 9 0 1 1 3 8 M3 4v7h7"/></svg></button><div class="checkbar-metadata checkbar-primary-metadata"><label>شماره سند عطف تأمین‌کننده (الزامی)<input id="checkbarReference" data-checkbar-meta="reference_no" inputmode="numeric" maxlength="10" required placeholder="شماره حواله یا فاکتور تأمین‌کننده"></label><label>تاریخ<input data-checkbar-meta="date" placeholder="۱۴۰۵/۰۶/۱۵" maxlength="50"></label></div></div>
+      <div id="checkbarOrderPicker"><div id="checkbarSourceStatus" role="status"></div><div id="checkbarOrders"></div><label style="display:block;margin:12px 0"><input id="checkbarIncludeOrderItems" type="checkbox"> تمام اقلام سفارش‌های در راه را به چک‌بار اضافه کن (تعداد رسیده خالی می‌ماند)</label><p>اگر انتخاب نکنید، فقط اقلام خوانده‌شده از حواله یا اقلامی که دستی اضافه می‌کنید وارد فرم می‌شوند؛ ماندهٔ سفارش کنار هر کالا نمایش داده می‌شود.</p><button id="checkbarPrepare" class="primary" type="button" disabled>ادامه و انتخاب اقلام</button></div>
+      <div id="checkbarEditor" hidden>
+        <section id="checkbarBrandBatch" class="checkbar-help" hidden></section>
+        <div class="checkbar-toolsbar">
+          <details name="checkbar-tools" id="checkbarImagePanel" class="checkbar-image-panel" aria-label="پر کردن از فایل حواله">
+          <summary title="پر کردن چک‌بار از عکس، PDF یا اکسل حواله"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V3 M7 8l5-5 5 5 M4 14v6h16v-6"/></svg>ورود از عکس و فایل</summary>
+            <div class="compact-disclosure-body">
+          <p>محتوای فایل برای خواندن به هوش مصنوعی ارسال می‌شود. تعدادها طبق حواله‌اند و باید در انبار شمارش شوند.</p>
+          <div class="checkbar-image-actions">
+            <label>افزودن عکس، PDF یا اکسل<input id="checkbarImageFile" type="file" accept="image/jpeg,image/png,image/webp,.pdf,.xlsx,.xls" multiple></label>
+            <label>گرفتن عکس صفحهٔ بعد<input id="checkbarImageCamera" type="file" accept="image/jpeg,image/png,image/webp" capture="environment"></label>
+            <button id="checkbarImageRead" type="button" class="secondary-action" disabled>خواندن حواله</button>
+          </div>
+          <p>فایل‌ها را با هم یا یکی‌یکی اضافه کنید. مجموع عکس‌ها، صفحه‌های PDF و برگه‌های اکسل حداکثر ۱۰ مورد؛ هر فایل ۱۰ و مجموع فایل‌ها ۳۰ مگابایت. اکسل XLSX و XLS پذیرفته می‌شود.</p>
+          <p id="checkbarImageStatus" role="status" aria-live="polite"></p>
+          <div id="checkbarImageReview" hidden>
+            <div id="checkbarImageResult" tabindex="-1" hidden>
+              <p><strong>اقلام خوانده‌شده را بررسی کنید؛ سپس دکمهٔ زیر آن‌ها را وارد جدول چک‌بار می‌کند.</strong></p>
+              <button id="checkbarImageApply" type="button" class="primary">وارد کردن اقلام به چک‌بار</button>
+              <div class="checkbar-metadata"><label>شماره عطف خوانده‌شده<input id="checkbarImageReference" inputmode="numeric" maxlength="10"></label><label>تاریخ خوانده‌شده<input id="checkbarImageDate" maxlength="50"></label></div>
+              <p>کالاهای نامشخص را انتخاب کنید. ردیف‌های بدون تعداد، خالی می‌مانند. قیمت‌ها حدس زده نمی‌شوند. فرمول‌های اکسل اجرا نمی‌شوند؛ نتیجهٔ آخرین ذخیره خوانده می‌شود.</p>
+              <div id="checkbarImageRows"></div>
+            </div>
+            <div id="checkbarImagePages" class="checkbar-image-pages" aria-label="صفحه‌های حواله"></div>
+          </div>
+            </div>
+          </details>
+          <button id="checkbarImageShowResult" type="button" class="secondary-action" aria-controls="checkbarImageResult" hidden>بررسی اقلام خوانده‌شده</button>
+          <details name="checkbar-tools" id="checkbarExtraMetadata" class="compact-disclosure"><summary title="راننده، بارنامه و سایر مشخصات">مشخصات تکمیلی بار</summary><div class="compact-disclosure-body checkbar-metadata"><label>شماره حواله<input data-checkbar-meta="waybill" maxlength="100"></label><label>بارنامه<input data-checkbar-meta="bill_of_lading" maxlength="100"></label><label>راننده<input data-checkbar-meta="driver" maxlength="100"></label><label>پلاک<input data-checkbar-meta="plate" maxlength="50"></label><label>تلفن راننده<input data-checkbar-meta="phone" maxlength="50"></label><label>تحویل‌گیرنده<input data-checkbar-meta="receiver" maxlength="100"></label><label>توضیحات<input data-checkbar-meta="note" maxlength="500"></label></div>
+          </details>
+          <details name="checkbar-tools" id="checkbarCountingHelp" class="compact-disclosure"><summary>راهنمای شمارش</summary>
+            <div class="compact-disclosure-body">        <p class="checkbar-help">کارتن و عدد، مقدار واقعیِ همین بار است؛ خالی یعنی هنوز شمارش نشده. قیمت جدید اختیاری است و خودکار حدس زده نمی‌شود. مغایرت مثبت یعنی بیشتر از ماندهٔ سفارش.</p></div>
+          </details>
+        <div class="checkbar-corebar">
+          <section id="checkbarBrandSplitOptions" class="checkbar-help">
+          <label><input id="checkbarSplitByBrand" type="checkbox"> صدور چک‌بار جدا برای هر برند</label>
+          <p id="checkbarBrandSplitSummary" role="status" aria-live="polite"></p>
+        </section>
+        </div>
+          <div class="checkbar-table-views" role="group" aria-label="نمای جدول چک‌بار"><button type="button" data-checkbar-table-view="count" aria-pressed="true">شمارش بار</button><button type="button" data-checkbar-table-view="prices" aria-pressed="false">کنترل قیمت</button><button type="button" data-checkbar-table-view="all" aria-pressed="false">همه ستون‌ها</button><button type="button" id="checkbarHiddenFilters" hidden>فیلتر پنهان فعال؛ نمایش همه</button></div>
+        </div>
+        <div id="checkbarManual" class="checkbar-manual"><strong class="checkbar-items-heading">اقلام چک‌بار</strong><label>برند<select id="checkbarBrand"><option value="">همه برندها</option></select></label><label>گروه سطح ۳<select id="checkbarGroup3"><option value="">همه گروه‌های سطح ۳</option></select></label><label class="checkbar-quick-search"><span>افزودن سریع با کد تأمین‌کننده</span><input id="checkbarProductSearch" type="search" placeholder="کد تأمین‌کننده + Enter"></label><button id="checkbarAdd" type="button" class="secondary-action">افزودن کالا از فهرست</button><span id="checkbarCatalogCount" role="status"></span></div>
+
+        <p id="checkbarOutstandingSummary" role="status" hidden></p>
+        <div class="table-wrap"><table id="checkbarTable"><thead><tr><th data-user-column-width="180">سفارش مبدأ</th><th data-user-column-width="100">کد کالا</th><th data-user-column-width="100">کد کالای تولیدکننده</th><th data-user-column-width="150">بارکد</th><th data-user-column-width="240">نام کالا / برند</th><th data-user-column-width="65">ضریب</th><th data-user-column-width="100">تعداد سفارش<br>(عدد)</th><th data-user-column-width="100">دریافت قبلی<br>عدد</th><th data-user-column-width="100">مانده<br>کارتن + عدد</th><th data-user-column-width="100">واقعی<br>کارتن</th><th data-user-column-width="100">واقعی<br>+ عدد</th><th data-user-column-width="100">تعداد کل<br>(عدد)</th><th data-user-column-width="100">مغایرت<br>عدد</th><th data-user-column-width="100">قیمت تولید</th><th data-user-column-width="100">قیمت مصرف</th><th data-user-column-width="100">تولید جدید</th><th data-user-column-width="100">مصرف جدید</th><th data-user-column-width="130">عملیات</th><th data-user-column-width="140">گروه سطح ۳</th></tr></thead><tbody id="checkbarLines"></tbody></table></div>
+      </div>
+          <div id="checkbarMatchingChoice" class="checkbar-notice" hidden>
+            <label><input id="checkbarMatchOrders" type="checkbox" checked> تطبیق با سفارش‌های در راه</label>
+            <small>اختیاری است؛ با خاموش‌کردن این گزینه، شمارش و قیمت‌ها ثبت می‌شوند و مانده سفارش‌ها تغییری نمی‌کند.</small>
+          </div>
+          <details id="checkbarMatching" class="compact-disclosure" hidden>
+            <summary>تطبیق با سفارش‌های در راه</summary>
+            <p>تمام سفارش‌های باز این تأمین‌کننده بررسی می‌شوند. تقسیم پیش‌فرض از سفارش قدیمی‌تر است و قابل اصلاح است. با تأیید و ذخیره چک‌بار، مانده سفارش‌ها همین حالا کم می‌شود؛ انتقال به ورانگر جداگانه است.</p>
+            <button id="checkbarMatchingReload" type="button" class="secondary-action">بازخوانی مانده و تقسیم قدیمی‌تر اول</button>
+            <div class="receipt-preview-table-wrap" tabindex="0" role="region" aria-label="جدول تطبیق تعداد بار با سفارش‌ها"><table id="checkbarMatchingTable"><thead><tr><th data-default-column-width="64">ردیف</th><th data-default-column-width="112">کد کالا</th><th data-default-column-width="144">کد کالای تولیدکننده</th><th data-default-column-width="150">بارکد</th><th data-default-column-width="260">نام کالا</th><th data-default-column-width="140">گروه سطح ۳</th><th data-default-column-width="112">شمارش‌شده</th><th data-default-column-width="190">شماره سفارش</th><th id="checkbarMatchingRemainingHeading" data-default-column-width="144">مانده فعلی سفارش</th><th data-default-column-width="176">دریافت از این سفارش (عدد)</th></tr></thead><tbody id="checkbarMatchingRows"></tbody></table></div>
+            <p id="checkbarMatchingSummary" role="status"></p>
+            <label><input id="checkbarMatchingConfirmed" type="checkbox"> تعداد واقعی بار را شمارش کرده‌ام و تقسیم آن بین سفارش‌ها را تأیید می‌کنم.</label>
+            <label id="checkbarMatchingExtraLabel" hidden><input id="checkbarMatchingExtra" type="checkbox"> دریافت اضافه بر سفارش یا بدون سفارش را بررسی و قبول می‌کنم.</label>
+          </details>
+    <section id="checkbarReceiptPanel" hidden aria-label="انتقال رسید سالم به ورانگر">
+          <h3 id="checkbarReceiptTitle">رسید انبار در ورانگر</h3>
+          <p id="checkbarReceiptStatus" role="status" style="white-space:pre-line"></p>
+          <div id="checkbarReceiptFields" class="checkbar-metadata">
+            <label>تاریخ رسید (اجباری)<input id="checkbarReceiptDate" placeholder="۱۴۰۵/۰۶/۱۵" maxlength="10" dir="ltr"></label>
+            <label>شماره سند عطف تأمین‌کننده (الزامی)<input id="checkbarReceiptReference" inputmode="numeric" maxlength="10" required placeholder="شماره حواله یا فاکتور تأمین‌کننده"></label>
+            <label>توضیحات سند<input id="checkbarReceiptComment" maxlength="220"></label>
+          </div>
+          <p id="checkbarReceiptPriceHint">اقلام قیمت‌دار با رسید تأییدشده ثبت می‌شوند؛ اقلام تغییرقیمت‌دار سپس در همین انبار رزرو می‌شوند. اقلام ذاتاً فاقد قیمت، رسید جدا و تأییدنشده دارند. توضیحات قلم رزرو: مصرف جدید-تولید جدید.</p>
+          <div id="checkbarReceiptTableWrap" class="receipt-preview-table-wrap" hidden><table id="checkbarReceiptTable"><thead><tr><th>ردیف چک‌بار</th><th>کد کالا</th><th>کد کالای تولیدکننده</th><th>بارکد</th><th>گروه سطح ۳</th><th>تعداد (واحد پایه)</th><th>توضیحات قلم</th></tr></thead><tbody id="checkbarReceiptLines"></tbody></table></div>
+
+          <p id="checkbarReceiptProgress" role="status" aria-live="polite" style="white-space:pre-line" hidden></p><button id="checkbarReceiptPreview" type="button" class="secondary-action">بررسی اطلاعات اجباری</button>
+          <button id="checkbarReceiptSubmit" type="button" class="primary" hidden>ثبت اسناد طبق پیش‌نمایش</button>
+          <button id="checkbarReceiptReconcile" type="button" class="secondary-action" hidden>پیگیری انتقال</button>
+          <button id="checkbarReceiptRefresh" type="button" class="secondary-action" hidden>بررسی وجود سند ورانگر</button>
+          <p id="checkbarReceiptHistory" class="muted"></p>
+        </section>
+        <details id="checkbarHistoryDetails" class="compact-disclosure" hidden><summary>تاریخچه و نسخه‌های قبلی</summary>        <div id="checkbarVersions" aria-label="تاریخچه نسخه‌های چک‌بار"></div></details>
+    </div>
+    <div class="preview-dialog-footer checkbar-guided-footer"><span id="checkbarSummary" role="status"></span><button id="checkbarTransfer" type="button" class="primary" hidden>آماده‌سازی رسید ورانگر</button><button id="checkbarEdit" type="button" class="secondary-action" hidden>اصلاح چک‌بار</button><button id="checkbarDelete" type="button" class="secondary-action" hidden>حذف چک‌بار</button><button id="checkbarApproveWorksheet" class="secondary-action" type="button" hidden>تأیید برگه برای چاپ</button><a id="checkbarPrint" class="secondary-action" target="_blank" rel="noopener" hidden>چاپ چک‌بار</a><a id="checkbarDownload" class="secondary-action" hidden>دانلود اکسل چک‌بار</a><button id="checkbarMatchingPrepare" class="secondary-action" type="button" hidden>۱. بررسی و تطبیق سفارش‌های در راه</button><button id="checkbarIssue" class="primary" type="button" disabled>۲. تأیید دریافت و ذخیره چک‌بار</button><span id="checkbarFlowHint" role="status"></span><button id="checkbarNextAction" class="primary" type="button" aria-describedby="checkbarFlowHint" hidden></button></div>
+  </dialog>
+  <dialog id="checkbarCatalogDialog" class="preorder-preview-dialog" aria-labelledby="checkbarCatalogTitle">
+    <div class="preview-dialog-head"><div><h2 id="checkbarCatalogTitle">افزودن کالا به چک‌بار</h2><p>کالاهای همین تأمین‌کننده و انبار، با فیلتر برند و گروه انتخاب‌شده</p></div><button id="closeCheckbarCatalog" type="button" class="secondary-action">بازگشت به چک‌بار</button></div>
+    <div class="catalog-search"><input id="checkbarCatalogSearch" type="search" aria-label="جست‌وجوی کالا" placeholder="کد تأمین‌کننده، کد کالا، بارکد یا نام"><span id="checkbarPickerStatus" role="status"></span></div>
+    <div class="table-wrap"><table id="checkbarCatalogTable"><thead><tr><th>انتخاب</th><th>کد کالای تولیدکننده</th><th>کد کالا</th><th>بارکد</th><th>نام کالا</th><th>برند</th><th>گروه سطح ۳</th><th>ضریب</th><th>موجودی (عدد)</th></tr></thead><tbody id="checkbarCatalogRows"></tbody></table></div>
+    <div class="preview-dialog-footer"><span>با دوبار کلیک روی هر کالا نیز می‌توانید آن را اضافه کنید.</span><button id="checkbarAddSelected" type="button" class="primary" disabled>افزودن انتخاب‌شده‌ها</button></div>
+  </dialog>
+  <dialog id="fulfillmentReceiptDialog" class="preorder-preview-dialog" aria-labelledby="fulfillmentReceiptTitle">
+    <div class="preview-dialog-head"><div><h2 id="fulfillmentReceiptTitle">ثبت دریافت قبلی از ورانگر</h2><p>برای باری که رسید آن قبلاً در ورانگر ثبت شده است. برای بار تازه‌رسیده، چک‌بار صادر کنید.</p></div><button id="closeFulfillmentReceipt" class="secondary-action" type="button">بستن</button></div>
+    <div class="receipt-commandbar"><span id="fulfillmentOrderSummary"></span><button id="fillAllFulfillmentReceipt" class="secondary-action" type="button">دریافت کامل همه اقلام</button></div>
+    <p id="fulfillmentReceiptHelp" class="fulfillment-receipt-help"><strong>دریافت تجمعی:</strong> مجموع دریافت قبلی و جدید را با دو ورودی «کارتن + عدد» وارد کنید؛ مثلاً ۲ کارتن و ۵ عدد، نه نیم کارتن. دکمه‌های «دریافت کامل» فقط فرم را پر می‌کنند؛ سپس «ثبت نهایی دریافت» را بزنید.</p>
+    <div class="table-wrap" data-scroll-key="fulfillment-receipt"><table id="fulfillmentReceiptTable" class="fixed-columns"><thead><tr><th data-receipt-column="code">کد کالا</th><th data-receipt-column="manufacturer_product_code">کد کالای تولیدکننده</th><th data-receipt-column="barcode">بارکد</th><th data-receipt-column="name">نام کالا / بسته‌بندی</th><th data-receipt-column="ordered">سفارش (کارتن + عدد)</th><th data-receipt-column="previous">دریافت قبلی</th><th data-receipt-column="cumulative">تجمعی: کارتن</th><th data-receipt-column="units">+ عدد</th><th data-receipt-column="complete">تکمیل ردیف</th><th data-receipt-column="group_level3">گروه سطح ۳</th></tr></thead><tbody id="fulfillmentReceiptLines"></tbody></table></div>
+    <div class="fulfillment-reconcile"><label>شماره رسید ورانگر <input id="fulfillmentReceiptReference" maxlength="200" required placeholder="شماره سند ورود کالا"></label><label class="fulfillment-check"><input id="fulfillmentInventoryReflected" type="checkbox"> رسید را در ورانگر ثبت و موجودی دستیار را بعد از آن بازخوانی کرده‌ام.</label></div>
+    <div class="preview-dialog-footer"><span id="fulfillmentDraftSummary" role="status"></span><button id="saveFulfillmentReceipt" class="primary" type="button">ثبت نهایی دریافت</button></div>
+  </dialog>
+  <dialog id="fulfillmentBalanceDialog" class="preorder-preview-dialog" aria-labelledby="fulfillmentBalanceTitle">
+    <div class="preview-dialog-head"><h3 id="fulfillmentBalanceTitle">دریافت‌ها و ماندهٔ سفارش</h3><button id="closeFulfillmentBalance" type="button" class="secondary-action">بستن</button></div>
+    <div class="preview-dialog-body">
+      <p id="fulfillmentBalanceSummary"></p>
+      <label>عملیات <select id="fulfillmentBalanceMode"><option value="close">خارج کردن مانده از چرخه</option><option value="reopen">برگرداندن مانده به در راه</option></select><button id="fillAllFulfillmentBalance" type="button" class="secondary-action">انتخاب کل ماندهٔ سفارش</button></label>
+      <div class="table-wrap"><table id="fulfillmentBalanceTable"><thead><tr><th data-column="product_code">کد کالا</th><th data-column="manufacturer_product_code">کد کالای تولیدکننده</th><th data-column="barcode">بارکد</th><th data-column="product_name" data-user-column-width="300">نام کالا</th><th data-column="group_level3">گروه سطح ۳</th><th data-column="ordered">سفارش (عدد)</th><th data-column="received">دریافت (عدد)</th><th data-column="remaining">مانده (عدد)</th><th data-column="closed">خارج‌شده از در راه</th><th data-column="quantity" data-user-column-width="180">مقدار عملیات (عدد)</th></tr></thead><tbody id="fulfillmentBalanceLines"></tbody></table></div>
+      <label>دلیل (اختیاری) <textarea id="fulfillmentBalanceReason" maxlength="500" rows="2"></textarea></label>
+      <h3>سابقهٔ بستن و بازگشایی</h3>
+      <div class="table-wrap"><table id="fulfillmentBalanceHistoryTable"><thead><tr><th data-column="created_at">زمان</th><th data-column="product_code">کد کالا</th><th data-column="manufacturer_product_code">کد کالای تولیدکننده</th><th data-column="barcode">بارکد</th><th data-column="group_level3">گروه سطح ۳</th><th data-column="operation" data-user-column-width="180">عملیات / مقدار</th><th data-column="reason" data-user-column-width="300">دلیل</th><th data-column="updated_by">کاربر</th></tr></thead><tbody id="fulfillmentBalanceHistory"></tbody></table></div>
+      <h3>دریافت‌های متصل به چک‌بار</h3>
+      <div class="table-wrap"><table id="fulfillmentLinkedReceiptsTable"><thead><tr><th data-column="checkbar" data-user-column-width="160">چک‌بار</th><th data-column="product_code">کد کالا</th><th data-column="manufacturer_product_code">کد کالای تولیدکننده</th><th data-column="barcode">بارکد</th><th data-column="group_level3">گروه سطح ۳</th><th data-column="quantity">مقدار</th><th data-column="transfer" data-user-column-width="220">وضعیت رسید ورانگر</th><th data-column="inventory" data-user-column-width="220">وضعیت موجودی</th></tr></thead><tbody id="fulfillmentLinkedReceipts"></tbody></table></div>
+    </div>
+    <div class="preview-dialog-footer"><p id="fulfillmentBalanceNotice" role="status"></p><button id="saveFulfillmentBalance" type="button" class="primary">بستن مانده</button></div>
+  </dialog>
+  <dialog id="orderSmsDialog" class="order-sms-dialog" aria-labelledby="orderSmsTitle">
+    <form id="orderSmsForm">
+      <header><div><span class="eyebrow">ارسال امن فایل سفارش</span><h2 id="orderSmsTitle">پیامک لینک اکسل</h2></div><button id="orderSmsClose" type="button" class="secondary-action">بستن</button></header>
+      <div class="order-sms-body">
+        <dl><div><dt>شماره سفارش</dt><dd id="orderSmsNumber" dir="ltr"></dd></div><div><dt>تأمین‌کننده</dt><dd id="orderSmsSupplier"></dd></div></dl>
+        <label for="orderSmsMobile">شماره موبایل گیرنده<input id="orderSmsMobile" dir="ltr" inputmode="tel" autocomplete="tel" maxlength="30" placeholder="09123456789" required aria-describedby="orderSmsHelp orderSmsError"></label>
+        <p id="orderSmsHelp">لینک فقط فایل اکسل همین سفارش را تا ۲۴ ساعت و حداکثر ۵ بار دانلود می‌کند.</p>
+        <p id="orderSmsError" role="alert" aria-live="assertive"></p>
+      </div>
+      <footer><button id="orderSmsSend" class="primary" type="submit">تأیید و ارسال پیامک</button></footer>
+    </form>
+  </dialog>
+  <dialog id="smsSettingsDialog" class="sms-settings-dialog" aria-labelledby="smsSettingsTitle">
+    <form id="smsSettingsForm">
+      <div class="sms-settings-head"><div><h2 id="smsSettingsTitle">تنظیمات پیامک آسانک</h2><p>حساب مشترک دستیار انبار در نسخهٔ وب و دسکتاپ</p></div><button id="smsSettingsClose" type="button">بستن</button></div>
+      <p id="smsSettingsNotice" role="status" aria-live="polite"></p>
+      <fieldset id="smsSettingsFields" disabled>
+        <label for="smsUsername">نام کاربری آسانک<input id="smsUsername" dir="ltr" inputmode="numeric" autocomplete="off" maxlength="20" required></label>
+        <label for="smsSource">شمارهٔ خط ارسال<input id="smsSource" dir="ltr" inputmode="numeric" autocomplete="off" maxlength="20" required><small>با پیش‌شمارهٔ ۹۸؛ همان شمارهٔ خط در پنل آسانک</small></label>
+        <label for="smsPassword">رمز وب‌سرویس<input id="smsPassword" type="password" dir="ltr" autocomplete="new-password" maxlength="256" aria-describedby="smsPasswordHint"><small id="smsPasswordHint">برای حفظ رمز قبلی، این فیلد را خالی بگذارید.</small></label>
+        <label class="sms-password-toggle"><input id="smsPasswordVisible" type="checkbox">نمایش رمز واردشده</label>
+      </fieldset>
+      <details><summary>آدرس‌های سرویس</summary><label>ارسال پیامک<input id="smsSendUrl" dir="ltr" readonly></label><label>پیگیری وضعیت<input id="smsStatusUrl" dir="ltr" readonly></label></details>
+      <div class="sms-settings-footer"><small>ذخیرهٔ تنظیمات، پیامکی ارسال نمی‌کند.</small><button id="smsSettingsSave" class="primary" type="submit" disabled>ذخیرهٔ تنظیمات</button></div>
+    </form>
+  </dialog>
   <dialog id="loginDialog" class="login-dialog">
     <form id="loginForm">
       <img src="/static/negin-brand-icon-192.png" alt="">
@@ -128,7 +775,216 @@
       <a href="/assistant">ورود یا تغییر رمز در دستیار اصلی</a>
     </form>
   </dialog>
+  <dialog id="purchaseContractDialog" class="purchase-dialog" aria-labelledby="contractDialogTitle">
+    <header><h2 id="contractDialogTitle">قرارداد خرید جدید</h2><button id="contractClose" type="button">بستن</button></header>
+    <form id="contractForm"><fieldset id="contractFields"><div class="contract-editor-layout">
+      <section id="contractSelectionPane" aria-label="انتخاب کالاهای قرارداد">
+        <h3>۱. انتخاب کالاها</h3>
+        <div class="contract-grid">
+          <label class="contract-supplier-context">تأمین‌کنندهٔ قرارداد<select id="contractSupplier" required><option value="">انتخاب تأمین‌کننده</option></select></label>
+          <label class="contract-wide">نمایش کالاها<select id="contractSelectionMode"><option value="all">همهٔ کالاهای فهرست فعلی</option><option value="selected">انتخاب کالا از فهرست</option></select></label>
+          <label>تولیدکننده<select id="contractManufacturer"></select></label>
+          <label>برند<select id="contractBrand"><option value="">همهٔ برندها</option></select></label>
+          <label>گروه کالا · سطح ۳<select id="contractGroup"><option value="">همهٔ گروه‌ها</option></select></label>
+          
+        </div>
+        <p id="contractSelectionStatus" class="contract-help" role="status">تولیدکننده را انتخاب کنید.</p>
+        <div class="purchase-actions"><input id="contractItemSearch" type="search" aria-label="جست‌وجوی کالاهای قابل انتخاب" placeholder="جست‌وجوی کد یا نام کالا"><button id="contractSelectVisible" type="button">افزودن نتایج به قرارداد</button><button id="contractClearSelection" type="button">پاک کردن انتخاب</button></div>
+        <div class="contract-item-scroll"><table id="contractSelectionTable" aria-label="کالاهای انتخابی قرارداد"><thead><tr><th data-filterable="false">انتخاب</th><th>کد کالا</th><th>کد کالای تولیدکننده</th><th>بارکد</th><th>نام کالا</th><th>برند</th><th>گروه سطح ۳</th><th>مالیات</th></tr></thead><tbody id="contractSelectionRows"></tbody></table></div>
+        <p class="contract-help">برند و گروه، فیلتر انتخاب‌اند. کالاهای انتخاب‌شده با تغییر فیلتر حفظ می‌شوند؛ کالاهای جدید خودکار عضو قرارداد نمی‌شوند.</p>
+      </section>
+      <section aria-label="شرایط خرید"><h3>۲. شرایط مشترک قرارداد</h3><div class="contract-grid">
+        <label class="contract-wide">انبار قرارداد<select id="contractStock" aria-describedby="contractStockHelp"><option value="">همهٔ انبارها · شرایط یکسان</option></select></label>
+        <p id="contractStockHelp" class="contract-help contract-wide">برای تخفیف متفاوت شعب، قرارداد هر انبار را جدا تنظیم کنید. قرارداد مشترک همهٔ انبارها نباید با قرارداد اختصاصی همان کالا در همان تاریخ تداخل داشته باشد.</p>
+        <label class="contract-wide">عنوان قرارداد<input id="contractTitle" required maxlength="160" placeholder="مثلاً قرارداد خرید کامان"></label>
+        <label class="contract-wide">شماره یا مرجع توافق<input id="contractAgreementReference" maxlength="120" placeholder="اختیاری؛ شماره قرارداد، الحاقیه یا توافق"></label>
+        <label>منبع تنظیم<select id="contractSourceMode"><option value="manual">تنظیم دستی</option><option value="discovered">پیشنهاد از سابقهٔ خرید</option><option value="migrated">انتقال از تنظیمات قبلی</option></select></label>
+        <input id="contractEvidenceRunId" type="hidden">
+        <label>شروع اعتبار<input id="contractStart" required inputmode="numeric" maxlength="10" dir="ltr"></label>
+        <label>پایان اعتبار<input id="contractEnd" inputmode="numeric" maxlength="10" placeholder="اختیاری" dir="ltr"></label>
+        <label>وضعیت<select id="contractStatus"><option value="draft">پیش‌نویس</option><option value="active">فعال در بازهٔ اعتبار</option></select></label>
+        <label class="contract-wide">قیمت مبنا<select id="contractBasis"><option value="manufacturer">قیمت تولید همان بار</option><option value="consumer">قیمت مصرف همان بار</option><option value="announcement">قیمت اعلامیهٔ خرید</option></select></label>
+        <label class="contract-check contract-wide"><input id="contractIncludesTax" type="checkbox" checked>قیمت مبنا شامل مالیات است؛ مالیات کالا یک‌بار خارج شود</label>
+        <label>تغییر قیمت پایه<select id="contractAdjustmentDirection"><option value="increase">افزایش</option><option value="decrease">کاهش</option></select></label>
+        <label>درصد تغییر قیمت پایه<input id="contractAdjustment" required inputmode="decimal" value="0" aria-describedby="contractAdjustmentHelp"></label>
+        <p id="contractAdjustmentHelp" class="contract-help contract-wide">درصد را بدون علامت وارد کنید؛ صفر یعنی بدون تغییر. این تغییر پس از خارج کردن مالیات قیمت مبنا و قبل از تخفیف ستون اعمال می‌شود.</p>
+        <label>تخفیف ستون؛ مرحلهٔ اول (٪)<input id="contractDiscount" required inputmode="decimal" value="0"></label>
+        <label>مراحل بعدی تخفیف روی مانده (٪)<input id="contractDiscountFollowing" placeholder="مثلاً ۵ یا ۵، ۲" aria-describedby="contractFormulaHelp"></label>
+        <label>نوع تخفیف انتهایی<select id="contractTailKind"><option value="percent">درصدی</option><option value="fixed">مبلغی · ریال</option></select></label>
+        <label class="contract-wide">مبنای تخفیف انتهایی<select id="contractTailBasis"></select></label>
+        <label><span id="contractTailLabel">درصد تخفیف انتهایی</span><input id="contractTail" required inputmode="decimal" value="0"></label>
+        <label class="contract-wide">توضیحات<textarea id="contractNote" maxlength="2000" rows="2"></textarea></label>
+      </div>
+      <p id="contractFormulaHelp" class="contract-help"></p>
+      <details><summary>محاسبهٔ نمونه · فاکتور تک‌قلم · ریال</summary><div class="contract-sample">
+        <label>کالای نمونه<select id="contractSampleProduct"></select></label>
+        <label>انبار قیمت<select id="contractSampleStock"><option value="1">انبار مرکزی کرج</option><option value="2">انبار تهران</option><option value="9">انبار گیلان</option></select></label><label>تاریخ بررسی قیمت<input id="contractSampleDate" dir="ltr" maxlength="10" placeholder="۱۴۰۵/۰۶/۱۷"></label>
+        <label>قیمت اعلامیهٔ خرید (فقط مبنای اعلامیه)<input id="contractSamplePrice" inputmode="decimal" placeholder="مثلاً ۱۱۰۰۰۰۰"></label>
+        <label>تعداد واحد پایه<input id="contractSampleQty" inputmode="decimal" value="1"></label>
+        <button id="contractPreview" type="button">محاسبه</button>
+      </div><div id="contractPreviewOutput" role="status"></div><p class="contract-help">فقط پیش‌نمایش؛ فاکتوری ثبت نمی‌شود. برای تخفیف ثابت فاکتور، این نمونه فرض می‌کند تنها قلم فاکتور همین کالاست.</p></details>
+      </section></div></fieldset>
+    <p id="contractMembershipWarning" class="purchase-membership-warning" role="status"></p>
+    <footer><p id="contractError" role="alert"></p><button id="contractSave" class="primary" type="submit">ذخیرهٔ قرارداد</button></footer></form>
+  </dialog>
+  <dialog id="purchaseMembersDialog" class="purchase-dialog" aria-labelledby="purchaseMembersTitle">
+    <header><h2 id="purchaseMembersTitle"></h2><button id="purchaseMembersClose" type="button">بستن</button></header>
+    <p id="purchaseMembersSummary"></p>
+    <div class="purchase-members-toolbar"><button id="purchaseMembersCurrent" type="button" aria-pressed="true">کالاهای قرارداد</button><button id="purchaseMembersAdd" type="button" aria-pressed="false">افزودن کالا</button><label>جست‌وجوی کالا<input id="purchaseMembersSearch" type="search" placeholder="نام، کد یا بارکد"></label><button id="purchaseMembersAddVisible" type="button" hidden>افزودن نتایج جست‌وجو</button></div>
+    <p class="purchase-members-help">حذف کالا با ثبت آخرین روز اعتبار انجام می‌شود و سابقه باقی می‌ماند. تاریخ پایان را در ردیف کالا وارد و تغییرات را ذخیره کنید؛ فاکتورِ استفاده‌کننده از این قانون در همان روز یا بعد از آن، مانع ثبت پایان است.</p>
+    <p id="purchaseMembersError" class="purchase-missing" role="alert"></p>
+    <div id="purchaseMembersBulk" class="purchase-members-toolbar"><button id="purchaseMembersSelectVisible" type="button">انتخاب نتایج جست‌وجو</button><button id="purchaseMembersClearChecked" type="button">پاک کردن انتخاب</button><span id="purchaseMembersCheckedCount"></span><label>تاریخ پایان انتخاب‌شده‌ها<input id="purchaseMembersBulkDate" type="text" inputmode="numeric" placeholder="۱۴۰۵/۰۶/۲۳"></label><button id="purchaseMembersDeleteSelected" type="button" disabled>حذف انتخاب‌شده‌ها</button></div><div class="purchase-members-table"><table aria-label="کالاهای عضو قرارداد"><thead><tr><th data-filterable="false">انتخاب</th><th>کد کالا</th><th>نام کالا</th><th>کد تولیدکننده</th><th>بارکد</th><th>برند</th><th>گروه کالا</th><th>پایان اعتبار کالا</th><th>عملیات</th></tr></thead><tbody id="purchaseMembersRows"></tbody></table></div>
+    <footer class="purchase-members-toolbar"><span id="purchaseMembersChangeCount" role="status"></span><button id="purchaseMembersSave" type="button" class="primary">ذخیره تغییرات کالاها</button></footer>
+  </dialog>
+  <dialog id="purchaseDiscoveryDialog" class="purchase-dialog purchase-discovery-dialog" aria-labelledby="purchaseDiscoveryTitle">
+    <header><div><h2 id="purchaseDiscoveryTitle">کشف قرارداد اولیه</h2><p>پیشنهاد خواندنی از فاکتورهای تأییدشده و رسیدهای مرتبط؛ هیچ قراردادی خودکار فعال نمی‌شود.</p></div><button id="purchaseDiscoveryClose" type="button">بستن</button></header>
+    <div id="purchaseDiscoveryBody" class="purchase-discovery-body" role="status" aria-live="polite"></div>
+  </dialog>
+  <dialog id="purchaseEndDialog" class="purchase-dialog" aria-labelledby="purchaseEndTitle"><header><h2 id="purchaseEndTitle">پایان قرارداد</h2><button id="purchaseEndClose" type="button">بستن</button></header><form id="purchaseEndForm"><p id="purchaseEndSummary"></p><label>آخرین روز اعتبار قرارداد<input id="purchaseEndDate" type="text" inputmode="numeric" placeholder="۱۴۰۵/۰۶/۲۳" required></label><p>این تاریخ برای کل قرارداد اعمال می‌شود. پایان زودترِ کالاها حفظ می‌شود. استفاده از قرارداد در فاکتور خریدِ همان روز یا بعد از آن، مانع ثبت پایان است.</p><p id="purchaseEndError" role="alert"></p><footer><button id="purchaseEndSave" class="primary" type="submit">ثبت پایان قرارداد</button></footer></form></dialog>
+  <dialog id="purchaseHistoryDialog" class="purchase-dialog" aria-labelledby="purchaseHistoryTitle"><header><h2 id="purchaseHistoryTitle">سابقهٔ قرارداد</h2><button id="purchaseHistoryClose" type="button">بستن</button></header><div id="purchaseHistoryBody"></div></dialog>
+  <dialog id="salePriceDialog" class="sale-price-dialog" aria-labelledby="salePriceDialogTitle">
+    <header><h2 id="salePriceDialogTitle">قاعدهٔ قیمت فروش</h2><button id="salePriceClose" type="button">بستن</button></header>
+    <form id="salePriceForm"><fieldset id="salePriceFields"><div class="sale-price-editor-layout">
+      <section aria-label="انتخاب کالاهای قرارداد فروش"><h3>۱. انتخاب کالاها</h3><div class="sale-price-grid">
+        <label>انبار و نوع درخواست<select id="saleRuleWarehouse" required></select></label>
+        <label>تولیدکننده<select id="saleRuleManufacturer" required></select></label>
+        <label>برند<select id="saleRuleBrand"><option value="">همهٔ برندها</option></select></label>
+        <label>گروه کالا · سطح ۳<select id="saleRuleGroup"><option value="">همهٔ گروه‌ها</option></select></label>
+        <label class="sale-price-wide">کالاهای مشمول<select id="saleRuleSelectionMode"><option value="all">همهٔ کالاهای فهرست فعلی</option><option value="selected">انتخاب کالا از فهرست</option></select></label>
+      </div>
+      <p id="saleRuleSelectionStatus" class="sale-price-help" role="status">تولیدکننده را انتخاب کنید.</p>
+      <div class="sale-price-selection-actions"><input id="saleRuleItemSearch" type="search" aria-label="جست‌وجوی کالاهای قیمت فروش" placeholder="جست‌وجوی کد یا نام کالا"><button id="saleRuleSelectVisible" type="button">انتخاب نتایج</button><button id="saleRuleClearSelection" type="button">پاک کردن انتخاب</button></div>
+      <div class="sale-price-item-scroll"><table id="saleRuleSelectionTable" aria-label="کالاهای انتخابی قیمت فروش"><thead><tr><th>انتخاب</th><th>کد کالا</th><th>کد کالای تولیدکننده</th><th>بارکد</th><th>نام کالا</th><th>برند</th><th>گروه سطح ۳</th><th>مالیات</th></tr></thead><tbody id="saleRuleSelectionRows"></tbody></table></div>
+      <p class="sale-price-help">«همه» یعنی همین فهرست فیلترشده؛ کالای جدید بعداً خودکار اضافه نمی‌شود. هر کالا قرارداد مستقل می‌گیرد.</p>
+      </section>
+      <section aria-label="شرایط قیمت فروش"><h3>۲. شرایط قیمت فروش</h3><div class="sale-price-grid">
+        <label class="sale-price-wide">عنوان قرارداد<input id="saleRuleTitle" required maxlength="160"></label>
+        <label>شروع اعتبار<input id="saleRuleStart" required inputmode="numeric" maxlength="10" dir="ltr"></label>
+        <label>پایان اعتبار<input id="saleRuleEnd" inputmode="numeric" maxlength="10" placeholder="اختیاری" dir="ltr"></label>
+        <label>وضعیت<select id="saleRuleStatus"><option value="draft">پیش‌نویس</option><option value="active">فعال در بازهٔ اعتبار</option></select></label>
+        <label>درصد افزایش روی قیمت خالص تولید<input id="saleRuleMarkup" required inputmode="decimal" value="11"></label>
+        <label class="sale-price-check"><input id="saleRuleIncludesTax" type="checkbox" checked>قیمت تولید شامل مالیات است</label>
+        <label class="sale-price-wide">توضیحات<textarea id="saleRuleNote" maxlength="2000" rows="3"></textarea></label>
+      </div>
+      <p class="sale-price-help">انبار، نوع درخواست را خودکار تعیین می‌کند. فرمول: قیمت تولید ÷ (۱ + نرخ مالیات) × (۱ + درصد افزایش). این بخش در ERP چیزی ثبت نمی‌کند.</p>
+      <details open><summary>محاسبهٔ نمونه · ریال</summary><div class="sale-price-sample">
+        <label>کالای نمونه<select id="saleRuleSampleProduct"></select></label>
+        <label>تاریخ بررسی<input id="saleRuleSampleDate" maxlength="10" dir="ltr"></label>
+        <label>قیمت تولید شامل مالیات<input id="saleRuleSamplePrice" inputmode="decimal" placeholder="خالی = خواندن از ورانگر"></label>
+        <button id="saleRulePreview" type="button">محاسبه</button>
+      </div><div id="saleRulePreviewOutput" role="status"></div></details>
+      </section>
+    </div></fieldset><footer><p id="saleRuleError" role="alert" tabindex="-1"></p><button id="saleRuleSave" class="primary" type="submit">ذخیرهٔ قرارداد</button></footer></form>
+  </dialog>
+  <dialog id="salePriceHistoryDialog" class="sale-price-dialog" aria-labelledby="salePriceHistoryTitle"><header><h2 id="salePriceHistoryTitle">سابقهٔ قاعدهٔ فروش</h2><button id="salePriceHistoryClose" type="button">بستن</button></header><div id="salePriceHistoryBody"></div></dialog>
+  <dialog id="orderPortalDialog" class="order-sms-dialog" aria-labelledby="orderPortalTitle">
+    <form id="orderPortalForm">
+      <header><h2 id="orderPortalTitle">قرار دادن در کارتابل تأمین‌کننده</h2><button id="orderPortalClose" type="button">بستن</button></header>
+      <div class="order-sms-body">
+        <p id="orderPortalSummary"></p>
+        <label>نام کاربری تأمین‌کننده (شماره موبایل)<input id="orderPortalUsername" dir="ltr" required maxlength="11" autocomplete="off"></label>
+        <label>موبایل اطلاع‌رسانی (اختیاری)<input id="orderPortalMobile" type="tel" dir="ltr" maxlength="30" autocomplete="off"></label>
+        <label>ایمیل اطلاع‌رسانی (اختیاری)<input id="orderPortalEmail" type="email" dir="ltr" maxlength="254" autocomplete="off"></label>
+        <label>تاریخ تحویل درخواستی<input id="orderPortalDate" dir="ltr" required maxlength="10" placeholder="۱۴۰۵/۰۶/۲۵" aria-describedby="orderPortalHelp"></label>
+        <p id="orderPortalHelp">سفارش مستقل از پیامک یا ایمیل در کارتابل قرار می‌گیرد. اگر اطلاعات اطلاع‌رسانی را وارد کنید، پیام خبری ارسال می‌شود. تا قبل از اولین مشاهده می‌توانید سفارش را از کارتابل بردارید. رمز اولیهٔ حساب جدید 1 است و تغییر آن در کارتابل اختیاری است.</p>
+        <a id="orderPortalAccountLink" href="/supplier-portal-admin">مدیریت حساب کارتابل تأمین‌کننده</a>
+        <p id="orderPortalError" role="alert"></p>
+      </div>
+      <footer><button id="orderPortalSend" type="submit" class="primary">قرار دادن در کارتابل تأمین‌کننده</button></footer>
+    </form>
+  </dialog>
+  <dialog id="manualEditDialog" class="order-sms-dialog draft-editor" aria-labelledby="manualEditTitle">
+    <form id="manualEditForm"><header class="preview-dialog-head"><h2 id="manualEditTitle">ویرایش سفارش دستی</h2><button id="manualEditClose" type="button">بستن</button></header>
+      <div class="draft-editor-meta"><div class="embedded-delivery-date"><label>تاریخ تحویل (شمسی)<input id="manualDeliveryDate" dir="ltr" maxlength="10" placeholder="۱۴۰۵/۰۶/۲۵"></label></div><span id="manualDraftTotals"></span><details class="draft-editor-help"><summary>راهنما</summary><p>تعداد کارتن هر قلم را وارد کنید؛ صفر یعنی حذف قلم. تاریخ و تعداد با هم ذخیره می‌شوند. برای ویرایش سفارش تأییدشده ابتدا لغو تأیید کنید.</p></details></div>
+      <div class="order-sms-body"><div id="manualEditLines"></div><p id="manualEditError" role="alert"></p></div>
+      <footer><span id="manualDraftStatus" class="draft-save-status" role="status"></span><button id="manualEditSave" type="submit" class="primary">ذخیره تغییرات</button></footer>
+    </form>
+  </dialog>
+  <dialog id="draftExitDialog" aria-labelledby="draftExitTitle" aria-describedby="draftExitDescription">
+    <h2 id="draftExitTitle">تغییرات ذخیره نشده</h2><p id="draftExitDescription">تاریخ یا تعداد را تغییر داده‌اید. قبل از بستن فرم چه کاری انجام شود؟</p>
+    <p id="draftExitError" role="alert"></p><div class="draft-exit-actions"><button type="button" data-draft-exit="keep" autofocus>ادامهٔ ویرایش</button><button type="button" data-draft-exit="discard">خروج بدون ذخیره</button><button type="button" data-draft-exit="save" class="primary">ذخیره و خروج</button></div>
+  </dialog>
   <div id="toast" class="toast" role="status"></div>
-  <script src="/static/warehouse-assistant.js?v=3" defer></script>
+  <script src="/static/warehouse-assistant.js?v=84" defer></script>
+  <script src="/static/warehouse-purchase-invoice.js?v=7" defer></script>
+  <script src="/static/warehouse-unbilled-receipts.js?v=3" defer></script>
+  <script src="/static/warehouse-purchase-contracts.js?v=12" defer></script>
+  <script src="/static/warehouse-purchase-editor.js?v=11" defer></script>
+  <script src="/static/warehouse-purchase-groups.js?v=8" defer></script>
+  <script src="/static/warehouse-purchase-group-editor.js?v=5" defer></script>
+  <script src="/static/warehouse-purchase-members.js?v=4" defer></script>
+  <script src="/static/warehouse-purchase-actions.js?v=1" defer></script>
+  <script src="/static/warehouse-sale-price-contracts.js?v=3" defer></script>
+  <script src="/static/warehouse-sms-settings.js?v=1" defer></script>
+  <script src="/static/warehouse-order-sms.js?v=1" defer></script>
+  <dialog id="orderDateDialog" class="order-sms-dialog" aria-labelledby="orderDateTitle">
+    <form id="orderDateForm">
+      <h2 id="orderDateTitle">تاریخ تحویل سفارش</h2>
+      <p id="orderDateSummary"></p>
+      <label>تاریخ تحویل درخواستی (شمسی)<input id="orderDeliveryDate" type="text" dir="ltr" required maxlength="10" placeholder="۱۴۰۵/۰۶/۲۵" aria-describedby="orderDateHelp orderDateError"></label>
+      <p id="orderDateHelp">تأمین‌کننده این تاریخ را تأیید می‌کند یا تغییر پیشنهاد می‌دهد. تاریخ پیشنهادی فقط پس از تأیید شما جایگزین می‌شود.</p>
+      <p id="orderDateError" role="alert"></p>
+      <div class="dialog-actions"><button id="orderDateSave" type="submit" class="primary">ذخیره تاریخ تحویل</button><button id="orderDateClose" type="button" class="secondary-action">بستن</button></div>
+    </form>
+  </dialog>
+  <script src="/static/warehouse-order-workflow.js?v=10" defer></script>
+  <script src="/static/warehouse-rebalancing.js?v=17" defer></script>
+  <script src="/static/warehouse-transfer-bridge.js?v=5" defer></script>
+  <script src="/static/warehouse-table-export.js?v=2" defer></script>
+  <script src="/static/warehouse-preorder-catalog.js?v=4" defer></script>
+  <dialog id="supplierReviewDialog" class="order-sms-dialog" aria-labelledby="supplierReviewTitle">
+    <header><h2 id="supplierReviewTitle">بررسی پاسخ تأمین‌کننده</h2><button id="supplierReviewClose" type="button">بستن</button></header>
+    <p id="supplierReviewSummary"></p>
+    <div id="supplierReviewContent" aria-live="polite"></div>
+    <p id="supplierReviewError" role="alert"></p>
+    <section id="supplierReviewDecision" hidden>
+      <label>نظر انبار / علت برگشت برای اصلاح<textarea id="supplierReviewComment" maxlength="1000" rows="2"></textarea></label>
+      <label class="supplier-review-confirm"><input id="supplierReviewConfirm" type="checkbox">تاریخ و تعدادهای پیشنهادی را بررسی کردم و اعمال همهٔ تغییرات را تأیید می‌کنم.</label>
+      <div class="dialog-actions"><button type="button" class="primary" data-supplier-decision="accept">تأیید تغییرات و انتقال به صف تحویل</button><button type="button" class="secondary-action" data-supplier-decision="changes_requested">برگشت به تأمین‌کننده برای اصلاح</button></div>
+    </section>
+  </dialog>
+  <script src="/static/warehouse-supplier-review.js?v=3" defer></script>
+  <script src="/static/warehouse-fulfillment.js?v=24" defer></script>
+  <script src="/static/warehouse-balance.js?v=6" defer></script>
+  <script src="/static/warehouse-checkbar.js?v=28" defer></script>
+  <script src="/static/warehouse-checkbar-flow.js?v=4" defer></script>
+  <script src="/static/warehouse-checkbar-image.js?v=10" defer></script>
+  <script src="/static/warehouse-receipt-bridge.js?v=12" defer></script>
+  <script src="/static/warehouse-order-matching.js?v=6" defer></script>
+  <script src="/static/warehouse-column-layouts.js?v=15" defer></script>
+  <script src="/static/warehouse-table-filters.js?v=5" defer></script>
+  <script src="/static/warehouse-fullscreen.js?v=4" defer></script>
+  <script src="/static/warehouse-design.js?v=3" defer></script>
+  <script src="/static/warehouse-operations.js?v=5" defer></script>
+  <script src="/static/warehouse-pages.js?v=3" defer></script>
+<dialog id="transferDocumentDialog" class="preorder-preview-dialog" aria-labelledby="transferDocumentTitle">
+  <div class="preview-dialog-head"><div><h2 id="transferDocumentTitle">سند جابه‌جایی</h2><p id="transferDocumentMeta"></p></div><button id="closeTransferDocument" type="button" class="secondary-action">بستن</button></div>
+  <div id="transferDocumentSummary" class="preview-summary" role="status"></div>
+  <div id="transferCreditControls" class="balance-bulk-actions" aria-label="ثبت بستانکار ورانگر" tabindex="-1">
+    <button id="transferCreditPreview" type="button" title="اقلام با موجودی آزاد ناکافی و رزرو، از سند به تأییدشده‌ها برمی‌گردند.">بررسی موجودی برای ثبت در ورانگر</button>
+    <label id="transferCreditConfirmation" hidden><input id="transferCreditConfirmed" type="checkbox">کاهش قطعی موجودی مبدأ را تأیید می‌کنم</label>
+    <button id="transferCreditSubmit" type="button" class="primary" hidden disabled>ثبت و تأیید نهایی در ورانگر</button>
+    <button id="transferCreditRetry" type="button" hidden>پیگیری ثبت</button>
+    <button id="transferCreditRefresh" type="button" hidden>بازخوانی وضعیت ورانگر</button>
+    <button id="transferCreditReturn" type="button" hidden>حذف سند و بازگشت اقلام</button>
+    <span id="transferCreditMessage" role="status"></span>
+  </div>
+  <details id="transferCreditIssues" hidden><summary id="transferCreditIssuesCount"></summary><div id="transferCreditIssuesText" style="white-space:pre-line;max-height:120px;overflow:auto" role="alert"></div></details>
+  <div id="transferDocumentNote" class="preview-edit-note"></div>
+  <div class="table-wrap"><table id="transferDocumentItemsTable"><thead><tr><th>کد کالا</th><th>نام کالا</th><th>تولیدکننده</th><th>نام تجاری</th><th>عدد در کارتن</th><th>کارتن</th><th>تعداد (عدد)</th><th>قیمت خرید مبدأ</th><th>مبلغ تخمینی قلم</th><th>وضعیت دریافت</th><th>سند خروج</th><th>سند ورود</th><th>عملیات</th></tr></thead><tbody id="transferDocumentLines"></tbody></table></div>
+</dialog>
+<dialog id="balanceReflectionDialog" aria-labelledby="balanceReflectionTitle">
+  <form id="balanceReflectionForm">
+    <h3 id="balanceReflectionTitle">تطبیق جابه‌جایی با موجودی</h3>
+    <p id="balanceReflectionItem"></p>
+    <p>فقط پس از انتقال کامل و به‌روزرسانی موجودی هر دو انبار ثبت کنید. این کار سند ورانگر نمی‌سازد.</p>
+    <label>شماره سند خروج مبدأ<input id="balanceSourceDocument" required maxlength="100"></label>
+    <label>شماره رسید مقصد<input id="balanceDestinationDocument" required maxlength="100"></label>
+    <label><input id="balanceReflectedConfirmed" type="checkbox" required>خروج کامل از مبدأ و دریافت کامل در مقصد در آخرین موجودی منعکس شده‌اند.</label>
+    <p id="balanceReflectionError" role="alert"></p>
+    <div class="actions"><button type="submit" class="primary">ثبت تطبیق موجودی</button><button id="closeBalanceReflection" type="button">انصراف</button></div>
+  </form>
+</dialog>
+  <dialog id="checkbarExitDialog" aria-labelledby="checkbarExitTitle" aria-describedby="checkbarExitDescription"><h2 id="checkbarExitTitle">چک‌بار هنوز ذخیره نشده است</h2><p id="checkbarExitDescription">با خروج، اطلاعات این فرم ذخیره نمی‌شود. برای تکمیل شمارش و تطبیق به فرم برگردید.</p><div class="checkbar-exit-actions"><button id="checkbarExitKeep" class="primary" type="button" autofocus>ادامهٔ کار</button><button id="checkbarExitDiscard" class="secondary-action" type="button">خروج بدون ذخیره</button></div></dialog>
 </body>
 </html>

@@ -1,0 +1,118 @@
+/* Work surfaces: give the available height to rows, keep inputs at readable size. */
+body.wa-fluent .preorder-preview-dialog{box-sizing:border-box}
+body.wa-fluent .preorder-preview-dialog .preview-dialog-head{min-height:40px;padding:5px 10px;gap:8px;flex:none;align-items:center}
+body.wa-fluent .preorder-preview-dialog .preview-dialog-head h2{font-size:14px;line-height:20px;margin:0}
+body.wa-fluent .preorder-preview-dialog .preview-dialog-head p{margin:2px 0 0;font-size:10px;line-height:15px}
+body.wa-fluent .preorder-preview-dialog .preview-dialog-footer{min-height:40px;padding:5px 8px;gap:6px!important;flex:none}
+body.wa-fluent .preorder-preview-dialog .preview-dialog-footer>div{gap:6px!important}
+body.wa-fluent .preorder-preview-dialog .preview-summary{display:flex;flex-wrap:wrap;gap:4px;padding:4px 8px;flex:none}
+body.wa-fluent .preorder-preview-dialog .preview-summary span{display:flex;align-items:center;gap:6px;min-height:24px;margin:0;padding:2px 6px}
+body.wa-fluent .preorder-preview-dialog .preview-summary strong{font-size:12px;line-height:18px}
+body.wa-fluent .preorder-preview-dialog input[type=checkbox]{width:16px;min-width:16px;height:16px;min-height:16px;margin:0;flex:none;vertical-align:middle}
+
+/* The working dialog fills the window; the optional fullscreen command still works. */
+body.wa-fluent #checkbarDialog{width:calc(100vw - 16px);max-width:none;height:calc(100dvh - 16px);max-height:calc(100dvh - 16px);margin:8px;padding:0}
+body.wa-fluent #checkbarDialog[open]{display:flex;flex-direction:column;overflow:hidden}
+body.wa-fluent #checkbarDialog .checkbar-body{flex:1;display:flex;flex-direction:column;min-height:0;overflow:auto}
+body.wa-fluent #checkbarEditor:not([hidden]){display:flex;flex:1;flex-direction:column;min-height:240px}
+body.wa-fluent #checkbarEditor>.table-wrap{flex:1;min-height:180px;max-height:none;overflow:auto;border-radius:0}
+body.wa-fluent #checkbarDialog .checkbar-selectors{padding:4px 8px;gap:8px;flex:none}
+body.wa-fluent #checkbarDialog .checkbar-selectors select{min-width:140px;max-width:240px}
+body.wa-fluent #checkbarDialog :is(button,select,input:not([type=checkbox])){font-size:11px;line-height:16px;min-height:28px}
+body.wa-fluent #checkbarDialog .checkbar-notice{padding:5px 10px;font-size:11px;line-height:17px;max-height:14vh;flex:none}
+body.wa-fluent #checkbarDialog .checkbar-empty-actions{padding:4px 8px;gap:6px}
+body.wa-fluent #checkbarOrderPicker{padding:8px;flex:none}
+body.wa-fluent #checkbarOrderPicker p{margin:4px 0}
+body.wa-fluent #checkbarOrderPicker label{display:flex!important;align-items:center;gap:6px;margin:6px 0!important}
+body.wa-fluent #checkbarOrders:empty{display:none}
+
+/* Required fields and issuance choice are always visible. Ancillary fields fold away. */
+.checkbar-corebar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:4px 8px;background:#f7f9f8;border-bottom:1px solid #e4eae7;flex:none}
+body.wa-fluent #checkbarDialog .checkbar-primary-metadata{display:flex;flex:1;gap:12px;flex-wrap:wrap;padding:0;background:none}
+body.wa-fluent #checkbarDialog .checkbar-primary-metadata label{display:flex;align-items:center;gap:6px;white-space:nowrap;font-size:11px}
+body.wa-fluent #checkbarDialog .checkbar-primary-metadata input{width:160px}
+body.wa-fluent #checkbarBrandSplitOptions{margin:0;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:11px}
+body.wa-fluent #checkbarBrandSplitOptions label{display:flex;align-items:center;gap:6px;white-space:nowrap}
+body.wa-fluent #checkbarBrandSplitSummary{margin:0;font-size:10px;line-height:15px;max-width:500px}
+body.wa-fluent #checkbarBrandSplitOptions:not(:has(input:checked)) #checkbarBrandSplitSummary{display:none}
+body.wa-fluent #checkbarBrandBatch{margin:0;padding:4px 8px;display:flex;align-items:center;flex-wrap:wrap;gap:6px;background:#edf6f1;flex:none}
+body.wa-fluent #checkbarBrandBatch p{margin:0;font-size:10px}
+
+/* Compact tools open in place above the table; values and selected files persist. */
+.checkbar-toolsbar{position:relative;display:flex;align-items:center;flex-wrap:wrap;gap:4px;padding:4px 8px;border-bottom:1px solid #e4eae7;flex:none;z-index:5;background:#fff}
+.checkbar-table-views{display:flex;gap:3px;align-items:center;margin-inline-start:auto}
+body.wa-fluent #checkbarDialog .checkbar-table-views button{padding:4px 7px;background:#fff;color:#496052;border:1px solid #d5e0da;border-radius:4px}
+body.wa-fluent #checkbarDialog .checkbar-table-views button[aria-pressed=true]{background:#e8f3ee;color:#0c573f;border-color:#126d50;font-weight:600}
+body.wa-fluent #checkbarTable{min-width:100%!important}
+body.wa-fluent .preorder-preview-dialog .preview-lines-table{min-width:100%!important}
+body.wa-fluent #checkbarDialog .checkbar-toolsbar>details{margin:0;padding:0;border:0;border-radius:4px;background:none;font-size:11px}
+body.wa-fluent .compact-disclosure>summary,body.wa-fluent #checkbarImagePanel>summary{cursor:pointer;padding:5px 8px;min-height:28px;box-sizing:border-box;color:#285344;font-size:11px;line-height:18px;border:1px solid #d5e0da;border-radius:4px;background:#f7faf8}
+body.wa-fluent .compact-disclosure[open]>summary,body.wa-fluent #checkbarImagePanel[open]>summary{background:#e8f3ee;border-color:#126d50;color:#0c573f}
+body.wa-fluent .compact-disclosure>summary:focus-visible,body.wa-fluent #checkbarImagePanel>summary:focus-visible{outline:2px solid #126d50;outline-offset:1px}
+.checkbar-toolsbar .compact-disclosure-body{position:absolute;inset-inline:8px;top:100%;z-index:6;max-height:58vh;overflow:auto;box-sizing:border-box;padding:10px 12px;background:#fff;border:1px solid #bdcfc4;border-radius:6px;box-shadow:0 8px 24px #14352924}
+body.wa-fluent #checkbarExtraMetadata .checkbar-metadata{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+body.wa-fluent #checkbarExtraMetadata label{font-size:11px}
+body.wa-fluent #checkbarImagePanel p{margin:5px 0;font-size:11px;line-height:17px}
+body.wa-fluent #checkbarImagePanel .checkbar-image-pages{max-height:180px;margin:6px 0;gap:6px}
+body.wa-fluent #checkbarImagePanel .checkbar-image-page{width:140px;padding:5px}
+body.wa-fluent #checkbarImagePanel .checkbar-image-page img{height:82px}
+body.wa-fluent #checkbarImagePanel .checkbar-image-page:has(details[open]){width:100%}
+body.wa-fluent #checkbarImagePanel details[open] img{height:auto}
+body.wa-fluent #checkbarImageRows{max-height:none;margin:6px 0}
+body.wa-fluent .checkbar-image-row{padding:6px;margin:4px 0}
+body.wa-fluent .checkbar-image-actions{gap:8px}
+
+body.wa-fluent #checkbarDialog .checkbar-manual{padding:4px 8px;gap:8px;flex:none}
+body.wa-fluent #checkbarDialog .checkbar-manual label{flex-direction:row;align-items:center;gap:5px;min-width:0;font-size:11px}
+body.wa-fluent #checkbarDialog .checkbar-manual select{max-width:165px}
+body.wa-fluent #checkbarProductSearch{width:190px}
+body.wa-fluent #checkbarOutstandingSummary{font-size:10px;line-height:15px;padding:3px 8px;margin:0;background:#f8faf9;flex:none}
+body.wa-fluent #checkbarTable :is(th,td){font-size:11px;line-height:16px;padding:3px 5px;vertical-align:middle}
+body.wa-fluent #checkbarTable td{height:34px}
+body.wa-fluent #checkbarTable td input{height:28px;min-height:28px;padding:2px 4px}
+body.wa-fluent #checkbarTable td button{min-height:26px;padding:3px 6px;margin:0 1px;white-space:nowrap}
+body.wa-fluent #checkbarTable small{font-size:10px;line-height:14px}
+body.wa-fluent #checkbarTable thead tr:first-child th{height:34px;box-sizing:border-box}
+body.wa-fluent #checkbarTable .shared-filter-row th{top:34px;padding:2px 4px!important}
+body.wa-fluent #checkbarTable .shared-filter-row input{height:24px;min-height:24px!important}
+body.wa-fluent #checkbarTable td:nth-child(18){white-space:nowrap}
+body.wa-fluent #checkbarDialog #checkbarMatching{padding:4px 8px;flex:none;border-top:1px solid #d5e0da}
+body.wa-fluent #checkbarMatching>p{margin:4px 0;font-size:11px;line-height:17px}
+body.wa-fluent #checkbarMatching>label{display:flex;align-items:center;gap:6px;font-size:11px;line-height:18px;margin:4px 0}
+body.wa-fluent #checkbarMatching .receipt-preview-table-wrap{max-height:36vh;margin:4px 0}
+body.wa-fluent #checkbarHistoryDetails{padding:4px 8px;flex:none}
+body.wa-fluent #checkbarVersions{max-height:24vh;overflow:auto;font-size:11px}
+body.wa-fluent #checkbarReceiptPanel{padding:8px;flex:none}
+body.wa-fluent #checkbarReceiptPanel :is(p,h3){margin:4px 0}
+body.wa-fluent #checkbarReceiptPanel :is(th,td){padding:4px 6px;font-size:11px;line-height:16px}
+
+/* Reuse all available height in the other working forms and pickers. */
+@media(min-width:701px){
+ body.wa-fluent :is(#preorderPreviewDialog,#preorderCatalogDialog,#checkbarCatalogDialog,#fulfillmentReceiptDialog)[open]{display:flex;flex-direction:column;height:calc(100dvh - 24px);max-height:calc(100dvh - 24px);overflow:hidden}
+ body.wa-fluent :is(#preorderPreviewDialog,#preorderCatalogDialog,#checkbarCatalogDialog,#fulfillmentReceiptDialog)>.table-wrap{flex:1;min-height:120px;max-height:none!important;overflow:auto}
+ body.wa-fluent #fulfillmentReceiptDialog .fulfillment-reconcile{padding:5px 10px;gap:8px}
+ body.wa-fluent #fulfillmentReceiptDialog .fulfillment-receipt-help{padding:4px 10px;font-size:10px;line-height:16px}
+ body.wa-fluent #orderingView .filter-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+ body.wa-fluent #orderingView .filter-grid label{display:flex;align-items:center;gap:6px;min-width:0}
+ body.wa-fluent #orderingView .filter-grid :is(input,select){min-width:0;flex:1;width:100%}
+ body.wa-fluent #orderingView .filter-grid label.checkbox{justify-content:flex-start}
+ body.wa-fluent #orderingView .filter-grid input[type=checkbox]{flex:none;width:16px}
+}
+@media(max-width:700px){
+ body.wa-fluent #checkbarDialog{width:100vw;height:100dvh;max-height:100dvh;margin:0;border-radius:0}
+ body.wa-fluent #checkbarEditor:not([hidden]){min-height:360px}
+ body.wa-fluent #checkbarDialog .checkbar-primary-metadata{gap:6px}
+ body.wa-fluent #checkbarDialog .checkbar-primary-metadata label{flex:1;white-space:normal}
+ body.wa-fluent #checkbarDialog .checkbar-primary-metadata input{width:100%;min-width:80px}
+ body.wa-fluent #checkbarDialog .checkbar-manual label{flex:1}
+ body.wa-fluent #checkbarExtraMetadata .checkbar-metadata{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body.wa-fluent #checkbarDialog .preview-dialog-footer{flex-wrap:wrap}
+ .checkbar-toolsbar .compact-disclosure-body{max-height:50vh}
+}
+@media(pointer:coarse){
+ body.wa-fluent #checkbarDialog :is(button,select,input:not([type=checkbox])),body.wa-fluent .compact-disclosure>summary,body.wa-fluent #checkbarImagePanel>summary{min-height:36px}
+ body.wa-fluent #checkbarTable td{height:42px}
+}
+@media print{
+ .checkbar-toolsbar .compact-disclosure-body{position:static;max-height:none;box-shadow:none}
+}

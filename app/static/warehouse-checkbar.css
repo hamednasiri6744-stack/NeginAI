@@ -1,0 +1,98 @@
+.checkbar-entry,.checkbar-selectors,.checkbar-manual{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid #ddd}
+.checkbar-image-panel{margin:10px 12px;padding:12px;border:1px solid #b8cfc4;border-radius:6px;background:#f4faf7;font-size:12px}
+.checkbar-image-panel p{margin:8px 0;white-space:pre-line}
+.checkbar-image-actions{display:flex;flex-wrap:wrap;align-items:end;gap:10px}
+.checkbar-image-actions label{display:flex;flex-direction:column;gap:4px;max-width:100%}
+.checkbar-image-actions select{max-width:420px;width:100%}
+.checkbar-image-actions input[inputmode]{width:125px}
+.checkbar-image-pages{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0;max-height:360px;overflow:auto}
+.checkbar-image-page{margin:0;padding:8px;background:white;border:1px solid #d9e5df;border-radius:4px;width:220px;max-width:100%}
+.checkbar-image-page img{display:block;width:100%;height:170px;object-fit:contain}
+.checkbar-image-page summary{cursor:zoom-in}
+.checkbar-image-page:has(details[open]){width:100%}
+.checkbar-image-page details[open] summary{cursor:zoom-out}
+.checkbar-image-page details[open] img{height:auto}
+.checkbar-image-page figcaption{overflow-wrap:anywhere;margin:6px 0}
+.checkbar-file-tile{min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:#edf5f1;padding:10px}
+.checkbar-file-tile strong{font-size:22px}
+#checkbarImageRows{max-height:380px;overflow:auto;margin:10px 0}
+.checkbar-image-row{padding:10px;margin:8px 0;background:white;border:1px solid #d9e5df;border-radius:4px}
+.checkbar-image-row small{display:block;margin:6px 0;color:#645129}
+.checkbar-entry span,.checkbar-help{font-size:12px;color:#596560}
+#checkbarDialog{width:min(97vw,1900px);max-width:97vw;max-height:93vh}
+#checkbarDialog[open]{display:flex;flex-direction:column;overflow:hidden}
+.checkbar-body{overflow:auto;min-height:0}
+.checkbar-selectors label,.checkbar-metadata label,.checkbar-manual label{display:flex;gap:5px;align-items:center;font-size:12px}
+.checkbar-selectors select{min-width:170px;max-width:330px}
+.checkbar-metadata{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:10px 12px;background:#f7f9f8}
+.checkbar-metadata input{width:100%;min-width:0}
+#checkbarOrders{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px;padding:10px}
+#checkbarOrders label{padding:8px;border:1px solid #ddd;display:flex;align-items:center;gap:7px;font-size:12px}
+#checkbarOrderPicker{padding:8px 12px}
+.checkbar-manual label{flex-direction:column;align-items:stretch;min-width:160px}
+.checkbar-manual select{max-width:220px}
+#checkbarProductSearch{width:250px;max-width:60vw}
+#checkbarCatalogCount{font-size:11px;color:#65706b}
+#checkbarCatalogDialog{width:min(1200px,95vw);max-height:88vh}
+#checkbarCatalogDialog[open]{display:flex;flex-direction:column;overflow:hidden}
+#checkbarCatalogDialog .table-wrap{overflow:auto;min-height:0;max-height:60vh}
+#checkbarCatalogTable{table-layout:fixed;min-width:1120px;width:1120px}
+#checkbarCatalogTable th:nth-child(5){width:220px}
+#checkbarCatalogTable tbody tr{cursor:pointer}
+#checkbarCatalogTable tbody tr:hover{background:#eaf4ee}
+.checkbar-help{margin:8px 12px}
+#checkbarEditor .table-wrap{max-height:44vh;overflow:auto}
+#checkbarTable{table-layout:fixed;width:2205px;min-width:2205px;font-size:12px}
+#checkbarTable.checkbar-standalone{min-width:1625px}
+#checkbarTable th,#checkbarTable td{width:100px;padding:6px;vertical-align:middle;overflow:hidden;overflow-wrap:anywhere}
+#checkbarTable th:nth-child(1){width:180px}#checkbarTable th:nth-child(4){width:150px}#checkbarTable th:nth-child(5){width:240px}#checkbarTable th:nth-child(6){width:65px}#checkbarTable th:nth-child(18){width:130px}
+#checkbarTable td input{width:100%;min-width:0;text-align:center;height:30px;padding:3px;box-sizing:border-box;background:#fffbed}
+#checkbarTable small{display:block;color:#64716b;font-size:11px}
+#checkbarTable [data-difference].is-over{color:#a32121;font-weight:bold}
+#checkbarTable .checkbar-total{background:#eef7f2;color:#145c49;font-weight:700;text-align:center;font-variant-numeric:tabular-nums}
+#checkbarTable th{background:#eef4f1;position:sticky;top:0;z-index:1;text-align:center}
+#checkbarDialog button,#checkbarDialog select,#checkbarDialog input{font-size:12px;min-height:30px}
+#checkbarHistoryDialog{width:min(1000px,95vw)}
+.checkbar-workflow{display:flex;flex-wrap:wrap;align-items:center;gap:16px;padding:10px 14px;background:#f3f8f5;border-bottom:1px solid #dce6e0;font-size:12px;color:#245a47}
+.checkbar-workflow small{margin-inline-start:auto;color:#65706b;font-size:11px}
+.checkbar-archive-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 14px}
+.checkbar-archive-toolbar label{display:flex;align-items:center;gap:8px;font-size:12px}
+.checkbar-archive-toolbar input{width:260px;max-width:50vw}
+#checkbarArchiveStatus{font-size:12px;color:#65706b;flex:1}
+#checkbarArchiveTable{min-width:820px}
+.checkbar-archive-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.checkbar-archive-actions button{white-space:nowrap}
+.checkbar-archive-toolbar select{width:auto;min-width:120px;max-width:100%}
+#checkbarArchiveStatus{flex-basis:100%}
+.checkbar-receipt-status{display:inline-block;padding:3px 6px;border:1px solid var(--fluent-border,#ccdcd3);border-radius:4px;white-space:nowrap;color:var(--fluent-text,#20372f);background:var(--fluent-selected,#eaf4ee);font-weight:600}
+.checkbar-archive-actions .checkbar-next-action{font-weight:700;color:var(--fluent-brand,#12684d)}
+.checkbar-archive-actions .operation-row-menu{max-width:100%}
+.checkbar-archive-actions .operation-row-menu small{flex-basis:100%;white-space:normal}
+#checkbarView .table-wrap{min-height:170px}
+@media(max-width:800px){.checkbar-metadata{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.checkbar-notice{flex:none;padding:10px 14px;border-bottom:1px solid #ccdcd3;font-size:12px;line-height:1.8;white-space:normal;max-height:23vh;overflow:auto}
+.checkbar-notice[hidden]{display:none}
+.checkbar-notice.success{background:#e8f5ec;color:#155c36;border-inline-start:4px solid #23834c}
+.checkbar-notice.error{background:#fff0ee;color:#942b25;border-inline-start:4px solid #bb392f}
+.checkbar-notice.info{background:#fff8e5;color:#745a10;border-inline-start:4px solid #b88918}
+#checkbarDownload:not([hidden]){background:#176f55;color:#fff;border-color:#176f55;font-weight:700}
+.checkbar-empty-actions{display:flex;gap:8px;flex-wrap:wrap;padding:8px 14px;flex:none;background:#fff8e5;border-bottom:1px solid #e5d5a0}
+.checkbar-empty-actions[hidden]{display:none}
+#checkbarReceiptPanel{padding:14px;border-top:2px solid #176f55;background:#f5faf7;flex:none}
+#checkbarReceiptPanel h3{margin:0 0 10px}
+#checkbarReceiptPanel .checkbar-metadata{grid-template-columns:repeat(3,minmax(0,1fr));padding-inline:0}
+.receipt-preview-table-wrap{overflow:auto;max-height:35vh;margin:12px 0}
+#checkbarMatching{padding:12px 14px;min-width:0;border-top:1px solid #ccdcd3;background:#f5faf7}
+#checkbarMatching>.receipt-preview-table-wrap{width:100%;max-width:100%;min-width:0}
+#checkbarMatchingTable{table-layout:fixed;min-width:100%;border-collapse:collapse;background:#fff}
+#checkbarMatchingTable th,#checkbarMatchingTable td{box-sizing:border-box;padding:8px;vertical-align:middle;text-align:right;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+#checkbarMatchingTable th{white-space:normal;line-height:1.6}
+#checkbarMatchingTable td input{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;text-align:center;font-variant-numeric:tabular-nums}
+#checkbarMatching>label{display:flex;align-items:center;gap:8px;margin:10px 0;line-height:1.8}
+#checkbarMatching>.receipt-preview-table-wrap:focus-visible{outline:2px solid #176f55;outline-offset:2px}
+#checkbarReceiptPanel table{width:100%!important;min-width:520px;table-layout:fixed;border-collapse:collapse;background:white}
+#checkbarReceiptPanel th,#checkbarReceiptPanel td{padding:10px;text-align:center;white-space:nowrap;word-break:normal;border-bottom:1px solid #dce6e0}
+#checkbarReceiptPanel th{background:#e8f2ed}
+#checkbarReceiptPanel th:first-child{width:90px}
+#checkbarReceiptPanel td[dir=ltr]{font-variant-numeric:tabular-nums;unicode-bidi:isolate}
+@media(max-width:800px){#checkbarReceiptPanel .checkbar-metadata{grid-template-columns:1fr}}

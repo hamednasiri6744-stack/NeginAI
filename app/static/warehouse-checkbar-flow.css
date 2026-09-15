@@ -1,0 +1,13 @@
+/* Scoped workflow guidance; retain original action handlers and document controls. */
+#checkbarFlowSteps{display:flex;flex-wrap:wrap;gap:4px 12px;padding:4px 12px;margin:0;list-style:none;border-bottom:1px solid #dce5df;font-size:12px}
+#checkbarFlowSteps li{padding:2px 5px;color:#52645a;border-radius:4px}
+#checkbarFlowSteps [aria-current=step]{color:#125843;background:#e3f1e9;font-weight:700}
+#checkbarDialog[data-guided-flow] :is(#checkbarIssue,#checkbarMatchingPrepare,#checkbarTransfer,#checkbarApproveWorksheet){display:none!important}
+#checkbarDialog[data-guided-flow][data-main-action=checkbarEdit] #checkbarEdit{display:none!important}
+#checkbarFlowHint{font-size:12px;line-height:1.5;flex:1;min-width:180px;margin:0}
+#checkbarDialog .checkbar-guided-footer{display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:5px 10px;border-top:1px solid #dce5df}
+#checkbarDialog .checkbar-guided-footer button{white-space:normal;height:auto}
+#checkbarExitDialog{width:min(440px,calc(100vw - 24px));padding:16px;border:1px solid #c4d3ca;border-radius:6px}
+#checkbarExitDialog h2{margin:0 0 10px}
+#checkbarExitDialog p{line-height:1.7}
+#checkbarExitDialog .checkbar-exit-actions{display:flex;flex-wrap:wrap;gap:8px}

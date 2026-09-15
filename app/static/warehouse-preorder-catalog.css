@@ -1,0 +1,18 @@
+#preorderCatalogDialog{width:min(1280px,calc(100vw - 24px));max-height:calc(100dvh - 24px);padding:0;border:1px solid var(--fluent-border);border-radius:6px}
+#preorderCatalogDialog .preview-dialog-head{padding:10px 12px}
+#preorderCatalogDialog h2{font-size:14px;margin:0}
+#preorderCatalogDialog p{font-size:11px;color:var(--fluent-secondary)}
+.catalog-search{display:flex;gap:12px;align-items:center;padding:8px 12px;border-block:1px solid var(--fluent-divider)}
+.catalog-search input{width:min(420px,55vw);height:28px;font-size:11px}
+.catalog-search span{font-size:11px;color:var(--fluent-secondary)}
+#preorderCatalogDialog .table-wrap{max-height:58vh;overflow:auto}
+#preorderCatalogTable{table-layout:fixed;width:1370px;border-collapse:collapse}
+#preorderCatalogTable th,#preorderCatalogTable td{padding:6px;text-align:center;font-size:11px;vertical-align:middle;border-bottom:1px solid var(--fluent-divider);overflow-wrap:anywhere}
+#preorderCatalogTable th{position:sticky;top:0;background:var(--fluent-selected);z-index:1}
+#preorderCatalogTable th:nth-child(4){width:210px}
+#preorderCatalogTable th:nth-child(3){width:130px}
+#preorderCatalogTable th:nth-child(10){width:150px}
+#preorderCatalogTable td:nth-child(4){text-align:right}
+#preorderCatalogTable small{display:block;font-size:10px;color:var(--fluent-secondary)}
+#preorderCatalogTable input{width:65px;height:28px;text-align:center}
+#preorderCatalogTable button{height:28px;padding:4px 8px;font-size:11px;white-space:nowrap}

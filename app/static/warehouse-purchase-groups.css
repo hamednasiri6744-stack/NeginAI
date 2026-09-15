@@ -1,0 +1,57 @@
+/* Compact supplier sections and agreement membership, matching the workspace. */
+body.wa-fluent .purchase-supplier-sections{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:10px;padding:10px 0;max-height:calc(100dvh - 230px);overflow:auto}
+body.wa-fluent .purchase-supplier-card{display:flex;flex-direction:column;align-items:stretch;text-align:start;gap:8px;min-height:112px;padding:14px;border:1px solid var(--line);border-radius:6px;background:var(--fluent-surface,#fff);color:inherit}
+body.wa-fluent .purchase-supplier-card:hover{border-color:var(--green);background:var(--fluent-subtle,#f5f8f7)}
+.purchase-supplier-card strong{font-size:14px}.purchase-supplier-card span{font-size:12px}.purchase-supplier-card small{display:flex;justify-content:space-between;color:var(--muted)}
+body.wa-fluent .purchase-supplier-trail{display:flex;align-items:center;gap:10px;padding:4px 0 8px;font-size:13px}
+body.wa-fluent #purchaseSupplierTitle:focus{outline:2px solid var(--green);outline-offset:3px}
+body.wa-fluent #purchaseContractsPane table{min-width:1050px}
+body.wa-fluent #purchaseContractsPane :is(th,td):first-child{min-width:270px;width:30%}
+body.wa-fluent #purchaseContractsPane :is(th,td):nth-child(2){min-width:115px;width:auto}
+body.wa-fluent #contractSelectionPane .contract-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+body.wa-fluent #contractSelectionPane .contract-grid>label{grid-column:span 2!important}
+body.wa-fluent #contractSelectionPane .contract-grid>.contract-supplier-context,
+body.wa-fluent #contractSelectionPane .contract-grid>.contract-wide{grid-column:span 3!important}
+body.wa-fluent #contractSupplier:disabled{color:var(--ink,#172c25);opacity:1;background:var(--fluent-subtle,#f5f8f7)}
+.purchase-membership-warning{margin:0;padding:8px 16px;color:var(--danger);background:var(--fluent-subtle,#fff8ed);font-size:12px;line-height:1.8}
+.purchase-membership-warning:empty{display:none}
+body.wa-fluent #purchaseMembersDialog{width:min(1180px,calc(100vw - 24px));max-height:calc(100dvh - 24px)}
+#purchaseMembersSummary{padding:0 16px;font-size:13px}
+.purchase-members-table{overflow:auto;max-height:65dvh;padding:0 12px 12px}
+.purchase-members-table table{width:100%;min-width:850px;border-collapse:collapse;font-size:13px}
+.purchase-members-table :is(th,td){padding:9px;text-align:start;border-bottom:1px solid var(--line)}
+.purchase-members-table th{position:sticky;top:0;background:var(--fluent-subtle,#f4f6f5)}
+#purchaseHistoryBody [data-purchase-legacy]{margin:4px}
+@media(max-width:700px){body.wa-fluent .purchase-supplier-sections{grid-template-columns:repeat(2,minmax(0,1fr));max-height:none}body.wa-fluent #contractSelectionPane .contract-grid{grid-template-columns:repeat(2,minmax(0,1fr))}body.wa-fluent #contractSelectionPane .contract-grid>label{grid-column:span 1!important}body.wa-fluent #contractSelectionPane .contract-grid>:is(.contract-supplier-context,.contract-wide){grid-column:1/-1!important}}
+@media(max-width:420px){body.wa-fluent .purchase-supplier-sections{grid-template-columns:1fr}}
+
+.purchase-supplier-card .purchase-uncovered-label{color:var(--ink,#172c25);font-weight:600}
+
+body.wa-fluent .purchase-supplier-sections{grid-template-columns:repeat(auto-fill,minmax(290px,1fr));align-content:start}
+body.wa-fluent .purchase-supplier-card{gap:10px;min-height:0;padding:12px;align-self:start}
+body.wa-fluent .purchase-supplier-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;padding:4px 0;border:0;background:transparent;text-align:start;color:inherit}
+.purchase-supplier-heading strong{font-size:14px}.purchase-supplier-heading span{white-space:nowrap;color:var(--muted)}
+.purchase-supplier-grid{display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:4px;text-align:center;font-size:12px}
+.purchase-supplier-grid>span:nth-child(3n+1){text-align:start}
+.purchase-supplier-grid>span:nth-child(-n+3){color:var(--muted);font-size:11px;padding-bottom:4px}
+body.wa-fluent .purchase-uncovered-link{min-height:32px;padding:4px 8px;border:1px solid var(--line);background:var(--fluent-subtle,#f5f8f7);color:var(--ink);font-weight:600}
+body.wa-fluent .purchase-uncovered-link.has-missing{color:#874d0b;background:#fff6e8;border-color:#e4cda9}
+body.wa-fluent .purchase-warehouse-tabs{display:flex;gap:8px;padding:0 12px 8px;flex-wrap:wrap}
+body.wa-fluent .purchase-warehouse-tabs button{display:flex;flex-direction:column;gap:4px;align-items:flex-start;padding:8px 14px;background:var(--fluent-surface,#fff);border:1px solid var(--line);min-width:160px}
+body.wa-fluent .purchase-warehouse-tabs button[aria-pressed="true"]{border-color:var(--green);box-shadow:inset 0 -2px var(--green);background:var(--green-light,#edf6f1)}
+.purchase-warehouse-tabs span,.purchase-warehouse-notice{font-size:12px;color:var(--muted)}
+.purchase-warehouse-notice{padding:4px 12px;margin:0}
+body.wa-fluent .purchase-bulk-actions{padding:8px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+body.wa-fluent #purchaseCoverageLabel{min-width:160px}#purchaseCoverageLabel>span{font-size:11px;color:var(--muted)}
+@media(max-width:600px){body.wa-fluent .purchase-supplier-sections{grid-template-columns:1fr}body.wa-fluent .purchase-warehouse-tabs button{flex:1;min-width:130px}}
+
+body.wa-fluent #purchaseProductsTable :is(th,td):first-child{width:44px!important;min-width:44px!important;max-width:44px!important;text-align:center}
+.purchase-members-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 16px;border-block:1px solid var(--line)}
+.purchase-members-toolbar label{display:flex;gap:8px;align-items:center;flex:1;min-width:240px}
+.purchase-members-toolbar input{flex:1;min-width:100px}
+.purchase-members-toolbar button[aria-pressed="true"]{background:var(--green-light,#edf6f1);border-color:var(--green);color:var(--green);font-weight:700}
+.purchase-members-help,#purchaseMembersError{margin:8px 16px;font-size:12px;line-height:1.8}
+#purchaseMembersError:empty{display:none}
+#purchaseMembersSave{margin-inline-start:auto}
+#purchaseMembersDialog .purchase-members-table{max-height:55dvh;min-height:180px}
+#purchaseMembersDialog .purchase-members-table td:last-child{white-space:nowrap}

@@ -1,0 +1,174 @@
+/* Shared workspace and page-specific layouts. Business visibility is owned by
+   the feature modules; only visible table surfaces receive a viewport height. */
+body.wa-fluent{--wa-page-line:#dbe5df;--wa-page-soft:#f5f8f6;--wa-page-ink:#23483b}
+body.wa-fluent .app-content :is(.panel,.workspace-grid,.orders-list){min-width:0}
+body.wa-fluent .app-content .panel-head{align-items:center;gap:8px 16px;flex-wrap:wrap}
+body.wa-fluent .app-content .panel-head>div:first-child{min-width:0}
+body.wa-fluent .app-content .panel-head p{margin:2px 0 0;max-width:75ch;font-size:12px;line-height:18px;color:#536b5f}
+body.wa-fluent .app-content .panel-head :is(.panel-actions,.purchase-actions,.sale-price-actions){margin-inline-start:auto;padding:0;align-items:center}
+body.wa-fluent .app-content :is(.result-summary,.automatic-refresh-status,.purchase-meta,.sale-price-meta,.unbilled-meta){margin:0;min-height:0;padding:4px 10px;font-size:12px;line-height:18px;border-block-end:1px solid var(--wa-page-line);background:var(--wa-page-soft)}
+body.wa-fluent .app-content :is(.result-summary,.automatic-refresh-status,.purchase-meta,.sale-price-meta,.unbilled-meta):empty{display:none}
+body.wa-fluent .app-content :is(.supply-toolbar,.fulfillment-toolbar,.checkbar-archive-toolbar,.purchase-toolbar,.sale-price-toolbar,.unbilled-toolbar){display:flex;align-items:end;flex-wrap:wrap;gap:6px 10px;padding:6px 10px;margin:0;background:#fff;border-block-end:1px solid var(--wa-page-line)}
+body.wa-fluent .app-content :is(.supply-toolbar,.fulfillment-toolbar,.checkbar-archive-toolbar,.purchase-toolbar,.sale-price-toolbar,.unbilled-toolbar) label{display:flex;flex-direction:column;gap:3px;min-width:0;font-size:12px;line-height:17px}
+body.wa-fluent .app-content :is(.supply-toolbar,.fulfillment-toolbar,.checkbar-archive-toolbar,.purchase-toolbar,.sale-price-toolbar,.unbilled-toolbar) :is(input:not([type=checkbox]),select){min-height:30px;height:30px;border-radius:4px;padding:3px 7px;max-width:100%}
+body.wa-fluent .app-content :is(.supply-toolbar,.checkbar-archive-toolbar) label:first-child{flex:1 1 220px}
+body.wa-fluent .app-content :is(.supply-toolbar,.checkbar-archive-toolbar) label:first-child input{width:100%}
+body.wa-fluent .app-content label:has(>input[type=checkbox]){flex-direction:row;align-items:center;gap:6px;min-height:30px}
+body.wa-fluent .operation-table{border-block-start:1px solid var(--wa-page-line);scrollbar-width:thin;scrollbar-color:#9cadA3 #f1f5f2;overscroll-behavior:contain}
+body.wa-fluent .operation-table tbody tr:hover>td{background:#edf5f0}
+body.wa-fluent .operation-table tbody tr:focus-within>td{background:#e7f2ec}
+body.wa-fluent .operation-table :is(input,select):focus-visible{outline:2px solid #176b50;outline-offset:1px}
+body.wa-fluent .operation-table button:not(.primary):not(.danger-action){border:1px solid #bdcec3;border-radius:4px;background:#fff;color:#23483b}
+body.wa-fluent .operation-table td:has(>button),body.wa-fluent .operation-table td:has(>.preorder-actions){vertical-align:middle}
+body.wa-fluent .operation-tools button[aria-pressed=true],body.wa-fluent .prepared-order-kind [aria-selected=true]{background:#e6f2eb;border-color:#8eb8a0;color:#14553f}
+/* Supply and automatic settings: the controls sit above the editable grid. */
+body.wa-fluent #supplyView .panel-actions select{min-width:135px;max-width:190px}
+body.wa-fluent #supplyView>.rules-disclosure,body.wa-fluent #automaticView>.rules-disclosure{margin:0;border-width:0 0 1px;border-radius:0;padding:3px 10px;background:#fafcfb}
+body.wa-fluent #supplyView .supply-toolbar label:last-child{flex:0 1 230px}
+body.wa-fluent #automaticView .automatic-actions{flex-wrap:wrap;gap:6px}
+body.wa-fluent #automaticTable :is(input:not([type=checkbox]),select){width:100%;min-width:50px}
+body.wa-fluent #automaticTable td[data-auto-column=supplier]{white-space:normal;overflow-wrap:anywhere;line-height:19px}
+body.wa-fluent #automaticTable td[data-auto-column=actions] button{white-space:normal;height:auto}
+/* Buying proposal: primary filters and advanced quantities form two short rows. */
+body.wa-fluent #orderingView .workspace-grid{display:block}
+body.wa-fluent #orderingView #filterForm{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px 10px;padding:6px 10px;background:var(--wa-page-soft);align-items:start}
+body.wa-fluent #orderingView #filterForm label{display:flex;flex-direction:column;align-items:stretch;min-width:0;gap:3px;font-size:12px;line-height:17px}
+body.wa-fluent #filterForm :is(input:not([type=checkbox]),select){min-height:30px;width:100%}
+body.wa-fluent #filterForm small{font-size:11px;line-height:16px;margin:0}
+body.wa-fluent #orderingView #filterForm .checkbox{flex-direction:row;align-items:center;align-self:end;min-height:30px}
+body.wa-fluent #filterForm .ordering-advanced{grid-column:1/-1;margin:0;padding:0;border:0;background:transparent}
+body.wa-fluent #filterForm .ordering-advanced summary{min-height:28px;padding:4px 0;cursor:pointer;font-size:12px;color:#23483b}
+body.wa-fluent #orderingConditionsSummary{margin-inline-start:12px;font-size:12px;color:#526b5e;font-weight:400}
+body.wa-fluent #filterForm .ordering-advanced-fields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 12px;padding-block:6px}
+body.wa-fluent #filterForm .ordering-advanced-fields .checkbox{grid-column:1/-1}
+body.wa-fluent #orderingView .ordering-formula-help{margin:4px 0;border-radius:4px;font-size:12px}
+/* Both pre-order tabs use a single joined surface. */
+body.wa-fluent #preordersView>.prepared-order-header{border-radius:4px 4px 0 0;border-bottom:0;margin:0}
+body.wa-fluent #preordersView>.prepared-order-header .panel-head{padding-bottom:2px}
+body.wa-fluent #preordersView>.panel[role=tabpanel]{margin:0;border-radius:0 0 4px 4px}
+body.wa-fluent #preordersView .prepared-order-kind{padding:4px 10px;gap:4px;border:0;background:var(--wa-page-soft)}
+body.wa-fluent #preordersView [role=tabpanel]>.panel-head h2{font-size:15px;line-height:22px}
+body.wa-fluent #preordersView .orders-list{padding:0;gap:0}
+body.wa-fluent #preordersView .manual-orders-table{width:100%;font-size:13px}
+/* Cartable and delivery share filters and a clearly separated action column. */
+body.wa-fluent #fulfillmentView>.fulfillment-toolbar{padding:6px 10px}
+body.wa-fluent #fulfillmentView .fulfillment-search{flex:1 1 260px;max-width:none}
+body.wa-fluent #fulfillmentView>.fulfillment-workflow-filters{display:flex;flex-wrap:wrap;padding:4px 10px;gap:4px;border-bottom:1px solid var(--wa-page-line)}
+body.wa-fluent #fulfillmentView>.fulfillment-footnote{margin:0;padding:4px 10px;line-height:18px}
+body.wa-fluent #fulfillmentTable tbody td{padding:4px 8px;height:42px}
+body.wa-fluent #fulfillmentTable .fulfillment-work-actions{gap:4px}
+/* Transfer routes and stage selection remain reachable above each of 3 grids. */
+body.wa-fluent #transfersView>.transfer-stage-navigation{padding:5px 10px;border-bottom:1px solid var(--wa-page-line);box-shadow:none}
+body.wa-fluent #transfersView>.transfer-stage-navigation button{border-radius:4px;min-height:30px}
+body.wa-fluent #transfersView .balance-navigation{padding:4px 10px;background:var(--wa-page-soft)}
+body.wa-fluent #transfersView .balance-navigation .transfer-actions{gap:4px}
+body.wa-fluent #transfersView .balance-navigation button{min-height:28px;border-color:transparent;background:transparent}
+body.wa-fluent #transfersView .balance-navigation button[aria-pressed=true]{border-color:#9cbda9;background:#e6f2eb}
+body.wa-fluent #transfersView .balance-bulk-actions{padding:4px 10px;gap:6px;background:#fff}
+body.wa-fluent #transfersView .balance-section-title{margin:4px 10px;font-size:13px}
+body.wa-fluent #balanceProposalTable td:has(>button[data-balance-accept]){position:sticky;inset-inline-end:0;z-index:2;background:#fff;box-shadow:2px 0 0 var(--wa-page-line);min-width:100px}
+/* Receipt archive: filters, selection and pagination each have a compact row. */
+body.wa-fluent #checkbarView>.checkbar-workflow{display:flex;flex-wrap:wrap;gap:4px 14px;padding:4px 10px;background:var(--wa-page-soft);border-bottom:1px solid var(--wa-page-line);font-size:12px}
+body.wa-fluent #checkbarView>.checkbar-workflow small{font-size:11px;color:#536b5f}
+body.wa-fluent #checkbarView .checkbar-archive-toolbar label:has(input[type=checkbox]){flex:none}
+body.wa-fluent #unbilledView .unbilled-toolbar label{flex:1 1 110px;min-width:90px}
+body.wa-fluent #unbilledView .unbilled-toolbar label:first-child{flex:0 0 70px;min-width:70px}
+body.wa-fluent #unbilledView .unbilled-toolbar .unbilled-search{flex:2 1 210px}
+body.wa-fluent #unbilledView .ub-invoice-selection{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:4px 10px;background:#edf5f0;border-bottom:1px solid var(--wa-page-line)}
+body.wa-fluent #unbilledView .unbilled-footer{padding:4px 10px;min-height:34px;border-top:1px solid var(--wa-page-line);background:#fff}
+body.wa-fluent #unbilledTable :is(th,td){padding:4px 8px;line-height:19px;vertical-align:middle}
+body.wa-fluent #unbilledTable .ub-select-receipt{font-size:12px}
+/* Contract lists keep wide product descriptions; forms give selection more room. */
+body.wa-fluent #purchaseView .purchase-toolbar>button{align-self:end;min-height:30px}
+body.wa-fluent :is(#purchaseView,#salePriceView) :is(.purchase-search,.sale-price-search){flex:1 1 220px}
+body.wa-fluent :is(#purchaseView,#salePriceView) :is(.purchase-toolbar,.sale-price-toolbar) select{max-width:230px}
+body.wa-fluent :is(#purchaseView,#salePriceView) td{padding:5px 8px;line-height:19px}
+body.wa-fluent :is(#purchaseView,#salePriceView) td small{font-size:12px;line-height:18px}
+body.wa-fluent #purchaseContractsPane td:nth-child(2){min-width:240px}
+body.wa-fluent #purchaseContractsPane td:last-child{min-width:150px}
+body.wa-fluent #purchaseProductsTable{min-width:1250px!important}
+body.wa-fluent #purchaseProductsTable td:nth-child(4){min-width:220px}
+body.wa-fluent #purchaseProductsTable td:last-child{min-width:130px}
+body.wa-fluent #purchaseContractsPane .purchase-actions{align-items:center;flex-wrap:nowrap}
+body.wa-fluent #purchaseContractsPane .operation-row-menu[open]{position:relative}
+body.wa-fluent #purchaseContractsPane .operation-row-menu>div{min-width:150px}
+body.wa-fluent :is(#purchaseContractDialog,#salePriceDialog,#purchaseDiscoveryDialog,#purchaseInvoiceDialog)[open]{width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;margin:0;border:0;border-radius:0;display:flex;flex-direction:column;overflow:hidden;padding:0}
+body.wa-fluent :is(#purchaseContractDialog,#salePriceDialog)>form{display:flex;flex-direction:column;flex:1;min-height:0}
+body.wa-fluent :is(#purchaseContractDialog,#salePriceDialog) fieldset{flex:1;min-height:0;max-height:none;padding:10px 12px;overflow:auto}
+body.wa-fluent :is(.contract-editor-layout,.sale-price-editor-layout){grid-template-columns:minmax(0,1fr) 380px;gap:14px;min-height:100%}
+body.wa-fluent :is(.contract-editor-layout,.sale-price-editor-layout)>section{min-width:0}
+body.wa-fluent :is(.contract-editor-layout,.sale-price-editor-layout)>section+section{padding-inline-start:14px;border-inline-start:1px solid var(--wa-page-line)}
+body.wa-fluent :is(.contract-editor-layout,.sale-price-editor-layout) h3{font-size:14px;padding-bottom:6px;margin:0 0 8px;border-bottom:1px solid var(--wa-page-line)}
+body.wa-fluent :is(.contract-grid,.sale-price-grid){gap:7px 10px}
+body.wa-fluent :is(.contract-sample,.sale-price-sample){grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 10px}
+body.wa-fluent :is(.contract-grid,.sale-price-grid) :is(input:not([type=checkbox]),select){min-height:30px;padding:4px 7px}
+body.wa-fluent :is(.contract-item-scroll,.sale-price-item-scroll){height:calc(100dvh - 365px);min-height:230px;max-height:none;border-radius:4px}
+@media(min-width:1001px){
+ body.wa-fluent #contractSelectionPane .contract-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+ body.wa-fluent #contractSelectionPane .contract-grid>label{grid-column:span 2}
+ body.wa-fluent #contractSelectionPane .contract-grid>label:nth-child(n+4){grid-column:span 3}
+ body.wa-fluent #salePriceDialog .sale-price-editor-layout>section:first-child .sale-price-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+ body.wa-fluent :is(#purchaseContractDialog,#salePriceDialog) fieldset{overflow:hidden}
+ body.wa-fluent :is(.contract-editor-layout,.sale-price-editor-layout){height:100%;min-height:0}
+ body.wa-fluent :is(.contract-editor-layout,.sale-price-editor-layout)>section{min-height:0;overflow:auto;display:flex;flex-direction:column}
+ body.wa-fluent :is(.contract-editor-layout,.sale-price-editor-layout)>section>:not(.operation-table){flex-shrink:0}
+ body.wa-fluent :is(.contract-item-scroll,.sale-price-item-scroll).operation-table{flex:1 1 220px;min-height:180px;height:auto;max-height:none}
+}
+body.wa-fluent :is(#contractSelectionTable,#saleRuleSelectionTable){min-width:1050px!important;table-layout:auto}
+body.wa-fluent :is(#contractSelectionTable,#saleRuleSelectionTable) td:nth-child(5){min-width:240px}
+body.wa-fluent :is(#contractSelectionTable,#saleRuleSelectionTable) td:nth-child(4){white-space:nowrap}
+body.wa-fluent :is(#contractSelectionTable,#saleRuleSelectionTable) :is(th,td){line-height:18px;padding:4px 8px;overflow-wrap:normal}
+body.wa-fluent :is(.purchase-dialog,.sale-price-dialog) details{margin-top:8px;padding:7px;border-radius:4px}
+body.wa-fluent :is(.purchase-dialog,.sale-price-dialog) footer{flex:none;padding:6px 12px;min-height:44px;gap:8px;background:#fff;border-top:1px solid var(--wa-page-line)}
+/* Documents with one table use the full screen and keep their actions in view. */
+body.wa-fluent :is(#preorderPreviewDialog,#preorderCatalogDialog,#checkbarCatalogDialog,#fulfillmentReceiptDialog,#supplierReviewDialog,#manualEditDialog,#transferDocumentDialog,#fulfillmentBalanceDialog)[open]{width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;margin:0;border:0;border-radius:0;padding:0;display:flex;flex-direction:column;overflow:auto}
+body.wa-fluent :is(#preorderCatalogDialog,#checkbarCatalogDialog,#fulfillmentReceiptDialog,#supplierReviewDialog,#transferDocumentDialog,#fulfillmentBalanceDialog)>.operation-table{flex:1 1 240px;min-height:180px;max-height:none!important}
+body.wa-fluent :is(.preorder-preview-dialog,.purchase-dialog,.sale-price-dialog,#supplierReviewDialog) :is(.preview-dialog-head,header){padding:6px 12px;min-height:44px;flex:none;background:#123e33;color:#fff}
+body.wa-fluent :is(.preorder-preview-dialog,.purchase-dialog,.sale-price-dialog,#supplierReviewDialog) :is(.preview-dialog-head,header) h2{color:#fff;font-size:16px;line-height:24px}
+body.wa-fluent :is(.preorder-preview-dialog,.purchase-dialog,.sale-price-dialog,#supplierReviewDialog) :is(.preview-dialog-head,header) p{color:#d5e5dc;font-size:12px;line-height:18px}
+body.wa-fluent :is(.preorder-preview-dialog,.purchase-dialog,.sale-price-dialog,#supplierReviewDialog) :is(.preview-dialog-head,header) button{color:#fff;border:1px solid #6e9180;background:transparent}
+body.wa-fluent :is(.preorder-preview-dialog,.purchase-dialog,.sale-price-dialog,#supplierReviewDialog) :is(.preview-dialog-head,header) button:focus-visible{outline:2px solid #fff}
+body.wa-fluent .preview-dialog-footer{min-height:44px;padding:6px 12px;gap:8px;flex-wrap:wrap}
+body.wa-fluent #purchaseInvoiceDialog .pi-body{display:flex;flex-direction:column;gap:6px;padding:8px 12px;overflow:auto}
+body.wa-fluent #purchaseInvoiceDialog .pi-body>.pi-table{flex:1 0 230px;min-height:230px}
+body.wa-fluent #purchaseInvoiceDialog .pi-table>table{min-width:1800px!important}
+body.wa-fluent #purchaseInvoiceDialog .pi-product{min-width:240px}
+body.wa-fluent #purchaseInvoiceDialog .pi-number{white-space:nowrap}
+body.wa-fluent #purchaseInvoiceDialog .pi-body>:not(.pi-table){flex-shrink:0}
+body.wa-fluent #purchaseInvoiceDialog :is(.pi-head,.pi-footer){min-height:44px;padding:6px 12px;flex-wrap:wrap;gap:6px}
+body.wa-fluent #invoiceFields{gap:6px 12px}
+body.wa-fluent #invoiceFields label{min-width:170px;font-size:12px;gap:3px}
+body.wa-fluent #invoiceMessage:empty{display:none}
+body.wa-fluent #invoiceMessage{margin:0;padding:6px;font-size:12px;line-height:18px}
+body.wa-fluent #purchaseInvoiceDialog .pi-summary{margin-top:0;gap:12px}
+body.wa-fluent :is(#purchaseHistoryDialog,#salePriceHistoryDialog){width:min(1000px,calc(100vw - 24px));max-height:calc(100dvh - 24px);border-radius:4px}
+body.wa-fluent :is(#orderSmsDialog,#orderPortalDialog,#orderDateDialog,#smsSettingsDialog){border-radius:6px;max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px)}
+@media(min-width:701px){
+ body.wa-fluent .warehouse-shell .app-content .operation-table[data-page-grid]{height:var(--page-table-height,auto);max-height:none!important;min-height:220px}
+ body.wa-fluent .workspace-fullscreen .operation-table[data-page-grid]{height:var(--page-table-height,auto);flex:1 1 auto}
+}
+@media(max-width:1000px){
+ body.wa-fluent :is(.contract-editor-layout,.sale-price-editor-layout){grid-template-columns:minmax(0,1fr);min-height:0}
+ body.wa-fluent :is(.contract-editor-layout,.sale-price-editor-layout)>section+section{border-inline-start:0;border-top:1px solid var(--wa-page-line);padding-inline-start:0;padding-top:12px}
+ body.wa-fluent :is(.contract-item-scroll,.sale-price-item-scroll){height:320px;min-height:220px}
+ body.wa-fluent #orderingView #filterForm{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:700px){
+ body.wa-fluent .warehouse-shell .app-content{padding:6px}
+ body.wa-fluent .app-content .panel-head{padding:6px 8px;align-items:start}
+ body.wa-fluent .app-content .panel-head :is(.panel-actions,.purchase-actions,.sale-price-actions){margin-inline-start:0;width:100%;flex-wrap:wrap}
+ body.wa-fluent .app-content .operation-table[data-page-grid]{height:auto;max-height:65dvh!important;min-height:220px}
+ body.wa-fluent #orderingView #filterForm{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body.wa-fluent #filterForm .ordering-advanced-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body.wa-fluent #orderingConditionsSummary{display:block;margin:2px 0 0;line-height:18px}
+ body.wa-fluent .app-content :is(.purchase-toolbar,.sale-price-toolbar) label{flex:1 1 140px}
+ body.wa-fluent .app-content :is(.purchase-toolbar,.sale-price-toolbar) select{width:100%;max-width:none}
+ body.wa-fluent #transfersView>.transfer-stage-navigation{flex-wrap:nowrap;overflow-x:auto;top:0}
+ body.wa-fluent #transfersView .balance-navigation>.transfer-actions{min-width:0;max-width:100%;width:100%;flex-wrap:wrap}
+ body.wa-fluent #fulfillmentView .fulfillment-search{min-width:0}
+ body.wa-fluent :is(#purchaseContractDialog,#salePriceDialog) footer{flex-wrap:wrap}
+ body.wa-fluent .contract-grid,body.wa-fluent .sale-price-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:420px){body.wa-fluent :is(.contract-grid,.sale-price-grid){grid-template-columns:minmax(0,1fr)}}
+@media(pointer:coarse){body.wa-fluent .app-content :is(button,select,input:not([type=checkbox])),body.wa-fluent dialog :is(button,select,input:not([type=checkbox])){min-height:44px!important;height:auto}body.wa-fluent .operation-table tbody td{min-height:48px;height:48px}}
+@media print{body.wa-fluent .app-content .operation-table[data-page-grid]{height:auto;min-height:0;max-height:none!important;overflow:visible}body.wa-fluent :is(.contract-item-scroll,.sale-price-item-scroll){height:auto;max-height:none;overflow:visible}}

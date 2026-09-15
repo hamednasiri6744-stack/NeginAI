@@ -1,0 +1,14 @@
+.transfer-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:12px 18px;border-block:1px solid var(--border,#d8e4df);background:var(--surface,#fff)}
+.transfer-actions[hidden]{display:none}
+.transfer-actions [role="alert"]{flex-basis:100%;color:var(--danger,#b42318)}
+.transfer-offer{min-width:180px}
+.transfer-offer small,.transfer-offer strong{display:block}
+.transfer-offer label{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.transfer-offer input{width:90px;min-height:36px}
+#manualEditLines table{width:100%;table-layout:auto}
+#manualEditDialog{width:min(1100px,calc(100vw - 32px));max-width:calc(100vw - 32px)}
+#manualEditLines td{min-width:110px;padding:12px}
+#manualEditLines td:nth-child(2){min-width:220px}
+#transfersView .table-wrap{overflow:auto}
+#transfersView table{min-width:1200px;width:100%}
+#transfersView [aria-pressed="true"]{border:2px solid var(--primary,#176b52);font-weight:700}

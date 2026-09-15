@@ -1,0 +1,15 @@
+.order-sms-dialog{width:min(470px,calc(100vw - 24px));padding:0;border:1px solid #cddcd2;border-radius:8px;background:#fff;color:#242424;box-shadow:0 16px 48px #0004}
+.order-sms-dialog::backdrop{background:#0006}
+.order-sms-dialog form{display:grid;gap:0}
+.order-sms-dialog header,.order-sms-dialog footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px}
+.order-sms-dialog header{border-bottom:1px solid #e2e2e2}.order-sms-dialog footer{justify-content:flex-end;border-top:1px solid #e2e2e2}
+.order-sms-dialog h2{margin:2px 0 0;font-size:18px}.order-sms-dialog .eyebrow{color:#616161;font-size:11px}
+.order-sms-body{display:grid;gap:14px;padding:16px}
+.order-sms-body dl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0}
+.order-sms-body dl div{min-width:0;padding:9px;border:1px solid #e2e2e2;border-radius:4px;background:#fafafa}
+.order-sms-body dt{color:#616161;font-size:11px}.order-sms-body dd{margin:4px 0 0;overflow-wrap:anywhere;font-weight:600}
+.order-sms-body label{display:grid;gap:6px;font-weight:600}.order-sms-body input{min-height:44px;padding:0 12px;font:inherit;text-align:left;border:1px solid #8a8886;border-radius:4px}
+.order-sms-body input:focus-visible{outline:2px solid #126d50;outline-offset:2px}.order-sms-body p{margin:0;color:#616161;font-size:12px;line-height:1.7}
+#orderSmsError{min-height:20px;color:#a4262c}.order-sms-dialog :is(button){min-height:44px}
+@media(max-width:520px){.order-sms-body dl{grid-template-columns:1fr}.order-sms-dialog footer .primary{width:100%}}
+@media(forced-colors:active){.order-sms-dialog{border:2px solid CanvasText}}

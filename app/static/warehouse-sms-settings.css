@@ -1,0 +1,21 @@
+.sms-settings-dialog{box-sizing:border-box;width:min(560px,calc(100vw - 24px));max-height:calc(100dvh - 32px);padding:0;border:1px solid #cadbd4;border-radius:12px;color:#163e32;background:#fff;overflow:auto;direction:rtl}
+.sms-settings-dialog::backdrop{background:#0006}
+.sms-settings-dialog form{display:grid;gap:16px;padding:20px}
+.sms-settings-head,.sms-settings-footer{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.sms-settings-head h2{font-size:18px;margin:0 0 4px}
+.sms-settings-head p,.sms-settings-dialog small{font-size:12px;margin:0;color:#53685f}
+.sms-settings-dialog fieldset{border:0;padding:0;margin:0;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.sms-settings-dialog label{display:grid;align-content:start;gap:6px;font-size:14px;min-width:0}
+.sms-settings-dialog fieldset label:nth-child(n+3){grid-column:1/-1}
+.sms-settings-dialog input:not([type=checkbox]){box-sizing:border-box;width:100%;min-width:0;min-height:40px;padding:8px;border:1px solid #97afa5;border-radius:6px;font:inherit}
+.sms-settings-dialog .sms-password-toggle{display:flex;align-items:center;gap:8px;min-height:32px}
+.sms-settings-dialog button{min-height:40px;padding:8px 14px;border:1px solid #97afa5;border-radius:6px;background:#fff;font:inherit;cursor:pointer}
+.sms-settings-dialog button.primary{background:#126d50;color:#fff}
+.sms-settings-dialog button:disabled{opacity:.6;cursor:default}
+.sms-settings-dialog :focus-visible{outline:2px solid #126d50;outline-offset:3px}
+#smsSettingsNotice{padding:10px;background:#edf6f1;margin:0;font-size:13px;border-radius:6px}
+#smsSettingsNotice.is-error{color:#8b2626;background:#fff0ef}
+.sms-settings-dialog details{font-size:13px;min-width:0}
+.sms-settings-dialog summary{cursor:pointer;padding:8px 0}
+.sms-settings-dialog details label{margin-top:8px;font-size:12px}
+@media(max-width:480px){.sms-settings-dialog fieldset{grid-template-columns:1fr}.sms-settings-footer{flex-wrap:wrap}.sms-settings-dialog form{padding:14px}.sms-settings-dialog button{min-height:44px}}
