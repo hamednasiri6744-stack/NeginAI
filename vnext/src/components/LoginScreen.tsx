@@ -108,15 +108,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
   return (
     <main className="login-page" dir="rtl">
       <section className="login-shell" aria-label="ورود به Negin AI">
-        <div className="login-topline">
-          <span className="secure-caption">ورود سازمانی</span>
-          <div className="language-switch" aria-label="زبان رابط کاربری: فارسی">
-            <GlobeIcon />
-            <span>FA</span>
-          </div>
-        </div>
-
-        <header className="login-brand">
+<header className="login-brand">
           <img className="brand-logo" src="/assets/neginai-logo-transparent.png" alt="Negin AI" />
           <div className="brand-wordmark" dir="ltr">Negin <span>AI</span></div>
           <p>سامانه هوشمند نگین پخش</p>
@@ -187,7 +179,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
               {loading ? 'در حال بررسی حساب…' : 'ورود به Negin AI'}
             </button>
 
-            <button className="android-button" type="button" onClick={handleInstallWebApp}>
+            <button className="install-button" type="button" onClick={handleInstallWebApp}>
               <DownloadIcon />
               <span>{isInstalled ? 'وب‌اپ نصب شده' : 'نصب وب‌اپ روی گوشی'}</span>
             </button>
