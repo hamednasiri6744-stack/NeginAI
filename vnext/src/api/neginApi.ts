@@ -279,7 +279,7 @@ export const neginApi = {
   },
 
   async logout() {
-    return request<{ authenticated: false }>('/auth/logout', { method: 'POST' })
+    return request<{ authenticated: false }>('/auth/logout', { method: 'POST', keepalive: true })
   },
 
   async changePassword(currentPassword: string, newPassword: string) {

@@ -196,7 +196,7 @@ export function VisitorProfileSettingsScreen({ onNavigate, onLogout }: Props) {
           <div className="vp-modal-backdrop" role="presentation" onClick={() => setLogoutOpen(false)}>
             <section className="vp-modal" role="dialog" aria-modal="true" aria-label="تأیید خروج" onClick={(event) => event.stopPropagation()}>
               <span className="vp-modal-icon"><LogoutIcon /></span><h2>از حساب خارج می‌شوی؟</h2><p>نشست Backend باطل می‌شود و برای ورود دوباره باید اطلاعات حساب را وارد کنی.</p>
-              <div><button type="button" className="secondary" onClick={() => setLogoutOpen(false)}>انصراف</button><button type="button" className="danger" onClick={() => void onLogout()}>خروج</button></div>
+              <div><button type="button" className="secondary" onClick={() => setLogoutOpen(false)}>انصراف</button><button type="button" className="danger" onClick={() => { setLogoutOpen(false); void onLogout() }}>خروج</button></div>
             </section>
           </div>
         ) : null}
