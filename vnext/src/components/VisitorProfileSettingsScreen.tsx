@@ -24,6 +24,7 @@ import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
 type Props = {
   onNavigate: (path: string) => void
   onLogout: () => void | Promise<void>
+  onClose: () => void
 }
 
 type ToggleKey = 'notifications' | 'offline' | 'autosync'
@@ -39,7 +40,7 @@ function initialToggle(key: ToggleKey, fallback = true) {
   return stored === null ? fallback : stored === 'true'
 }
 
-export function VisitorProfileSettingsScreen({ onNavigate, onLogout }: Props) {
+export function VisitorProfileSettingsScreen({ onNavigate, onLogout, onClose }: Props) {
   const { unreadCount } = useVisitorNotifications()
   const { profile, changePassword } = useVisitorAuth()
   const { activeRouteTitle, loading, reload } = useVisitorLiveData()
@@ -102,7 +103,7 @@ export function VisitorProfileSettingsScreen({ onNavigate, onLogout }: Props) {
     <main className="vh-page" dir="rtl">
       <div className="vh-shell vp-shell">
         <header className="vh-header">
-          <button className="vh-profile active" type="button" aria-current="page">
+          <button className="vh-profile active" type="button" aria-current="page" onClick={onClose}>
             <span className="vh-avatar">و</span>
             <span className="vh-profile-copy">
               <strong>{profile?.full_name || profile?.username || 'ویزیتور'}</strong>
