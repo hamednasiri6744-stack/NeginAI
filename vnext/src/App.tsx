@@ -158,14 +158,14 @@ export function VisitorProfileSettingsRoute() {
   const { resetNotifications } = useVisitorNotifications()
   return protectedView(authenticated, restoringSession, <VisitorProfileSettingsScreen
       onNavigate={(path) => go(path)}
-      onLogout={async () => {
-        clearPrototypeDrafts()
-        clearVisitorOrderWorkspace()
-        clearVisitorNavigationState()
-        resetWorkflow()
-        resetNotifications()
-        await signOut()
-        go('/', { replace: true })
+      onLogout={() => {
+        void signOut()
+        try { clearPrototypeDrafts() } catch { /* no-op */ }
+        try { clearVisitorOrderWorkspace() } catch { /* no-op */ }
+        try { clearVisitorNavigationState() } catch { /* no-op */ }
+        try { resetWorkflow() } catch { /* no-op */ }
+        try { resetNotifications() } catch { /* no-op */ }
+        window.location.replace('/?signedout=1')
       }}
     />,
   )
