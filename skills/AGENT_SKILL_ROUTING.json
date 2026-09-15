@@ -1,0 +1,279 @@
+{
+  "schema": "neginai-agent-skill-routing/v1",
+  "version": "1.0.0",
+  "canonical_root": "D:\\Projects\\NeginAI\\skills",
+  "policy": {
+    "single_source_of_truth": true,
+    "project_skills_override_generic_guidance": true,
+    "runtime_capability_required_for_side_effects": true,
+    "skill_presence_does_not_imply_runtime_capability": true,
+    "reconnect_only_upgrade_preference": true
+  },
+  "agents": {
+    "Negin-Master": {
+      "role": "orchestrator-semantic-governance",
+      "primary": [
+        "neginai-agent-routing",
+        "neginai-core",
+        "neginai-governance"
+      ],
+      "skills": [
+        "neginai-agent-routing",
+        "neginai-core",
+        "neginai-governance",
+        "neginai-ui-ux",
+        "neginai-figma",
+        "neginai-frontend",
+        "neginai-testing",
+        "neginai-data",
+        "neginai-varanegar",
+        "neginai-automation",
+        "neginai-shell-ops"
+      ],
+      "handoff": {
+        "Code-X": [
+          "implementation",
+          "refactoring",
+          "build",
+          "test",
+          "git",
+          "shell"
+        ],
+        "UX-X": [
+          "design-system",
+          "visual-qa",
+          "responsive",
+          "accessibility",
+          "figma"
+        ],
+        "Data-X": [
+          "analytics",
+          "kpi-validation",
+          "forecasting",
+          "data-quality",
+          "varanegar-readonly"
+        ],
+        "Automation-X": [
+          "n8n",
+          "airflow",
+          "webhooks",
+          "retry",
+          "idempotency",
+          "workflow-observability"
+        ]
+      }
+    },
+    "Code-X": {
+      "role": "software-engineering",
+      "primary": [
+        "neginai-agent-routing",
+        "neginai-core",
+        "neginai-governance",
+        "neginai-frontend",
+        "neginai-testing",
+        "neginai-shell-ops"
+      ],
+      "skills": [
+        "neginai-agent-routing",
+        "neginai-core",
+        "neginai-governance",
+        "neginai-frontend",
+        "neginai-testing",
+        "neginai-shell-ops",
+        "neginai-automation",
+        "neginai-data",
+        "neginai-varanegar",
+        "neginai-ui-ux",
+        "neginai-figma"
+      ]
+    },
+    "UX-X": {
+      "role": "design-authority",
+      "primary": [
+        "neginai-agent-routing",
+        "neginai-ui-ux",
+        "neginai-figma"
+      ],
+      "skills": [
+        "neginai-agent-routing",
+        "neginai-core",
+        "neginai-governance",
+        "neginai-ui-ux",
+        "neginai-figma",
+        "neginai-frontend",
+        "neginai-testing"
+      ]
+    },
+    "Data-X": {
+      "role": "analytics-live-readonly",
+      "primary": [
+        "neginai-agent-routing",
+        "neginai-data",
+        "neginai-varanegar"
+      ],
+      "skills": [
+        "neginai-agent-routing",
+        "neginai-core",
+        "neginai-governance",
+        "neginai-data",
+        "neginai-varanegar",
+        "neginai-testing"
+      ]
+    },
+    "Automation-X": {
+      "role": "workflow-operational-guarded",
+      "primary": [
+        "neginai-agent-routing",
+        "neginai-automation"
+      ],
+      "skills": [
+        "neginai-agent-routing",
+        "neginai-core",
+        "neginai-governance",
+        "neginai-automation",
+        "neginai-shell-ops",
+        "neginai-testing"
+      ]
+    }
+  },
+  "skill_keywords": {
+    "neginai-agent-routing": [
+      "route",
+      "routing",
+      "agent",
+      "handoff",
+      "orchestration",
+      "skill",
+      "resolver",
+      "مسیر",
+      "ایجنت",
+      "هندآف",
+      "ارجاع"
+    ],
+    "neginai-core": [
+      "scope",
+      "project",
+      "canonical",
+      "feature",
+      "preserve",
+      "architecture",
+      "پروژه",
+      "اسکوپ",
+      "مرجع",
+      "معماری"
+    ],
+    "neginai-governance": [
+      "governance",
+      "authority",
+      "reconciliation",
+      "approval",
+      "evidence",
+      "policy",
+      "حاکمیت",
+      "تایید",
+      "ریکانسیلیشن",
+      "شواهد"
+    ],
+    "neginai-ui-ux": [
+      "ui",
+      "ux",
+      "design",
+      "rtl",
+      "responsive",
+      "accessibility",
+      "visual",
+      "رابط",
+      "طراحی",
+      "ریسپانسیو",
+      "دسترسی"
+    ],
+    "neginai-figma": [
+      "figma",
+      "component",
+      "variable",
+      "token",
+      "prototype",
+      "فیگما",
+      "کامپوننت",
+      "توکن",
+      "پروتوتایپ"
+    ],
+    "neginai-frontend": [
+      "frontend",
+      "react",
+      "typescript",
+      "vite",
+      "routing",
+      "pwa",
+      "فرانت",
+      "ری‌اکت",
+      "تایپ‌اسکریپت"
+    ],
+    "neginai-testing": [
+      "test",
+      "qa",
+      "playwright",
+      "regression",
+      "accessibility",
+      "evidence",
+      "تست",
+      "کیفیت",
+      "رگرسیون"
+    ],
+    "neginai-data": [
+      "data",
+      "bi",
+      "analytics",
+      "forecast",
+      "anomaly",
+      "quality",
+      "kpi",
+      "داده",
+      "تحلیل",
+      "پیش‌بینی",
+      "کیفیت"
+    ],
+    "neginai-varanegar": [
+      "varanegar",
+      "sql",
+      "sales",
+      "inventory",
+      "finance",
+      "treasury",
+      "semantic",
+      "kpi",
+      "ورانگر",
+      "فروش",
+      "موجودی",
+      "مالی",
+      "خزانه"
+    ],
+    "neginai-automation": [
+      "automation",
+      "n8n",
+      "airflow",
+      "webhook",
+      "retry",
+      "idempotency",
+      "workflow",
+      "اتوماسیون",
+      "وبهوک",
+      "ایرفلو"
+    ],
+    "neginai-shell-ops": [
+      "shell",
+      "powershell",
+      "cmd",
+      "timeout",
+      "process",
+      "service",
+      "mcp",
+      "cloudflare",
+      "remote",
+      "شل",
+      "پاورشل",
+      "تایم‌اوت",
+      "سرویس"
+    ]
+  }
+}
