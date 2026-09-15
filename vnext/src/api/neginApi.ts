@@ -519,3 +519,135 @@ export async function getRouteMapLeg(routeId: string, customerId: string, origin
   return request<NeshanRouteMapLegResponse>(`/seller-workspace/routes/${encodeURIComponent(routeId)}/map-leg?${params}`)
 }
 
+
+export type SellerPortfolioOpenInvoiceCustomer = {
+  id: string | number
+  code: string
+  name: string
+  store_name: string
+  address: string
+  phone: string
+  mobile: string
+  return_cheque_count: number
+  return_cheque_amount: number
+  cardex_balance: number
+  open_invoice_remaining: number
+  open_invoice_count: number
+  oldest_open_invoice_date: string
+}
+
+export type SellerPortfolioOpenInvoicesResponse = {
+  seller: { personnel_id: number; full_name: string }
+  customer_count: number
+  open_invoice_remaining: number
+  customers: SellerPortfolioOpenInvoiceCustomer[]
+  source: string
+  live_assignment: boolean
+}
+
+export type SellerPortfolioReturnedCheque = {
+  id: number
+  number: string
+  date: string
+  amount: number
+  bank: string
+  branch: string
+  customer_id: number | null
+  customer_code: string
+  customer_name: string
+  customer_store: string
+  account_name: string
+  customer_phone: string
+  customer_mobile: string
+  status: string
+  status_date: string
+  seller_share: number
+  settled_amount: number
+}
+
+export type SellerPortfolioReturnedChequesResponse = {
+  seller: { personnel_id: number; full_name: string }
+  cheque_count: number
+  cheque_amount: number
+  seller_share: number
+  settled_amount: number
+  cheques: SellerPortfolioReturnedCheque[]
+  source: string
+}
+
+export type SellerDistributionInvoice = {
+  id: number
+  number: string
+  sale_date: string
+  amount: number
+  customer_code: string
+  customer_name: string
+  customer_store: string
+  distribution_number: string
+  distribution_date: string
+  sent_at: string
+  driver_name: string
+  driver_mobile: string
+}
+
+export type SellerDistributionInProgressResponse = {
+  seller: { personnel_id: number; full_name: string }
+  distribution_date: string
+  distribution_dates: string[]
+  invoice_count: number
+  invoices: SellerDistributionInvoice[]
+  source: string
+}
+
+export type SellerVoucherReturnReportResponse = {
+  seller: { personnel_id: number; full_name: string }
+  report_month: string
+  voucher_count: number
+  invoiced_count: number
+  full_returned_count: number
+  undistributed_count: number
+  returned_count: number
+  reconciled_voucher_count: number
+  return_percentage: number
+  source: string
+}
+
+export type RouteSavedRequest = {
+  id: string
+  visit_id: string
+  route_id: string
+  customer_id: string
+  request_number: number
+  lines: Array<Record<string, unknown>>
+  line_count: number
+  total_amount: number
+  payment_type: string
+  order_type: string
+  warehouse_ref: number | null
+  warehouse_name: string
+  preview: Record<string, unknown>
+  created_at: string
+  updated_at: string
+}
+
+export type RouteSavedRequestsResponse = { requests: RouteSavedRequest[] }
+
+export async function getRouteSavedRequests(routeId: string) {
+  return request<RouteSavedRequestsResponse>(`/seller-workspace/routes/${encodeURIComponent(routeId)}/saved-requests`)
+}
+
+export async function getSellerPortfolioOpenInvoices() {
+  return request<SellerPortfolioOpenInvoicesResponse>('/seller-workspace/open-invoices')
+}
+
+export async function getSellerPortfolioReturnedCheques() {
+  return request<SellerPortfolioReturnedChequesResponse>('/seller-workspace/returned-cheques')
+}
+
+export async function getSellerDistributionInProgress() {
+  return request<SellerDistributionInProgressResponse>('/seller-workspace/distribution-in-progress')
+}
+
+export async function getSellerVoucherReturnReport() {
+  return request<SellerVoucherReturnReportResponse>('/seller-workspace/voucher-return-report')
+}
