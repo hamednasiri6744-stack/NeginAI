@@ -15,6 +15,7 @@ Standalone specialist connectors are not required for normal project work once t
 - `neginai-data`: analytics, KPI validation, quality, anomaly, forecasting
 - `neginai-varanegar`: Varanegar semantic/read-only policy
 - `neginai-automation`: n8n/Airflow/API/webhook orchestration design
+- `neginai-shell-ops`: Windows PowerShell/CMD remote execution, timeout handling, process/service diagnostics, MCP and Cloudflare operational reliability
 
 ## Local capability services
 The registry `skills/_shared/local-capabilities.json` contains only loopback endpoints and external credential-source locations; it stores no credential values. `skills/_shared/scripts/local-mcp-client.mjs` is the controlled client. It redacts secret-like response fields and refuses non-loopback endpoints.
