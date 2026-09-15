@@ -152,13 +152,12 @@ export function VisitorCustomer360Route() {
 }
 
 export function VisitorProfileSettingsRoute() {
-  const { go, back } = useVisitorNavigation()
+  const { go } = useVisitorNavigation()
   const { authenticated, restoringSession, signOut } = useVisitorAuth()
   const { resetWorkflow } = useVisitorWorkflow()
   const { resetNotifications } = useVisitorNotifications()
   return protectedView(authenticated, restoringSession, <VisitorProfileSettingsScreen
       onNavigate={(path) => go(path)}
-      onClose={() => back('/visitor/home')}
       onLogout={() => {
         void signOut()
         try { clearPrototypeDrafts() } catch { /* no-op */ }
