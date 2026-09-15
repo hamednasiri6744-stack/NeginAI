@@ -39,7 +39,7 @@ function initialToggle(key: ToggleKey, fallback = true) {
   return stored === null ? fallback : stored === 'true'
 }
 
-export function VisitorProfileSettingsScreen({ onNavigate, onLogout }: Props) {
+export function VisitorProfileSettingsScreen({ onNavigate, onLogout, onClose }: Props) {
   const { unreadCount } = useVisitorNotifications()
   const { profile, changePassword } = useVisitorAuth()
   const { activeRouteTitle, loading, reload } = useVisitorLiveData()
@@ -69,18 +69,18 @@ export function VisitorProfileSettingsScreen({ onNavigate, onLogout }: Props) {
 
   async function refreshLiveData() {
     await reload()
-    flash('مسیر و مشتریان از Backend دوباره خوانده شدند')
+    flash('ظ…ط³غŒط± ظˆ ظ…ط´طھط±غŒط§ظ† ط§ط² Backend ط¯ظˆط¨ط§ط±ظ‡ ط®ظˆط§ظ†ط¯ظ‡ ط´ط¯ظ†ط¯')
   }
 
   async function submitPassword(event: FormEvent) {
     event.preventDefault()
     setPasswordError(null)
     if (newPassword.length < 8) {
-      setPasswordError('رمز جدید باید حداقل ۸ کاراکتر باشد.')
+      setPasswordError('ط±ظ…ط² ط¬ط¯غŒط¯ ط¨ط§غŒط¯ ط­ط¯ط§ظ‚ظ„ غ¸ ع©ط§ط±ط§ع©طھط± ط¨ط§ط´ط¯.')
       return
     }
     if (newPassword !== confirmPassword) {
-      setPasswordError('تکرار رمز جدید یکسان نیست.')
+      setPasswordError('طھع©ط±ط§ط± ط±ظ…ط² ط¬ط¯غŒط¯ غŒع©ط³ط§ظ† ظ†غŒط³طھ.')
       return
     }
     setPasswordBusy(true)
@@ -90,9 +90,9 @@ export function VisitorProfileSettingsScreen({ onNavigate, onLogout }: Props) {
       setNewPassword('')
       setConfirmPassword('')
       setPasswordOpen(false)
-      flash('رمز عبور با موفقیت تغییر کرد')
+      flash('ط±ظ…ط² ط¹ط¨ظˆط± ط¨ط§ ظ…ظˆظپظ‚غŒطھ طھط؛غŒغŒط± ع©ط±ط¯')
     } catch (caught) {
-      setPasswordError(caught instanceof Error ? caught.message : 'تغییر رمز انجام نشد.')
+      setPasswordError(caught instanceof Error ? caught.message : 'طھط؛غŒغŒط± ط±ظ…ط² ط§ظ†ط¬ط§ظ… ظ†ط´ط¯.')
     } finally {
       setPasswordBusy(false)
     }
@@ -102,111 +102,111 @@ export function VisitorProfileSettingsScreen({ onNavigate, onLogout }: Props) {
     <main className="vh-page" dir="rtl">
       <div className="vh-shell vp-shell">
         <header className="vh-header">
-          <button className="vh-profile active" type="button" aria-current="page">
-            <span className="vh-avatar">و</span>
+          <button className="vh-profile active" type="button" aria-current="page" onClick={onClose} aria-label="بستن پروفایل و بازگشت به صفحه قبل">
+            <span className="vh-avatar">ظˆ</span>
             <span className="vh-profile-copy">
-              <strong>{profile?.full_name || profile?.username || 'ویزیتور'}</strong>
-              <small><PinIcon /> {profile?.branch || profile?.sales_line || 'حساب سازمانی'}</small>
+              <strong>{profile?.full_name || profile?.username || 'ظˆغŒط²غŒطھظˆط±'}</strong>
+              <small><PinIcon /> {profile?.branch || profile?.sales_line || 'ط­ط³ط§ط¨ ط³ط§ط²ظ…ط§ظ†غŒ'}</small>
             </span>
             <ChevronLeftIcon />
           </button>
 
-          <button className="vh-bell" type="button" aria-label="اعلان‌ها" onClick={() => onNavigate('/visitor/notifications')}>
+          <button className="vh-bell" type="button" aria-label="ط§ط¹ظ„ط§ظ†â€Œظ‡ط§" onClick={() => onNavigate('/visitor/notifications')}>
             <BellIcon />{unreadCount ? <b>{unreadCount}</b> : null}
           </button>
 
           <div className="vh-brand" dir="ltr"><img src="/assets/neginai-logo-transparent.png" alt="Negin AI" /><div><strong>Negin <span>AI</span></strong><small>VISITOR</small></div></div>
         </header>
 
-        <section className="vp-heading"><div><span>حساب و تنظیمات</span><h1>پروفایل من</h1></div><SettingsIcon /></section>
+        <section className="vp-heading"><div><span>ط­ط³ط§ط¨ ظˆ طھظ†ط¸غŒظ…ط§طھ</span><h1>ظ¾ط±ظˆظپط§غŒظ„ ظ…ظ†</h1></div><SettingsIcon /></section>
 
         <section className="vp-identity">
-          <span className="vp-avatar-large">و</span>
+          <span className="vp-avatar-large">ظˆ</span>
           <div>
-            <strong>{profile?.full_name || profile?.username || 'کاربر سازمانی'}</strong>
-            <span>کد پرسنلی: {profile?.personnel_id?.toLocaleString('fa-IR') || '—'}</span>
-            <small>{profile?.branch || 'شعبه ثبت نشده'}{profile?.sales_line ? ` · ${profile.sales_line}` : ''}</small>
+            <strong>{profile?.full_name || profile?.username || 'ع©ط§ط±ط¨ط± ط³ط§ط²ظ…ط§ظ†غŒ'}</strong>
+            <span>ع©ط¯ ظ¾ط±ط³ظ†ظ„غŒ: {profile?.personnel_id?.toLocaleString('fa-IR') || 'â€”'}</span>
+            <small>{profile?.branch || 'ط´ط¹ط¨ظ‡ ط«ط¨طھ ظ†ط´ط¯ظ‡'}{profile?.sales_line ? ` آ· ${profile.sales_line}` : ''}</small>
           </div>
-          <span className="vp-status">{profile?.active ? 'فعال' : 'نامشخص'}</span>
+          <span className="vp-status">{profile?.active ? 'ظپط¹ط§ظ„' : 'ظ†ط§ظ…ط´ط®طµ'}</span>
         </section>
 
         <section className="vp-section">
-          <div className="vp-section-title"><UserIcon /><strong>اطلاعات حساب</strong></div>
+          <div className="vp-section-title"><UserIcon /><strong>ط§ط·ظ„ط§ط¹ط§طھ ط­ط³ط§ط¨</strong></div>
           <div className="vp-rows">
-            <div className="vp-row"><span>نام کاربری</span><strong dir="ltr">{profile?.username || '—'}</strong></div>
-            <div className="vp-row"><span>شماره همراه</span><strong dir="ltr">{profile?.phone || '—'}</strong></div>
-            <div className="vp-row"><span>نقش سازمانی</span><strong>{profile?.role || '—'}</strong></div>
-            <div className="vp-row"><span>مسیر فعال</span><strong>{activeRouteTitle || '—'}</strong></div>
+            <div className="vp-row"><span>ظ†ط§ظ… ع©ط§ط±ط¨ط±غŒ</span><strong dir="ltr">{profile?.username || 'â€”'}</strong></div>
+            <div className="vp-row"><span>ط´ظ…ط§ط±ظ‡ ظ‡ظ…ط±ط§ظ‡</span><strong dir="ltr">{profile?.phone || 'â€”'}</strong></div>
+            <div className="vp-row"><span>ظ†ظ‚ط´ ط³ط§ط²ظ…ط§ظ†غŒ</span><strong>{profile?.role || 'â€”'}</strong></div>
+            <div className="vp-row"><span>ظ…ط³غŒط± ظپط¹ط§ظ„</span><strong>{activeRouteTitle || 'â€”'}</strong></div>
           </div>
         </section>
 
         <section className="vp-section">
-          <div className="vp-section-title"><SyncIcon /><strong>داده و همگام‌سازی</strong></div>
+          <div className="vp-section-title"><SyncIcon /><strong>ط¯ط§ط¯ظ‡ ظˆ ظ‡ظ…ع¯ط§ظ…â€Œط³ط§ط²غŒ</strong></div>
           <button className="vp-action-row" type="button" disabled={loading} onClick={() => void refreshLiveData()}>
             <span className="vp-row-icon"><SyncIcon /></span>
-            <span><strong>{loading ? 'در حال بازخوانی…' : 'بازخوانی داده زنده'}</strong><small>Route و Customer از Seller Workspace</small></span>
+            <span><strong>{loading ? 'ط¯ط± ط­ط§ظ„ ط¨ط§ط²ط®ظˆط§ظ†غŒâ€¦' : 'ط¨ط§ط²ط®ظˆط§ظ†غŒ ط¯ط§ط¯ظ‡ ط²ظ†ط¯ظ‡'}</strong><small>Route ظˆ Customer ط§ط² Seller Workspace</small></span>
             <ChevronLeftIcon />
           </button>
-          <ToggleRow icon={<DeviceIcon />} title="ترجیح ذخیره آفلاین" description="فقط ترجیح UI؛ Cache/Queue عملیاتی هنوز فعال نشده" checked={offline} onChange={(value) => updateToggle('offline', value)} />
-          <ToggleRow icon={<SyncIcon />} title="ترجیح همگام‌سازی خودکار" description="فقط ترجیح UI؛ Sync Queue در Slice بعدی متصل می‌شود" checked={autosync} onChange={(value) => updateToggle('autosync', value)} />
+          <ToggleRow icon={<DeviceIcon />} title="طھط±ط¬غŒط­ ط°ط®غŒط±ظ‡ ط¢ظپظ„ط§غŒظ†" description="ظپظ‚ط· طھط±ط¬غŒط­ UIط› Cache/Queue ط¹ظ…ظ„غŒط§طھغŒ ظ‡ظ†ظˆط² ظپط¹ط§ظ„ ظ†ط´ط¯ظ‡" checked={offline} onChange={(value) => updateToggle('offline', value)} />
+          <ToggleRow icon={<SyncIcon />} title="طھط±ط¬غŒط­ ظ‡ظ…ع¯ط§ظ…â€Œط³ط§ط²غŒ ط®ظˆط¯ع©ط§ط±" description="ظپظ‚ط· طھط±ط¬غŒط­ UIط› Sync Queue ط¯ط± Slice ط¨ط¹ط¯غŒ ظ…طھطµظ„ ظ…غŒâ€Œط´ظˆط¯" checked={autosync} onChange={(value) => updateToggle('autosync', value)} />
         </section>
 
         <section className="vp-section">
-          <div className="vp-section-title"><SettingsIcon /><strong>تنظیمات برنامه</strong></div>
-          <ToggleRow icon={<BellIcon />} title="اعلان‌های درون برنامه" description="هشدارهای مهم فروش و مسیر نمایش داده شوند" checked={notifications} onChange={(value) => updateToggle('notifications', value)} />
-          <div className="vp-static-row"><span>زبان رابط</span><strong>فارسی</strong></div>
-          <div className="vp-static-row"><span>نمایش اعداد</span><strong>فارسی</strong></div>
-          <div className="vp-static-row"><span>پوسته</span><strong>تیره سازمانی</strong></div>
+          <div className="vp-section-title"><SettingsIcon /><strong>طھظ†ط¸غŒظ…ط§طھ ط¨ط±ظ†ط§ظ…ظ‡</strong></div>
+          <ToggleRow icon={<BellIcon />} title="ط§ط¹ظ„ط§ظ†â€Œظ‡ط§غŒ ط¯ط±ظˆظ† ط¨ط±ظ†ط§ظ…ظ‡" description="ظ‡ط´ط¯ط§ط±ظ‡ط§غŒ ظ…ظ‡ظ… ظپط±ظˆط´ ظˆ ظ…ط³غŒط± ظ†ظ…ط§غŒط´ ط¯ط§ط¯ظ‡ ط´ظˆظ†ط¯" checked={notifications} onChange={(value) => updateToggle('notifications', value)} />
+          <div className="vp-static-row"><span>ط²ط¨ط§ظ† ط±ط§ط¨ط·</span><strong>ظپط§ط±ط³غŒ</strong></div>
+          <div className="vp-static-row"><span>ظ†ظ…ط§غŒط´ ط§ط¹ط¯ط§ط¯</span><strong>ظپط§ط±ط³غŒ</strong></div>
+          <div className="vp-static-row"><span>ظ¾ظˆط³طھظ‡</span><strong>طھغŒط±ظ‡ ط³ط§ط²ظ…ط§ظ†غŒ</strong></div>
         </section>
 
         <section className="vp-section">
-          <div className="vp-section-title"><ShieldIcon /><strong>امنیت و پشتیبانی</strong></div>
+          <div className="vp-section-title"><ShieldIcon /><strong>ط§ظ…ظ†غŒطھ ظˆ ظ¾ط´طھغŒط¨ط§ظ†غŒ</strong></div>
           <button className="vp-action-row" type="button" onClick={() => setPasswordOpen(true)}>
             <span className="vp-row-icon"><ShieldIcon /></span>
-            <span><strong>تغییر رمز عبور</strong><small>متصل به Auth Service واقعی</small></span>
+            <span><strong>طھط؛غŒغŒط± ط±ظ…ط² ط¹ط¨ظˆط±</strong><small>ظ…طھطµظ„ ط¨ظ‡ Auth Service ظˆط§ظ‚ط¹غŒ</small></span>
             <ChevronLeftIcon />
           </button>
-          <button className="vp-action-row" type="button" onClick={() => flash('Endpoint ثبت تیکت پشتیبانی هنوز در Backend تعریف نشده است')}>
+          <button className="vp-action-row" type="button" onClick={() => flash('Endpoint ط«ط¨طھ طھغŒع©طھ ظ¾ط´طھغŒط¨ط§ظ†غŒ ظ‡ظ†ظˆط² ط¯ط± Backend طھط¹ط±غŒظپ ظ†ط´ط¯ظ‡ ط§ط³طھ')}>
             <span className="vp-row-icon"><HelpIcon /></span>
-            <span><strong>پشتیبانی</strong><small>در این نسخه فقط وضعیت اتصال مشخص است</small></span>
+            <span><strong>ظ¾ط´طھغŒط¨ط§ظ†غŒ</strong><small>ط¯ط± ط§غŒظ† ظ†ط³ط®ظ‡ ظپظ‚ط· ظˆط¶ط¹غŒطھ ط§طھطµط§ظ„ ظ…ط´ط®طµ ط§ط³طھ</small></span>
             <ChevronLeftIcon />
           </button>
-          <div className="vp-info-row"><InfoIcon /><span>نسخه Visitor</span><strong>۰.۱۷.۰</strong></div>
+          <div className="vp-info-row"><InfoIcon /><span>ظ†ط³ط®ظ‡ Visitor</span><strong>غ°.غ±غ·.غ°</strong></div>
         </section>
 
-        <button className="vp-logout" type="button" onClick={() => setLogoutOpen(true)}><LogoutIcon /><span>خروج از حساب</span></button>
+        <button className="vp-logout" type="button" onClick={() => setLogoutOpen(true)}><LogoutIcon /><span>ط®ط±ظˆط¬ ط§ط² ط­ط³ط§ط¨</span></button>
         {notice ? <div className="vh-toast" role="status">{notice}</div> : null}
 
         {passwordOpen ? (
           <div className="vp-modal-backdrop" role="presentation" onClick={() => setPasswordOpen(false)}>
-            <form className="vp-modal vp-password-modal" role="dialog" aria-modal="true" aria-label="تغییر رمز" onSubmit={submitPassword} onClick={(event) => event.stopPropagation()}>
+            <form className="vp-modal vp-password-modal" role="dialog" aria-modal="true" aria-label="طھط؛غŒغŒط± ط±ظ…ط²" onSubmit={submitPassword} onClick={(event) => event.stopPropagation()}>
               <span className="vp-modal-icon"><ShieldIcon /></span>
-              <h2>تغییر رمز عبور</h2>
-              <p>رمز جدید پس از تأیید، نشست‌های قبلی حساب را باطل می‌کند.</p>
-              <label><span>رمز فعلی</span><input type="password" autoComplete="current-password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} required /></label>
-              <label><span>رمز جدید</span><input type="password" autoComplete="new-password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} minLength={8} required /></label>
-              <label><span>تکرار رمز جدید</span><input type="password" autoComplete="new-password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} minLength={8} required /></label>
+              <h2>طھط؛غŒغŒط± ط±ظ…ط² ط¹ط¨ظˆط±</h2>
+              <p>ط±ظ…ط² ط¬ط¯غŒط¯ ظ¾ط³ ط§ط² طھط£غŒغŒط¯طŒ ظ†ط´ط³طھâ€Œظ‡ط§غŒ ظ‚ط¨ظ„غŒ ط­ط³ط§ط¨ ط±ط§ ط¨ط§ط·ظ„ ظ…غŒâ€Œع©ظ†ط¯.</p>
+              <label><span>ط±ظ…ط² ظپط¹ظ„غŒ</span><input type="password" autoComplete="current-password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} required /></label>
+              <label><span>ط±ظ…ط² ط¬ط¯غŒط¯</span><input type="password" autoComplete="new-password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} minLength={8} required /></label>
+              <label><span>طھع©ط±ط§ط± ط±ظ…ط² ط¬ط¯غŒط¯</span><input type="password" autoComplete="new-password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} minLength={8} required /></label>
               {passwordError ? <div className="login-message login-error" role="alert">{passwordError}</div> : null}
-              <div><button type="button" className="secondary" onClick={() => setPasswordOpen(false)}>انصراف</button><button type="submit" className="danger" disabled={passwordBusy}>{passwordBusy ? 'در حال ثبت…' : 'تغییر رمز'}</button></div>
+              <div><button type="button" className="secondary" onClick={() => setPasswordOpen(false)}>ط§ظ†طµط±ط§ظپ</button><button type="submit" className="danger" disabled={passwordBusy}>{passwordBusy ? 'ط¯ط± ط­ط§ظ„ ط«ط¨طھâ€¦' : 'طھط؛غŒغŒط± ط±ظ…ط²'}</button></div>
             </form>
           </div>
         ) : null}
 
         {logoutOpen ? (
           <div className="vp-modal-backdrop" role="presentation" onClick={() => setLogoutOpen(false)}>
-            <section className="vp-modal" role="dialog" aria-modal="true" aria-label="تأیید خروج" onClick={(event) => event.stopPropagation()}>
-              <span className="vp-modal-icon"><LogoutIcon /></span><h2>از حساب خارج می‌شوی؟</h2><p>نشست Backend باطل می‌شود و برای ورود دوباره باید اطلاعات حساب را وارد کنی.</p>
-              <div><button type="button" className="secondary" onClick={() => setLogoutOpen(false)}>انصراف</button><button type="button" className="danger" onClick={() => { setLogoutOpen(false); void onLogout() }}>خروج</button></div>
+            <section className="vp-modal" role="dialog" aria-modal="true" aria-label="طھط£غŒغŒط¯ ط®ط±ظˆط¬" onClick={(event) => event.stopPropagation()}>
+              <span className="vp-modal-icon"><LogoutIcon /></span><h2>ط§ط² ط­ط³ط§ط¨ ط®ط§ط±ط¬ ظ…غŒâ€Œط´ظˆغŒطں</h2><p>ظ†ط´ط³طھ Backend ط¨ط§ط·ظ„ ظ…غŒâ€Œط´ظˆط¯ ظˆ ط¨ط±ط§غŒ ظˆط±ظˆط¯ ط¯ظˆط¨ط§ط±ظ‡ ط¨ط§غŒط¯ ط§ط·ظ„ط§ط¹ط§طھ ط­ط³ط§ط¨ ط±ط§ ظˆط§ط±ط¯ ع©ظ†غŒ.</p>
+              <div><button type="button" className="secondary" onClick={() => setLogoutOpen(false)}>ط§ظ†طµط±ط§ظپ</button><button type="button" className="danger" onClick={() => { setLogoutOpen(false); void onLogout() }}>ط®ط±ظˆط¬</button></div>
             </section>
           </div>
         ) : null}
 
-        <nav className="vh-nav" aria-label="ناوبری ویزیتور">
-          <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/home')}><HomeIcon /><span>خانه</span></button>
-          <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/route')}><MapIcon /><span>مسیر</span></button>
-          <button className="vh-order" type="button" onClick={() => onNavigate('/visitor/orders')}><PlusIcon /><span>سفارش</span></button>
-          <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/customers')}><UserGroupIcon /><span>مشتریان</span></button>
-          <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/reports')}><ChartIcon /><span>گزارش‌ها</span></button>
+        <nav className="vh-nav" aria-label="ظ†ط§ظˆط¨ط±غŒ ظˆغŒط²غŒطھظˆط±">
+          <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/home')}><HomeIcon /><span>ط®ط§ظ†ظ‡</span></button>
+          <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/route')}><MapIcon /><span>ظ…ط³غŒط±</span></button>
+          <button className="vh-order" type="button" onClick={() => onNavigate('/visitor/orders')}><PlusIcon /><span>ط³ظپط§ط±ط´</span></button>
+          <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/customers')}><UserGroupIcon /><span>ظ…ط´طھط±غŒط§ظ†</span></button>
+          <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/reports')}><ChartIcon /><span>ع¯ط²ط§ط±ط´â€Œظ‡ط§</span></button>
         </nav>
       </div>
     </main>
