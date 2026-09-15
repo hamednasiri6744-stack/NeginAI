@@ -270,6 +270,118 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   return normalizeApiPayload(payload) as T
 }
 
+export type SellerOpenInvoiceCustomer = {
+  id: string | number
+  code: string
+  name: string
+  store_name: string
+  address: string
+  phone: string
+  mobile: string
+  return_cheque_count: number
+  return_cheque_amount: number
+  cardex_balance: number
+  open_invoice_remaining: number
+  open_invoice_count: number
+  oldest_open_invoice_date: string
+}
+
+export type SellerOpenInvoicesResponse = {
+  seller: { personnel_id: number; full_name: string }
+  customer_count: number
+  open_invoice_remaining: number
+  customers: SellerOpenInvoiceCustomer[]
+  source: string
+  live_assignment: boolean
+}
+
+export type SellerReturnedCheque = {
+  id: number
+  number: string
+  date: string
+  amount: number
+  bank: string
+  branch: string
+  customer_id: number | null
+  customer_code: string
+  customer_name: string
+  customer_store: string
+  account_name: string
+  customer_phone: string
+  customer_mobile: string
+  status: string
+  status_date: string
+  seller_share: number
+  settled_amount: number
+}
+
+export type SellerReturnedChequesResponse = {
+  seller: { personnel_id: number; full_name: string }
+  cheque_count: number
+  cheque_amount: number
+  seller_share: number
+  settled_amount: number
+  cheques: SellerReturnedCheque[]
+  source: string
+}
+
+export type SellerDistributionInvoice = {
+  id: number
+  number: string
+  sale_date: string
+  amount: number
+  customer_code: string
+  customer_name: string
+  customer_store: string
+  distribution_number: string
+  distribution_date: string
+  sent_at: string
+  driver_name: string
+  driver_mobile: string
+}
+
+export type SellerDistributionResponse = {
+  seller: { personnel_id: number; full_name: string }
+  distribution_date: string
+  distribution_dates: string[]
+  invoice_count: number
+  invoices: SellerDistributionInvoice[]
+  source: string
+}
+
+export type SellerVoucherReturnReport = {
+  seller: { personnel_id: number; full_name: string }
+  report_month: string
+  voucher_count: number
+  invoiced_count: number
+  full_returned_count: number
+  undistributed_count: number
+  returned_count: number
+  reconciled_voucher_count: number
+  return_percentage: number
+  source: string
+}
+
+export type RouteSavedRequest = {
+  id: string
+  visit_id: string
+  route_id: string
+  customer_id: string
+  request_number: number
+  lines: Array<Record<string, unknown>>
+  line_count: number
+  total_amount: number
+  payment_type: string
+  order_type: string
+  warehouse_ref: number | null
+  warehouse_name: string
+  preview: Record<string, unknown>
+  created_at: string
+  updated_at: string
+}
+
+export type RouteSavedRequestsResponse = { requests: RouteSavedRequest[] }
+
 export type AutomationNotification = {
   id: number
   automation_id: number | null
@@ -321,6 +433,26 @@ export const neginApi = {
 
   async routeCustomers(routeId: string) {
     return request<RouteCustomersResponse>(`/seller-workspace/routes/${encodeURIComponent(routeId)}/customers`)
+  },
+
+  async routeSavedRequests(routeId: string) {
+    return request<RouteSavedRequestsResponse>(`/seller-workspace/routes/${encodeURIComponent(routeId)}/saved-requests`)
+  },
+
+  async sellerOpenInvoices() {
+    return request<SellerOpenInvoicesResponse>('/seller-workspace/open-invoices')
+  },
+
+  async sellerReturnedCheques() {
+    return request<SellerReturnedChequesResponse>('/seller-workspace/returned-cheques')
+  },
+
+  async sellerDistributionInProgress() {
+    return request<SellerDistributionResponse>('/seller-workspace/distribution-in-progress')
+  },
+
+  async sellerVoucherReturnReport() {
+    return request<SellerVoucherReturnReport>('/seller-workspace/voucher-return-report')
   },
 
   async customerProfile(routeId: string, customerId: string) {
