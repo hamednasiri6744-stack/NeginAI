@@ -90,6 +90,17 @@ export function VisitorAuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
+    const handleAuthExpired = () => {
+      localStorage.setItem(SIGNED_OUT_KEY, '1')
+      localStorage.removeItem(LAST_ACTIVITY_KEY)
+      setProfile(null)
+      window.location.replace('/?expired=1')
+    }
+    window.addEventListener('neginai:auth-expired', handleAuthExpired)
+    return () => window.removeEventListener('neginai:auth-expired', handleAuthExpired)
+  }, [])
+
+  useEffect(() => {
     const handleStorage = (event: StorageEvent) => {
       if (event.key === SIGNED_OUT_KEY && event.newValue === '1') setProfile(null)
     }

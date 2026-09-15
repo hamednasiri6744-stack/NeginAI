@@ -254,6 +254,10 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     }
   }
 
+  if (response.status === 401 && !['/auth/login', '/auth/logout', '/auth/me'].includes(path)) {
+    window.dispatchEvent(new Event('neginai:auth-expired'))
+  }
+
   if (!response.ok) {
     const detail = typeof payload === 'object' && payload !== null && 'detail' in payload
       ? String((payload as { detail?: unknown }).detail ?? '')
