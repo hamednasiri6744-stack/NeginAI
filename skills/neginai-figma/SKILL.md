@@ -1,6 +1,7 @@
 ---
 name: neginai-figma
 description: "NeginAI Figma variables tokens components variants auto layout dev mode visual QA design system. فیگما دیزاین سیستم توکن کامپوننت وریبل پروتوتایپ"
+license: MIT
 ---
 # NeginAI Figma
 

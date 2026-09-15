@@ -1,6 +1,7 @@
 ---
 name: neginai-data
 description: "NeginAI data BI KPI analytics forecasting anomaly data quality semantic validation read only. داده تحلیل فروش KPI پیش بینی کیفیت داده موجودی مشتری"
+license: MIT
 ---
 # NeginAI Data
 

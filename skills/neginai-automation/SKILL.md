@@ -1,6 +1,7 @@
 ---
 name: neginai-automation
 description: "NeginAI automation n8n Airflow API webhook orchestration retry idempotency observability workflow. اتوماسیون وبهوک ایرفلو n8n ارکستریشن مانیتورینگ"
+license: MIT
 ---
 # NeginAI Automation
 

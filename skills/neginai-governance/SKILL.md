@@ -1,6 +1,7 @@
 ---
 name: neginai-governance
 description: "NeginAI architecture governance project authority canonical source conflict reconciliation scope final review. معماری حاکمیت منبع مرجع اسکوپ اولویت تایید نهایی"
+license: MIT
 ---
 # NeginAI Governance
 
