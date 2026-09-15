@@ -1,5 +1,4 @@
-import { useMemo, useState } from 'react'
-import { readPrototypeDrafts, removePrototypeDraft, type PrototypeOrderDraft } from '../state/visitorDraftStore'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   BellIcon,
   ChartIcon,
@@ -12,122 +11,113 @@ import {
   PlusIcon,
   SearchIcon,
   StoreIcon,
-  TrashIcon,
   UserGroupIcon,
 } from './Icons'
-
+import { getRouteSavedRequests, type RouteSavedRequest } from '../api/neginApi'
+import { useVisitorAuth } from '../state/VisitorAuthContext'
+import { useVisitorLiveData } from '../state/VisitorLiveDataContext'
 import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
 
-type Props = {
-  onNavigate: (path: string) => void
+type Props = { onNavigate: (path: string) => void }
+
+function number(value: number) {
+  return new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 2 }).format(value)
 }
 
-type Draft = {
-  id: string
-  customerId: string
-  customer: string
-  area: string
-  items: number
-  units: number
-  amount: number
-  updated: string
+function when(value: string) {
+  const date = new Date(value)
+  if (Number.isNaN(date.valueOf())) return value || '—'
+  return new Intl.DateTimeFormat('fa-IR', { dateStyle: 'medium', timeStyle: 'short' }).format(date)
 }
 
-type OrderStatus = 'ثبت شده' | 'در انتظار تایید' | 'فاکتور شده'
-
-type Order = {
-  id: string
-  customerId: string
-  customer: string
-  date: string
-  time: string
-  items: number
-  payment: string
-  status: OrderStatus
-  amount: number
-  invoice?: string
+function lineText(line: Record<string, unknown>, key: string) {
+  const value = line[key]
+  return value === null || value === undefined ? '' : String(value)
 }
 
-type InvoiceLine = { name: string; qty: number; unitPrice: number; discount: number }
-
-function draftToView(draft: PrototypeOrderDraft): Draft {
-  const quantities = Object.values(draft.cart)
-  const minutes = Math.max(0, Math.round((Date.now() - draft.updatedAt) / 60000))
-  const updated = minutes < 1 ? 'همین الان' : minutes < 60 ? `${minutes} دقیقه پیش` : minutes < 1440 ? `${Math.round(minutes / 60)} ساعت پیش` : `${Math.round(minutes / 1440)} روز پیش`
-  return {
-    id: draft.id,
-    customerId: draft.customerId,
-    customer: draft.customer,
-    area: draft.area,
-    items: quantities.length,
-    units: quantities.reduce((sum, value) => sum + value, 0),
-    amount: draft.amount,
-    updated,
-  }
-}
-
-
-const orders: Order[] = [
-  { id: 'ORD-260912-184', customerId: '1', customer: 'سوپر مارکت رضایی', date: '۱۴۰۵/۰۶/۲۱', time: '۱۴:۲۸', items: 3, payment: 'اعتباری', status: 'ثبت شده', amount: 3_381_400 },
-  { id: 'ORD-260912-176', customerId: '2', customer: 'داروخانه نادری', date: '۱۴۰۵/۰۶/۲۱', time: '۱۲:۵۴', items: 5, payment: 'نقدی', status: 'فاکتور شده', amount: 5_942_000, invoice: 'INV-802894' },
-  { id: 'ORD-260911-149', customerId: '3', customer: 'فروشگاه سعیدی', date: '۱۴۰۵/۰۶/۲۰', time: '۱۶:۲۱', items: 4, payment: 'چک', status: 'در انتظار تایید', amount: 4_776_500 },
-  { id: 'ORD-260911-138', customerId: '1', customer: 'سوپر مارکت رضایی', date: '۱۴۰۵/۰۶/۲۰', time: '۱۳:۰۶', items: 2, payment: 'اعتباری', status: 'فاکتور شده', amount: 2_654_300, invoice: 'INV-802845' },
-]
-
-const invoiceLines: InvoiceLine[] = [
-  { name: 'مایع ظرفشویی ۷۵۰ گرمی', qty: 2, unitPrice: 685_000, discount: 5 },
-  { name: 'دستمال کاغذی ۲۰۰ برگ', qty: 2, unitPrice: 910_000, discount: 3 },
-  { name: 'کیسه زباله رولی بزرگ', qty: 1, unitPrice: 830_000, discount: 6 },
-]
-
-function money(value: number) {
-  return new Intl.NumberFormat('fa-IR').format(value)
+function lineNumber(line: Record<string, unknown>, key: string) {
+  const value = Number(line[key] ?? 0)
+  return Number.isFinite(value) ? value : 0
 }
 
 export function VisitorOrderArchiveScreen({ onNavigate }: Props) {
+  const { profile } = useVisitorAuth()
   const { unreadCount } = useVisitorNotifications()
-  const [view, setView] = useState<'history' | 'drafts'>('history')
-  const [drafts, setDrafts] = useState<Draft[]>(() => readPrototypeDrafts().map(draftToView))
+  const { activeRouteId, activeRouteTitle, customerById } = useVisitorLiveData()
+  const [requests, setRequests] = useState<RouteSavedRequest[]>([])
+  const [selected, setSelected] = useState<RouteSavedRequest | null>(null)
   const [query, setQuery] = useState('')
-  const [status, setStatus] = useState<'همه' | OrderStatus>('همه')
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
-  const [notice, setNotice] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const visibleOrders = useMemo(() => orders.filter((order) => {
-    const q = query.trim()
-    const matchesQuery = !q || `${order.id} ${order.customer} ${order.invoice ?? ''}`.includes(q)
-    const matchesStatus = status === 'همه' || order.status === status
-    return matchesQuery && matchesStatus
-  }), [query, status])
+  const load = useCallback(async () => {
+    if (!activeRouteId) {
+      setRequests([])
+      setError(null)
+      setLoading(false)
+      return
+    }
+    setLoading(true)
+    setError(null)
+    try {
+      const response = await getRouteSavedRequests(activeRouteId)
+      setRequests(response.requests)
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'درخواست‌های ذخیره‌شده بارگذاری نشدند.')
+    } finally {
+      setLoading(false)
+    }
+  }, [activeRouteId])
 
-  const todayAmount = orders.filter((order) => order.date === '۱۴۰۵/۰۶/۲۱').reduce((sum, order) => sum + order.amount, 0)
+  useEffect(() => {
+    void load()
+  }, [load])
 
-  function flash(message: string) {
-    setNotice(message)
-    window.setTimeout(() => setNotice(null), 2200)
-  }
+  const visibleRequests = useMemo(() => {
+    const q = query.trim().toLocaleLowerCase('fa')
+    if (!q) return requests
+    return requests.filter((request) => {
+      const customer = customerById(request.customer_id)
+      const lineNames = request.lines.map((line) => lineText(line, 'title')).join(' ')
+      const haystack = [
+        request.request_number,
+        request.customer_id,
+        customer?.store_name,
+        customer?.name,
+        customer?.code,
+        request.payment_type,
+        request.order_type,
+        request.warehouse_name,
+        lineNames,
+      ].join(' ').toLocaleLowerCase('fa')
+      return haystack.includes(q)
+    })
+  }, [customerById, query, requests])
 
-  function removeDraft(id: string) {
-    const next = removePrototypeDraft(id).map(draftToView)
-    setDrafts(next)
-    flash('پیش‌نویس حذف شد')
-  }
-
-  const invoiceGross = invoiceLines.reduce((sum, line) => sum + line.qty * line.unitPrice, 0)
-  const invoiceDiscount = invoiceLines.reduce((sum, line) => sum + line.qty * line.unitPrice * line.discount / 100, 0)
-  const invoiceTax = Math.round((invoiceGross - invoiceDiscount) * 0.10)
-  const invoiceTotal = Math.round(invoiceGross - invoiceDiscount + invoiceTax)
+  const totalAmount = useMemo(
+    () => requests.reduce((sum, request) => sum + Number(request.total_amount || 0), 0),
+    [requests],
+  )
+  const totalLines = useMemo(
+    () => requests.reduce((sum, request) => sum + Number(request.line_count || 0), 0),
+    [requests],
+  )
 
   return (
     <main className="vh-page" dir="rtl">
       <div className="vh-shell voa-shell">
         <header className="vh-header">
           <button className="vh-profile" type="button" onClick={() => onNavigate('/visitor/profile')}>
-            <span className="vh-avatar">و</span>
-            <span className="vh-profile-copy"><strong>ویزیتور</strong><small><PinIcon /> منطقه کرج</small></span>
+            <span className="vh-avatar">{profile?.full_name?.charAt(0) || profile?.username?.charAt(0) || 'و'}</span>
+            <span className="vh-profile-copy">
+              <strong>{profile?.full_name || profile?.username || 'کاربر'}</strong>
+              <small><PinIcon /> {profile?.branch || profile?.sales_line || '—'}</small>
+            </span>
             <ChevronLeftIcon />
           </button>
-          <button className="vh-bell" type="button" aria-label="اعلان‌ها" onClick={() => onNavigate('/visitor/notifications')}><BellIcon />{unreadCount ? <b>{unreadCount}</b> : null}</button>
+          <button className="vh-bell" type="button" aria-label="اعلان‌ها" onClick={() => onNavigate('/visitor/notifications')}>
+            <BellIcon />{unreadCount ? <b>{unreadCount}</b> : null}
+          </button>
           <div className="vh-brand" dir="ltr">
             <img src="/assets/neginai-logo-transparent.png" alt="Negin AI" />
             <div><strong>Negin <span>AI</span></strong><small>VISITOR</small></div>
@@ -135,91 +125,141 @@ export function VisitorOrderArchiveScreen({ onNavigate }: Props) {
         </header>
 
         <section className="voa-heading">
-          <div><span>Order Center</span><h1>سفارش‌ها و پیش‌نویس‌ها</h1><p>پیگیری، ادامه سفارش و پیش‌نمایش فاکتور</p></div>
+          <div>
+            <span>Saved Requests</span>
+            <h1>درخواست‌های ذخیره‌شده واقعی</h1>
+            <p>{activeRouteTitle ? `مسیر ${activeRouteTitle}` : 'مسیر فعالی ثبت نشده است'}</p>
+          </div>
           <button type="button" onClick={() => onNavigate('/visitor/orders')}><PlusIcon /><span>سفارش جدید</span></button>
         </section>
 
+        {error ? (
+          <section className="vh-live-state error" role="alert">
+            <div><strong>درخواست‌ها بارگذاری نشدند</strong><span>{error}</span></div>
+            <button type="button" onClick={() => void load()}>تلاش دوباره</button>
+          </section>
+        ) : loading ? (
+          <section className="vh-live-state" role="status"><strong>در حال دریافت درخواست‌های ذخیره‌شده…</strong></section>
+        ) : !activeRouteId ? (
+          <section className="vh-live-state"><strong>مسیر فعالی برای نمایش آرشیو امروز وجود ندارد.</strong></section>
+        ) : null}
+
         <section className="voa-summary">
-          <article><span>سفارش امروز</span><strong>۲</strong><small>{money(todayAmount)} تومان</small></article>
-          <article><span>پیش‌نویس باز</span><strong>{drafts.length}</strong><small>قابل ادامه</small></article>
-          <article><span>فاکتور شده</span><strong>۲</strong><small>از ۴ سفارش اخیر</small></article>
+          <article><span>درخواست‌های امروز</span><strong>{requests.length.toLocaleString('fa-IR')}</strong><small>ثبت‌شده در Backend</small></article>
+          <article><span>ردیف کالا</span><strong>{totalLines.toLocaleString('fa-IR')}</strong><small>در درخواست‌های امروز</small></article>
+          <article><span>مبلغ ثبت‌شده</span><strong>{number(totalAmount)}</strong><small>جمع درخواست‌های ذخیره‌شده</small></article>
         </section>
 
-        <section className="voa-tabs" role="tablist" aria-label="سفارش‌ها و پیش‌نویس‌ها">
-          <button type="button" className={view === 'history' ? 'active' : ''} onClick={() => setView('history')}>سوابق سفارش</button>
-          <button type="button" className={view === 'drafts' ? 'active' : ''} onClick={() => setView('drafts')}>پیش‌نویس‌ها <b>{drafts.length}</b></button>
-        </section>
+        <section className="voa-history">
+          <label className="voa-search">
+            <SearchIcon />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="جست‌وجوی مشتری، کالا، نوع سفارش یا پرداخت"
+            />
+          </label>
 
-        {view === 'history' ? (
-          <section className="voa-history">
-            <label className="voa-search"><SearchIcon /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="جستجوی مشتری، سفارش یا فاکتور" /></label>
-            <div className="voa-chips">
-              {(['همه', 'ثبت شده', 'در انتظار تایید', 'فاکتور شده'] as const).map((item) => <button type="button" key={item} className={status === item ? 'active' : ''} onClick={() => setStatus(item)}>{item}</button>)}
-            </div>
-            <div className="voa-list-head"><strong>{visibleOrders.length} سفارش</strong><span>جدیدترین ابتدا</span></div>
-            <div className="voa-order-list">
-              {visibleOrders.map((order) => (
-                <button type="button" className="voa-order-card" key={order.id} onClick={() => setSelectedOrder(order)}>
-                  <span className="voa-order-icon"><InvoiceIcon /></span>
+          <div className="voa-list-head">
+            <strong>{visibleRequests.length.toLocaleString('fa-IR')} درخواست</strong>
+            <button type="button" onClick={() => void load()}>به‌روزرسانی</button>
+          </div>
+
+          <div className="voa-order-list">
+            {visibleRequests.length ? visibleRequests.map((request) => {
+              const customer = customerById(request.customer_id)
+              const customerName = customer?.store_name || customer?.name || customer?.code || `مشتری ${request.customer_id}`
+              return (
+                <button type="button" className="voa-order-card" key={request.id} onClick={() => setSelected(request)}>
+                  <span className="voa-order-icon"><ClipboardIcon /></span>
                   <span className="voa-order-main">
-                    <span className="voa-order-title"><strong>{order.customer}</strong><em className={`s-${order.status.replaceAll(' ', '-')}`}>{order.status}</em></span>
-                    <small dir="ltr">{order.id}</small>
-                    <span className="voa-order-meta">{order.date} · {order.time} · {order.items} قلم · {order.payment}</span>
+                    <span className="voa-order-title"><strong>{customerName}</strong><em>درخواست {request.request_number.toLocaleString('fa-IR')}</em></span>
+                    <small dir="ltr">{request.id}</small>
+                    <span className="voa-order-meta">
+                      {when(request.updated_at)} · {request.line_count.toLocaleString('fa-IR')} ردیف
+                      {request.order_type ? ` · ${request.order_type}` : ''}
+                      {request.payment_type ? ` · ${request.payment_type}` : ''}
+                    </span>
                   </span>
-                  <span className="voa-order-value"><strong>{money(order.amount)}</strong><small>تومان</small>{order.invoice ? <b dir="ltr">{order.invoice}</b> : null}</span>
+                  <span className="voa-order-value">
+                    <strong>{number(request.total_amount)}</strong>
+                    <small>{request.warehouse_name || 'انبار ثبت نشده'}</small>
+                  </span>
                   <ChevronLeftIcon />
                 </button>
-              ))}
-            </div>
-          </section>
-        ) : (
-          <section className="voa-drafts">
-            <div className="voa-draft-note"><ClipboardIcon /><div><strong>پیش‌نویس‌های این ورود روی دستگاه نگه داشته می‌شوند</strong><span>پس از خروج پاک می‌شوند؛ همگام‌سازی سرور هنوز متصل نیست.</span></div></div>
-            {drafts.length ? <div className="voa-draft-list">
-              {drafts.map((draft) => (
-                <article className="voa-draft-card" key={draft.id}>
-                  <span className="voa-draft-icon"><StoreIcon /></span>
-                  <div className="voa-draft-copy"><strong>{draft.customer}</strong><span>{draft.area} · {draft.items} قلم · {draft.units} واحد</span><small>آخرین ویرایش: {draft.updated}</small></div>
-                  <div className="voa-draft-amount"><strong>{money(draft.amount)}</strong><small>تومان</small></div>
-                  <div className="voa-draft-actions">
-                    <button type="button" className="resume" onClick={() => onNavigate(`/visitor/orders?customer=${draft.customerId}&draft=${draft.id}`)}>ادامه سفارش</button>
-                    <button type="button" className="delete" aria-label={`حذف ${draft.id}`} onClick={() => removeDraft(draft.id)}><TrashIcon /></button>
-                  </div>
-                </article>
-              ))}
-            </div> : <div className="voa-empty"><ClipboardIcon /><strong>پیش‌نویسی باقی نمانده</strong><span>سفارش نیمه‌تمام جدید اینجا نمایش داده می‌شود.</span></div>}
-          </section>
-        )}
+              )
+            }) : (
+              <div className="voa-empty">
+                <ClipboardIcon />
+                <strong>درخواست ذخیره‌شده‌ای برای این مسیر امروز وجود ندارد.</strong>
+                <span>این بخش دیگر داده نمونه یا آرشیو ساختگی نمایش نمی‌دهد.</span>
+              </div>
+            )}
+          </div>
+        </section>
 
-        {selectedOrder ? (
-          <div className="vo-sheet-backdrop" onClick={() => setSelectedOrder(null)}>
-            <section className="voa-invoice" role="dialog" aria-modal="true" aria-label="پیش نمایش فاکتور" onClick={(event) => event.stopPropagation()}>
+        {selected ? (
+          <div className="vo-sheet-backdrop" onClick={() => setSelected(null)}>
+            <section className="voa-invoice" role="dialog" aria-modal="true" aria-label="جزئیات درخواست ذخیره‌شده" onClick={(event) => event.stopPropagation()}>
               <div className="vo-sheet-handle" />
               <div className="voa-invoice-head">
-                <div><small>Invoice Preview</small><h2>{selectedOrder.invoice ? 'پیش‌نمایش فاکتور' : 'جزئیات سفارش'}</h2><span dir="ltr">{selectedOrder.invoice ?? selectedOrder.id}</span></div>
+                <div>
+                  <small>Saved Request</small>
+                  <h2>درخواست {selected.request_number.toLocaleString('fa-IR')}</h2>
+                  <span dir="ltr">{selected.id}</span>
+                </div>
                 <span className="voa-invoice-mark"><InvoiceIcon /></span>
               </div>
-              <div className="voa-invoice-customer"><StoreIcon /><div><strong>{selectedOrder.customer}</strong><span>{selectedOrder.date} · {selectedOrder.time} · {selectedOrder.payment}</span></div></div>
+
+              <div className="voa-invoice-customer">
+                <StoreIcon />
+                <div>
+                  <strong>{customerById(selected.customer_id)?.store_name || customerById(selected.customer_id)?.name || `مشتری ${selected.customer_id}`}</strong>
+                  <span>{when(selected.updated_at)} · {selected.order_type || 'نوع سفارش ثبت نشده'} · {selected.payment_type || 'نوع پرداخت ثبت نشده'}</span>
+                </div>
+              </div>
+
               <div className="voa-invoice-lines">
-                {invoiceLines.slice(0, selectedOrder.items > 3 ? 3 : selectedOrder.items).map((line) => (
-                  <div key={line.name}><span><strong>{line.name}</strong><small>{line.qty} × {money(line.unitPrice)}</small></span><b>{money(Math.round(line.qty * line.unitPrice * (1 - line.discount / 100)))}</b></div>
-                ))}
+                {selected.lines.map((line, index) => {
+                  const title = lineText(line, 'title') || lineText(line, 'product_name') || lineText(line, 'product_id') || `ردیف ${index + 1}`
+                  const quantity = lineNumber(line, 'quantity')
+                  const unitPrice = lineNumber(line, 'unit_price')
+                  const discountAmount = lineNumber(line, 'discount_amount')
+                  return (
+                    <div key={`${title}-${index}`}>
+                      <span>
+                        <strong>{title}</strong>
+                        <small>{number(quantity)} × {number(unitPrice)}{discountAmount ? ` · تخفیف ${number(discountAmount)}` : ''}</small>
+                      </span>
+                      <b>{number(Math.max(0, quantity * unitPrice - discountAmount))}</b>
+                    </div>
+                  )
+                })}
               </div>
+
               <div className="voa-invoice-total">
-                <div><span>جمع کالا</span><strong>{money(invoiceGross)}</strong></div>
-                <div><span>تخفیف</span><strong className="mint">− {money(Math.round(invoiceDiscount))}</strong></div>
-                <div><span>مالیات</span><strong>{money(invoiceTax)}</strong></div>
-                <div className="total"><span>مبلغ نهایی</span><strong>{money(selectedOrder.invoice ? invoiceTotal : selectedOrder.amount)} <small>تومان</small></strong></div>
+                <div><span>تعداد ردیف</span><strong>{selected.line_count.toLocaleString('fa-IR')}</strong></div>
+                <div><span>انبار</span><strong>{selected.warehouse_name || 'ثبت نشده'}</strong></div>
+                <div className="total"><span>مبلغ ثبت‌شده</span><strong>{number(selected.total_amount)}</strong></div>
               </div>
+
               <div className="voa-invoice-actions">
-                <button type="button" onClick={() => flash('PDF در مرحله اتصال سرویس اسناد فعال می‌شود')}>دانلود PDF</button>
-                <button type="button" className="primary" onClick={() => { const customerId = selectedOrder.customerId; setSelectedOrder(null); onNavigate(`/visitor/orders?customer=${customerId}`) }}>تکرار سفارش</button>
+                <button type="button" onClick={() => setSelected(null)}>بستن</button>
+                <button
+                  type="button"
+                  className="primary"
+                  onClick={() => {
+                    const customerId = selected.customer_id
+                    setSelected(null)
+                    onNavigate(`/visitor/customers/${customerId}`)
+                  }}
+                >
+                  پروفایل مشتری
+                </button>
               </div>
             </section>
           </div>
         ) : null}
-
-        {notice ? <div className="vh-toast" role="status">{notice}</div> : null}
 
         <nav className="vh-nav" aria-label="ناوبری ویزیتور">
           <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/home')}><HomeIcon /><span>خانه</span></button>
