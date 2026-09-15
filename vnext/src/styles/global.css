@@ -55,7 +55,8 @@ button { cursor: pointer; }
   position: relative;
   z-index: 1;
 }
-`r`n
+
+
 .login-brand {
   display: grid;
   align-content: center;
@@ -208,7 +209,7 @@ button { cursor: pointer; }
 }
 .primary-button:active { transform: translateY(1px); }
 
-\.install-button {
+.install-button {
   height: 45px;
   display: flex;
   align-items: center;
@@ -221,7 +222,7 @@ button { cursor: pointer; }
   font-size: 13.5px;
   font-weight: 650;
 }
-\.install-button svg { width: 17px; color: #d0a94f; }
+.install-button svg { width: 17px; color: #d0a94f; }
 
 .login-message {
   margin-top: 10px;
@@ -253,12 +254,12 @@ button { cursor: pointer; }
   .auth-heading h1 { font-size: 17px; }
   .field { min-height: 45px; height: 45px; }
   .primary-button { height: 46px; }
-  \.install-button { height: 40px; }
+  .install-button { height: 40px; }
 }
 
 @media (max-height: 590px) and (max-width: 719px) {
   .login-shell { grid-template-rows: 64px auto 0; }
-  \.login-brand p, .login-footer { display: none; }
+  .login-brand p, .login-footer { display: none; }
   .brand-logo { width: 54px; height: 54px; }
   .brand-wordmark { display: none; }
   .auth-panel { align-self: center; }
@@ -1451,7 +1452,7 @@ button:focus-visible,a:focus-visible { outline:2px solid rgba(240,193,82,.72); o
   background:rgba(111,34,44,.18);
 }
 .primary-button:disabled,
-\.install-button:disabled,
+.install-button:disabled,
 .vp-action-row:disabled,
 .vc-heading button:disabled,
 .vc-card-actions button:disabled {
