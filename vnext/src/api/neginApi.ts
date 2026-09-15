@@ -270,6 +270,17 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   return normalizeApiPayload(payload) as T
 }
 
+export type AutomationNotification = {
+  id: number
+  automation_id: number | null
+  title: string
+  body: string
+  read: boolean
+  created_at: string
+}
+
+export type AutomationNotificationsResponse = { notifications: AutomationNotification[] }
+
 export const neginApi = {
   async login(username: string, password: string) {
     return request<AuthProfile>('/auth/login', {
@@ -290,6 +301,17 @@ export const neginApi = {
     return request<AuthProfile>('/auth/change-password', {
       method: 'POST',
       body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+    })
+  },
+
+  async automationNotifications() {
+    return request<AutomationNotificationsResponse>('/automations/notifications?limit=100')
+  },
+
+  async markAutomationNotificationsRead(notificationIds: number[]) {
+    return request<{ updated: number }>('/automations/notifications/read', {
+      method: 'POST',
+      body: JSON.stringify({ notification_ids: notificationIds }),
     })
   },
 

@@ -1,32 +1,15 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { neginApi, type AutomationNotification } from '../api/neginApi'
+import { useVisitorAuth } from './VisitorAuthContext'
 
-export type NotificationKind = 'price' | 'promotion' | 'stock' | 'customer' | 'kpi' | 'route'
-export type NotificationPriority = 'high' | 'medium' | 'low'
-
-export type VisitorNotificationItem = {
-  id: number
-  kind: NotificationKind
-  priority: NotificationPriority
-  title: string
-  body: string
-  time: string
-  read: boolean
-  actionLabel: string
-  target: string
-}
-
-const initialNotifications: VisitorNotificationItem[] = [
-  { id: 1, kind: 'price', priority: 'high', title: 'تغییر قیمت در سبد امروز', body: 'قیمت ۴ قلم از کالاهای پرتکرار مسیر امروز به‌روزرسانی شده است. قبل از ثبت سفارش بررسی کن.', time: '۱۰ دقیقه پیش', read: false, actionLabel: 'مشاهده کالاها', target: '/visitor/orders' },
-  { id: 2, kind: 'customer', priority: 'high', title: 'مشتری نیازمند پیگیری', body: 'فروشگاه سعیدی ۱۲ روز است سفارش جدید ثبت نکرده و در اولویت پیگیری امروز قرار گرفته است.', time: '۲۸ دقیقه پیش', read: false, actionLabel: 'پروفایل مشتری', target: '/visitor/customers/3' },
-  { id: 3, kind: 'route', priority: 'medium', title: 'به‌روزرسانی مسیر بازدید', body: 'ترتیب دو ایستگاه مسیر امروز برای کاهش زمان رفت‌وآمد اصلاح شده است.', time: '۴۵ دقیقه پیش', read: false, actionLabel: 'مشاهده مسیر', target: '/visitor/route' },
-  { id: 4, kind: 'promotion', priority: 'medium', title: 'پروموشن جدید فعال شد', body: 'برای گروه شوینده منتخب، تخفیف پلکانی جدید تا پایان امروز فعال است.', time: '۱ ساعت پیش', read: true, actionLabel: 'مشاهده کاتالوگ', target: '/visitor/orders' },
-  { id: 5, kind: 'kpi', priority: 'low', title: 'نرخ تبدیل امروز بالاتر از میانگین است', body: 'نرخ تبدیل بازدید به سفارش امروز به ۶۴٪ رسیده و از میانگین هفتگی بالاتر است.', time: '۲ ساعت پیش', read: true, actionLabel: 'گزارش عملکرد', target: '/visitor/reports' },
-  { id: 6, kind: 'stock', priority: 'medium', title: 'موجودی یک کالای پرفروش محدود شده', body: 'موجودی قابل فروش یک قلم در انبار البرز به محدوده هشدار رسیده است.', time: '۳ ساعت پیش', read: true, actionLabel: 'مشاهده موجودی', target: '/visitor/orders' },
-]
+export type VisitorNotificationItem = AutomationNotification
 
 type VisitorNotificationsValue = {
   items: VisitorNotificationItem[]
   unreadCount: number
+  loading: boolean
+  error: string | null
+  reload: () => Promise<void>
   markRead: (id: number) => void
   markAllRead: () => void
   resetNotifications: () => void
@@ -35,19 +18,63 @@ type VisitorNotificationsValue = {
 const VisitorNotificationsContext = createContext<VisitorNotificationsValue | null>(null)
 
 export function VisitorNotificationsProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<VisitorNotificationItem[]>(initialNotifications)
+  const { authenticated, restoringSession } = useVisitorAuth()
+  const [items, setItems] = useState<VisitorNotificationItem[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const reload = useCallback(async () => {
+    if (!authenticated) {
+      setItems([])
+      setError(null)
+      return
+    }
+    setLoading(true)
+    setError(null)
+    try {
+      const response = await neginApi.automationNotifications()
+      setItems(response.notifications ?? [])
+    } catch (caught) {
+      setItems([])
+      setError(caught instanceof Error ? caught.message : 'Unable to load notifications')
+    } finally {
+      setLoading(false)
+    }
+  }, [authenticated])
+
+  useEffect(() => {
+    if (restoringSession) return
+    if (!authenticated) {
+      setItems([])
+      setError(null)
+      return
+    }
+    void reload()
+  }, [authenticated, reload, restoringSession])
 
   const markRead = useCallback((id: number) => {
+    const target = items.find((item) => item.id === id)
+    if (!target || target.read) return
     setItems((current) => current.map((item) => item.id === id ? { ...item, read: true } : item))
-  }, [])
+    void neginApi.markAutomationNotificationsRead([id]).catch(() => void reload())
+  }, [items, reload])
 
   const markAllRead = useCallback(() => {
+    const ids = items.filter((item) => !item.read).map((item) => item.id)
+    if (!ids.length) return
     setItems((current) => current.map((item) => ({ ...item, read: true })))
+    void neginApi.markAutomationNotificationsRead(ids).catch(() => void reload())
+  }, [items, reload])
+
+  const resetNotifications = useCallback(() => {
+    setItems([])
+    setError(null)
   }, [])
 
-  const resetNotifications = useCallback(() => setItems(initialNotifications), [])
   const unreadCount = useMemo(() => items.filter((item) => !item.read).length, [items])
-  const value = useMemo<VisitorNotificationsValue>(() => ({ items, unreadCount, markRead, markAllRead, resetNotifications }), [items, markAllRead, markRead, resetNotifications, unreadCount])
+  const value = useMemo<VisitorNotificationsValue>(() => ({
+    items, unreadCount, loading, error, reload, markRead, markAllRead, resetNotifications,
+  }), [items, unreadCount, loading, error, reload, markRead, markAllRead, resetNotifications])
 
   return <VisitorNotificationsContext.Provider value={value}>{children}</VisitorNotificationsContext.Provider>
 }
