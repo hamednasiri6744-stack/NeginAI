@@ -1,7 +1,6 @@
-import { useMemo, useState, type CSSProperties } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   BellIcon,
-  CartIcon,
   ChartIcon,
   CheckCircleIcon,
   ChevronLeftIcon,
@@ -12,78 +11,104 @@ import {
   StoreIcon,
   UserGroupIcon,
 } from './Icons'
-
+import {
+  getSellerDistributionInProgress,
+  getSellerPortfolioOpenInvoices,
+  getSellerPortfolioReturnedCheques,
+  getSellerVoucherReturnReport,
+  type SellerDistributionInProgressResponse,
+  type SellerPortfolioOpenInvoicesResponse,
+  type SellerPortfolioReturnedChequesResponse,
+  type SellerVoucherReturnReportResponse,
+} from '../api/neginApi'
+import { useVisitorAuth } from '../state/VisitorAuthContext'
 import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
 import { useVisitorWorkflow } from '../state/VisitorWorkflowContext'
 
 type Props = { onNavigate: (path: string) => void }
-type Period = 'today' | 'week' | 'month'
 
-type ReportSnapshot = {
-  sales: number
-  orders: number
-  visits: number
-  target: number
-  conversion: number
-  avgOrder: number
-  returned: number
-  newCustomers: number
+type ReportData = {
+  openInvoices: SellerPortfolioOpenInvoicesResponse
+  returnedCheques: SellerPortfolioReturnedChequesResponse
+  distribution: SellerDistributionInProgressResponse
+  voucherReturn: SellerVoucherReturnReportResponse
 }
 
-const snapshots: Record<Period, ReportSnapshot> = {
-  today: { sales: 12_450_000, orders: 28, visits: 7, target: 78, conversion: 64, avgOrder: 445_000, returned: 320_000, newCustomers: 2 },
-  week: { sales: 74_820_000, orders: 156, visits: 41, target: 84, conversion: 69, avgOrder: 479_600, returned: 1_840_000, newCustomers: 9 },
-  month: { sales: 318_600_000, orders: 642, visits: 168, target: 91, conversion: 73, avgOrder: 496_300, returned: 6_420_000, newCustomers: 31 },
+function number(value: number) {
+  return new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 2 }).format(value)
 }
 
-const weeklySales = [
-  { label: 'ش', value: 7.2 },
-  { label: 'ی', value: 9.8 },
-  { label: 'د', value: 8.4 },
-  { label: 'س', value: 11.1 },
-  { label: 'چ', value: 10.2 },
-  { label: 'پ', value: 12.45 },
-]
-
-const topCustomers = [
-  { name: 'سوپر مارکت رضایی', area: 'گوهردشت', amount: 4_850_000, orders: 5 },
-  { name: 'داروخانه نادری', area: 'رجایی‌شهر', amount: 3_740_000, orders: 4 },
-  { name: 'فروشگاه سعیدی', area: 'عظیمیه', amount: 2_980_000, orders: 3 },
-]
-
-function money(value: number) {
-  return new Intl.NumberFormat('fa-IR').format(value)
-}
-
-function compactMoney(value: number) {
-  const millions = value / 1_000_000
-  return `${new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 1 }).format(millions)} م`
+function dateTime(value: string) {
+  const date = new Date(value)
+  if (Number.isNaN(date.valueOf())) return value || '—'
+  return new Intl.DateTimeFormat('fa-IR', { dateStyle: 'medium' }).format(date)
 }
 
 export function VisitorReportsScreen({ onNavigate }: Props) {
+  const { profile } = useVisitorAuth()
   const { unreadCount } = useVisitorNotifications()
-  const [period, setPeriod] = useState<Period>('today')
-  const [notice, setNotice] = useState<string | null>(null)
   const { routeSummary } = useVisitorWorkflow()
-  const snapshot = period === 'today' ? { ...snapshots.today, visits: routeSummary.visited } : snapshots[period]
+  const [data, setData] = useState<ReportData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const maxSale = useMemo(() => Math.max(...weeklySales.map((item) => item.value)), [])
+  const load = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const [openInvoices, returnedCheques, distribution, voucherReturn] = await Promise.all([
+        getSellerPortfolioOpenInvoices(),
+        getSellerPortfolioReturnedCheques(),
+        getSellerDistributionInProgress(),
+        getSellerVoucherReturnReport(),
+      ])
+      setData({ openInvoices, returnedCheques, distribution, voucherReturn })
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'گزارش‌های واقعی در دسترس نیستند.')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
-  function flash(message: string) {
-    setNotice(message)
-    window.setTimeout(() => setNotice(null), 2200)
-  }
+  useEffect(() => {
+    void load()
+  }, [load])
+
+  const openInvoiceCustomers = useMemo(
+    () => [...(data?.openInvoices.customers ?? [])]
+      .sort((a, b) => b.open_invoice_remaining - a.open_invoice_remaining)
+      .slice(0, 5),
+    [data],
+  )
+
+  const recentCheques = useMemo(
+    () => [...(data?.returnedCheques.cheques ?? [])]
+      .sort((a, b) => String(b.status_date || b.date).localeCompare(String(a.status_date || a.date)))
+      .slice(0, 5),
+    [data],
+  )
+
+  const recentDistribution = useMemo(
+    () => (data?.distribution.invoices ?? []).slice(0, 5),
+    [data],
+  )
 
   return (
     <main className="vh-page" dir="rtl">
       <div className="vh-shell vrep-shell">
         <header className="vh-header">
           <button className="vh-profile" type="button" onClick={() => onNavigate('/visitor/profile')}>
-            <span className="vh-avatar">و</span>
-            <span className="vh-profile-copy"><strong>ویزیتور</strong><small><PinIcon /> منطقه کرج</small></span>
+            <span className="vh-avatar">{profile?.full_name?.charAt(0) || profile?.username?.charAt(0) || 'و'}</span>
+            <span className="vh-profile-copy">
+              <strong>{profile?.full_name || profile?.username || 'کاربر'}</strong>
+              <small><PinIcon /> {profile?.branch || profile?.sales_line || '—'}</small>
+            </span>
             <ChevronLeftIcon />
           </button>
-          <button className="vh-bell" type="button" aria-label="اعلان‌ها" onClick={() => onNavigate('/visitor/notifications')}><BellIcon />{unreadCount ? <b>{unreadCount}</b> : null}</button>
+          <button className="vh-bell" type="button" aria-label="اعلان‌ها" onClick={() => onNavigate('/visitor/notifications')}>
+            <BellIcon />
+            {unreadCount ? <b>{unreadCount}</b> : null}
+          </button>
           <div className="vh-brand" dir="ltr">
             <img src="/assets/neginai-logo-transparent.png" alt="Negin AI" />
             <div><strong>Negin <span>AI</span></strong><small>VISITOR</small></div>
@@ -92,106 +117,160 @@ export function VisitorReportsScreen({ onNavigate }: Props) {
 
         <section className="vrep-heading">
           <div>
-            <h1>گزارش عملکرد</h1>
-            <p>فروش، بازدید و کیفیت عملکرد شخصی</p>
+            <h1>گزارش‌های واقعی فروشنده</h1>
+            <p>فقط داده‌های ثبت‌شده در ERP، NGT و Seller Workspace نمایش داده می‌شوند.</p>
           </div>
-          <button type="button" onClick={() => flash('خروجی گزارش در مرحله اتصال سرویس فعال می‌شود')}><ChartIcon /> خروجی</button>
+          <button type="button" onClick={() => void load()} disabled={loading}>
+            <ChartIcon /> {loading ? 'در حال دریافت' : 'به‌روزرسانی'}
+          </button>
         </section>
 
-        <section className="vrep-period" role="tablist" aria-label="بازه گزارش">
-          <button type="button" role="tab" aria-selected={period === 'today'} className={period === 'today' ? 'active' : ''} onClick={() => setPeriod('today')}>امروز</button>
-          <button type="button" role="tab" aria-selected={period === 'week'} className={period === 'week' ? 'active' : ''} onClick={() => setPeriod('week')}>این هفته</button>
-          <button type="button" role="tab" aria-selected={period === 'month'} className={period === 'month' ? 'active' : ''} onClick={() => setPeriod('month')}>این ماه</button>
-        </section>
+        {error ? (
+          <section className="vh-live-state error" role="alert">
+            <div><strong>گزارش‌ها بارگذاری نشدند</strong><span>{error}</span></div>
+            <button type="button" onClick={() => void load()}>تلاش دوباره</button>
+          </section>
+        ) : loading ? (
+          <section className="vh-live-state" role="status">
+            <strong>در حال دریافت گزارش‌های واقعی…</strong>
+          </section>
+        ) : null}
 
-        <section className="vrep-primary-kpis" aria-label="شاخص‌های اصلی عملکرد">
+        <section className="vrep-primary-kpis" aria-label="شاخص‌های واقعی">
           <article className="vrep-kpi featured">
             <span className="vrep-kpi-icon"><ChartIcon /></span>
-            <span>فروش</span>
-            <strong>{money(snapshot.sales)}</strong>
-            <small>تومان</small>
-          </article>
-          <article className="vrep-kpi">
-            <span className="vrep-kpi-icon"><CartIcon /></span>
-            <span>سفارش</span>
-            <strong>{snapshot.orders}</strong>
-            <small>ثبت شده</small>
+            <span>مانده فاکتورهای باز</span>
+            <strong>{number(data?.openInvoices.open_invoice_remaining ?? 0)}</strong>
+            <small>{number(data?.openInvoices.customer_count ?? 0)} مشتری دارای مانده</small>
           </article>
           <article className="vrep-kpi">
             <span className="vrep-kpi-icon"><CheckCircleIcon /></span>
-            <span>بازدید</span>
-            <strong>{snapshot.visits}</strong>
-            <small>مشتری</small>
+            <span>چک‌های برگشتی</span>
+            <strong>{number(data?.returnedCheques.cheque_count ?? 0)}</strong>
+            <small>سهم فروشنده: {number(data?.returnedCheques.seller_share ?? 0)}</small>
           </article>
           <article className="vrep-kpi">
             <span className="vrep-kpi-icon"><StoreIcon /></span>
-            <span>مشتری جدید</span>
-            <strong>{snapshot.newCustomers}</strong>
-            <small>افزوده شده</small>
+            <span>توزیع در جریان</span>
+            <strong>{number(data?.distribution.invoice_count ?? 0)}</strong>
+            <small>{data?.distribution.distribution_dates?.join('، ') || 'موردی ثبت نشده'}</small>
+          </article>
+          <article className="vrep-kpi">
+            <span className="vrep-kpi-icon"><CheckCircleIcon /></span>
+            <span>ویزیت‌های امروز</span>
+            <strong>{number(routeSummary.visited)}</strong>
+            <small>{number(routeSummary.total)} ایستگاه در مسیر فعلی</small>
           </article>
         </section>
 
-        <section className="vrep-score-card">
-          <div className="vrep-score-ring" style={{ '--score': `${snapshot.target * 3.6}deg` } as CSSProperties}>
-            <div><strong>{snapshot.target}٪</strong><span>هدف</span></div>
-          </div>
-          <div className="vrep-score-copy">
-            <strong>تحقق هدف فروش</strong>
-            <p>{snapshot.target >= 90 ? 'به هدف ماهانه خیلی نزدیک هستی.' : snapshot.target >= 80 ? 'روند عملکرد بالاتر از میانگین برنامه است.' : 'برای رسیدن به هدف، تمرکز روی مشتریان پتانسیل‌دار را بیشتر کن.'}</p>
-            <div className="vrep-score-meta">
-              <span><b>{snapshot.conversion}٪</b> تبدیل بازدید به سفارش</span>
-              <span><b>{compactMoney(snapshot.avgOrder)}</b> میانگین سفارش</span>
-            </div>
-          </div>
-        </section>
-
-        <section className="vrep-chart-card">
-          <div className="vrep-section-head">
-            <div><ChartIcon /><strong>روند فروش</strong></div>
-            <span>۶ روز اخیر</span>
-          </div>
-          <div className="vrep-bars" aria-label="نمودار فروش روزانه">
-            {weeklySales.map((item, index) => (
-              <div className="vrep-bar-col" key={`${item.label}-${index}`}>
-                <span className="vrep-bar-value">{new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 2 }).format(item.value)} م</span>
-                <div className="vrep-bar-track"><span style={{ height: `${Math.max(18, (item.value / maxSale) * 100)}%` }} /></div>
-                <b>{item.label}</b>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="vrep-secondary-grid">
-          <article><span>میانگین سفارش</span><strong>{money(snapshot.avgOrder)}</strong><small>تومان</small></article>
-          <article><span>نرخ تبدیل</span><strong>{snapshot.conversion}٪</strong><small>بازدید به سفارش</small></article>
-          <article className="warning"><span>مرجوعی</span><strong>{money(snapshot.returned)}</strong><small>تومان</small></article>
-          <article><span>پیشرفت هدف</span><strong>{snapshot.target}٪</strong><small>برنامه فروش</small></article>
+        <section className="vrep-secondary-grid" aria-label="گزارش حواله و برگشت">
+          <article>
+            <span>حواله‌های ماه جاری</span>
+            <strong>{number(data?.voucherReturn.voucher_count ?? 0)}</strong>
+            <small>{data?.voucherReturn.report_month || '—'}</small>
+          </article>
+          <article>
+            <span>فاکتور شده</span>
+            <strong>{number(data?.voucherReturn.invoiced_count ?? 0)}</strong>
+            <small>از حواله‌های ماه جاری</small>
+          </article>
+          <article className="warning">
+            <span>برگشت کامل</span>
+            <strong>{number(data?.voucherReturn.full_returned_count ?? 0)}</strong>
+            <small>{number(data?.voucherReturn.return_percentage ?? 0)}٪ از حواله‌ها</small>
+          </article>
+          <article>
+            <span>توزیع‌نشده</span>
+            <strong>{number(data?.voucherReturn.undistributed_count ?? 0)}</strong>
+            <small>وضعیت فعلی ERP</small>
+          </article>
         </section>
 
         <section className="vrep-top-card">
           <div className="vrep-section-head">
-            <div><StoreIcon /><strong>مشتریان برتر</strong></div>
-            <button type="button" onClick={() => onNavigate('/visitor/customers')}>همه مشتریان</button>
+            <div><StoreIcon /><strong>بیشترین مانده فاکتور باز</strong></div>
+            <button type="button" onClick={() => onNavigate('/visitor/customers')}>مشتریان</button>
           </div>
           <div className="vrep-top-list">
-            {topCustomers.map((customer, index) => (
-              <button type="button" key={customer.name} onClick={() => onNavigate(`/visitor/customers/${index + 1}`)}>
+            {openInvoiceCustomers.length ? openInvoiceCustomers.map((customer, index) => (
+              <button
+                type="button"
+                key={String(customer.id)}
+                onClick={() => onNavigate(`/visitor/customers/${customer.id}`)}
+              >
                 <span className="vrep-rank">{index + 1}</span>
-                <span className="vrep-top-copy"><strong>{customer.name}</strong><small>{customer.area} · {customer.orders} سفارش</small></span>
-                <span className="vrep-top-amount"><strong>{money(customer.amount)}</strong><small>تومان</small></span>
+                <span className="vrep-top-copy">
+                  <strong>{customer.store_name || customer.name || customer.code}</strong>
+                  <small>{customer.open_invoice_count.toLocaleString('fa-IR')} فاکتور باز · قدیمی‌ترین: {dateTime(customer.oldest_open_invoice_date)}</small>
+                </span>
+                <span className="vrep-top-amount">
+                  <strong>{number(customer.open_invoice_remaining)}</strong>
+                  <small>مانده ثبت‌شده</small>
+                </span>
                 <ChevronLeftIcon />
               </button>
-            ))}
+            )) : <div className="vn-empty"><strong>مانده فاکتور بازی ثبت نشده است.</strong></div>}
+          </div>
+        </section>
+
+        <section className="vrep-top-card">
+          <div className="vrep-section-head">
+            <div><ChartIcon /><strong>آخرین چک‌های برگشتی</strong></div>
+            <span>{number(data?.returnedCheques.cheque_count ?? 0)} مورد</span>
+          </div>
+          <div className="vrep-top-list">
+            {recentCheques.length ? recentCheques.map((cheque) => (
+              <button
+                type="button"
+                key={cheque.id}
+                onClick={() => cheque.customer_id ? onNavigate(`/visitor/customers/${cheque.customer_id}`) : undefined}
+              >
+                <span className="vrep-rank">•</span>
+                <span className="vrep-top-copy">
+                  <strong>{cheque.customer_store || cheque.customer_name || cheque.customer_code}</strong>
+                  <small>{cheque.bank || 'بانک ثبت نشده'} · {cheque.status || 'وضعیت ثبت نشده'} · {dateTime(cheque.status_date || cheque.date)}</small>
+                </span>
+                <span className="vrep-top-amount">
+                  <strong>{number(cheque.seller_share || cheque.amount)}</strong>
+                  <small>سهم/مبلغ ثبت‌شده</small>
+                </span>
+                <ChevronLeftIcon />
+              </button>
+            )) : <div className="vn-empty"><strong>چک برگشتی ثبت نشده است.</strong></div>}
+          </div>
+        </section>
+
+        <section className="vrep-top-card">
+          <div className="vrep-section-head">
+            <div><StoreIcon /><strong>توزیع در جریان</strong></div>
+            <span>{number(data?.distribution.invoice_count ?? 0)} فاکتور</span>
+          </div>
+          <div className="vrep-top-list">
+            {recentDistribution.length ? recentDistribution.map((invoice) => (
+              <button type="button" key={invoice.id} onClick={() => onNavigate('/visitor/customers')}>
+                <span className="vrep-rank">•</span>
+                <span className="vrep-top-copy">
+                  <strong>{invoice.customer_store || invoice.customer_name || invoice.customer_code}</strong>
+                  <small>توزیع {invoice.distribution_number || '—'} · {invoice.distribution_date || '—'} · راننده: {invoice.driver_name || '—'}</small>
+                </span>
+                <span className="vrep-top-amount">
+                  <strong>{number(invoice.amount)}</strong>
+                  <small>مبلغ ERP</small>
+                </span>
+                <ChevronLeftIcon />
+              </button>
+            )) : <div className="vn-empty"><strong>توزیع در جریان ثبت نشده است.</strong></div>}
           </div>
         </section>
 
         <section className="vrep-ai-card">
           <ChartIcon />
-          <div><strong>جمع‌بندی عملکرد</strong><p>نرخ تبدیل بازدید مناسب است. بیشترین فرصت رشد در افزایش میانگین مبلغ سفارش مشتریان فعال دیده می‌شود.</p></div>
-          <button type="button" onClick={() => onNavigate('/visitor/ai?context=report&prompt=performance')}>تحلیل بیشتر</button>
+          <div>
+            <strong>تحلیل Negin AI</strong>
+            <p>تحلیل هوشمند فقط با اتکا به داده‌های واقعی همین گزارش انجام می‌شود.</p>
+          </div>
+          <button type="button" onClick={() => onNavigate('/visitor/ai?context=report&prompt=performance')}>تحلیل گزارش</button>
         </section>
-
-        {notice ? <div className="vh-toast" role="status">{notice}</div> : null}
 
         <nav className="vh-nav" aria-label="ناوبری ویزیتور">
           <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/home')}><HomeIcon /><span>خانه</span></button>
