@@ -1,7 +1,7 @@
 ---
 name: neginai-shell-ops
-description: "NeginAI Windows shell PowerShell CMD remote execution timeout process service MCP Cloudflare diagnostics reliability recovery. شل پاورشل ویندوز رموت تيم اوت سرویس ع͸Ȩ يابی"
-"license: MIT
+description: "NeginAI Windows shell PowerShell CMD remote execution timeout process service MCP Cloudflare diagnostics reliability recovery."
+license: MIT
 ---
 
 # NeginAI Shell Operations
