@@ -651,3 +651,99 @@ export async function getSellerDistributionInProgress() {
 export async function getSellerVoucherReturnReport() {
   return request<SellerVoucherReturnReportResponse>('/seller-workspace/voucher-return-report')
 }
+
+export type PrevisitProduct = {
+  id: string
+  code: string
+  name: string
+  brand: string
+  group_id: string
+  group: string
+  unit: string
+  sale_units: Array<{ ref: number | null; name: string; factor: number; is_default: boolean }>
+  available_qty: number
+  carton_size: number
+  min_order_qty: number
+  max_order_qty: number
+  indicative_price: number
+  consumer_price: number
+  indicative_prices: Record<string, number>
+  warehouse_inventory: Record<string, { on_hand_qty: number; reserved_qty: number; available_qty: number }>
+}
+
+export type PrevisitContextResponse = {
+  route: { id: string; title: string }
+  customer: SellerCustomer
+  order_types: Array<{ id: number; name: string }>
+  payment_types: Array<{ id: string; name: string; is_cash: boolean; check_credit: boolean; check_debit: boolean }>
+  warehouses: Array<{ id: string; ref: number; name: string; dc_ref: number }>
+  warehouse_selection: { enabled: boolean; default_ref: number; source: string }
+  products: PrevisitProduct[]
+  grouped_catalogs: Array<{ id: string; name: string; image_url: string; product_ids: string[]; brands: string[]; group_ids: string[] }>
+  catalog_filters: { brands: string[]; groups: Array<{ id: string; name: string }> }
+  inventory: { show_stock_level: boolean; source: string }
+  preview: { available: boolean; authoritative: boolean; creates_order: boolean }
+}
+
+export type PrevisitPreviewRequestPayload = {
+  route_id: string
+  customer_id: string
+  order_type_ref: number
+  payment_usance_ref: string
+  warehouse_ref?: number | null
+  lines: Array<{ product_id: string; quantity: number }>
+}
+
+export type PrevisitPreviewResponse = {
+  ok: boolean
+  message: string
+  items: Array<{
+    product_id: string
+    quantity: number
+    unit_price: number
+    discount_amount: number
+    discount_percent: number
+    gross_amount: number
+    tax_amount: number
+    charge_amount: number
+    net_amount: number
+    rule_no: string
+  }>
+  totals: { gross: number; discount: number; tax: number; charge: number; net: number }
+  gift_lines: Array<Record<string, unknown>>
+  restrictions: unknown[]
+  source: string
+  creates_order: false
+  credit_control?: { allowed?: boolean; blocking?: boolean; message?: string; deficit?: number; [key: string]: unknown }
+  order_type?: { id: number; name: string }
+  payment_type?: { id: string; name: string }
+  warehouse?: { id: string; ref: number; name: string } | null
+}
+
+export type PrevisitSavedRequestPayload = {
+  lines: PrevisitDraftLine[]
+  payment_type: string
+  order_type: string
+  warehouse_ref?: number | null
+  warehouse_name: string
+  preview: Record<string, unknown>
+}
+
+export async function getPrevisitContext(routeId: string, customerId: string, search = '', limit = 1000) {
+  const params = new URLSearchParams({ path_id: routeId, customer_id: customerId, search, limit: String(limit) })
+  return request<PrevisitContextResponse>(`/seller-workspace/previsit/context?${params}`)
+}
+
+export async function previewPrevisit(payload: PrevisitPreviewRequestPayload) {
+  return request<PrevisitPreviewResponse>('/seller-workspace/previsit/preview', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function createSavedPrevisitRequest(visitId: string, payload: PrevisitSavedRequestPayload) {
+  return request<RouteSavedRequest>(`/seller-workspace/previsit/visits/${encodeURIComponent(visitId)}/saved-requests`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
