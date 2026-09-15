@@ -50,43 +50,12 @@ button { cursor: pointer; }
   margin: 0 auto;
   padding: max(14px, env(safe-area-inset-top)) 20px max(12px, env(safe-area-inset-bottom));
   display: grid;
-  grid-template-rows: 36px minmax(145px, 1fr) auto 28px;
+  grid-template-rows: minmax(145px, 1fr) auto 28px;
   gap: 8px;
   position: relative;
   z-index: 1;
 }
-
-.login-topline {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  direction: ltr;
-}
-
-.secure-caption {
-  color: #728296;
-  font-size: 13px;
-  letter-spacing: .01em;
-  direction: rtl;
-}
-
-.language-switch {
-  height: 32px;
-  min-width: 64px;
-  padding: 0 10px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  color: #d8e1ea;
-  border: 1px solid rgba(151, 181, 208, .16);
-  border-radius: 14px;
-  background: rgba(8, 24, 38, .54);
-  box-shadow: inset 0 1px rgba(255,255,255,.04);
-}
-.language-switch svg { width: 16px; }
-.language-switch span { font: 600 13.5px Inter, Arial, sans-serif; }
-
+`r`n
 .login-brand {
   display: grid;
   align-content: center;
@@ -239,7 +208,7 @@ button { cursor: pointer; }
 }
 .primary-button:active { transform: translateY(1px); }
 
-.android-button {
+\.install-button {
   height: 45px;
   display: flex;
   align-items: center;
@@ -252,7 +221,7 @@ button { cursor: pointer; }
   font-size: 13.5px;
   font-weight: 650;
 }
-.android-button svg { width: 17px; color: #d0a94f; }
+\.install-button svg { width: 17px; color: #d0a94f; }
 
 .login-message {
   margin-top: 10px;
@@ -275,7 +244,7 @@ button { cursor: pointer; }
 }
 
 @media (max-height: 700px) and (max-width: 719px) {
-  .login-shell { grid-template-rows: 32px minmax(110px, 1fr) auto 18px; gap: 5px; padding-top: max(8px, env(safe-area-inset-top)); }
+  .login-shell { grid-template-rows: minmax(110px, 1fr) auto 18px; gap: 5px; padding-top: max(8px, env(safe-area-inset-top)); }
   .brand-logo { width: 78px; height: 78px; }
   .brand-wordmark { font-size: 21px; }
   .login-brand p { margin-top: 5px; font-size: 13px; }
@@ -284,12 +253,12 @@ button { cursor: pointer; }
   .auth-heading h1 { font-size: 17px; }
   .field { min-height: 45px; height: 45px; }
   .primary-button { height: 46px; }
-  .android-button { height: 40px; }
+  \.install-button { height: 40px; }
 }
 
 @media (max-height: 590px) and (max-width: 719px) {
-  .login-shell { grid-template-rows: 28px 64px auto 0; }
-  .secure-caption, .login-brand p, .login-footer { display: none; }
+  .login-shell { grid-template-rows: 64px auto 0; }
+  \.login-brand p, .login-footer { display: none; }
   .brand-logo { width: 54px; height: 54px; }
   .brand-wordmark { display: none; }
   .auth-panel { align-self: center; }
@@ -1482,7 +1451,7 @@ button:focus-visible,a:focus-visible { outline:2px solid rgba(240,193,82,.72); o
   background:rgba(111,34,44,.18);
 }
 .primary-button:disabled,
-.android-button:disabled,
+\.install-button:disabled,
 .vp-action-row:disabled,
 .vc-heading button:disabled,
 .vc-card-actions button:disabled {
