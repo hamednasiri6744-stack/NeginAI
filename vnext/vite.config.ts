@@ -1,6 +1,8 @@
-﻿import babel from '@rolldown/plugin-babel'
+import babel from '@rolldown/plugin-babel'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
+
+const backendTarget = process.env.NEGINAI_BACKEND_TARGET?.trim() || 'http://127.0.0.1:8007'
 
 export default defineConfig({
   plugins: [
@@ -14,11 +16,11 @@ export default defineConfig({
     port: 4183,
     strictPort: true,
     proxy: {
-      '/auth': 'https://ai.neginpakhsh.com',
-      '/seller-workspace': 'https://ai.neginpakhsh.com',
-      '/chat': 'https://ai.neginpakhsh.com',
-      '/audio': 'https://ai.neginpakhsh.com',
-      '/attachments': 'https://ai.neginpakhsh.com',
+      '/auth': backendTarget,
+      '/seller-workspace': backendTarget,
+      '/chat': backendTarget,
+      '/audio': backendTarget,
+      '/attachments': backendTarget,
       '/neshan-basemap': {
         target: 'https://api.neshan.org',
         changeOrigin: true,
@@ -35,5 +37,3 @@ export default defineConfig({
     target: 'baseline-widely-available',
   },
 })
-
-
