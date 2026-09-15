@@ -20,7 +20,16 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
   const [loginError, setLoginError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null)
-  const [isInstalled, setIsInstalled] = useState(() => window.matchMedia('(display-mode: standalone)').matches)
+  const [isInstalled, setIsInstalled] = useState(() =>
+    window.matchMedia('(display-mode: standalone)').matches ||
+    Boolean((window.navigator as any).standalone),
+  )
+  const isIOS = useMemo(
+    () =>
+      /iPad|iPhone|iPod/.test(window.navigator.userAgent) ||
+      (window.navigator.platform === 'MacIntel' ? Boolean(window.navigator.maxTouchPoints) : false),
+    [],
+  )
   const usernameRef = useRef<HTMLInputElement>(null)
   const passwordRef = useRef<HTMLInputElement>(null)
 
@@ -54,6 +63,11 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
 
     if (isInstalled) {
       setMessage('Negin AI از قبل به‌صورت وب‌اپ روی این دستگاه نصب شده است.')
+      return
+    }
+
+    if (isIOS) {
+      setMessage('\u0628\u0631\u0627\u06cc \u0646\u0635\u0628 \u0631\u0648\u06cc iPhone \u06cc\u0627 iPad\u060c \u062f\u0631 Safari \u0627\u0632 Share \u06af\u0632\u06cc\u0646\u0647 Add to Home Screen \u0631\u0627 \u0627\u0646\u062a\u062e\u0627\u0628 \u06a9\u0646\u06cc\u062f.')
       return
     }
 
