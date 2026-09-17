@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 import sqlite3
@@ -155,12 +155,30 @@ def init_sqlite(path: Path) -> None:
               title TEXT NOT NULL,
               body TEXT NOT NULL,
               payload_json TEXT NOT NULL DEFAULT '{}',
+              source TEXT NOT NULL DEFAULT 'automation',
+              category TEXT NOT NULL DEFAULT 'general',
+              severity TEXT NOT NULL DEFAULT 'info',
+              entity_type TEXT,
+              entity_id TEXT,
+              action_path TEXT,
+              dedupe_key TEXT,
+              occurred_at TEXT,
+              requires_ack INTEGER NOT NULL DEFAULT 0,
+              acknowledged_at TEXT,
               read_at TEXT,
               created_at TEXT NOT NULL,
               FOREIGN KEY(automation_id) REFERENCES automations(id)
             );
             CREATE INDEX IF NOT EXISTS idx_notifications_user_unread
               ON notifications(username, read_at, id DESC);
+            CREATE TABLE IF NOT EXISTS operational_alert_state (
+              username TEXT NOT NULL,
+              rule_key TEXT NOT NULL,
+              fingerprint TEXT NOT NULL,
+              payload_json TEXT NOT NULL DEFAULT '{}',
+              updated_at TEXT NOT NULL,
+              PRIMARY KEY(username, rule_key)
+            );
             CREATE TABLE IF NOT EXISTS push_subscriptions (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               username TEXT NOT NULL,
@@ -596,6 +614,26 @@ def init_sqlite(path: Path) -> None:
         for column_name, definition in user_profile_columns.items():
             if column_name not in user_columns:
                 conn.execute(f"ALTER TABLE users ADD COLUMN {definition}")
+        notification_columns = {row[1] for row in conn.execute("PRAGMA table_info(notifications)")}
+        notification_migrations = {
+            "source": "source TEXT NOT NULL DEFAULT 'automation'",
+            "category": "category TEXT NOT NULL DEFAULT 'general'",
+            "severity": "severity TEXT NOT NULL DEFAULT 'info'",
+            "entity_type": "entity_type TEXT",
+            "entity_id": "entity_id TEXT",
+            "action_path": "action_path TEXT",
+            "dedupe_key": "dedupe_key TEXT",
+            "occurred_at": "occurred_at TEXT",
+            "requires_ack": "requires_ack INTEGER NOT NULL DEFAULT 0",
+            "acknowledged_at": "acknowledged_at TEXT",
+        }
+        for column_name, definition in notification_migrations.items():
+            if column_name not in notification_columns:
+                conn.execute(f"ALTER TABLE notifications ADD COLUMN {definition}")
+        conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_notifications_user_dedupe ON notifications(username, dedupe_key) WHERE dedupe_key IS NOT NULL")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_notifications_user_severity ON notifications(username, read_at, severity, id DESC)")
+        conn.execute("UPDATE notifications SET category='automation' WHERE automation_id IS NOT NULL AND category='general'")
+        conn.execute("UPDATE notifications SET occurred_at=created_at WHERE occurred_at IS NULL")
         conn.execute(
             """CREATE UNIQUE INDEX IF NOT EXISTS idx_users_personnel_id
                ON users(personnel_id) WHERE personnel_id IS NOT NULL"""

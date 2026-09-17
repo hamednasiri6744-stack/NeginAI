@@ -1,5 +1,6 @@
-﻿import { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useVisitorAuth } from '../state/VisitorAuthContext'
+import type { NotificationSeverity } from '../api/neginApi'
 import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
 import '../design-system/living/index.css'
 import '../styles/living-ui-pilot.css'
@@ -26,28 +27,46 @@ function notificationTime(value: string) {
   }).format(date)
 }
 
+const severityRank: Record<NotificationSeverity, number> = { critical: 4, high: 3, medium: 2, info: 1 }
+const severityLabel: Record<NotificationSeverity, string> = {
+  critical: 'بحرانی',
+  high: 'مهم',
+  medium: 'متوسط',
+  info: 'اطلاع',
+}
+
 export function VisitorNotificationsScreen({ onNavigate, onClose }: Props) {
   const { profile } = useVisitorAuth()
   const {
     items,
     unreadCount,
+    attentionCount,
+    highestSeverity,
     loading,
     error,
     reload,
     markRead,
+    markAcknowledged,
     markAllRead,
   } = useVisitorNotifications()
   const [filter, setFilter] = useState<Filter>('all')
 
-  const visibleItems = useMemo(
-    () => filter === 'unread'
-      ? items.filter((item) => !item.read)
+  const visibleItems = useMemo(() => {
+    const filtered = filter === 'unread'
+      ? items.filter((item) => !item.read || (item.requires_ack && !item.acknowledged))
       : filter === 'read'
-        ? items.filter((item) => item.read)
-        : items,
-    [filter, items],
-  )
-  const readCount = Math.max(0, items.length - unreadCount)
+        ? items.filter((item) => item.read && (!item.requires_ack || item.acknowledged))
+        : items
+    return [...filtered].sort((a, b) => {
+      const aAttention = !a.read || (a.requires_ack && !a.acknowledged) ? 1 : 0
+      const bAttention = !b.read || (b.requires_ack && !b.acknowledged) ? 1 : 0
+      if (aAttention !== bAttention) return bAttention - aAttention
+      const severityDiff = severityRank[b.severity] - severityRank[a.severity]
+      if (severityDiff) return severityDiff
+      return new Date(b.occurred_at || b.created_at).valueOf() - new Date(a.occurred_at || a.created_at).valueOf()
+    })
+  }, [filter, items])
+  const readCount = items.filter((item) => item.read && (!item.requires_ack || item.acknowledged)).length
 
   return (
     <main className="vh-page ng-living-root vh-live-ui" dir="rtl" data-live-ui="unified" data-living-ui="on">
@@ -62,9 +81,9 @@ export function VisitorNotificationsScreen({ onNavigate, onClose }: Props) {
             <ChevronLeftIcon />
           </button>
 
-          <button className="vh-bell active ng-living-interactive" type="button" aria-label="\u0628\u0633\u062a\u0646 \u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627" onClick={onClose}>
+          <button className={`vh-bell active ng-living-interactive ${highestSeverity ? `severity-${highestSeverity}` : ''}`} data-severity={highestSeverity ?? 'none'} type="button" aria-label="\u0628\u0633\u062a\u0646 \u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627" onClick={onClose}>
             <BellIcon />
-            {unreadCount ? <b key={unreadCount} className="ng-living-reactive">{unreadCount}</b> : null}
+            {attentionCount ? <b key={`${attentionCount}-${highestSeverity ?? 'none'}`} className="ng-living-reactive">{attentionCount}</b> : null}
           </button>
 
           <div className="vh-brand" dir="ltr">
@@ -77,8 +96,8 @@ export function VisitorNotificationsScreen({ onNavigate, onClose }: Props) {
           <div>
             <h1>{'\u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627'}</h1>
             <p>
-              {unreadCount
-                ? `${unreadCount.toLocaleString('fa-IR')} \u0627\u0639\u0644\u0627\u0646 \u062e\u0648\u0627\u0646\u062f\u0647\u200c\u0646\u0634\u062f\u0647`
+              {attentionCount
+                ? `${attentionCount.toLocaleString('fa-IR')} هشدار نیازمند توجه${highestSeverity ? ` · سطح ${severityLabel[highestSeverity]}` : ''}`
                 : '\u0647\u0645\u0647 \u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627\u06cc \u0641\u0639\u0644\u06cc \u062e\u0648\u0627\u0646\u062f\u0647 \u0634\u062f\u0647\u200c\u0627\u0646\u062f.'}
             </p>
           </div>
@@ -134,19 +153,24 @@ export function VisitorNotificationsScreen({ onNavigate, onClose }: Props) {
         <section key={filter} className="vn-list ng-living-panel-change" aria-label="\u0641\u0647\u0631\u0633\u062a \u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627">
           {visibleItems.length ? visibleItems.map((item) => (
             <article
-              className={`vn-card ${item.read ? 'read' : 'unread'} ng-living-surface`}
-              data-living-state={item.read ? 'settled' : 'live'}
+              className={`vn-card ${item.read ? 'read' : 'unread'} severity-${item.severity} ng-living-surface`}
+              data-severity={item.severity}
+              data-living-state={item.requires_ack && !item.acknowledged ? 'attention' : item.read ? 'settled' : 'live'}
               key={item.id}
             >
-              <button className="vn-card-main ng-living-interactive" type="button" onClick={() => markRead(item.id)}>
+              <button className="vn-card-main ng-living-interactive" type="button" onClick={() => { markRead(item.id); if (item.action_path) onNavigate(item.action_path) }}>
                 <span className="vn-icon"><BellIcon /></span>
                 <span className="vn-copy">
-                  <span className="vn-meta"><time>{notificationTime(item.created_at)}</time></span>
+                  <span className="vn-meta"><b className={`vn-severity ${item.severity}`}>{severityLabel[item.severity]}</b><time>{notificationTime(item.occurred_at || item.created_at)}</time></span>
                   <strong>{item.title}</strong>
                   <small>{item.body}</small>
+                  <em>{item.source === 'NGT' || item.source === 'varanegar' ? 'منبع: ورانگر / NGT' : item.source}</em>
                 </span>
-                {!item.read ? <span className="vn-unread-dot ng-living-reactive" aria-label="\u062e\u0648\u0627\u0646\u062f\u0647\u200c\u0646\u0634\u062f\u0647" /> : <ChevronLeftIcon />}
+                {!item.read || (item.requires_ack && !item.acknowledged) ? <span className="vn-unread-dot ng-living-reactive" aria-label="نیازمند توجه" /> : <ChevronLeftIcon />}
               </button>
+              {item.requires_ack && !item.acknowledged ? (
+                <div className="vn-card-foot critical-ack"><span>این هشدار نیازمند تأیید است</span><button type="button" onClick={() => markAcknowledged(item.id)}>تأیید اطلاع</button></div>
+              ) : null}
             </article>
           )) : (
             <div className="vn-empty">

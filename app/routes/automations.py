@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response
 
 from app.automation_service import (
     AutomationError,
+    acknowledge_notifications,
     create_automation,
     delete_automation,
     list_automations,
@@ -97,5 +98,12 @@ def list_my_notifications(
 @router.post("/notifications/read", operation_id="markMyAutomationNotificationsRead")
 def read_my_notifications(payload: NotificationReadRequest, request: Request):
     return {"updated": mark_notifications_read(
+        request.app.state.settings, _username(request), payload.notification_ids
+    )}
+
+
+@router.post("/notifications/acknowledge", operation_id="acknowledgeMyOperationalNotifications")
+def acknowledge_my_notifications(payload: NotificationReadRequest, request: Request):
+    return {"updated": acknowledge_notifications(
         request.app.state.settings, _username(request), payload.notification_ids
     )}

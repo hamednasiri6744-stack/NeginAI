@@ -251,6 +251,15 @@ def list_notifications(
             "automation_id": row["automation_id"],
             "title": str(row["title"]),
             "body": str(row["body"]),
+            "source": str(row["source"] or "automation"),
+            "category": str(row["category"] or "general"),
+            "severity": str(row["severity"] or "info"),
+            "entity_type": row["entity_type"],
+            "entity_id": row["entity_id"],
+            "action_path": row["action_path"],
+            "requires_ack": bool(row["requires_ack"]),
+            "acknowledged": row["acknowledged_at"] is not None,
+            "occurred_at": str(row["occurred_at"] or row["created_at"]),
             "read": row["read_at"] is not None,
             "created_at": str(row["created_at"]),
         }
@@ -269,6 +278,22 @@ def mark_notifications_read(
         cursor = conn.execute(
             f"UPDATE notifications SET read_at=? WHERE username=? AND read_at IS NULL AND id IN ({placeholders})",
             [utc_now().isoformat(), username, *ids],
+        )
+    return int(cursor.rowcount)
+
+
+def acknowledge_notifications(
+    settings: Settings, username: str, notification_ids: list[int]
+) -> int:
+    ids = sorted({int(value) for value in notification_ids if int(value) > 0})[:100]
+    if not ids:
+        return 0
+    placeholders = ",".join("?" for _ in ids)
+    stamp = utc_now().isoformat()
+    with sqlite_connection(settings.sqlite_path) as conn:
+        cursor = conn.execute(
+            f"UPDATE notifications SET acknowledged_at=?, read_at=COALESCE(read_at, ?) WHERE username=? AND requires_ack=1 AND acknowledged_at IS NULL AND id IN ({placeholders})",
+            [stamp, stamp, username, *ids],
         )
     return int(cursor.rowcount)
 

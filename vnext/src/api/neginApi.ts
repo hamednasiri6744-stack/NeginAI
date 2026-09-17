@@ -341,11 +341,22 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   return normalizeApiPayload(payload) as T
 }
 
+export type NotificationSeverity = 'critical' | 'high' | 'medium' | 'info'
+
 export type AutomationNotification = {
   id: number
   automation_id: number | null
   title: string
   body: string
+  source: string
+  category: string
+  severity: NotificationSeverity
+  entity_type?: string | null
+  entity_id?: string | null
+  action_path?: string | null
+  requires_ack: boolean
+  acknowledged: boolean
+  occurred_at: string
   read: boolean
   created_at: string
 }
@@ -381,6 +392,13 @@ export const neginApi = {
 
   async markAutomationNotificationsRead(notificationIds: number[]) {
     return request<{ updated: number }>('/automations/notifications/read', {
+      method: 'POST',
+      body: JSON.stringify({ notification_ids: notificationIds }),
+    })
+  },
+
+  async acknowledgeAutomationNotifications(notificationIds: number[]) {
+    return request<{ updated: number }>('/automations/notifications/acknowledge', {
       method: 'POST',
       body: JSON.stringify({ notification_ids: notificationIds }),
     })

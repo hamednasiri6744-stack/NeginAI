@@ -668,7 +668,7 @@ ORDER BY vtp.RowIndex, vtp.PathTitle
         }
     else:
         resolved_day_route = None
-    return {
+    result = {
         "seller": {"personnel_id": personnel_id, "full_name": profile["full_name"]},
         "visit_template": str(assigned[0]["VisitTemplateName"] or "") if assigned else "",
         "routes": routes,
@@ -684,6 +684,13 @@ ORDER BY vtp.RowIndex, vtp.PathTitle
         "source": "NGT.Personnels.VisitTemplateUniqueId",
         "live_assignment": True,
     }
+    try:
+        from app.operational_notification_service import observe_route_assignment
+        observe_route_assignment(settings, username, result)
+    except Exception:
+        # Alerting must never block the seller workspace.
+        pass
+    return result
 
 
 def _route_visit_resolutions(settings: Any, username: str, path_id: str) -> dict[str, dict[str, Any]]:

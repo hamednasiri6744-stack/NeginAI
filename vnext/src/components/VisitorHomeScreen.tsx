@@ -47,7 +47,7 @@ function LiveSeconds() {
 
 
 export function VisitorHomeScreen({ onNavigate }: Props) {
-  const { unreadCount } = useVisitorNotifications()
+  const { attentionCount, highestSeverity } = useVisitorNotifications()
   const { profile } = useVisitorAuth()
   const { loading, error, activeRouteTitle, liveAssignment, workCalendar, targetPulse, reload } = useVisitorLiveData()
   const [notice, setNotice] = useState<string | null>(null)
@@ -151,9 +151,9 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
             <ChevronLeftIcon />
           </button>
 
-          <button className="vh-bell ng-living-interactive" type="button" aria-label="اعلان‌ها" onClick={() => onNavigate('/visitor/notifications')}>
+          <button className={`vh-bell ng-living-interactive ${highestSeverity ? `severity-${highestSeverity}` : ''}`} data-severity={highestSeverity ?? 'none'} type="button" aria-label="اعلان‌ها" onClick={() => onNavigate('/visitor/notifications')}>
             <BellIcon />
-            {unreadCount ? <b key={unreadCount} className="ng-living-reactive">{unreadCount}</b> : null}
+            {attentionCount ? <b key={`${attentionCount}-${highestSeverity ?? 'none'}`} className="ng-living-reactive">{attentionCount}</b> : null}
           </button>
 
           <div className="vh-brand" dir="ltr">

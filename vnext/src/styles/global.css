@@ -2038,3 +2038,27 @@ button:focus-visible,a:focus-visible { outline:2px solid rgba(240,193,82,.72); o
 .vh-home-action.active strong { color:#f4d67d; }
 .vh-home-action.active small { color:#69dcb8; }
 .vh-home-action.active > svg:first-child { filter:drop-shadow(0 0 8px rgba(239,190,76,.28)); }
+
+/* Wave 6: operational notification severity and alert acknowledgement. */
+.vh-bell.severity-critical { border-color:rgba(255,83,95,.55); color:#ff8b94; box-shadow:0 0 0 1px rgba(255,83,95,.12),0 0 22px rgba(255,65,80,.22),inset 0 1px rgba(255,255,255,.06); animation:vh-alert-critical 1.25s ease-in-out infinite; }
+.vh-bell.severity-high { border-color:rgba(255,166,65,.42); color:#ffbd70; box-shadow:0 0 18px rgba(235,139,42,.16),inset 0 1px rgba(255,255,255,.05); }
+.vh-bell.severity-medium { border-color:rgba(238,193,86,.26); color:#eec866; }
+.vh-bell.severity-info { color:#dce6f1; }
+.vh-bell.severity-critical b { background:linear-gradient(180deg,#ff9a9f,#e64e5a); color:#fff; border-color:#341119; }
+.vh-bell.severity-high b { background:linear-gradient(180deg,#ffd08a,#dc8b2e); color:#201407; }
+@keyframes vh-alert-critical { 0%,100%{transform:scale(1)} 50%{transform:scale(1.045)} }
+
+.vn-card.severity-critical { border-right:3px solid rgba(255,83,95,.78); }
+.vn-card.severity-high { border-right:2px solid rgba(255,166,65,.62); }
+.vn-card.severity-medium { border-right:2px solid rgba(236,190,77,.38); }
+.vn-severity { min-height:21px; padding:0 7px; display:inline-flex; align-items:center; border-radius:999px; font-size:10.5px!important; line-height:1; }
+.vn-severity.critical { color:#ffadb3!important; background:rgba(206,56,69,.13); }
+.vn-severity.high { color:#ffc278!important; background:rgba(211,126,35,.12); }
+.vn-severity.medium { color:#e8c66d!important; background:rgba(205,162,56,.10); }
+.vn-severity.info { color:#83a4bd!important; background:rgba(85,128,160,.10); }
+.vn-copy > em { color:#587084; font-size:10.5px; font-style:normal; line-height:1.4; }
+.vn-card-foot.critical-ack { border-top-color:rgba(255,87,99,.12); }
+.vn-card-foot.critical-ack > span { color:#c88f96; font-size:11px; }
+.vn-card-foot.critical-ack > button { color:#ffd1d4; border-color:rgba(255,95,107,.20); background:linear-gradient(145deg,rgba(92,31,41,.42),rgba(31,13,20,.58)); }
+.vn-card[data-severity='critical'][data-living-state='attention'] { box-shadow:0 15px 30px rgba(0,0,0,.30),0 0 20px rgba(209,53,67,.08),inset 0 1px rgba(255,255,255,.035); }
+@media (prefers-reduced-motion:reduce){ .vh-bell.severity-critical{animation:none} }
