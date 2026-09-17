@@ -2025,3 +2025,16 @@ button:focus-visible,a:focus-visible { outline:2px solid rgba(240,193,82,.72); o
 .vh-mission-stat strong { font-size:17px; }
 .vh-shell { padding-bottom:calc(132px + env(safe-area-inset-bottom)); scroll-padding-bottom:132px; }
 @media (max-width:359px){ .vh-home-actions{grid-template-columns:1fr;} }
+
+/* Wave 5: make Home disclosure self-revealing and unmistakably active. */
+.vh-home-actions { align-items:start; }
+.vh-home-sheet { grid-column:1 / -1; margin-top:0; position:relative; scroll-margin-bottom:132px; }
+.vh-home-sheet::before { content:''; position:absolute; top:-6px; width:12px; height:12px; transform:rotate(45deg); background:#0b2234; border-left:1px solid rgba(239,190,76,.34); border-top:1px solid rgba(239,190,76,.34); }
+.vh-home-sheet-plan::before { right:24%; }
+.vh-home-sheet-insights::before { left:24%; }
+.vh-home-action { position:relative; transition:transform .18s ease,border-color .2s ease,box-shadow .2s ease,background .2s ease; }
+.vh-home-action.active { transform:translateY(-1px); border-color:rgba(245,198,88,.52); background:linear-gradient(145deg,rgba(28,57,76,.98),rgba(7,24,37,.96)); box-shadow:0 0 0 1px rgba(240,190,70,.08),0 10px 24px rgba(0,0,0,.26),0 0 22px rgba(226,166,50,.10),inset 0 1px rgba(255,255,255,.05); }
+.vh-home-action.active::after { content:''; position:absolute; right:12px; left:12px; bottom:3px; height:2px; border-radius:999px; background:linear-gradient(90deg,transparent,#efc45d,transparent); opacity:.85; }
+.vh-home-action.active strong { color:#f4d67d; }
+.vh-home-action.active small { color:#69dcb8; }
+.vh-home-action.active > svg:first-child { filter:drop-shadow(0 0 8px rgba(239,190,76,.28)); }
