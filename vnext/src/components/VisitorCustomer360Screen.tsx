@@ -242,11 +242,6 @@ export function VisitorCustomer360Screen({ customerId = '', onNavigate, onBack }
           <div className="vh-brand" dir="ltr"><img src="/assets/neginai-logo-transparent.png" alt="Negin AI" /><div><strong>Negin <span>AI</span></strong><small>VISITOR</small></div></div>
         </header>
 
-        <section className="c360-topbar">
-          <button type="button" className="c360-back" onClick={onBack} aria-label="بازگشت"><ChevronLeftIcon /></button>
-          <div><span>پروفایل مشتری · داده زنده</span><h1>Customer 360</h1></div>
-        </section>
-
         {error ? <section className="vh-live-state error" role="alert"><div><strong>پروفایل مشتری دریافت نشد</strong><span>{error}</span></div></section> : null}
         {loading ? <section className="vh-live-state" role="status"><strong>در حال دریافت Customer 360…</strong><span>اطلاعات از NGT و منابع مالی مجاز خوانده می‌شود.</span></section> : null}
 
@@ -260,6 +255,7 @@ export function VisitorCustomer360Screen({ customerId = '', onNavigate, onBack }
                 <span><PinIcon /> {customer.address || 'نشانی ثبت نشده'} · {profile?.route.title || 'مسیر روز'}</span>
                 {profile?.customer.alarm ? <div className="c360-inline-alert"><strong>هشدار NGT</strong><span>{profile.customer.alarm}</span></div> : null}
               </div>
+              <button type="button" className="c360-identity-back" onClick={onBack} aria-label="Back"><ChevronLeftIcon /></button>
             </section>
 
             <section className={`c360-workflow-card ng-living-surface ${offDay ? 'is-offday' : ''}`} data-visit-state={offDay ? 'offday' : activeVisitHere ? 'active' : 'ready'} aria-label="اقدام بعدی مشتری">
@@ -422,7 +418,7 @@ export function VisitorCustomer360Screen({ customerId = '', onNavigate, onBack }
         <nav className="vh-nav" aria-label="ناوبری ویزیتور">
           <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/home')}><HomeIcon /><span>خانه</span></button>
           <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/route')}><MapIcon /><span>مسیر</span></button>
-          <button className="vh-order" type="button" onClick={() => onNavigate(customer ? `/visitor/orders?customer=${customer.id}` : '/visitor/orders')}><PlusIcon /><span>سفارش</span></button>
+          <button className="vh-order" type="button" disabled={offDay} aria-disabled={offDay} onClick={() => onNavigate(customer ? `/visitor/orders?customer=${customer.id}` : '/visitor/orders')}><PlusIcon /><span>سفارش</span></button>
           <button className="vh-nav-item active" type="button" aria-current="page" onClick={() => onNavigate('/visitor/customers')}><UserGroupIcon /><span>مشتریان</span></button>
           <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/reports')}><ChartIcon /><span>گزارش‌ها</span></button>
         </nav>

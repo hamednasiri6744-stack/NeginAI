@@ -2195,3 +2195,12 @@ button:focus-visible,a:focus-visible { outline:2px solid rgba(240,193,82,.72); o
 .c360-stack > .c360-panel:first-child .c360-info-grid dt { font-size:11px; }
 .c360-stack > .c360-panel:first-child .c360-info-grid dd { margin:0; font-size:12px; line-height:1.45; text-align:left; overflow-wrap:anywhere; }
 @media (max-width:350px){ .c360-offday-strip > b{display:none} .c360-stack > .c360-panel:first-child .c360-info-grid > div{grid-template-columns:76px minmax(0,1fr)} }
+
+/* Customer Workspace refinement: remove redundant title row and lighten section switcher. */
+.c360-identity { grid-template-columns:48px minmax(0,1fr) 38px; align-items:center; }
+.c360-identity-back { width:38px; height:38px; display:grid; place-items:center; border-radius:12px; border:1px solid rgba(166,195,219,.10); color:#8195a8; background:rgba(255,255,255,.018); }
+.c360-identity-back svg { width:15px; }
+.c360-tabs { margin-top:7px; padding:0 2px; gap:4px; border:0; border-radius:0; background:transparent; }
+.c360-tabs button { height:38px; border-radius:12px; border:1px solid transparent; }
+.c360-tabs button.active { color:#efc45d; background:rgba(226,169,53,.055); border-color:rgba(226,169,53,.10); box-shadow:none; }
+.c360-app-page .vh-order:disabled { filter:saturate(.15); box-shadow:none; }
