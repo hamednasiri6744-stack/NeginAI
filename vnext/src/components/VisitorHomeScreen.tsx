@@ -106,6 +106,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
     { label: 'بازدیدها', value: `${routeSummary.visited} / ${routeSummary.total}`, hint: `${routeSummary.progress}٪ مسیر`, icon: <CheckCircleIcon />, tone: 'gold' },
     { label: 'نیازمند موقعیت', value: String(unlocatedCount), hint: unlocatedCount ? 'برای مسیریابی ثبت شود' : 'همه آماده مسیریابی', icon: <PinIcon />, tone: unlocatedCount ? 'danger' : 'mint' },
   ]
+  const routeKpi = kpis[0]!
   const tasks = routeStops.filter((stop) => !['visited', 'skipped'].includes(stop.status)).slice(0, 3).map((stop, index) => ({
     customerId: stop.customerId,
     time: stop.eta,
@@ -207,17 +208,6 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
           <section className="vh-live-state" role="status"><strong>در حال همگام‌سازی با NGT…</strong><span>مسیر و مشتریان واقعی در حال دریافت هستند.</span></section>
         ) : null}
 
-        <section className="vh-kpis" aria-label="خلاصه امروز">
-          {kpis.map((kpi, index) => (
-            <article className={`vh-kpi vh-kpi-${kpi.tone ?? 'gold'} ng-living-surface`} key={kpi.label} data-live={index === 0 && liveAssignment ? 'true' : undefined} data-living-state={index === 0 && liveAssignment ? 'live' : 'idle'}>
-              <span className="vh-kpi-icon">{kpi.icon}</span>
-              <span className="vh-kpi-label">{kpi.label}</span>
-              <strong key={`${kpi.label}-${kpi.value}`} className={`${index === 0 ? 'vh-kpi-route-value ' : ''}ng-living-reactive`}>{kpi.value}</strong>
-              <small key={`${kpi.label}-${kpi.hint}`} className="ng-living-reactive-soft">{kpi.hint}</small>
-            </article>
-          ))}
-        </section>
-
         <section className="vh-next-card ng-living-surface ng-living-live" data-live={nextStop ? 'true' : undefined} data-living-state={nextStop ? 'active' : 'idle'}>
           <div className="vh-section-title">
             <div><PinIcon /><strong>بازدید بعدی</strong></div>
@@ -234,6 +224,32 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
             <button className="vh-mini-action ng-living-interactive" type="button" aria-label="شروع مسیریابی" onClick={() => nextStop ? onNavigate(`/visitor/route?customer=${nextStop.customerId}`) : flash('ایستگاه فعالی باقی نمانده')}>
               <RouteArrowIcon />
             </button>
+          </div>
+        </section>
+
+        <section className="vh-mission-rail ng-living-surface" aria-label="وضعیت عملیاتی امروز" data-living-state="active">
+          <button className="vh-mission-route ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/route')}>
+            <span className="vh-mission-route-icon">{routeKpi.icon}</span>
+            <span className="vh-mission-route-copy">
+              <small>{routeKpi.label}</small>
+              <strong>{routeKpi.value}</strong>
+            </span>
+            <span className="vh-mission-live">{routeKpi.hint}</span>
+            <ChevronLeftIcon />
+          </button>
+          <div className="vh-mission-stats">
+            {kpis.slice(1).map((kpi, index) => (
+              <button
+                className={`vh-mission-stat vh-mission-stat-${kpi.tone ?? 'gold'} ng-living-interactive`}
+                type="button"
+                key={kpi.label}
+                onClick={() => onNavigate(index === 0 ? '/visitor/customers' : '/visitor/route')}
+              >
+                <span>{kpi.label}</span>
+                <strong key={`${kpi.label}-${kpi.value}`} className="ng-living-reactive" dir="ltr">{kpi.value}</strong>
+                <small>{kpi.hint}</small>
+              </button>
+            ))}
           </div>
         </section>
 
