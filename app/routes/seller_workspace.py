@@ -398,6 +398,35 @@ def get_my_previsit_context(
         raise HTTPException(status_code=403, detail=str(exc)) from exc
 
 
+@router.get("/previsit/browse-context")
+def get_my_previsit_browse_context(
+    request: Request,
+    path_id: str = Query(min_length=1, max_length=100),
+    customer_id: str = Query(min_length=1, max_length=100),
+    search: str = Query(default="", max_length=100),
+    limit: int = Query(default=250, ge=1, le=1000),
+):
+    try:
+        result = previsit_context(
+            request.app.state.settings,
+            _username(request),
+            path_id,
+            customer_id,
+            search=search,
+            limit=limit,
+            require_day_route=False,
+        )
+        result.pop("_bridge", None)
+        result["browse_only"] = True
+        return result
+    except PrevisitError as exc:
+        raise _previsit_error(exc) from exc
+    except TimeoutError as exc:
+        raise _ngt_timeout_error() from exc
+    except SellerWorkspaceError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+
+
 @router.get("/previsit/catalog-images/{catalog_id}/{image_name}")
 def get_previsit_catalog_image(
     catalog_id: str,

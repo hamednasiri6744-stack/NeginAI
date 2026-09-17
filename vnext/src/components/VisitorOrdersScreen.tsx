@@ -2,14 +2,17 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   completeServerVisit,
   createSavedPrevisitRequest,
+  getPrevisitBrowseContext,
   getPrevisitContext,
   getVisitDraft,
+  neginApi,
   previewPrevisit,
   updateVisitDraft,
   type PrevisitContextResponse,
   type PrevisitPreviewResponse,
   type PrevisitProduct,
   type RouteSavedRequest,
+  type SellerCustomer,
 } from '../api/neginApi'
 import { useVisitorAuth } from '../state/VisitorAuthContext'
 import { useVisitorLiveData } from '../state/VisitorLiveDataContext'
@@ -52,7 +55,7 @@ function number(value: number) {
 export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo }: Props) {
   const { profile } = useVisitorAuth()
   const { unreadCount } = useVisitorNotifications()
-  const { activeRouteId, activeRouteTitle, customers, customerById } = useVisitorLiveData()
+  const { activeRouteId, activeRouteTitle, customers, routes, offDay } = useVisitorLiveData()
   const { activeVisit, completeVisit } = useVisitorWorkflow()
 
   const effectiveVisitId = visitId ?? activeVisit?.id
@@ -63,6 +66,10 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
   const [context, setContext] = useState<PrevisitContextResponse | null>(null)
   const [contextLoading, setContextLoading] = useState(false)
   const [contextError, setContextError] = useState<string | null>(null)
+  const [browseRouteId, setBrowseRouteId] = useState('')
+  const [browseCustomers, setBrowseCustomers] = useState<SellerCustomer[]>([])
+  const [browseLoading, setBrowseLoading] = useState(false)
+  const [browseError, setBrowseError] = useState<string | null>(null)
   const [view, setView] = useState<View>('products')
   const [query, setQuery] = useState('')
   const [brand, setBrand] = useState('')
@@ -83,10 +90,15 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
   const [draftSyncState, setDraftSyncState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const hydratedVisitRef = useRef('')
 
-  const routeId = visitDraft?.route_id ?? activeVisit?.routeId ?? activeRouteId
+  const browseMode = offDay && !activeRouteId && !effectiveVisitId
+  const availableCustomers = browseMode ? browseCustomers : customers
+  const routeId = visitDraft?.route_id ?? activeVisit?.routeId ?? activeRouteId ?? (browseMode ? browseRouteId || null : null)
   const lockedCustomerId = visitDraft?.customer_id ?? activeVisit?.customerId
   const effectiveCustomerId = lockedCustomerId ?? selectedCustomerId
-  const selectedCustomer = effectiveCustomerId ? customerById(effectiveCustomerId) : undefined
+  const selectedCustomer = effectiveCustomerId
+    ? availableCustomers.find((customer) => String(customer.id) === String(effectiveCustomerId))
+    : undefined
+  const browseRouteTitle = routes.find((route) => route.id === browseRouteId)?.title ?? ''
   const visitLocked = Boolean(effectiveVisitId && lockedCustomerId)
 
   const flash = useCallback((message: string) => {
@@ -113,15 +125,51 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
   }, [effectiveVisitId])
 
   useEffect(() => {
+    if (!browseMode) {
+      setBrowseRouteId('')
+      setBrowseCustomers([])
+      setBrowseError(null)
+      return
+    }
+    if (!browseRouteId && routes[0]?.id) setBrowseRouteId(routes[0].id)
+  }, [browseMode, browseRouteId, routes])
+
+  useEffect(() => {
+    if (!browseMode || !browseRouteId) {
+      setBrowseCustomers([])
+      setBrowseLoading(false)
+      setBrowseError(null)
+      return
+    }
+    let cancelled = false
+    setBrowseLoading(true)
+    setBrowseError(null)
+    void neginApi.routeCustomers(browseRouteId)
+      .then((data) => {
+        if (!cancelled) setBrowseCustomers(data.customers)
+      })
+      .catch((caught) => {
+        if (!cancelled) {
+          setBrowseCustomers([])
+          setBrowseError(caught instanceof Error ? caught.message : 'مشتریان مسیر برای مرور دریافت نشد.')
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setBrowseLoading(false)
+      })
+    return () => { cancelled = true }
+  }, [browseMode, browseRouteId])
+
+  useEffect(() => {
     if (lockedCustomerId) {
       setSelectedCustomerId(String(lockedCustomerId))
       return
     }
-    if (selectedCustomerId && customers.some((customer) => String(customer.id) === selectedCustomerId)) return
-    const requested = customerId && customers.find((customer) => String(customer.id) === customerId)
-    const first = requested ?? customers[0]
+    if (selectedCustomerId && availableCustomers.some((customer) => String(customer.id) === selectedCustomerId)) return
+    const requested = customerId && availableCustomers.find((customer) => String(customer.id) === customerId)
+    const first = requested ?? availableCustomers[0]
     setSelectedCustomerId(first ? String(first.id) : '')
-  }, [customerId, customers, lockedCustomerId, selectedCustomerId])
+  }, [availableCustomers, customerId, lockedCustomerId, selectedCustomerId])
 
   useEffect(() => {
     if (!routeId || !effectiveCustomerId) {
@@ -133,7 +181,8 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
     setContextLoading(true)
     setContextError(null)
     setPreview(null)
-    void getPrevisitContext(routeId, effectiveCustomerId)
+    const loadContext = browseMode ? getPrevisitBrowseContext : getPrevisitContext
+    void loadContext(routeId, effectiveCustomerId)
       .then((next) => {
         if (cancelled) return
         setContext(next)
@@ -161,7 +210,7 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
         if (!cancelled) setContextLoading(false)
       })
     return () => { cancelled = true }
-  }, [effectiveCustomerId, routeId])
+  }, [browseMode, effectiveCustomerId, routeId])
 
   useEffect(() => {
     if (!context || !visitDraft || hydratedVisitRef.current === visitDraft.visit_id) return
@@ -318,6 +367,7 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
   }
 
   async function calculatePreview() {
+    if (browseMode) throw new Error('در روز غیرکاری، سفارش فقط در حالت مرور است و Preview رسمی NGT انجام نمی‌شود.')
     if (!routeId || !effectiveCustomerId || !context) throw new Error('مسیر یا مشتری واقعی برای سفارش مشخص نیست.')
     if (!cartLines.length) throw new Error('سبد سفارش خالی است.')
     if (!orderTypeRef) throw new Error('نوع سفارش NGT انتخاب نشده است.')
@@ -435,19 +485,39 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
           </div>
         </header>
 
-        <section className="vo-order-context ng-living-surface" data-order-state={visitLocked ? 'visit' : 'browse'}>
+        <section className="vo-order-context ng-living-surface" data-order-state={browseMode ? 'offday' : visitLocked ? 'visit' : 'browse'}>
           <div className="vo-order-context-head">
             <div>
-              <span className="vo-order-live"><i />{visitLocked ? 'ویزیت فعال' : 'NGT زنده'}</span>
-              <strong>سفارش مشتری</strong>
-              <small>{routeId ? (activeRouteTitle || context?.route.title || 'مسیر فعال') : 'مسیر فعال برای سفارش موجود نیست'}</small>
+              <span className="vo-order-live"><i />{browseMode ? 'مرور NGT' : visitLocked ? 'ویزیت فعال' : 'NGT زنده'}</span>
+              <strong>{browseMode ? 'مرور کاتالوگ مشتری' : 'سفارش مشتری'}</strong>
+              <small>{routeId ? (browseRouteTitle || activeRouteTitle || context?.route.title || 'مسیر تخصیص‌یافته') : 'یک مسیر تخصیص‌یافته انتخاب کنید'}</small>
             </div>
             <button type="button" className="vo-history" onClick={() => onNavigate('/visitor/orders/history')}><InvoiceIcon /><span>درخواست‌ها</span></button>
           </div>
-          <button type="button" className={visitLocked ? 'vo-customer locked' : 'vo-customer'} onClick={() => visitLocked ? flash('مشتری به ویزیت فعال قفل است.') : setCustomerPicker(true)}>
+          {browseMode ? (
+            <div className="vo-browse-control">
+              <span><b>روز غیرکاری</b><small>مرور محصول و کاتالوگ مجاز است؛ Preview و ثبت غیرفعال‌اند.</small></span>
+              <select
+                value={browseRouteId}
+                onChange={(event) => {
+                  setBrowseRouteId(event.target.value)
+                  setSelectedCustomerId('')
+                  setCart({})
+                  setPreview(null)
+                  setBrand('')
+                  setGroupId('')
+                  setCatalogId('')
+                }}
+                aria-label="مسیر برای مرور"
+              >
+                {routes.map((route) => <option key={route.id} value={route.id}>{route.title}</option>)}
+              </select>
+            </div>
+          ) : null}
+          <button type="button" className={visitLocked ? 'vo-customer locked' : 'vo-customer'} disabled={browseMode && browseLoading} onClick={() => visitLocked ? flash('مشتری به ویزیت فعال قفل است.') : setCustomerPicker(true)}>
             <span className="vo-customer-icon"><StoreIcon /></span>
             <span className="vo-customer-copy">
-              <small>{visitLocked ? 'مشتری ویزیت' : 'مشتری سفارش'}</small>
+              <small>{browseMode ? 'مشتری برای مرور' : visitLocked ? 'مشتری ویزیت' : 'مشتری سفارش'}</small>
               <strong>{selectedCustomer?.store_name || selectedCustomer?.name || 'مشتری انتخاب نشده'}</strong>
               <span>{selectedCustomer ? `${selectedCustomer.code} · ${selectedCustomer.address}` : 'از مشتریان واقعی مسیر انتخاب کنید.'}</span>
             </span>
@@ -455,12 +525,12 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
           </button>
         </section>
 
-        {contextError ? (
+        {browseError || contextError ? (
           <section className="vh-live-state error" role="alert">
-            <div><strong>اطلاعات سفارش NGT دریافت نشد</strong><span>{contextError}</span></div>
+            <div><strong>{browseMode ? 'اطلاعات مرور NGT دریافت نشد' : 'اطلاعات سفارش NGT دریافت نشد'}</strong><span>{browseError || contextError}</span></div>
           </section>
-        ) : contextLoading ? (
-          <section className="vh-live-state" role="status"><strong>در حال دریافت کاتالوگ، موجودی و قرارداد فروش از NGT…</strong></section>
+        ) : browseLoading || contextLoading ? (
+          <section className="vh-live-state" role="status"><strong>{browseMode ? 'در حال آماده‌سازی کاتالوگ مرور…' : 'در حال دریافت کاتالوگ، موجودی و قرارداد فروش از NGT…'}</strong></section>
         ) : null}
 
         {context ? (
@@ -550,7 +620,7 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
                     <span>{number(cartLines.length)} قلم · {number(cartCount)} واحد پایه</span>
                     {effectiveVisitId ? <small className={`vo-draft-sync ${draftSyncState}`}>{draftSyncState === 'saving' ? 'در حال ذخیره پیش‌نویس…' : draftSyncState === 'saved' ? 'پیش‌نویس ذخیره شد' : draftSyncState === 'error' ? 'ذخیره پیش‌نویس ناموفق' : 'پیش‌نویس سرور'}</small> : null}
                   </div>
-                  <button type="button" onClick={() => void handlePreview()} disabled={!cartLines.length || previewBusy}><ClipboardIcon /> {previewBusy ? 'در حال محاسبه…' : 'محاسبه رسمی NGT'}</button>
+                  <button type="button" onClick={() => void handlePreview()} disabled={browseMode || !cartLines.length || previewBusy}><ClipboardIcon /> {browseMode ? 'Preview در روز کاری' : previewBusy ? 'در حال محاسبه…' : 'محاسبه رسمی NGT'}</button>
                 </div>
 
                 {cartLines.length ? (
@@ -652,15 +722,21 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
                 ) : null}
 
                 {!effectiveVisitId ? (
-                  <section className="vh-live-state">
-                    <div><strong>ثبت واقعی نیازمند ویزیت فعال است</strong><span>برای ثبت Saved Request، ابتدا ویزیت همین مشتری را از صفحه مسیر شروع کنید.</span></div>
-                    <button type="button" onClick={() => effectiveCustomerId && onNavigate(`/visitor/route?customer=${encodeURIComponent(effectiveCustomerId)}`)}>رفتن به مسیر</button>
-                  </section>
+                  browseMode ? (
+                    <section className="vh-live-state vo-browse-note">
+                      <div><strong>حالت مرور روز غیرکاری</strong><span>کالا، موجودی و قیمت پایه NGT قابل بررسی است؛ Preview و ثبت واقعی در Route کاری فعال می‌شوند.</span></div>
+                    </section>
+                  ) : (
+                    <section className="vh-live-state">
+                      <div><strong>ثبت واقعی نیازمند ویزیت فعال است</strong><span>برای ثبت Saved Request، ابتدا ویزیت همین مشتری را از صفحه مسیر شروع کنید.</span></div>
+                      <button type="button" onClick={() => effectiveCustomerId && onNavigate(`/visitor/route?customer=${encodeURIComponent(effectiveCustomerId)}`)}>رفتن به مسیر</button>
+                    </section>
+                  )
                 ) : null}
 
                 <div className="vo-submit-row">
-                  <button type="button" className="draft" onClick={() => void handlePreview()} disabled={!cartLines.length || previewBusy}>Preview رسمی</button>
-                  <button type="button" className="submit" onClick={() => void saveRealRequest(false)} disabled={!effectiveVisitId || !cartLines.length || saveBusy}><CheckCircleIcon /> {saveBusy ? 'در حال ثبت…' : 'ثبت درخواست واقعی'}</button>
+                  <button type="button" className="draft" onClick={() => void handlePreview()} disabled={browseMode || !cartLines.length || previewBusy}>{browseMode ? 'مرور فقط' : 'Preview رسمی'}</button>
+                  <button type="button" className="submit" onClick={() => void saveRealRequest(false)} disabled={browseMode || !effectiveVisitId || !cartLines.length || saveBusy}><CheckCircleIcon /> {saveBusy ? 'در حال ثبت…' : 'ثبت درخواست واقعی'}</button>
                 </div>
                 {effectiveVisitId ? (
                   <button type="button" className="vo-complete-visit" onClick={() => void saveRealRequest(true)} disabled={!cartLines.length || saveBusy}>ثبت درخواست و پایان ویزیت</button>
@@ -691,7 +767,7 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
               <div className="vo-sheet-handle" />
               <h2>مشتری واقعی مسیر</h2>
               <div className="vo-customer-list">
-                {customers.map((customer) => (
+                {availableCustomers.map((customer) => (
                   <button type="button" key={String(customer.id)} className={String(customer.id) === effectiveCustomerId ? 'active' : ''} onClick={() => chooseCustomer(String(customer.id))}>
                     <StoreIcon /><span><strong>{customer.store_name || customer.name}</strong><small>{customer.code} · {customer.address}</small></span>{String(customer.id) === effectiveCustomerId ? <CheckCircleIcon /> : <ChevronLeftIcon />}
                   </button>

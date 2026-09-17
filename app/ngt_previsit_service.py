@@ -378,15 +378,23 @@ def catalog_image(settings: Any, catalog_id: str, image_name: str, size: str = "
         return response.read(), content_type
 
 
-def _validate_assignment(settings: Any, username: str, path_id: str, customer_id: str) -> dict[str, Any]:
+def _validate_assignment(
+    settings: Any,
+    username: str,
+    path_id: str,
+    customer_id: str,
+    *,
+    require_day_route: bool = True,
+) -> dict[str, Any]:
     try:
         clean_path_id = str(UUID(str(path_id)))
     except (ValueError, TypeError, AttributeError) as exc:
         raise PrevisitError("مسیر انتخاب‌شده معتبر نیست") from exc
-    try:
-        require_seller_day_route(settings, username, clean_path_id)
-    except SellerDayRouteMismatch as exc:
-        raise PrevisitError(str(exc)) from exc
+    if require_day_route:
+        try:
+            require_seller_day_route(settings, username, clean_path_id)
+        except SellerDayRouteMismatch as exc:
+            raise PrevisitError(str(exc)) from exc
     route = seller_route_customers(settings, username, clean_path_id)
     customer = next(
         (item for item in route["customers"] if str(item["id"]) == str(customer_id)),
@@ -1007,6 +1015,7 @@ def previsit_context(
     *,
     search: str = "",
     limit: int = 250,
+    require_day_route: bool = True,
 ) -> dict[str, Any]:
     """Return customer context while sharing the expensive seller catalogue.
 
@@ -1015,7 +1024,13 @@ def previsit_context(
     prices are shared for five minutes. A per-seller lock prevents simultaneous
     cold requests from running the same catalogue query more than once.
     """
-    assignment = _validate_assignment(settings, username, path_id, customer_id)
+    assignment = _validate_assignment(
+        settings,
+        username,
+        path_id,
+        customer_id,
+        require_day_route=require_day_route,
+    )
     clean_search = search.strip().casefold()
     clean_limit = max(1, min(int(limit), 1000))
     context_key = (

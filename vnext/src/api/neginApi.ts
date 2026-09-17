@@ -802,6 +802,7 @@ export type PrevisitContextResponse = {
   catalog_filters: { brands: string[]; groups: Array<{ id: string; name: string }> }
   inventory: { show_stock_level: boolean; source: string }
   preview: { available: boolean; authoritative: boolean; creates_order: boolean }
+  browse_only?: boolean
 }
 
 export type PrevisitPreviewRequestPayload = {
@@ -895,6 +896,11 @@ export type PrevisitSavedRequestPayload = {
 export async function getPrevisitContext(routeId: string, customerId: string, search = '', limit = 1000) {
   const params = new URLSearchParams({ path_id: routeId, customer_id: customerId, search, limit: String(limit) })
   return request<PrevisitContextResponse>(`/seller-workspace/previsit/context?${params}`)
+}
+
+export async function getPrevisitBrowseContext(routeId: string, customerId: string, search = '', limit = 1000) {
+  const params = new URLSearchParams({ path_id: routeId, customer_id: customerId, search, limit: String(limit) })
+  return request<PrevisitContextResponse>(`/seller-workspace/previsit/browse-context?${params}`)
 }
 
 export async function previewPrevisit(payload: PrevisitPreviewRequestPayload) {
