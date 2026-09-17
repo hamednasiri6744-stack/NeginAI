@@ -33,6 +33,7 @@ import {
   TrashIcon,
   UserGroupIcon,
 } from './Icons'
+import { VisitorProductCube } from './VisitorProductCube'
 
 type Props = {
   onNavigate: (path: string) => void
@@ -192,6 +193,17 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
     () => context?.grouped_catalogs.find((item) => item.id === catalogId) ?? null,
     [catalogId, context],
   )
+
+  const productCatalogImageById = useMemo(() => {
+    const images = new Map<string, string>()
+    for (const catalog of context?.grouped_catalogs ?? []) {
+      if (!catalog.image_url) continue
+      for (const productId of catalog.product_ids) {
+        if (!images.has(String(productId))) images.set(String(productId), catalog.image_url)
+      }
+    }
+    return images
+  }, [context])
 
   const availableFor = useCallback((product: PrevisitProduct) => {
     if (warehouseRef) {
@@ -423,26 +435,25 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
           </div>
         </header>
 
-        <section className="vo-heading">
-          <div>
-            <span>NGT Order Workspace</span>
-            <h1>سفارش واقعی مشتری</h1>
-            <p>{routeId ? `${activeRouteTitle || context?.route.title || 'مسیر فعال'} · داده زنده NGT` : 'مسیر فعال برای سفارش موجود نیست.'}</p>
-          </div>
-          <div className="vo-heading-actions">
+        <section className="vo-order-context ng-living-surface" data-order-state={visitLocked ? 'visit' : 'browse'}>
+          <div className="vo-order-context-head">
+            <div>
+              <span className="vo-order-live"><i />{visitLocked ? 'ویزیت فعال' : 'NGT زنده'}</span>
+              <strong>سفارش مشتری</strong>
+              <small>{routeId ? (activeRouteTitle || context?.route.title || 'مسیر فعال') : 'مسیر فعال برای سفارش موجود نیست'}</small>
+            </div>
             <button type="button" className="vo-history" onClick={() => onNavigate('/visitor/orders/history')}><InvoiceIcon /><span>درخواست‌ها</span></button>
           </div>
+          <button type="button" className={visitLocked ? 'vo-customer locked' : 'vo-customer'} onClick={() => visitLocked ? flash('مشتری به ویزیت فعال قفل است.') : setCustomerPicker(true)}>
+            <span className="vo-customer-icon"><StoreIcon /></span>
+            <span className="vo-customer-copy">
+              <small>{visitLocked ? 'مشتری ویزیت' : 'مشتری سفارش'}</small>
+              <strong>{selectedCustomer?.store_name || selectedCustomer?.name || 'مشتری انتخاب نشده'}</strong>
+              <span>{selectedCustomer ? `${selectedCustomer.code} · ${selectedCustomer.address}` : 'از مشتریان واقعی مسیر انتخاب کنید.'}</span>
+            </span>
+            {visitLocked ? <span className="vo-customer-lock">قفل‌شده</span> : <ChevronLeftIcon />}
+          </button>
         </section>
-
-        <button type="button" className={visitLocked ? 'vo-customer locked' : 'vo-customer'} onClick={() => visitLocked ? flash('مشتری به ویزیت فعال قفل است.') : setCustomerPicker(true)}>
-          <span className="vo-customer-icon"><StoreIcon /></span>
-          <span className="vo-customer-copy">
-            <small>مشتری سفارش</small>
-            <strong>{selectedCustomer?.store_name || selectedCustomer?.name || 'مشتری انتخاب نشده'}</strong>
-            <span>{selectedCustomer ? `${selectedCustomer.code} · ${selectedCustomer.address}` : 'از مشتریان واقعی مسیر انتخاب کنید.'}</span>
-          </span>
-          {visitLocked ? <span className="vo-customer-lock">ویزیت فعال</span> : <ChevronLeftIcon />}
-        </button>
 
         {contextError ? (
           <section className="vh-live-state error" role="alert">
@@ -457,7 +468,7 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
             <section className="vo-tabs" role="tablist" aria-label="بخش سفارش">
               <button type="button" role="tab" aria-selected={view === 'products'} className={view === 'products' ? 'active' : ''} onClick={() => setView('products')}>محصولات</button>
               <button type="button" role="tab" aria-selected={view === 'catalog'} className={view === 'catalog' ? 'active' : ''} onClick={() => setView('catalog')}>کاتالوگ NGT</button>
-              <button type="button" role="tab" aria-selected={view === 'cart'} className={view === 'cart' ? 'active' : ''} onClick={() => setView('cart')}>سبد <b>{number(cartCount)}</b></button>
+              <button type="button" role="tab" aria-selected={view === 'cart'} className={`cart-tab ${view === 'cart' ? 'active' : ''}`} onClick={() => setView('cart')}>سبد <b>{number(cartCount)}</b></button>
             </section>
 
             {view === 'products' ? (
@@ -486,44 +497,29 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
                   {visibleProducts.map((product) => {
                     const qty = Number(cart[product.id] ?? 0)
                     const available = availableFor(product)
-                    const price = indicativePriceFor(product)
                     const saleUnit = saleUnitFor(product)
-                    const saleFactor = Math.max(1, Number(saleUnit.factor) || 1)
-                    const maxOrder = Number(product.max_order_qty || 0)
-                    const effectiveMax = maxOrder > 0 ? Math.min(maxOrder, available) : available
                     return (
-                      <article className="vo-product-card" key={product.id}>
-                        <div className="vo-product-top">
-                          <span className="vo-product-icon"><BoxIcon /></span>
-                          <div><strong>{product.name}</strong><small>{product.code} · {product.brand || 'بدون برند'}</small></div>
-                        </div>
-                        <div className="vo-product-meta">
-                          <span>{product.group || 'بدون گروه'}</span>
-                          <span>{product.unit}</span>
-                          {context.inventory.show_stock_level ? <span>موجودی: <b>{number(available)}</b></span> : <span>کنترل موجودی: NGT</span>}
-                          {Number(product.min_order_qty || 0) > 0 ? <span>حداقل: <b>{number(product.min_order_qty)}</b> {product.unit}</span> : null}
-                          {Number(product.max_order_qty || 0) > 0 ? <span>حداکثر: <b>{number(product.max_order_qty)}</b> {product.unit}</span> : null}
-                        </div>
-                        {product.sale_units.length > 1 ? (
-                          <div className="vo-sale-units" aria-label="واحد فروش">
-                            {product.sale_units.map((unit) => (
-                              <button type="button" key={`${product.id}-${unit.ref ?? unit.name}-${unit.factor}`} className={Number(unit.factor) === saleFactor ? 'active' : ''} onClick={() => setSaleUnitFactorByProduct((current) => ({ ...current, [product.id]: Number(unit.factor) }))}>
-                                <span>{unit.name}</span>
-                                {Number(unit.factor) !== 1 ? <small>× {number(Number(unit.factor))} {product.unit}</small> : null}
-                              </button>
-                            ))}
-                          </div>
-                        ) : null}
-                        <div className="vo-product-price">
-                          <strong>{price > 0 ? number(price) : '—'}</strong>
-                          <small>قیمت پایه NGT · مبلغ نهایی بعد از Preview</small>
-                        </div>
-                        <div className="vo-stepper">
-                          <button type="button" onClick={() => setQuantity(product, qty - saleFactor)} disabled={qty <= 0}>−</button>
-                          <strong><b>{number(qty / saleFactor)}</b><small>{saleUnit.name}</small></strong>
-                          <button type="button" onClick={() => setQuantity(product, qty + saleFactor)} disabled={effectiveMax < qty + saleFactor}>+</button>
-                        </div>
-                      </article>
+                      <VisitorProductCube
+                        key={product.id}
+                        productId={product.id}
+                        name={product.name}
+                        code={product.code}
+                        brand={product.brand}
+                        group={product.group}
+                        unit={product.unit}
+                        catalogImageUrl={productCatalogImageById.get(product.id) ?? ''}
+                        quantity={qty}
+                        saleUnitName={saleUnit.name}
+                        saleUnitFactor={Number(saleUnit.factor) || 1}
+                        saleUnits={product.sale_units}
+                        available={available}
+                        showStock={context.inventory.show_stock_level}
+                        minOrder={Number(product.min_order_qty || 0)}
+                        maxOrder={Number(product.max_order_qty || 0)}
+                        indicativePrice={indicativePriceFor(product)}
+                        onQuantityChange={(quantity) => setQuantity(product, quantity)}
+                        onSaleUnitFactorChange={(factor) => setSaleUnitFactorByProduct((current) => ({ ...current, [product.id]: factor }))}
+                      />
                     )
                   })}
                   {!visibleProducts.length ? <div className="vo-empty"><BoxIcon /><strong>محصولی با فیلتر فعلی وجود ندارد.</strong></div> : null}
@@ -679,6 +675,14 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
               </section>
             ) : null}
           </>
+        ) : null}
+
+        {context && cartLines.length > 0 && view !== 'cart' ? (
+          <aside key={`${cartLines.length}-${cartCount}`} className={`vo-cart-dock ng-living-surface ng-living-reactive ${preview?.ok ? 'official' : 'estimate'}`} aria-label="سبد زنده سفارش">
+            <span className="vo-cart-dock-icon"><CartIcon /><b>{number(cartLines.length)}</b></span>
+            <span className="vo-cart-dock-copy"><small>{preview?.ok ? 'خالص رسمی NGT' : 'سبد زنده'}</small><strong>{number(preview?.ok ? preview.totals.net : indicativeSubtotal)}</strong><em>{number(cartCount)} واحد پایه</em></span>
+            <button type="button" onClick={() => setView('cart')}>مشاهده سبد <ChevronLeftIcon /></button>
+          </aside>
         ) : null}
 
         {customerPicker ? (

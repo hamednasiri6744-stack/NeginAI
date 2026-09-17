@@ -30,14 +30,15 @@ export function VisitorProductCube(props: VisitorProductCubeProps) {
   }
 
   return (
-    <article className={`vo-product-cube${flipped ? ' is-flipped' : ''}`} data-product-id={productId} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+    <article className={`vo-product-cube${flipped ? ' is-flipped' : ''}${quantity > 0 ? ' has-quantity' : ''}`} data-product-id={productId} data-in-cart={quantity > 0 ? 'true' : 'false'} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
       <div className="vo-product-cube-inner">
         <section className="vo-product-cube-face vo-product-cube-catalog" aria-hidden={flipped}>
           <div className="vo-product-cube-media">
             {catalogImageUrl ? <img src={catalogImageUrl} alt="" loading="lazy" /> : <span className="vo-product-cube-fallback" aria-hidden="true">□</span>}
+            {quantity > 0 ? <b className="vo-product-cube-badge">{(quantity / factor).toLocaleString('fa-IR')} {saleUnitName}</b> : null}
           </div>
           <div className="vo-product-cube-copy"><small>{group || brand || 'کاتالوگ محصول'}</small><strong>{name}</strong><span>{code}{brand ? ` · ${brand}` : ''}</span></div>
-          <button type="button" className="vo-product-cube-turn" onClick={() => setFlipped(true)} aria-label={`باز کردن سفارش ${name}`}>سفارش</button>
+          <button type="button" className="vo-product-cube-turn" onClick={() => setFlipped(true)} aria-label={`باز کردن سفارش ${name}`}>{quantity > 0 ? 'ویرایش' : 'سفارش'}</button>
         </section>
         <section className="vo-product-cube-face vo-product-cube-order" aria-hidden={!flipped}>
           <header><div><strong>{name}</strong><small>{code}{brand ? ` · ${brand}` : ''}</small></div><button type="button" className="vo-product-cube-back" onClick={() => setFlipped(false)} aria-label={`بازگشت به کاتالوگ ${name}`}>↩</button></header>
