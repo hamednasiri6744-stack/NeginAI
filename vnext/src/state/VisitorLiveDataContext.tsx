@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { getRouteMapPlan, neginApi, type RouteCustomersResponse, type SellerCustomer, type SellerRoute, type SellerRoutesResponse, type SellerWorkCalendar } from '../api/neginApi'
+import { getRouteMapPlan, neginApi, type RouteCustomersResponse, type SellerCustomer, type SellerRoute, type SellerRoutesResponse, type SellerTargetPulse, type SellerWorkCalendar } from '../api/neginApi'
 import { useVisitorAuth } from './VisitorAuthContext'
 import { useVisitorWorkflow } from './VisitorWorkflowContext'
 
@@ -13,6 +13,7 @@ type VisitorLiveDataValue = {
   customerCount: number
   liveAssignment: boolean
   workCalendar: SellerWorkCalendar | null
+  targetPulse: SellerTargetPulse | null
   reload: () => Promise<void>
   customerById: (customerId: string) => SellerCustomer | undefined
 }
@@ -26,12 +27,14 @@ export function VisitorLiveDataProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null)
   const [routesData, setRoutesData] = useState<SellerRoutesResponse | null>(null)
   const [customersData, setCustomersData] = useState<RouteCustomersResponse | null>(null)
+  const [targetPulse, setTargetPulse] = useState<SellerTargetPulse | null>(null)
 
   const load = useCallback(async () => {
     if (!authenticated) return
     setLoading(true)
     setError(null)
     try {
+      void neginApi.targetPulse().then(setTargetPulse).catch(() => setTargetPulse(null))
       const routes = await neginApi.routes()
       setRoutesData(routes)
       const selectedRoute = routes.day_route?.id
@@ -56,6 +59,7 @@ export function VisitorLiveDataProvider({ children }: { children: ReactNode }) {
       const message = caught instanceof Error ? caught.message : 'دریافت اطلاعات زنده ویزیتور انجام نشد.'
       setRoutesData(null)
       setCustomersData(null)
+      setTargetPulse(null)
       hydrateLiveRoute('', [])
       setError(message)
     } finally {
@@ -67,6 +71,7 @@ export function VisitorLiveDataProvider({ children }: { children: ReactNode }) {
     if (!authenticated) {
       setRoutesData(null)
       setCustomersData(null)
+      setTargetPulse(null)
       setError(null)
       setLoading(false)
       resetWorkflow()
@@ -93,9 +98,10 @@ export function VisitorLiveDataProvider({ children }: { children: ReactNode }) {
     customerCount: customersData?.customer_count ?? customers.length,
     liveAssignment: Boolean(customersData?.live_assignment ?? routesData?.live_assignment),
     workCalendar: routesData?.work_calendar ?? null,
+    targetPulse,
     reload: load,
     customerById,
-  }), [activeRouteId, activeRouteTitle, customerById, customers, customersData?.customer_count, customersData?.live_assignment, error, load, loading, routesData?.live_assignment, routesData?.routes, routesData?.work_calendar])
+  }), [activeRouteId, activeRouteTitle, customerById, customers, customersData?.customer_count, customersData?.live_assignment, error, load, loading, routesData?.live_assignment, routesData?.routes, routesData?.work_calendar, targetPulse])
 
   return <VisitorLiveDataContext.Provider value={value}>{children}</VisitorLiveDataContext.Provider>
 }

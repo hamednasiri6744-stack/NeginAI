@@ -49,11 +49,11 @@ function LiveSeconds() {
 export function VisitorHomeScreen({ onNavigate }: Props) {
   const { unreadCount } = useVisitorNotifications()
   const { profile } = useVisitorAuth()
-  const { loading, error, activeRouteTitle, liveAssignment, workCalendar, reload } = useVisitorLiveData()
+  const { loading, error, activeRouteTitle, liveAssignment, workCalendar, targetPulse, reload } = useVisitorLiveData()
   const [notice, setNotice] = useState<string | null>(null)
   const [now, setNow] = useState(() => new Date())
   const { routeStops, routeSummary } = useVisitorWorkflow()
-  const livingUiEnabled = typeof window !== 'undefined' && (new URLSearchParams(window.location.search).get('liveui') === '1' || localStorage.getItem('neginai.pilot.living-ui') === '1')
+  const livingUiEnabled = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('liveui') !== '0' && localStorage.getItem('neginai.pilot.living-ui') !== '0'
   const liveState = loading ? 'syncing' : error ? 'error' : 'ready'
   const commandLivingState = loading ? 'updating' : error ? 'attention' : liveAssignment ? 'live' : 'ambient'
   const routeAngle = `${Math.max(0, Math.min(100, routeSummary.progress)) * 3.6}deg`
@@ -76,6 +76,22 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
     hour12: false,
     timeZone: 'Asia/Tehran',
   }).format(now)
+  const targetSemanticStatus = targetPulse?.semantic_status?.toUpperCase() ?? ''
+  const targetSemanticReady = ['CANONICAL', 'VALIDATED', 'FACT'].includes(targetSemanticStatus)
+  const targetAchievement = targetSemanticReady && targetPulse?.configured && targetPulse.achievement_percent != null
+    ? Math.max(0, Math.min(100, targetPulse.achievement_percent))
+    : null
+  const targetStateLabel = !targetSemanticReady
+    ? 'در حال اعتبارسنجی KPI'
+    : !targetPulse?.configured
+      ? 'هدف ماه تنظیم نشده'
+      : targetPulse.status === 'ahead'
+        ? 'جلوتر از ریتم هدف'
+        : targetPulse.status === 'behind'
+          ? 'عقب‌تر از ریتم هدف'
+          : targetPulse.status === 'on_track'
+            ? 'هم‌ریتم با هدف'
+            : 'هدف فروش فعال'
   const nextStop = routeStops.find((stop) => ['active', 'pending'].includes(stop.status)) ?? routeStops.find((stop) => stop.status === 'unlocated')
   const nextStopMeta = nextStop
     ? [nextStop.distance, nextStop.eta]
@@ -83,11 +99,12 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
       .filter((value) => value.length > 0 && !/^[-\u2013\u2014]+$/.test(value))
       .join(' · ') || nextStop.eta
     : '—'
+  const unlocatedCount = routeStops.filter((stop) => stop.status === 'unlocated').length
   const kpis: Kpi[] = [
     { label: 'مسیر امروز', value: activeRouteTitle || '—', hint: liveAssignment ? 'NGT زنده' : 'بدون تخصیص', icon: <MapIcon />, tone: 'gold' },
     { label: 'مشتریان مسیر', value: String(routeSummary.total), hint: `${routeSummary.remaining} باقی‌مانده`, icon: <StoreIcon />, tone: 'mint' },
     { label: 'بازدیدها', value: `${routeSummary.visited} / ${routeSummary.total}`, hint: `${routeSummary.progress}٪ مسیر`, icon: <CheckCircleIcon />, tone: 'gold' },
-    { label: 'فروش امروز', value: '—', hint: 'گزارش فروش هنوز متصل نشده', icon: <ChartIcon />, tone: 'danger' },
+    { label: 'نیازمند موقعیت', value: String(unlocatedCount), hint: unlocatedCount ? 'برای مسیریابی ثبت شود' : 'همه آماده مسیریابی', icon: <PinIcon />, tone: unlocatedCount ? 'danger' : 'mint' },
   ]
   const tasks = routeStops.filter((stop) => !['visited', 'skipped'].includes(stop.status)).slice(0, 3).map((stop, index) => ({
     customerId: stop.customerId,
@@ -148,15 +165,24 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
               <span><strong>{weekday}</strong><small>{persianDate}</small></span>
               <span className="vh-live-clock"><time dateTime={now.toISOString()}>{currentTime}</time><LiveSeconds /></span>
             </div>
-            <div className="vh-day-metric">
-              <span>روز کاری سپری‌شده</span>
-              <strong key={workCalendar?.elapsed_working_days ?? 'loading'} className="ng-living-reactive">{workCalendar ? workCalendar.elapsed_working_days.toLocaleString('fa-IR') : '—'}</strong>
-              <small>{workCalendar ? `از ${workCalendar.total_working_days.toLocaleString('fa-IR')} روز` : "در حال دریافت از NGT"}</small>
+            <div className="vh-day-metric vh-day-calendar">
+              <span>تقویم کاری</span>
+              <strong key={workCalendar ? `${workCalendar.elapsed_working_days}-${workCalendar.remaining_working_days}` : 'loading'} className="ng-living-reactive">
+                <b>{workCalendar ? workCalendar.elapsed_working_days.toLocaleString('fa-IR') : '—'}</b><i>/</i><b>{workCalendar ? workCalendar.remaining_working_days.toLocaleString('fa-IR') : '—'}</b>
+              </strong>
+              <small>{workCalendar ? `سپری‌شده / مانده · ${workCalendar.total_working_days.toLocaleString('fa-IR')} روز` : 'در حال دریافت از NGT'}</small>
             </div>
-            <div className="vh-day-metric">
-              <span>روز کاری مانده</span>
-              <strong key={workCalendar?.remaining_working_days ?? 'loading'} className="ng-living-reactive">{workCalendar ? workCalendar.remaining_working_days.toLocaleString('fa-IR') : '—'}</strong>
-              <small>{workCalendar ? (workCalendar.is_working_day ? "امروز روز کاری است" : "امروز روز کاری نیست") : "در حال دریافت تقویم کاری"}</small>
+            <div
+              className="vh-day-metric vh-target-pulse"
+              data-target-state={targetSemanticReady ? (targetPulse?.status ?? 'configured') : 'validation'}
+              style={{ '--target-progress': `${targetAchievement ?? 0}%` } as React.CSSProperties}
+            >
+              <span>هدف فروش</span>
+              <strong key={targetPulse?.achievement_percent ?? targetStateLabel} className="ng-living-reactive">
+                {targetAchievement != null && targetPulse?.achievement_percent != null ? `${targetPulse.achievement_percent.toLocaleString('fa-IR', { maximumFractionDigits: 1 })}٪` : '—'}
+              </strong>
+              <small>{targetStateLabel}</small>
+              <em aria-hidden="true"><i /></em>
             </div>
           </div>
 

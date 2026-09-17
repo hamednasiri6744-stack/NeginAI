@@ -1938,3 +1938,17 @@ button:focus-visible,a:focus-visible { outline:2px solid rgba(240,193,82,.72); o
 .vo-gift-list{margin-top:8px;display:grid}.vo-gift-list>div{min-height:44px;padding:6px 1px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid rgba(151,181,205,.06)}.vo-gift-list>div:first-child{border-top:0}.vo-gift-list>div>span{min-width:0;display:grid;gap:2px}.vo-gift-list strong{color:#dce6ec;font-size:11.5px}.vo-gift-list small{color:#5f7789;font-size:9.5px}.vo-gift-list>div>b{color:#55d3aa;font:800 12px Inter,Tahoma,Arial}
 .vo-restrictions{border-color:rgba(226,169,53,.12);background:rgba(226,169,53,.035);display:grid;gap:3px}.vo-restrictions strong{color:#e5ba56;font-size:11.5px}.vo-restrictions span{color:#857750;font-size:10.5px;line-height:1.7}
 @media(max-width:350px){.vo-detail-grid,.vo-credit-grid{grid-template-columns:1fr}.vo-sale-units button{padding-inline:7px}}
+
+/* Unified Living App wave 1: compact mission header; no extra vertical dashboard row. */
+.vh-day-calendar strong { display:flex; align-items:baseline; justify-content:center; gap:4px; direction:ltr; }
+.vh-day-calendar strong b { font:inherit; color:inherit; }
+.vh-day-calendar strong i { color:#617689; font:700 12px/1 Inter,Tahoma,Arial; font-style:normal; }
+.vh-target-pulse { position:relative; overflow:hidden; padding-bottom:10px; }
+.vh-target-pulse > span,.vh-target-pulse > strong,.vh-target-pulse > small { position:relative; z-index:1; }
+.vh-target-pulse em { position:absolute; z-index:0; right:8px; left:8px; bottom:5px; height:2px; overflow:hidden; border-radius:999px; background:rgba(133,158,180,.10); }
+.vh-target-pulse em i { display:block; width:var(--target-progress,0%); height:100%; border-radius:inherit; background:linear-gradient(90deg,#b97d26,#f0c75f); transition:width 700ms cubic-bezier(.22,.8,.2,1); }
+.vh-target-pulse[data-target-state='ahead'] small,.vh-target-pulse[data-target-state='on_track'] small { color:#5adbb4; }
+.vh-target-pulse[data-target-state='behind'] small { color:#ff8d91; }
+.vh-target-pulse[data-target-state='validation'] strong { color:#8a9bac; }
+.vh-target-pulse[data-target-state='validation'] small { color:#7d8fa1; }
+.vh-target-pulse[data-target-state='validation'] em i { width:34%; opacity:.28; background:linear-gradient(90deg,transparent,#e7bd59,transparent); }

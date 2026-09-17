@@ -37,6 +37,27 @@ export type SellerWorkCalendar = {
   source: string
 }
 
+export type SellerTargetPulse = {
+  configured: boolean
+  seller_id: number
+  period: string
+  actual_sales_rial: number
+  actual_invoice_count: number
+  target_rial: number | null
+  achievement_percent: number | null
+  expected_pace_percent: number | null
+  pace_gap_percent: number | null
+  remaining_target_rial: number | null
+  daily_required_rial: number | null
+  remaining_working_days?: number
+  status: string
+  contract: string
+  semantic_status: string
+  actual_source?: string
+  target_source?: string
+  scenario?: { id: number; code: string; name: string; status: string }
+}
+
 export type SellerRoutesResponse = {
   seller: { personnel_id: number; full_name: string }
   visit_template: string
@@ -367,6 +388,10 @@ export const neginApi = {
 
   async routes() {
     return request<SellerRoutesResponse>('/seller-workspace/routes')
+  },
+
+  async targetPulse() {
+    return request<SellerTargetPulse>('/seller-workspace/target-pulse')
   },
 
   async routeCustomers(routeId: string, detail: 'basic' | 'full' = 'basic') {

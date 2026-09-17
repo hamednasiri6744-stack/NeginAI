@@ -385,3 +385,19 @@
   .vh-live-ui .vh-reactive-soft,
   .vh-live-ui .vh-reactive-panel { animation:none !important; }
 }
+
+/* Unified wave 1: stateful target cell. Motion communicates validation/progress state. */
+.vh-live-ui .vh-target-pulse[data-target-state='validation'] em i {
+  animation: vh-target-validating 2.8s ease-in-out infinite;
+}
+.vh-live-ui .vh-target-pulse[data-target-state='ahead'] {
+  border-color: rgba(83,221,178,.16);
+}
+.vh-live-ui .vh-target-pulse[data-target-state='behind'] {
+  border-color: rgba(255,125,134,.15);
+}
+@keyframes vh-target-validating {
+  0% { transform:translateX(160%); opacity:.08; }
+  45% { opacity:.42; }
+  100% { transform:translateX(-260%); opacity:.08; }
+}
