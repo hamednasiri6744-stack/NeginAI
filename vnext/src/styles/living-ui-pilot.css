@@ -401,3 +401,13 @@
   45% { opacity:.42; }
   100% { transform:translateX(-260%); opacity:.08; }
 }
+
+/* Unified wave 2: inbox state is visible through state changes, not decorative motion. */
+.vh-live-ui .vn-tabs button { transition:transform 160ms var(--vh-live-ease),color 220ms ease,background 220ms ease,box-shadow 220ms ease; }
+.vh-live-ui .vn-card { transition:opacity 280ms ease,border-color 280ms ease,box-shadow 280ms ease,transform 180ms var(--vh-live-ease); }
+.vh-live-ui .vn-card.unread .vn-unread-dot { animation:vn-unread-pulse 3.4s ease-out infinite; }
+.vh-live-ui .vn-card.read .vn-unread-dot { animation:none; }
+@keyframes vn-unread-pulse {
+  0%,62%,100% { box-shadow:0 0 0 4px rgba(233,181,65,.08),0 0 12px rgba(233,181,65,.22); }
+  78% { box-shadow:0 0 0 7px rgba(233,181,65,0),0 0 17px rgba(233,181,65,.34); }
+}

@@ -1,6 +1,8 @@
-import { useMemo, useState } from 'react'
+﻿import { useMemo, useState } from 'react'
 import { useVisitorAuth } from '../state/VisitorAuthContext'
 import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
+import '../design-system/living/index.css'
+import '../styles/living-ui-pilot.css'
 import {
   BellIcon,
   ChartIcon,
@@ -48,11 +50,11 @@ export function VisitorNotificationsScreen({ onNavigate, onClose }: Props) {
   const readCount = Math.max(0, items.length - unreadCount)
 
   return (
-    <main className="vh-page" dir="rtl">
+    <main className="vh-page ng-living-root vh-live-ui" dir="rtl" data-live-ui="unified" data-living-ui="on">
       <div className="vh-shell vn-shell">
         <header className="vh-header">
-          <button className="vh-profile" type="button" onClick={() => onNavigate('/visitor/profile')}>
-            <span className="vh-avatar">{profile?.full_name?.charAt(0) || profile?.username?.charAt(0) || 'و'}</span>
+          <button className="vh-profile ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/profile')}>
+            <span className="vh-avatar">{profile?.full_name?.charAt(0) || profile?.username?.charAt(0) || 'ظˆ'}</span>
             <span className="vh-profile-copy">
               <strong>{profile?.full_name || profile?.username || '\u06a9\u0627\u0631\u0628\u0631'}</strong>
               <small><PinIcon /> {profile?.branch || profile?.sales_line || '\u0646\u0634\u0627\u0646 \u062d\u0627\u0636\u0631'}</small>
@@ -60,9 +62,9 @@ export function VisitorNotificationsScreen({ onNavigate, onClose }: Props) {
             <ChevronLeftIcon />
           </button>
 
-          <button className="vh-bell active" type="button" aria-label="\u0628\u0633\u062a\u0646 \u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627" onClick={onClose}>
+          <button className="vh-bell active ng-living-interactive" type="button" aria-label="\u0628\u0633\u062a\u0646 \u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627" onClick={onClose}>
             <BellIcon />
-            {unreadCount ? <b>{unreadCount}</b> : null}
+            {unreadCount ? <b key={unreadCount} className="ng-living-reactive">{unreadCount}</b> : null}
           </button>
 
           <div className="vh-brand" dir="ltr">
@@ -71,7 +73,7 @@ export function VisitorNotificationsScreen({ onNavigate, onClose }: Props) {
           </div>
         </header>
 
-        <section className="vn-heading">
+        <section className="vn-heading ng-living-surface" aria-live="polite">
           <div>
             <h1>{'\u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627'}</h1>
             <p>
@@ -80,7 +82,7 @@ export function VisitorNotificationsScreen({ onNavigate, onClose }: Props) {
                 : '\u0647\u0645\u0647 \u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627\u06cc \u0641\u0639\u0644\u06cc \u062e\u0648\u0627\u0646\u062f\u0647 \u0634\u062f\u0647\u200c\u0627\u0646\u062f.'}
             </p>
           </div>
-          <button type="button" disabled={!unreadCount} onClick={markAllRead}>
+          <button className="ng-living-interactive" type="button" disabled={!unreadCount} onClick={markAllRead}>
             {'\u062e\u0648\u0627\u0646\u062f\u0646 \u0647\u0645\u0647'}
           </button>
         </section>
@@ -99,65 +101,51 @@ export function VisitorNotificationsScreen({ onNavigate, onClose }: Props) {
           </section>
         ) : null}
 
-        <section className="vn-overview" aria-label="\u062e\u0644\u0627\u0635\u0647 \u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627">
-          <article>
-            <span>{"\u062e\u0648\u0627\u0646\u062f\u0647\u200c\u0646\u0634\u062f\u0647"}</span>
-            <strong>{unreadCount.toLocaleString('fa-IR')}</strong>
-            <small>{"\u0627\u0632 Backend \u0648\u0627\u0642\u0639\u06cc"}</small>
-          </article>
-          <article>
-            <span>{"\u062e\u0648\u0627\u0646\u062f\u0647\u200c\u0634\u062f\u0647"}</span>
-            <strong>{readCount.toLocaleString('fa-IR')}</strong>
-            <small>{"\u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627\u06cc \u0645\u0631\u0648\u0631\u0634\u062f\u0647"}</small>
-          </article>
-          <article>
-            <span>{"\u06a9\u0644"}</span>
-            <strong>{items.length.toLocaleString('fa-IR')}</strong>
-            <small>{"\u0627\u0639\u0644\u0627\u0646 \u062b\u0628\u062a\u200c\u0634\u062f\u0647"}</small>
-          </article>
-        </section>
-
         <section className="vn-tabs" role="tablist" aria-label="\u0641\u06cc\u0644\u062a\u0631 \u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627">
           <button
-            className={filter === 'all' ? 'active' : ''}
+            className={`${filter === 'all' ? 'active ' : ''}ng-living-interactive`}
             type="button"
             role="tab"
             aria-selected={filter === 'all'}
             onClick={() => setFilter('all')}
           >
-            {'\u0647\u0645\u0647'}
+            <span>{'\u0647\u0645\u0647'}</span><b>{items.length.toLocaleString('fa-IR')}</b>
           </button>
           <button
-            className={filter === 'unread' ? 'active' : ''}
+            className={`${filter === 'unread' ? 'active ' : ''}ng-living-interactive`}
             type="button"
             role="tab"
             aria-selected={filter === 'unread'}
             onClick={() => setFilter('unread')}
           >
-            {'\u062e\u0648\u0627\u0646\u062f\u0647\u200c\u0646\u0634\u062f\u0647'}
+            <span>{'\u062e\u0648\u0627\u0646\u062f\u0647\u200c\u0646\u0634\u062f\u0647'}</span><b key={unreadCount} className="ng-living-reactive">{unreadCount.toLocaleString('fa-IR')}</b>
           </button>
           <button
-            className={filter === 'read' ? 'active' : ''}
+            className={`${filter === 'read' ? 'active ' : ''}ng-living-interactive`}
             type="button"
             role="tab"
             aria-selected={filter === 'read'}
             onClick={() => setFilter('read')}
           >
-            {'\u062e\u0648\u0627\u0646\u062f\u0647\u200c\u0634\u062f\u0647'}
+            <span>{'\u062e\u0648\u0627\u0646\u062f\u0647\u200c\u0634\u062f\u0647'}</span><b>{readCount.toLocaleString('fa-IR')}</b>
           </button>
         </section>
 
-        <section className="vn-list" aria-label="\u0641\u0647\u0631\u0633\u062a \u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627">
+        <section key={filter} className="vn-list ng-living-panel-change" aria-label="\u0641\u0647\u0631\u0633\u062a \u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627">
           {visibleItems.length ? visibleItems.map((item) => (
-            <article className={`vn-card ${item.read ? 'read' : 'unread'}`} key={item.id}>
-              <button className="vn-card-main" type="button" onClick={() => markRead(item.id)}>
+            <article
+              className={`vn-card ${item.read ? 'read' : 'unread'} ng-living-surface`}
+              data-living-state={item.read ? 'settled' : 'live'}
+              key={item.id}
+            >
+              <button className="vn-card-main ng-living-interactive" type="button" onClick={() => markRead(item.id)}>
                 <span className="vn-icon"><BellIcon /></span>
                 <span className="vn-copy">
                   <span className="vn-meta"><time>{notificationTime(item.created_at)}</time></span>
                   <strong>{item.title}</strong>
                   <small>{item.body}</small>
                 </span>
-                {!item.read ? <span className="vn-unread-dot" aria-label="\u062e\u0648\u0627\u0646\u062f\u0647\u200c\u0646\u0634\u062f\u0647" /> : <ChevronLeftIcon />}
+                {!item.read ? <span className="vn-unread-dot ng-living-reactive" aria-label="\u062e\u0648\u0627\u0646\u062f\u0647\u200c\u0646\u0634\u062f\u0647" /> : <ChevronLeftIcon />}
               </button>
             </article>
           )) : (
@@ -172,11 +160,11 @@ export function VisitorNotificationsScreen({ onNavigate, onClose }: Props) {
         </section>
 
         <nav className="vh-nav" aria-label="\u0646\u0627\u0648\u0628\u0631\u06cc">
-          <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/home')}><HomeIcon /><span>{'\u062e\u0627\u0646\u0647'}</span></button>
-          <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/route')}><MapIcon /><span>{'\u0645\u0633\u06cc\u0631'}</span></button>
-          <button className="vh-order" type="button" onClick={() => onNavigate('/visitor/orders')}><PlusIcon /><span>{'\u0633\u0641\u0627\u0631\u0634'}</span></button>
-          <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/customers')}><UserGroupIcon /><span>{'\u0645\u0634\u062a\u0631\u06cc\u0627\u0646'}</span></button>
-          <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/reports')}><ChartIcon /><span>{"\u06af\u0632\u0627\u0631\u0634\u200c\u0647\u0627"}</span></button>
+          <button className="vh-nav-item ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/home')}><HomeIcon /><span>{'\u062e\u0627\u0646\u0647'}</span></button>
+          <button className="vh-nav-item ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/route')}><MapIcon /><span>{'\u0645\u0633\u06cc\u0631'}</span></button>
+          <button className="vh-order ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/orders')}><PlusIcon /><span>{'\u0633\u0641\u0627\u0631\u0634'}</span></button>
+          <button className="vh-nav-item ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/customers')}><UserGroupIcon /><span>{'\u0645\u0634\u062a\u0631\u06cc\u0627\u0646'}</span></button>
+          <button className="vh-nav-item ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/reports')}><ChartIcon /><span>{"\u06af\u0632\u0627\u0631\u0634\u200c\u0647\u0627"}</span></button>
         </nav>
       </div>
     </main>
