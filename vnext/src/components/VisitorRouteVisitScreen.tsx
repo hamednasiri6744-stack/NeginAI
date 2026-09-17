@@ -21,6 +21,8 @@ import { useVisitorWorkflow } from '../state/VisitorWorkflowContext'
 import { useVisitorAuth } from '../state/VisitorAuthContext'
 import { useVisitorLiveData } from '../state/VisitorLiveDataContext'
 import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
+import '../design-system/living/index.css'
+import '../styles/living-ui-pilot.css'
 
 type Props = {
   onNavigate: (path: string) => void
@@ -60,6 +62,7 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
     completeVisit,
   } = useVisitorWorkflow()
   const [mode, setMode] = useState<RouteMode>('sales')
+  const [showStops, setShowStops] = useState(false)
   const [selectedCustomerId, setSelectedCustomerId] = useState(() => requestedCustomerId ?? activeVisit?.customerId ?? activeCustomerId ?? routeStops[0]?.customerId ?? '1')
   const [visitState, setVisitState] = useState<VisitState>(() => activeVisit ? 'active' : 'idle')
   const [elapsed, setElapsed] = useState(() => activeVisit ? Math.max(0, Math.floor((Date.now() - activeVisit.startedAt) / 1000)) : 0)
@@ -308,7 +311,7 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
 
   if (!activeStop) {
     return (
-      <main className="vh-page" dir="rtl"><div className="vh-shell vr-shell">
+      <main className="vh-page vh-live-ui ng-living-root vr-app-page" dir="rtl" data-live-ui="unified"><div className="vh-shell vr-shell">
         <section className={error ? 'vh-live-state error' : 'vh-live-state'} role={error ? 'alert' : 'status'}>
           <div><strong>{loading ? 'در حال دریافت مسیر واقعی…' : error ? 'مسیر امروز دریافت نشد' : 'برای امروز ایستگاهی وجود ندارد'}</strong><span>{error || 'اطلاعات Seller Workspace در حال بررسی است.'}</span></div>
           {error ? <button type="button" onClick={() => void reload()}>تلاش دوباره</button> : null}
@@ -318,7 +321,7 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
   }
 
   return (
-    <main className="vh-page" dir="rtl">
+    <main className="vh-page vh-live-ui ng-living-root vr-app-page" dir="rtl" data-live-ui="unified">
       <div className="vh-shell vr-shell">
         <header className="vh-header">
           <button className="vh-profile" type="button" onClick={() => onNavigate('/visitor/profile')}>
@@ -333,43 +336,20 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
           </div>
         </header>
 
-        <section className="vr-heading">
-          <div>
-            <span>مسیر فعال · {activeRouteTitle || 'NGT'}</span>
-            <h1>مسیر امروز</h1>
-            <p>{routeSummary.resolved} بازدید تعیین‌تکلیف شده · {routeSummary.remaining} ایستگاه باقی‌مانده</p>
-          </div>
-          <div className="vr-heading-side"><button type="button" className="vr-ai-open" onClick={() => onNavigate(`/visitor/ai?context=route&customer=${activeStop.customerId}${activeVisit ? `&visit=${activeVisit.id}` : ``}`)}>Negin AI</button><div className="vr-progress"><strong>{routeSummary.progress}٪</strong><small>پیشرفت</small></div></div>
+        <section className="vr-route-bar ng-living-surface">
+          <div><span>مسیر فعال · {activeRouteTitle || 'NGT'}</span><strong>{routeSummary.resolved} تعیین‌تکلیف · {routeSummary.remaining} باقی‌مانده</strong></div>
+          <div className="vr-route-bar-actions"><button type="button" className="vr-ai-open" onClick={() => onNavigate(`/visitor/ai?context=route&customer=${activeStop.customerId}${activeVisit ? `&visit=${activeVisit.id}` : ``}`)}>Negin AI</button><div className="vr-progress"><strong>{routeSummary.progress}٪</strong><small>پیشرفت</small></div></div>
         </section>
 
-        <section className="vr-mode" aria-label="حالت برنامه‌ریزی مسیر">
-          <button type="button" aria-pressed={mode === 'sales'} className={mode === 'sales' ? 'active' : ''} onClick={() => setMode('sales')}>اولویت فروش</button>
-          <button type="button" aria-pressed={mode === 'shortest'} className={mode === 'shortest' ? 'active' : ''} onClick={() => setMode('shortest')}>کوتاه‌ترین مسیر</button>
-        </section>
-
-        <section className="vr-map-card" aria-label="نمای شماتیک مسیر امروز">
-          <div className="vr-map-head">
-            <div><MapIcon /><strong>مسیر زنده</strong></div>
-            <button type="button" onClick={() => setMapRecenterNonce((value) => value + 1)}><PinIcon /> مرکز روی من</button>
-          </div>
+        <section className="vr-map-card vr-map-first ng-living-surface" aria-label="نقشه مسیر امروز">
+          <div className="vr-map-head"><div><MapIcon /><strong>مسیر امروز</strong></div><button type="button" onClick={() => setMapRecenterNonce((value) => value + 1)}><PinIcon /> مرکز روی من</button></div>
+          <div className="vr-map-modes" aria-label="حالت برنامه‌ریزی مسیر"><button type="button" aria-pressed={mode === 'sales'} className={mode === 'sales' ? 'active' : ''} onClick={() => setMode('sales')}>اولویت فروش</button><button type="button" aria-pressed={mode === 'shortest'} className={mode === 'shortest' ? 'active' : ''} onClick={() => setMode('shortest')}>کوتاه‌ترین</button></div>
           <div className="vr-map-canvas">
-            <VisitorNeshanMap
-              routeId={activeRouteId}
-              mode={mode}
-              selectedCustomerId={selectedCustomerId}
-              recenterNonce={mapRecenterNonce}
-              routeStops={routeStops}
-              onSelectCustomer={selectStop}
-              onPrimaryCustomer={selectPlanPrimary}
-              onOrderChange={handlePlanOrder}
-              onPlan={applyRoutePlan}
-              onNavigationMetrics={updateNavigationMetrics}
-              onNotice={flash}
-            />
+            <VisitorNeshanMap routeId={activeRouteId} mode={mode} selectedCustomerId={selectedCustomerId} recenterNonce={mapRecenterNonce} routeStops={routeStops} onSelectCustomer={selectStop} onPrimaryCustomer={selectPlanPrimary} onOrderChange={handlePlanOrder} onPlan={applyRoutePlan} onNavigationMetrics={updateNavigationMetrics} onNotice={flash} />
           </div>
         </section>
 
-        <section className="vr-active-card">
+        <section className="vr-active-card vr-context-sheet ng-living-surface" data-visit-state={visitState}>
           <div className="vr-active-top">
             <span className="vr-store"><StoreIcon /></span>
             <div><small>ایستگاه انتخاب‌شده</small><strong>{activeStop.name}</strong><span>{joinRouteMeta(activeStop.area, activeStop.distance)}</span></div>
@@ -404,8 +384,12 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
           ) : null}
         </section>
 
-        <section className="vr-stops">
-          <div className="vr-section-head"><strong>ایستگاه‌های مسیر</strong><span>{sortedRouteStops.length} مشتری</span></div>
+        <section className={`vr-stops ng-living-surface ${showStops ? 'expanded' : 'collapsed'}`}>
+          <button type="button" className="vr-stops-toggle" aria-expanded={showStops} onClick={() => setShowStops((value) => !value)}>
+            <span><strong>ایستگاه‌های مسیر</strong><small>{sortedRouteStops.length.toLocaleString('fa-IR')} مشتری · {routeSummary.remaining.toLocaleString('fa-IR')} باقی‌مانده</small></span>
+            <b>{showStops ? 'بستن' : 'نمایش همه'}</b>
+          </button>
+          {showStops ? (
           <div className="vr-stop-list">
             {sortedRouteStops.map((stop, index) => (
               <button type="button" key={stop.stopId} className={`vr-stop-row ${stop.status} ${selectedCustomerId === stop.customerId ? 'selected' : ''}`} onClick={() => selectStop(stop.customerId)}>
@@ -415,6 +399,7 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
               </button>
             ))}
           </div>
+          ) : null}
         </section>
 
         {visitState === 'outcome' ? (

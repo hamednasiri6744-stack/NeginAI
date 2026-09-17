@@ -423,3 +423,14 @@
   .c360-app-page .c360-workflow-card[data-visit-state='active'],
   .c360-app-page .c360-inline-alert { animation:none !important; }
 }
+
+/* Appification wave: Route/Visit — selected context behaves like a live sheet. */
+.vr-app-page .vr-context-sheet[data-visit-state='active'] { animation:vr-context-active 460ms cubic-bezier(.2,.82,.2,1) both; }
+.vr-app-page .vr-map-modes button:active,
+.vr-app-page .vr-stops-toggle:active,
+.vr-app-page .vr-actions button:active { transform:scale(.975); }
+@keyframes vr-context-active { from { opacity:.7; transform:translateY(7px) scale(.99); } to { opacity:1; transform:translateY(0) scale(1); } }
+@media (prefers-reduced-motion:reduce) {
+  .vr-app-page .vr-context-sheet[data-visit-state='active'],
+  .vr-stops.expanded .vr-stop-list { animation:none !important; }
+}
