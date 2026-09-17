@@ -2176,3 +2176,22 @@ button:focus-visible,a:focus-visible { outline:2px solid rgba(240,193,82,.72); o
 .vc-route-browser button small { color:#60788d; font-size:10px; }
 .vc-route-browser button.active { color:#f0ca69; border-color:rgba(226,169,53,.28); background:rgba(226,169,53,.07); box-shadow:inset 0 0 0 1px rgba(226,169,53,.04); }
 .vc-route-browser button.active small { color:#8fa38e; }
+
+/* === Customer 360 fold refinement: compact off-day + key/value detail === */
+.c360-workflow-card.is-offday { padding:10px 12px; }
+.c360-offday-strip { min-height:48px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.c360-offday-strip > div { min-width:0; display:grid; gap:2px; }
+.c360-offday-strip span { color:#c5a34f; font-size:10.5px; font-weight:800; }
+.c360-offday-strip strong { color:#e7edf2; font-size:13px; }
+.c360-offday-strip small { color:#718598; font-size:10.8px; line-height:1.4; }
+.c360-offday-strip > b { flex:0 0 auto; padding:6px 8px; border-radius:10px; color:#8da0b1; background:rgba(255,255,255,.025); border:1px solid rgba(151,181,205,.08); font-size:10.5px; font-weight:700; }
+.c360-workflow-card.is-offday .c360-utility-actions { margin-top:8px; }
+.c360-workflow-card.is-offday .c360-pulse-rail { margin-top:8px; padding-top:7px; }
+.c360-pulse-rail strong[dir='ltr'] { min-width:1.4em; font-family:Tahoma,Arial,sans-serif; font-variant-numeric:tabular-nums; font-size:15px; letter-spacing:0; }
+.c360-stack > .c360-panel:first-child .c360-info-grid { margin-top:5px; grid-template-columns:1fr; gap:0; border-top:1px solid rgba(151,181,205,.07); }
+.c360-stack > .c360-panel:first-child .c360-info-grid > div { min-height:42px; padding:7px 0; display:grid; grid-template-columns:88px minmax(0,1fr); align-items:center; gap:8px; border:0; border-bottom:1px solid rgba(151,181,205,.065); border-radius:0; background:transparent; }
+.c360-stack > .c360-panel:first-child .c360-info-grid > div:last-child { border-bottom:0; }
+.c360-stack > .c360-panel:first-child .c360-info-grid .wide { grid-column:auto; }
+.c360-stack > .c360-panel:first-child .c360-info-grid dt { font-size:11px; }
+.c360-stack > .c360-panel:first-child .c360-info-grid dd { margin:0; font-size:12px; line-height:1.45; text-align:left; overflow-wrap:anywhere; }
+@media (max-width:350px){ .c360-offday-strip > b{display:none} .c360-stack > .c360-panel:first-child .c360-info-grid > div{grid-template-columns:76px minmax(0,1fr)} }
