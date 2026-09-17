@@ -328,7 +328,7 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
               <div className="vr-offday-icon"><ClockIcon /></div>
               <div className="vr-offday-copy"><span>تقویم رسمی NGT</span><h1>امروز روز کاری نیست</h1><p>{workCalendar?.date ? `${workCalendar.date} · ` : ''}برای امروز DayPath یا Tour فعالی تعریف نشده و این وضعیت خطا محسوب نمی‌شود.</p></div>
               <div className="vr-offday-rail"><span><small>مسیرهای تخصیص‌یافته</small><strong>{routes.length.toLocaleString('fa-IR')}</strong></span><span><small>روز کاری سپری‌شده</small><strong>{Number(workCalendar?.elapsed_working_days ?? 0).toLocaleString('fa-IR')}</strong></span><span><small>روز کاری باقی‌مانده</small><strong>{Number(workCalendar?.remaining_working_days ?? 0).toLocaleString('fa-IR')}</strong></span></div>
-              <div className="vr-offday-actions"><button type="button" onClick={() => onNavigate('/visitor/home')}>بازگشت به خانه</button><button type="button" onClick={() => onNavigate('/visitor/notifications')}>اعلان‌ها</button></div>
+              <div className="vr-offday-actions"><button type="button" className="primary" onClick={() => onNavigate('/visitor/customers')}>مرور مشتریان</button><button type="button" onClick={() => onNavigate('/visitor/home')}>بازگشت به خانه</button></div>
             </section>
           ) : (
             <section className={error ? 'vh-live-state error' : 'vh-live-state'} role={error ? 'alert' : 'status'}>

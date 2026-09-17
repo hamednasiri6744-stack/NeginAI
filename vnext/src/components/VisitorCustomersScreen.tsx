@@ -65,18 +65,26 @@ function navigateCustomer(customer: SellerCustomer) {
 export function VisitorCustomersScreen({ onNavigate }: Props) {
   const { unreadCount } = useVisitorNotifications()
   const { profile } = useVisitorAuth()
-  const { customers, customerCount, activeRouteId, activeRouteTitle, loading, error, reload } = useVisitorLiveData()
+  const { customers, customerCount, activeRouteId, activeRouteTitle, routes, offDay, loading, error, reload } = useVisitorLiveData()
   const [fullCustomers, setFullCustomers] = useState<SellerCustomer[] | null>(null)
+  const [browseRouteId, setBrowseRouteId] = useState('')
   const [searchParams, setSearchParams] = useSearchParams()
+  const effectiveRouteId = activeRouteId || browseRouteId
+  const effectiveRouteTitle = activeRouteTitle || routes.find((route) => route.id === browseRouteId)?.title || ''
+
+  useEffect(() => {
+    const firstRoute = routes[0]
+    if (!activeRouteId && offDay && firstRoute && !browseRouteId) setBrowseRouteId(firstRoute.id)
+  }, [activeRouteId, browseRouteId, offDay, routes])
 
   useEffect(() => {
     let cancelled = false
-    if (!activeRouteId) {
+    if (!effectiveRouteId) {
       setFullCustomers(null)
       return () => { cancelled = true }
     }
     setFullCustomers(null)
-    void neginApi.routeCustomers(activeRouteId, 'full')
+    void neginApi.routeCustomers(effectiveRouteId, 'full')
       .then((data) => {
         if (!cancelled) setFullCustomers(data.customers)
       })
@@ -84,7 +92,7 @@ export function VisitorCustomersScreen({ onNavigate }: Props) {
         if (!cancelled) setFullCustomers(null)
       })
     return () => { cancelled = true }
-  }, [activeRouteId])
+  }, [effectiveRouteId])
 
   const displayCustomers = fullCustomers ?? customers
   const query = searchParams.get('q') ?? ''
@@ -145,11 +153,11 @@ export function VisitorCustomersScreen({ onNavigate }: Props) {
         </header>
 
         <section className="vc-heading">
-          <div><span>{activeRouteTitle || 'مسیر روز NGT'}</span><h1>مشتریان</h1></div>
+          <div><span>{offDay ? 'مرور مشتریان تخصیص‌یافته' : (activeRouteTitle || 'مسیر روز NGT')}</span><h1>مشتریان</h1></div>
           <button type="button" disabled title="ثبت مشتری جدید هنوز Endpoint تأییدشده ندارد"><PlusIcon /> مشتری جدید</button>
         </section>
 
-        {error ? (
+        {error && !offDay ? (
           <section className="vh-live-state error" role="alert">
             <div><strong>لیست مشتریان دریافت نشد</strong><span>{error}</span></div>
             <button type="button" onClick={() => void reload()}>تلاش دوباره</button>
@@ -158,8 +166,20 @@ export function VisitorCustomersScreen({ onNavigate }: Props) {
           <section className="vh-live-state" role="status"><strong>در حال دریافت مشتریان واقعی…</strong><span>اطلاعات از Seller Workspace خوانده می‌شود.</span></section>
         ) : null}
 
+
+        {offDay ? (
+          <section className="vc-offday-browser ng-living-surface">
+            <div><strong>روز غیرکاری · حالت مرور</strong><span>یک مسیر را انتخاب کن؛ Customer 360 فقط خواندنی باز می‌شود.</span></div>
+            <div className="vc-route-browser">
+              {routes.map((route) => (
+                <button type="button" key={route.id} className={effectiveRouteId === route.id ? 'active' : ''} onClick={() => setBrowseRouteId(route.id)}>{route.title}<small>{Number(route.customer_count ?? 0).toLocaleString('fa-IR')} مشتری</small></button>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
         <section className="vc-summary" aria-label="خلاصه مشتریان">
-          <article><span>مشتریان مسیر</span><strong>{customerCount.toLocaleString('fa-IR')}</strong><small>NGT زنده</small></article>
+          <article><span>مشتریان مسیر</span><strong>{(fullCustomers?.length ?? customerCount).toLocaleString('fa-IR')}</strong><small>{offDay ? 'مرور تخصیص NGT' : 'NGT زنده'}</small></article>
           <article><span>تعیین‌تکلیف امروز</span><strong>{completed.toLocaleString('fa-IR')}</strong><small>بازدیدهای پایان‌یافته</small></article>
           <article><span>نیازمند توجه مالی</span><strong>{followUp.toLocaleString('fa-IR')}</strong><small>دارای چک برگشتی</small></article>
         </section>
@@ -178,7 +198,7 @@ export function VisitorCustomersScreen({ onNavigate }: Props) {
         </div>
 
         <section className="vc-list" aria-label="لیست مشتریان">
-          <div className="vc-list-head"><strong>{visibleCustomers.length.toLocaleString('fa-IR')} مشتری</strong><span>ترتیب رسمی مسیر NGT</span></div>
+          <div className="vc-list-head"><strong>{visibleCustomers.length.toLocaleString('fa-IR')} مشتری</strong><span>{effectiveRouteTitle || 'ترتیب رسمی مسیر NGT'}</span></div>
 
           {visibleCustomers.map((customer) => {
             const status = customerStatus(customer)
