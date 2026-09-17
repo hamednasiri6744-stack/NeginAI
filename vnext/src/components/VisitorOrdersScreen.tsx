@@ -70,6 +70,8 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
   const [browseCustomers, setBrowseCustomers] = useState<SellerCustomer[]>([])
   const [browseLoading, setBrowseLoading] = useState(false)
   const [browseError, setBrowseError] = useState<string | null>(null)
+  const [routePickerOpen, setRoutePickerOpen] = useState(false)
+  const [routePickerQuery, setRoutePickerQuery] = useState('')
   const [view, setView] = useState<View>('products')
   const [query, setQuery] = useState('')
   const [brand, setBrand] = useState('')
@@ -99,6 +101,11 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
     ? availableCustomers.find((customer) => String(customer.id) === String(effectiveCustomerId))
     : undefined
   const browseRouteTitle = routes.find((route) => route.id === browseRouteId)?.title ?? ''
+  const visibleBrowseRoutes = useMemo(() => {
+    const q = routePickerQuery.trim().toLocaleLowerCase('fa')
+    if (!q) return routes
+    return routes.filter((route) => route.title.toLocaleLowerCase('fa').includes(q))
+  }, [routePickerQuery, routes])
   const visitLocked = Boolean(effectiveVisitId && lockedCustomerId)
 
   const flash = useCallback((message: string) => {
@@ -497,21 +504,20 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
           {browseMode ? (
             <div className="vo-browse-control">
               <span><b>روز غیرکاری</b><small>مرور محصول و کاتالوگ مجاز است؛ Preview و ثبت غیرفعال‌اند.</small></span>
-              <select
-                value={browseRouteId}
-                onChange={(event) => {
-                  setBrowseRouteId(event.target.value)
-                  setSelectedCustomerId('')
-                  setCart({})
-                  setPreview(null)
-                  setBrand('')
-                  setGroupId('')
-                  setCatalogId('')
+              <button
+                type="button"
+                className="vo-route-picker-trigger ng-living-interactive"
+                onClick={() => {
+                  setRoutePickerQuery('')
+                  setRoutePickerOpen(true)
                 }}
-                aria-label="مسیر برای مرور"
+                aria-haspopup="dialog"
+                aria-expanded={routePickerOpen}
               >
-                {routes.map((route) => <option key={route.id} value={route.id}>{route.title}</option>)}
-              </select>
+                <MapIcon />
+                <span><small>مسیر مرور</small><strong>{browseRouteTitle || 'انتخاب مسیر'}</strong></span>
+                <ChevronLeftIcon />
+              </button>
             </div>
           ) : null}
           <button type="button" className={visitLocked ? 'vo-customer locked' : 'vo-customer'} disabled={browseMode && browseLoading} onClick={() => visitLocked ? flash('مشتری به ویزیت فعال قفل است.') : setCustomerPicker(true)}>
@@ -545,15 +551,21 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
               <section className="vo-products-view">
                 <div className="vo-toolbar">
                   <label className="vo-search"><SearchIcon /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="جست‌وجوی نام، کد، برند یا گروه…" /></label>
-                  <select value={brand} onChange={(event) => setBrand(event.target.value)} aria-label="برند">
-                    <option value="">همه برندها</option>
-                    {context.catalog_filters.brands.map((item) => <option key={item} value={item}>{item}</option>)}
-                  </select>
-                  <select value={groupId} onChange={(event) => setGroupId(event.target.value)} aria-label="گروه کالا">
-                    <option value="">همه گروه‌ها</option>
-                    {context.catalog_filters.groups.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-                  </select>
-                  <label className="vo-stock-toggle"><input type="checkbox" checked={inStockOnly} onChange={(event) => setInStockOnly(event.target.checked)} /> فقط موجود</label>
+                  <div className="vo-filter-row" aria-label="فیلتر برند">
+                    <button type="button" className={!brand ? 'active' : ''} onClick={() => setBrand('')}>همه برندها</button>
+                    {context.catalog_filters.brands.map((item) => (
+                      <button type="button" key={item} className={brand === item ? 'active' : ''} onClick={() => setBrand(item)}>{item}</button>
+                    ))}
+                  </div>
+                  <div className="vo-filter-row" aria-label="فیلتر گروه کالا">
+                    <button type="button" className={!groupId ? 'active' : ''} onClick={() => setGroupId('')}>همه گروه‌ها</button>
+                    {context.catalog_filters.groups.map((item) => (
+                      <button type="button" key={item.id} className={groupId === item.id ? 'active' : ''} onClick={() => setGroupId(item.id)}>{item.name}</button>
+                    ))}
+                  </div>
+                  <button type="button" className={`vo-stock-toggle ${inStockOnly ? 'active' : ''}`} onClick={() => setInStockOnly((value) => !value)}>
+                    <BoxIcon /><span>فقط موجود</span><i aria-hidden="true" />
+                  </button>
                 </div>
 
                 {selectedCatalog ? (
@@ -759,6 +771,48 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
             <span className="vo-cart-dock-copy"><small>{preview?.ok ? 'خالص رسمی NGT' : 'سبد زنده'}</small><strong>{number(preview?.ok ? preview.totals.net : indicativeSubtotal)}</strong><em>{number(cartCount)} واحد پایه</em></span>
             <button type="button" onClick={() => setView('cart')}>مشاهده سبد <ChevronLeftIcon /></button>
           </aside>
+        ) : null}
+
+        {routePickerOpen ? (
+          <div className="vo-sheet-backdrop" onClick={() => setRoutePickerOpen(false)}>
+            <section className="vo-sheet vo-route-sheet" role="dialog" aria-modal="true" aria-label="انتخاب مسیر مرور" onClick={(event) => event.stopPropagation()}>
+              <div className="vo-sheet-handle" />
+              <div className="vo-sheet-title">
+                <div><small>Route Browser</small><h2>انتخاب مسیر مرور</h2><span>{routes.length.toLocaleString('fa-IR')} مسیر تخصیص‌یافته</span></div>
+                <button type="button" className="vo-icon-button" onClick={() => setRoutePickerOpen(false)} aria-label="بستن">×</button>
+              </div>
+              <label className="vo-sheet-search"><SearchIcon /><input value={routePickerQuery} onChange={(event) => setRoutePickerQuery(event.target.value)} placeholder="جست‌وجوی مسیر…" /></label>
+              <div className="vo-route-list">
+                {visibleBrowseRoutes.map((route) => {
+                  const active = route.id === browseRouteId
+                  return (
+                    <button
+                      type="button"
+                      key={route.id}
+                      className={active ? 'active' : ''}
+                      onClick={() => {
+                        if (!active) {
+                          setBrowseRouteId(route.id)
+                          setSelectedCustomerId('')
+                          setCart({})
+                          setPreview(null)
+                          setBrand('')
+                          setGroupId('')
+                          setCatalogId('')
+                        }
+                        setRoutePickerOpen(false)
+                      }}
+                    >
+                      <span className="vo-route-list-icon"><MapIcon /></span>
+                      <span><strong>{route.title}</strong><small>{route.customer_count ? route.customer_count.toLocaleString('fa-IR') + ' مشتری' : 'مسیر تخصیص‌یافته NGT'}</small></span>
+                      <span className="vo-route-check">{active ? <CheckCircleIcon /> : <ChevronLeftIcon />}</span>
+                    </button>
+                  )
+                })}
+                {!visibleBrowseRoutes.length ? <div className="vo-route-empty">مسیر مطابق جست‌وجو پیدا نشد.</div> : null}
+              </div>
+            </section>
+          </div>
         ) : null}
 
         {customerPicker ? (

@@ -130,7 +130,7 @@ export function VisitorOrderArchiveScreen({ onNavigate }: Props) {
             <h1>درخواست‌های ذخیره‌شده واقعی</h1>
             <p>{activeRouteTitle ? `مسیر ${activeRouteTitle}` : 'مسیر فعالی ثبت نشده است'}</p>
           </div>
-          <button type="button" onClick={() => onNavigate('/visitor/orders')}><PlusIcon /><span>سفارش جدید</span></button>
+          <button type="button" className="voa-new-order ng-living-interactive" onClick={() => onNavigate('/visitor/orders')}><PlusIcon /><span>سفارش جدید</span></button>
         </section>
 
         {error ? (
@@ -162,7 +162,7 @@ export function VisitorOrderArchiveScreen({ onNavigate }: Props) {
 
           <div className="voa-list-head">
             <strong>{visibleRequests.length.toLocaleString('fa-IR')} درخواست</strong>
-            <button type="button" onClick={() => void load()}>به‌روزرسانی</button>
+            <button type="button" className="voa-refresh ng-living-interactive" onClick={() => void load()} disabled={loading}><span className={loading ? 'spin' : ''}>↻</span>{loading ? 'در حال دریافت' : 'به‌روزرسانی'}</button>
           </div>
 
           <div className="voa-order-list">
