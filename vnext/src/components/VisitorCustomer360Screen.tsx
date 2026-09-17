@@ -262,24 +262,24 @@ export function VisitorCustomer360Screen({ customerId = '', onNavigate, onBack }
               </div>
             </section>
 
-            <section className={`c360-workflow-card ng-living-surface ${offDay ? 'is-offday' : ''}`} data-visit-state={offDay ? 'offday' : activeVisitHere ? 'active' : 'ready'} aria-label="ط§ظ‚ط¯ط§ظ… ط¨ط¹ط¯غŒ ظ…ط´طھط±غŒ">
+            <section className={`c360-workflow-card ng-living-surface ${offDay ? 'is-offday' : ''}`} data-visit-state={offDay ? 'offday' : activeVisitHere ? 'active' : 'ready'} aria-label="اقدام بعدی مشتری">
               {offDay ? (
                 <div className="c360-offday-strip">
-                  <div><span>ط­ط§ظ„طھ ظ…ط±ظˆط±</span><strong>ط±ظˆط² ط؛غŒط±ع©ط§ط±غŒ NGT</strong><small>ط¨ط§ط²ط¯غŒط¯ ظˆ ط³ظپط§ط±ط´ ط¯ط± ظ…ط³غŒط± ع©ط§ط±غŒ ط¨ط¹ط¯غŒ ظپط¹ط§ظ„ ظ…غŒâ€Œط´ظˆط¯.</small></div>
-                  <b>{workCalendar?.date || 'â€”'}</b>
+                  <div><span>حالت مرور</span><strong>روز غیرکاری NGT</strong><small>بازدید و سفارش در مسیر کاری بعدی فعال می‌شود.</small></div>
+                  <b>{workCalendar?.date || '—'}</b>
                 </div>
               ) : (
                 <>
-                  <div className="c360-workflow-head"><span>{activeVisitHere ? 'ظˆغŒط²غŒطھ ظپط¹ط§ظ„' : 'ع¯ط§ظ… ط¨ط¹ط¯غŒ'}</span><strong>{activeVisitHere ? 'ط§ط¯ط§ظ…ظ‡ ع©ط§ط± ط¨ط§ ظ‡ظ…غŒظ† ظ…ط´طھط±غŒ' : 'ط¨ط±ط§غŒ ط§غŒظ† ظ…ط´طھط±غŒ ع†ظ‡ ع©ط§ط±غŒ ط§ظ†ط¬ط§ظ… ظ…غŒâ€Œط¯ظ‡غŒطں'}</strong><small>{activeVisitHere ? 'ظˆغŒط²غŒطھ ط¨ط§ط² ط§ط³طھط› ط³ظپط§ط±ط´ ظˆ ظ†طھغŒط¬ظ‡ ظˆغŒط²غŒطھ ط¯ط± ظ‡ظ…ط§ظ† ط¬ط±غŒط§ظ† ط§ط¯ط§ظ…ظ‡ ظ¾غŒط¯ط§ ظ…غŒâ€Œع©ظ†ط¯.' : 'ط´ط±ظˆط¹ ط¨ط§ط²ط¯غŒط¯طŒ ط³ظپط§ط±ط´ ظˆ ط§ظ‚ط¯ط§ظ…ط§طھ طھظ…ط§ط³ ط¨ط¯ظˆظ† ط®ط±ظˆط¬ ط§ط² ط²ظ…غŒظ†ظ‡ ظ…ط´طھط±غŒ.'}</small></div>
+                  <div className="c360-workflow-head"><span>{activeVisitHere ? 'ویزیت فعال' : 'گام بعدی'}</span><strong>{activeVisitHere ? 'ادامه کار با همین مشتری' : 'برای این مشتری چه کاری انجام می‌دهی؟'}</strong><small>{activeVisitHere ? 'ویزیت باز است؛ سفارش و نتیجه ویزیت در همان جریان ادامه پیدا می‌کند.' : 'شروع بازدید، سفارش و اقدامات تماس بدون خروج از زمینه مشتری.'}</small></div>
                   <div className="c360-primary-actions">
-                    <button type="button" className="visit ng-living-interactive" onClick={() => onNavigate(`/visitor/route?customer=${customer.id}&intent=visit`)}><RouteArrowIcon /><span>{activeVisitHere ? 'ط§ط¯ط§ظ…ظ‡ ط¨ط§ط²ط¯غŒط¯' : 'ط´ط±ظˆط¹ ط¨ط§ط²ط¯غŒط¯'}</span></button>
-                    <button type="button" className="order ng-living-interactive" onClick={() => onNavigate(`/visitor/orders?customer=${customer.id}${activeVisitHere ? `&visit=${encodeURIComponent(activeVisit?.id ?? '')}` : ''}`)}><CartIcon /><span>ط³ظپط§ط±ط´</span></button>
+                    <button type="button" className="visit ng-living-interactive" onClick={() => onNavigate(`/visitor/route?customer=${customer.id}&intent=visit`)}><RouteArrowIcon /><span>{activeVisitHere ? 'ادامه بازدید' : 'شروع بازدید'}</span></button>
+                    <button type="button" className="order ng-living-interactive" onClick={() => onNavigate(`/visitor/orders?customer=${customer.id}${activeVisitHere ? `&visit=${encodeURIComponent(activeVisit?.id ?? '')}` : ''}`)}><CartIcon /><span>سفارش</span></button>
                   </div>
                 </>
               )}
-              <div className="c360-utility-actions"><button type="button" disabled={!hasPhone} onClick={() => callCustomer(customer)}><PhoneIcon /><span>طھظ…ط§ط³</span></button><button type="button" disabled={!hasLocation} onClick={() => navigateCustomer(customer)}><MapIcon /><span>ظ…ط³غŒط±غŒط§ط¨غŒ</span></button></div>
-              <div className="c360-pulse-rail" role="list" aria-label="ظˆط¶ط¹غŒطھ ط³ط±غŒط¹ ظ…ط´طھط±غŒ">
-                <span role="listitem"><small>ط¨ط§ط²ط¯غŒط¯</small><strong dir="ltr">{Number(profile?.customer.visit_count ?? 0).toLocaleString('fa-IR')}</strong></span><span role="listitem"><small>ط³ظپط§ط±ط´</small><strong dir="ltr">{Number(profile?.customer.order_count ?? 0).toLocaleString('fa-IR')}</strong></span><span role="listitem" className={openInvoiceCount ? 'attention' : ''}><small>ظپط§ع©طھظˆط± ط¨ط§ط²</small><strong dir="ltr">{openInvoiceCount.toLocaleString('fa-IR')}</strong></span><span role="listitem" className={returnedChequeCount ? 'danger' : 'safe'}><small>ع†ع© ط¨ط±ع¯ط´طھغŒ</small><strong dir="ltr">{returnedChequeCount.toLocaleString('fa-IR')}</strong></span>
+              <div className="c360-utility-actions"><button type="button" disabled={!hasPhone} onClick={() => callCustomer(customer)}><PhoneIcon /><span>تماس</span></button><button type="button" disabled={!hasLocation} onClick={() => navigateCustomer(customer)}><MapIcon /><span>مسیریابی</span></button></div>
+              <div className="c360-pulse-rail" role="list" aria-label="وضعیت سریع مشتری">
+                <span role="listitem"><small>بازدید</small><strong dir="ltr">{Number(profile?.customer.visit_count ?? 0).toLocaleString('fa-IR')}</strong></span><span role="listitem"><small>سفارش</small><strong dir="ltr">{Number(profile?.customer.order_count ?? 0).toLocaleString('fa-IR')}</strong></span><span role="listitem" className={openInvoiceCount ? 'attention' : ''}><small>فاکتور باز</small><strong dir="ltr">{openInvoiceCount.toLocaleString('fa-IR')}</strong></span><span role="listitem" className={returnedChequeCount ? 'danger' : 'safe'}><small>چک برگشتی</small><strong dir="ltr">{returnedChequeCount.toLocaleString('fa-IR')}</strong></span>
               </div>
             </section>
             <div className="c360-tabs" role="tablist" aria-label="بخش‌های پروفایل مشتری">
