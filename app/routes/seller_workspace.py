@@ -11,6 +11,7 @@ from app.varanegar_order_bridge import (
     submit_validated_order,
 )
 from app.routes.dependencies import require_user_or_local
+from app.target_pulse_service import seller_target_pulse
 from app.seller_workspace_service import (
     SellerDayRouteMismatch,
     SellerRouteNotFound,
@@ -23,6 +24,7 @@ from app.seller_workspace_service import (
     seller_returned_cheques,
     seller_voucher_return_report,
     seller_route_customers,
+    seller_route_customers_basic,
     seller_route_customer_profile,
     seller_visit_policy,
     save_seller_route_customer_profile_draft,
@@ -187,6 +189,14 @@ def get_my_routes(request: Request):
         raise HTTPException(status_code=403, detail=str(exc)) from exc
 
 
+@router.get("/target-pulse")
+def get_my_target_pulse(request: Request):
+    try:
+        return seller_target_pulse(request.app.state.settings, _username(request))
+    except SellerWorkspaceError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+
+
 @router.get("/brands")
 def get_my_brands(request: Request):
     try:
@@ -236,9 +246,15 @@ def get_my_voucher_return_report(request: Request):
 
 
 @router.get("/routes/{path_id}/customers")
-def get_my_route_customers(path_id: str, request: Request):
+def get_my_route_customers(
+    path_id: str,
+    request: Request,
+    detail: str = Query("basic", pattern="^(basic|full)$"),
+):
     try:
-        return seller_route_customers(request.app.state.settings, _username(request), path_id)
+        if detail == "full":
+            return seller_route_customers(request.app.state.settings, _username(request), path_id)
+        return seller_route_customers_basic(request.app.state.settings, _username(request), path_id)
     except SellerRouteNotFound as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except SellerWorkspaceError as exc:
@@ -250,7 +266,7 @@ def get_my_route_saved_requests(path_id: str, request: Request):
     try:
         # Validate that this route still belongs to the signed-in seller before
         # exposing locally saved work for the tour.
-        seller_route_customers(request.app.state.settings, _username(request), path_id)
+        seller_route_customers_basic(request.app.state.settings, _username(request), path_id)
         return {
             "requests": list_route_saved_requests(
                 request.app.state.settings,

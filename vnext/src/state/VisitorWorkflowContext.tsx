@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
-import type { PrevisitVisitDraftResponse, SellerCustomer } from '../api/neginApi'
+import type { NeshanRouteLeg, NeshanRouteMapPlanResponse, PrevisitVisitDraftResponse, SellerCustomer } from '../api/neginApi'
 
 const WORKFLOW_STORAGE_KEY = 'neginai.visitor.workflow.v2'
 
@@ -14,6 +14,7 @@ export type VisitorRouteStop = {
   distance: string
   eta: string
   priority: 'A' | 'B' | 'C'
+  priorityKnown: boolean
   debtWarning?: boolean
   score: number
   status: StopStatus
@@ -39,11 +40,14 @@ type VisitorWorkflowState = {
 type VisitorWorkflowValue = VisitorWorkflowState & {
   routeSummary: {
     visited: number
+    resolved: number
     remaining: number
     total: number
     progress: number
   }
   hydrateLiveRoute: (routeId: string, customers: SellerCustomer[]) => void
+  applyRoutePlan: (plan: NeshanRouteMapPlanResponse) => void
+  updateNavigationMetrics: (customerId: string, leg: NeshanRouteLeg | null) => void
   selectCustomer: (customerId: string | null) => void
   adoptServerVisit: (draft: PrevisitVisitDraftResponse) => ActiveVisit
   completeVisit: (customerId: string, outcome: VisitOutcome) => void
@@ -116,6 +120,7 @@ function liveStops(customers: SellerCustomer[]): VisitorRouteStop[] {
       distance: '—',
       eta: status === 'visited' || status === 'skipped' ? 'انجام شده' : status === 'unlocated' ? 'موقعیت ندارد' : 'در انتظار',
       priority: returnedCheques > 0 ? 'A' : 'B',
+      priorityKnown: false,
       score: 0,
       status,
     }
@@ -162,6 +167,37 @@ export function VisitorWorkflowProvider({ children }: { children: ReactNode }) {
         routeStops,
       }
     })
+  }, [update])
+
+  const applyRoutePlan = useCallback((plan: NeshanRouteMapPlanResponse) => {
+    update((current) => {
+      if (!current.routeId || String(plan.route.id) !== String(current.routeId)) return current
+      const info = new Map([...plan.ordered_customers, ...plan.unlocated_customers].map((customer, index) => [String(customer.id), { customer, index }]))
+      const ordered = [...current.routeStops].sort((a, b) => (info.get(a.customerId)?.index ?? 1e9) - (info.get(b.customerId)?.index ?? 1e9))
+      let firstOpenAssigned = false
+      const routeStops = ordered.map((stop, index) => {
+        const customer = info.get(stop.customerId)?.customer
+        const tier = String(customer?.priority_tier || '').toLowerCase()
+        const priorityKnown = ['high', 'medium', 'low'].includes(tier)
+        const priority = tier === 'high' ? 'A' : tier === 'medium' ? 'B' : tier === 'low' ? 'C' : stop.priority
+        let status = stop.status
+        if (!['visited', 'skipped', 'unlocated'].includes(status)) {
+          if (current.activeVisit) status = stop.customerId === current.activeVisit.customerId ? 'active' : 'pending'
+          else if (!firstOpenAssigned) { firstOpenAssigned = true; status = 'active' } else status = 'pending'
+        }
+        return { ...stop, stopId: index + 1, priority, priorityKnown, score: Number(customer?.visit_score ?? stop.score), status }
+      })
+      const activeCustomerId = current.activeVisit?.customerId ?? routeStops.find((stop) => stop.status === 'active')?.customerId ?? routeStops.find((stop) => stop.status === 'pending')?.customerId ?? routeStops.find((stop) => stop.status === 'unlocated')?.customerId ?? routeStops[0]?.customerId ?? current.activeCustomerId
+      return { ...current, routeStops, activeCustomerId }
+    })
+  }, [update])
+
+  const updateNavigationMetrics = useCallback((customerId: string, leg: NeshanRouteLeg | null) => {
+    if (!leg) return
+    const distance = String(leg.distance?.text || '').trim()
+    const eta = String(leg.duration?.text || '').trim()
+    if (!distance && !eta) return
+    update((current) => ({ ...current, routeStops: current.routeStops.map((stop) => stop.customerId === customerId ? { ...stop, distance: distance || stop.distance, eta: eta || stop.eta } : stop) }))
   }, [update])
 
   const selectCustomer = useCallback((customerId: string | null) => {
@@ -213,14 +249,16 @@ export function VisitorWorkflowProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const routeSummary = useMemo(() => {
-    const completed = state.routeStops.filter((stop) => ['visited', 'skipped'].includes(stop.status)).length
+    const visited = state.routeStops.filter((stop) => stop.status === 'visited').length
+    const resolved = state.routeStops.filter((stop) => ['visited', 'skipped'].includes(stop.status)).length
     const total = state.routeStops.length
-    const remaining = Math.max(0, total - completed)
+    const remaining = Math.max(0, total - resolved)
     return {
-      visited: completed,
+      visited,
+      resolved,
       remaining,
       total,
-      progress: total ? Math.round((completed / total) * 100) : 0,
+      progress: total ? Math.round((resolved / total) * 100) : 0,
     }
   }, [state.routeStops])
 
@@ -228,12 +266,14 @@ export function VisitorWorkflowProvider({ children }: { children: ReactNode }) {
     ...state,
     routeSummary,
     hydrateLiveRoute,
+    applyRoutePlan,
+    updateNavigationMetrics,
     selectCustomer,
     adoptServerVisit,
     completeVisit,
     attachDraft,
     resetWorkflow,
-  }), [adoptServerVisit, attachDraft, completeVisit, hydrateLiveRoute, resetWorkflow, routeSummary, selectCustomer, state])
+  }), [adoptServerVisit, applyRoutePlan, attachDraft, completeVisit, hydrateLiveRoute, resetWorkflow, routeSummary, selectCustomer, state, updateNavigationMetrics])
 
   return <VisitorWorkflowContext.Provider value={value}>{children}</VisitorWorkflowContext.Provider>
 }

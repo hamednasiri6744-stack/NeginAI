@@ -3,6 +3,7 @@ import { useVisitorAuth } from '../state/VisitorAuthContext'
 import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
 import {
   BellIcon,
+  ChartIcon,
   ChevronLeftIcon,
   HomeIcon,
   MapIcon,
@@ -11,8 +12,8 @@ import {
   UserGroupIcon,
 } from './Icons'
 
-type Props = { onNavigate: (path: string) => void }
-type Filter = 'all' | 'unread'
+type Props = { onNavigate: (path: string) => void; onClose: () => void }
+type Filter = 'all' | 'unread' | 'read'
 
 function notificationTime(value: string) {
   const date = new Date(value)
@@ -23,7 +24,7 @@ function notificationTime(value: string) {
   }).format(date)
 }
 
-export function VisitorNotificationsScreen({ onNavigate }: Props) {
+export function VisitorNotificationsScreen({ onNavigate, onClose }: Props) {
   const { profile } = useVisitorAuth()
   const {
     items,
@@ -37,9 +38,14 @@ export function VisitorNotificationsScreen({ onNavigate }: Props) {
   const [filter, setFilter] = useState<Filter>('all')
 
   const visibleItems = useMemo(
-    () => (filter === 'unread' ? items.filter((item) => !item.read) : items),
+    () => filter === 'unread'
+      ? items.filter((item) => !item.read)
+      : filter === 'read'
+        ? items.filter((item) => item.read)
+        : items,
     [filter, items],
   )
+  const readCount = Math.max(0, items.length - unreadCount)
 
   return (
     <main className="vh-page" dir="rtl">
@@ -54,7 +60,7 @@ export function VisitorNotificationsScreen({ onNavigate }: Props) {
             <ChevronLeftIcon />
           </button>
 
-          <button className="vh-bell active" type="button" aria-label="\u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627">
+          <button className="vh-bell active" type="button" aria-label="\u0628\u0633\u062a\u0646 \u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627" onClick={onClose}>
             <BellIcon />
             {unreadCount ? <b>{unreadCount}</b> : null}
           </button>
@@ -95,14 +101,19 @@ export function VisitorNotificationsScreen({ onNavigate }: Props) {
 
         <section className="vn-overview" aria-label="\u062e\u0644\u0627\u0635\u0647 \u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627">
           <article>
-            <span>{'\u062e\u0648\u0627\u0646\u062f\u0647\u200c\u0646\u0634\u062f\u0647'}</span>
+            <span>{"\u062e\u0648\u0627\u0646\u062f\u0647\u200c\u0646\u0634\u062f\u0647"}</span>
             <strong>{unreadCount.toLocaleString('fa-IR')}</strong>
-            <small>{'\u0627\u0632 Backend \u0648\u0627\u0642\u0639\u06cc'}</small>
+            <small>{"\u0627\u0632 Backend \u0648\u0627\u0642\u0639\u06cc"}</small>
           </article>
           <article>
-            <span>{'\u06a9\u0644'}</span>
+            <span>{"\u062e\u0648\u0627\u0646\u062f\u0647\u200c\u0634\u062f\u0647"}</span>
+            <strong>{readCount.toLocaleString('fa-IR')}</strong>
+            <small>{"\u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627\u06cc \u0645\u0631\u0648\u0631\u0634\u062f\u0647"}</small>
+          </article>
+          <article>
+            <span>{"\u06a9\u0644"}</span>
             <strong>{items.length.toLocaleString('fa-IR')}</strong>
-            <small>{'\u0627\u0639\u0644\u0627\u0646 \u062b\u0628\u062a\u200c\u0634\u062f\u0647'}</small>
+            <small>{"\u0627\u0639\u0644\u0627\u0646 \u062b\u0628\u062a\u200c\u0634\u062f\u0647"}</small>
           </article>
         </section>
 
@@ -124,6 +135,15 @@ export function VisitorNotificationsScreen({ onNavigate }: Props) {
             onClick={() => setFilter('unread')}
           >
             {'\u062e\u0648\u0627\u0646\u062f\u0647\u200c\u0646\u0634\u062f\u0647'}
+          </button>
+          <button
+            className={filter === 'read' ? 'active' : ''}
+            type="button"
+            role="tab"
+            aria-selected={filter === 'read'}
+            onClick={() => setFilter('read')}
+          >
+            {'\u062e\u0648\u0627\u0646\u062f\u0647\u200c\u0634\u062f\u0647'}
           </button>
         </section>
 
@@ -156,6 +176,7 @@ export function VisitorNotificationsScreen({ onNavigate }: Props) {
           <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/route')}><MapIcon /><span>{'\u0645\u0633\u06cc\u0631'}</span></button>
           <button className="vh-order" type="button" onClick={() => onNavigate('/visitor/orders')}><PlusIcon /><span>{'\u0633\u0641\u0627\u0631\u0634'}</span></button>
           <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/customers')}><UserGroupIcon /><span>{'\u0645\u0634\u062a\u0631\u06cc\u0627\u0646'}</span></button>
+          <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/reports')}><ChartIcon /><span>{"\u06af\u0632\u0627\u0631\u0634\u200c\u0647\u0627"}</span></button>
         </nav>
       </div>
     </main>

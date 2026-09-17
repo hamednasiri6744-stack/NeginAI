@@ -27,16 +27,28 @@ export type SellerRoute = {
   can_start_visit?: boolean
 }
 
+export type SellerWorkCalendar = {
+  date: string
+  month: string
+  elapsed_working_days: number
+  remaining_working_days: number
+  total_working_days: number
+  is_working_day: boolean
+  source: string
+}
+
 export type SellerRoutesResponse = {
   seller: { personnel_id: number; full_name: string }
   visit_template: string
   routes: SellerRoute[]
   day_route: { id: string; title: string; date?: string; source?: string } | null
+  work_calendar?: SellerWorkCalendar | null
   day_route_status: string
   test_all_routes_override?: boolean
   visit_location_policy?: Record<string, unknown>
   source?: string
   live_assignment?: boolean
+  detail?: 'basic' | 'full'
 }
 
 export type VisitResolution = {
@@ -91,6 +103,34 @@ export type RouteCustomersResponse = {
   live_assignment?: boolean
 }
 
+export type CustomerProfileEditable = {
+  phone?: string | null
+  national_code?: string | null
+  economic_code?: string | null
+  store_name?: string | null
+  address?: string | null
+  mobile?: string | null
+  customer_activity_id?: string | null
+  state_id?: string | null
+  city_id?: string | null
+  county_id?: string | null
+  city_zone?: number | null
+  customer_level_id?: string | null
+  customer_category_id?: string | null
+  owner_type_ref?: number | null
+  postal_code?: string | null
+  customer_code?: string | null
+  latitude?: number | null
+  longitude?: number | null
+}
+
+export type CustomerProfileLookupItem = {
+  id: string
+  title: string
+  parent_id?: string
+  ref?: number | null
+}
+
 export type CustomerProfileResponse = {
   route: { id: string; title: string }
   customer: SellerCustomer & {
@@ -109,10 +149,10 @@ export type CustomerProfileResponse = {
     sum_order_amount?: number
     avg_successful_visit?: number
     ngt_updated_at?: string
-    editable?: Record<string, unknown>
+    editable?: CustomerProfileEditable
   }
-  lookups?: Record<string, unknown>
-  draft?: Record<string, unknown> | null
+  lookups?: Record<string, CustomerProfileLookupItem[]>
+  draft?: CustomerProfileEditable | null
   draft_updated_at?: string | null
   visit_controls?: Record<string, unknown>
   editable_contract?: {
@@ -121,6 +161,16 @@ export type CustomerProfileResponse = {
     source?: string
     write_mode?: string
   }
+}
+
+export type CustomerProfileDraftSaveResponse = {
+  route_id: string
+  customer_id: string
+  draft: CustomerProfileEditable
+  updated_at: string
+  write_mode: string
+  location_available_for_visit: boolean
+  message: string
 }
 
 export type ChatResponse = {
@@ -319,12 +369,19 @@ export const neginApi = {
     return request<SellerRoutesResponse>('/seller-workspace/routes')
   },
 
-  async routeCustomers(routeId: string) {
-    return request<RouteCustomersResponse>(`/seller-workspace/routes/${encodeURIComponent(routeId)}/customers`)
+  async routeCustomers(routeId: string, detail: 'basic' | 'full' = 'basic') {
+    return request<RouteCustomersResponse>(`/seller-workspace/routes/${encodeURIComponent(routeId)}/customers?detail=${detail}`)
   },
 
   async customerProfile(routeId: string, customerId: string) {
     return request<CustomerProfileResponse>(`/seller-workspace/routes/${encodeURIComponent(routeId)}/customers/${encodeURIComponent(customerId)}/profile`)
+  },
+
+  async saveCustomerProfileDraft(routeId: string, customerId: string, payload: CustomerProfileEditable) {
+    return request<CustomerProfileDraftSaveResponse>(`/seller-workspace/routes/${encodeURIComponent(routeId)}/customers/${encodeURIComponent(customerId)}/profile-draft`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    })
   },
 
   async chat(
@@ -474,6 +531,14 @@ export type PrevisitOutcomePayload = {
   accuracy?: number | null
 }
 
+export type PrevisitDraftUpdatePayload = {
+  lines: PrevisitDraftLine[]
+  payment_type: string
+  order_type: string
+  warehouse_ref?: number | null
+  warehouse_name: string
+}
+
 export async function getVisitWorkspace(routeId: string, customerId: string) {
   return request<SellerVisitWorkspaceResponse>(`/seller-workspace/routes/${encodeURIComponent(routeId)}/customers/${encodeURIComponent(customerId)}/visit-workspace`)
 }
@@ -492,6 +557,13 @@ export async function startServerVisit(payload: PrevisitVisitStartPayload) {
 
 export async function getVisitDraft(visitId: string) {
   return request<PrevisitVisitDraftResponse>(`/seller-workspace/previsit/visits/${encodeURIComponent(visitId)}`)
+}
+
+export async function updateVisitDraft(visitId: string, payload: PrevisitDraftUpdatePayload) {
+  return request<PrevisitVisitDraftResponse>(`/seller-workspace/previsit/visits/${encodeURIComponent(visitId)}/draft`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  })
 }
 
 export async function completeServerVisit(visitId: string, payload: PrevisitOutcomePayload) {
@@ -694,6 +766,48 @@ export type PrevisitPreviewRequestPayload = {
   lines: Array<{ product_id: string; quantity: number }>
 }
 
+export type PrevisitDiscountPart = { amount: number; percent: number }
+export type PrevisitDiscountBreakdown = {
+  cash: PrevisitDiscountPart
+  volume: PrevisitDiscountPart
+  goods: PrevisitDiscountPart
+  other: PrevisitDiscountPart
+  unclassified: PrevisitDiscountPart
+}
+export type PrevisitGiftLine = {
+  product_id: string
+  parent_product_id: string
+  title: string
+  quantity: number
+  unit_price: number
+  gross_amount: number
+  discount_amount: number
+  discount_percent: number
+  net_amount: number
+  source: string
+}
+export type PrevisitCreditControl = {
+  allowed?: boolean
+  blocking?: boolean
+  mode?: string
+  mode_label?: string
+  message?: string
+  current_order_amount?: number
+  pending_ngt_order_amount?: number
+  evaluated_total?: number
+  available_amount?: number | null
+  deficit?: number
+  financials?: {
+    customer_remaining?: number
+    open_invoice_count?: number
+    open_invoice_amount?: number
+    open_cheque_count?: number
+    open_cheque_amount?: number
+    returned_cheque_count?: number
+    returned_cheque_amount?: number
+  }
+  [key: string]: unknown
+}
 export type PrevisitPreviewResponse = {
   ok: boolean
   message: string
@@ -703,18 +817,20 @@ export type PrevisitPreviewResponse = {
     unit_price: number
     discount_amount: number
     discount_percent: number
+    discount_breakdown?: PrevisitDiscountBreakdown
     gross_amount: number
     tax_amount: number
     charge_amount: number
+    tax_and_charge_amount?: number
     net_amount: number
     rule_no: string
   }>
   totals: { gross: number; discount: number; tax: number; charge: number; net: number }
-  gift_lines: Array<Record<string, unknown>>
+  gift_lines: PrevisitGiftLine[]
   restrictions: unknown[]
   source: string
   creates_order: false
-  credit_control?: { allowed?: boolean; blocking?: boolean; message?: string; deficit?: number; [key: string]: unknown }
+  credit_control?: PrevisitCreditControl
   order_type?: { id: number; name: string }
   payment_type?: { id: string; name: string }
   warehouse?: { id: string; ref: number; name: string } | null
@@ -744,6 +860,21 @@ export async function previewPrevisit(payload: PrevisitPreviewRequestPayload) {
 export async function createSavedPrevisitRequest(visitId: string, payload: PrevisitSavedRequestPayload) {
   return request<RouteSavedRequest>(`/seller-workspace/previsit/visits/${encodeURIComponent(visitId)}/saved-requests`, {
     method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function getVisitSavedRequests(visitId: string) {
+  return request<RouteSavedRequestsResponse>(`/seller-workspace/previsit/visits/${encodeURIComponent(visitId)}/saved-requests`)
+}
+
+export async function getSavedPrevisitRequest(visitId: string, requestId: string) {
+  return request<RouteSavedRequest>(`/seller-workspace/previsit/visits/${encodeURIComponent(visitId)}/saved-requests/${encodeURIComponent(requestId)}`)
+}
+
+export async function updateSavedPrevisitRequest(visitId: string, requestId: string, payload: PrevisitSavedRequestPayload) {
+  return request<RouteSavedRequest>(`/seller-workspace/previsit/visits/${encodeURIComponent(visitId)}/saved-requests/${encodeURIComponent(requestId)}`, {
+    method: 'PUT',
     body: JSON.stringify(payload),
   })
 }

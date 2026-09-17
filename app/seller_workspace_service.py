@@ -1,4 +1,4 @@
-"""Seller-facing current routes and sellable catalog brands from NGT."""
+﻿"""Seller-facing current routes and sellable catalog brands from NGT."""
 
 from __future__ import annotations
 
@@ -354,7 +354,7 @@ WHERE ISNULL(status.IsRemoved, 0) = 0
     reasons = {"no_order": [], "no_visit": []}
     for row in rows:
         type_name = str(row.get("ReasonTypeName") or "").strip()
-        outcome = "no_visit" if type_name.endswith(".NoVisit") or "ویزیت" in type_name else "no_order"
+        outcome = "no_visit" if type_name.endswith(".NoVisit") or "ظˆغŒط²غŒطھ" in type_name else "no_order"
         reasons[outcome].append({
             "id": str(row.get("ReasonId") or ""),
             "title": str(row.get("ReasonName") or "").strip(),
@@ -398,12 +398,12 @@ def seller_visit_policy(settings: Any, username: str, path_id: str, customer_id:
     blockers = []
     order_blockers = []
     if missing:
-        order_blockers.append("اطلاعات اجباری مشتری باید پیش از سفارش‌گیری تکمیل شود")
+        order_blockers.append("ط§ط·ظ„ط§ط¹ط§طھ ط§ط¬ط¨ط§ط±غŒ ظ…ط´طھط±غŒ ط¨ط§غŒط¯ ظ¾غŒط´ ط§ط² ط³ظپط§ط±ط´â€Œع¯غŒط±غŒ طھع©ظ…غŒظ„ ط´ظˆط¯")
     if policy.get("enforced") and not effective_customer.get("location_check_exempt") and (
         effective_customer.get("latitude") is None or effective_customer.get("longitude") is None
     ):
-        blockers.append("موقعیت مشتری برای کنترل فاصله ثبت نشده است")
-        order_blockers.append("موقعیت مشتری برای کنترل فاصله ثبت نشده است")
+        blockers.append("ظ…ظˆظ‚ط¹غŒطھ ظ…ط´طھط±غŒ ط¨ط±ط§غŒ ع©ظ†طھط±ظ„ ظپط§طµظ„ظ‡ ط«ط¨طھ ظ†ط´ط¯ظ‡ ط§ط³طھ")
+        order_blockers.append("ظ…ظˆظ‚ط¹غŒطھ ظ…ط´طھط±غŒ ط¨ط±ط§غŒ ع©ظ†طھط±ظ„ ظپط§طµظ„ظ‡ ط«ط¨طھ ظ†ط´ط¯ظ‡ ط§ط³طھ")
     return {
         "route": route["route"],
         "customer": {
@@ -430,7 +430,7 @@ def resolve_ngt_visit_outcome(
         None,
     )
     if reason is None:
-        raise SellerWorkspaceError("دلیل انتخاب‌شده در NGT فعال نیست یا به این نوع نتیجه ویزیت تعلق ندارد")
+        raise SellerWorkspaceError("ط¯ظ„غŒظ„ ط§ظ†طھط®ط§ط¨â€Œط´ط¯ظ‡ ط¯ط± NGT ظپط¹ط§ظ„ ظ†غŒط³طھ غŒط§ ط¨ظ‡ ط§غŒظ† ظ†ظˆط¹ ظ†طھغŒط¬ظ‡ ظˆغŒط²غŒطھ طھط¹ظ„ظ‚ ظ†ط¯ط§ط±ط¯")
     return {
         "reason_id": reason["id"],
         "reason": reason["title"],
@@ -473,7 +473,7 @@ def require_seller_day_route(settings: Any, username: str, path_id: str) -> dict
     try:
         clean_path_id = str(UUID(str(path_id)))
     except (ValueError, TypeError, AttributeError) as exc:
-        raise SellerDayRouteMismatch("مسیر انتخاب‌شده معتبر نیست") from exc
+        raise SellerDayRouteMismatch("ظ…ط³غŒط± ط§ظ†طھط®ط§ط¨â€Œط´ط¯ظ‡ ظ…ط¹طھط¨ط± ظ†غŒط³طھ") from exc
     if _seller_all_routes_test_override_enabled(settings, username):
         assigned_route = next(
             (
@@ -484,7 +484,7 @@ def require_seller_day_route(settings: Any, username: str, path_id: str) -> dict
             None,
         )
         if not assigned_route:
-            raise SellerDayRouteMismatch("مسیر انتخاب‌شده جزو مسیرهای تخصیص‌یافته فروشنده نیست")
+            raise SellerDayRouteMismatch("ظ…ط³غŒط± ط§ظ†طھط®ط§ط¨â€Œط´ط¯ظ‡ ط¬ط²ظˆ ظ…ط³غŒط±ظ‡ط§غŒ طھط®طµغŒطµâ€ŒغŒط§ظپطھظ‡ ظپط±ظˆط´ظ†ط¯ظ‡ ظ†غŒط³طھ")
         return {
             "id": assigned_route["id"],
             "title": assigned_route["title"],
@@ -493,11 +493,113 @@ def require_seller_day_route(settings: Any, username: str, path_id: str) -> dict
         }
     assignment = _resolve_seller_day_route(settings, int(profile["personnel_id"]))
     if not assignment:
-        raise SellerDayRouteMismatch("برای امروز مسیر روز فعالی در NGT تعیین نشده است")
+        raise SellerDayRouteMismatch("ط¨ط±ط§غŒ ط§ظ…ط±ظˆط² ظ…ط³غŒط± ط±ظˆط² ظپط¹ط§ظ„غŒ ط¯ط± NGT طھط¹غŒغŒظ† ظ†ط´ط¯ظ‡ ط§ط³طھ")
     if str(assignment["id"]).casefold() != clean_path_id.casefold():
-        title = str(assignment.get("title") or "مسیر تعیین‌شده")
-        raise SellerDayRouteMismatch(f"فقط مسیر روز NGT قابل شروع است: {title}")
+        title = str(assignment.get("title") or "ظ…ط³غŒط± طھط¹غŒغŒظ†â€Œط´ط¯ظ‡")
+        raise SellerDayRouteMismatch(f"ظپظ‚ط· ظ…ط³غŒط± ط±ظˆط² NGT ظ‚ط§ط¨ظ„ ط´ط±ظˆط¹ ط§ط³طھ: {title}")
     return assignment
+
+
+def _seller_work_calendar_summary(settings: Any, personnel_id: int) -> dict[str, Any] | None:
+    """Return current Persian-month workday counts from NGT calendar semantics used by route rotation."""
+    sql = f"""
+WITH SellerContext AS (
+  SELECT TOP 1 personnel.Id AS PersonnelUniqueId,
+         visit_template.CalendarTemplateUniqueId,
+         CONVERT(date, GETDATE()) AS Today,
+         FORMAT(GETDATE(), 'yyyy/MM/dd', 'fa-IR') AS TodayPDate,
+         LEFT(FORMAT(GETDATE(), 'yyyy/MM/dd', 'fa-IR'), 7) AS MonthKey
+  FROM NGT.Personnels AS personnel
+  INNER JOIN NGT.VisitTemplates AS visit_template
+    ON visit_template.Id = personnel.VisitTemplateUniqueId
+  WHERE personnel.BackOfficeId = N'{int(personnel_id)}'
+    AND ISNULL(personnel.IsRemoved, 0) = 0
+    AND ISNULL(personnel.PersonnelIsActive, 1) = 1
+    AND ISNULL(visit_template.IsRemoved, 0) = 0
+)
+SELECT context.TodayPDate,
+       context.MonthKey,
+       context.CalendarTemplateUniqueId,
+       ISNULL(workdays.TotalWorkingDays, 0) AS TotalWorkingDays,
+       ISNULL(workdays.ElapsedWorkingDays, 0) AS ElapsedWorkingDays,
+       ISNULL(workdays.RemainingWorkingDays, 0) AS RemainingWorkingDays,
+       ISNULL(workdays.IsWorkingDay, 0) AS IsWorkingDay
+FROM SellerContext AS context
+LEFT JOIN NGT.CalendarTemplates AS calendar_template
+  ON calendar_template.Id = context.CalendarTemplateUniqueId
+ AND ISNULL(calendar_template.IsRemoved, 0) = 0
+OUTER APPLY (
+  SELECT TOP 1 visit_plan.Id
+  FROM NGT.VisitPlans AS visit_plan
+  WHERE visit_plan.PersonnelUniqueId = context.PersonnelUniqueId
+    AND ISNULL(visit_plan.IsRemoved, 0) = 0
+  ORDER BY visit_plan.LastUpdate DESC, visit_plan.CreatedDate DESC
+) AS visit_plan
+OUTER APPLY (
+  SELECT TOP 1 ISNULL(app_setting.HolidayShiftEnabled, 0) AS HolidayShiftEnabled
+  FROM NGT.AppSettings AS app_setting
+  WHERE ISNULL(app_setting.IsRemoved, 0) = 0
+  ORDER BY app_setting.LastUpdate DESC, app_setting.CreatedDate DESC
+) AS settings
+OUTER APPLY (
+  SELECT COUNT(*) AS TotalWorkingDays,
+         SUM(CASE WHEN work_day.WorkDate <= work_day.TodayDate THEN 1 ELSE 0 END) AS ElapsedWorkingDays,
+         SUM(CASE WHEN work_day.WorkDate > work_day.TodayDate THEN 1 ELSE 0 END) AS RemainingWorkingDays,
+         SUM(CASE WHEN work_day.WorkDate = work_day.TodayDate THEN 1 ELSE 0 END) AS IsWorkingDay
+  FROM (
+    SELECT DATEADD(DAY, numbers.OffsetDay, context.Today) AS WorkDate,
+           context.Today AS TodayDate
+    FROM (
+      SELECT TOP (81)
+             ROW_NUMBER() OVER (ORDER BY first_object.object_id, second_object.object_id) - 41 AS OffsetDay
+      FROM sys.all_objects AS first_object
+      CROSS JOIN sys.all_objects AS second_object
+    ) AS numbers
+  ) AS work_day
+  WHERE LEFT(FORMAT(work_day.WorkDate, 'yyyy/MM/dd', 'fa-IR'), 7) = context.MonthKey
+    AND CASE ((DATEDIFF(DAY, CONVERT(date, '19000107'), work_day.WorkDate) % 7) + 7) % 7
+          WHEN 0 THEN ISNULL(calendar_template.Sunday, 0)
+          WHEN 1 THEN ISNULL(calendar_template.Monday, 0)
+          WHEN 2 THEN ISNULL(calendar_template.Tuesday, 0)
+          WHEN 3 THEN ISNULL(calendar_template.Wednesday, 0)
+          WHEN 4 THEN ISNULL(calendar_template.Thursday, 0)
+          WHEN 5 THEN ISNULL(calendar_template.Friday, 0)
+          WHEN 6 THEN ISNULL(calendar_template.Saturday, 0)
+        END = 0
+    AND NOT (
+      ISNULL(settings.HolidayShiftEnabled, 0) = 1 AND (
+        EXISTS (
+          SELECT 1
+          FROM NGT.CalendarTemplateHolidays AS holiday
+          WHERE holiday.CalendarTemplateUniqueId = context.CalendarTemplateUniqueId
+            AND CONVERT(date, holiday.HolidayDate) = CONVERT(date, work_day.WorkDate)
+            AND ISNULL(holiday.IsRemoved, 0) = 0
+        )
+        OR EXISTS (
+          SELECT 1
+          FROM NGT.VisitPlanVacations AS vacation
+          WHERE vacation.VisitPlanUniqueId = visit_plan.Id
+            AND CONVERT(date, vacation.VacationDate) = CONVERT(date, work_day.WorkDate)
+            AND ISNULL(vacation.IsRemoved, 0) = 0
+        )
+      )
+    )
+) AS workdays
+""".strip()
+    rows = _query_rows(settings, sql)
+    if not rows or rows[0].get("CalendarTemplateUniqueId") is None:
+        return None
+    row = rows[0]
+    return {
+        "date": str(row.get("TodayPDate") or "").strip(),
+        "month": str(row.get("MonthKey") or "").strip(),
+        "elapsed_working_days": int(row.get("ElapsedWorkingDays") or 0),
+        "remaining_working_days": int(row.get("RemainingWorkingDays") or 0),
+        "total_working_days": int(row.get("TotalWorkingDays") or 0),
+        "is_working_day": bool(row.get("IsWorkingDay")),
+        "source": "NGT.CalendarTemplates+CalendarTemplateHolidays+VisitPlanVacations",
+    }
+
 
 
 def seller_routes(settings: Any, username: str) -> dict[str, Any]:
@@ -540,6 +642,7 @@ ORDER BY vtp.RowIndex, vtp.PathTitle
 """.strip()
     assigned = _query_rows(settings, current_assignment_sql)
     resolved_day_route = _resolve_seller_day_route(settings, personnel_id)
+    work_calendar = _seller_work_calendar_summary(settings, personnel_id)
     location_policy = _resolve_seller_location_policy(settings, personnel_id)
     test_all_routes_override = _seller_all_routes_test_override_enabled(settings, username)
     resolved_day_route_id = str((resolved_day_route or {}).get("id") or "").casefold()
@@ -570,6 +673,7 @@ ORDER BY vtp.RowIndex, vtp.PathTitle
         "visit_template": str(assigned[0]["VisitTemplateName"] or "") if assigned else "",
         "routes": routes,
         "day_route": resolved_day_route,
+        "work_calendar": work_calendar,
         "day_route_status": (
             "temporary_all_routes"
             if test_all_routes_override
@@ -780,6 +884,157 @@ WHERE personnel.BackOfficeId = N'{personnel_id}'
         "visit_location_policy": _resolve_seller_location_policy(settings, personnel_id),
         "source": "NGT.VisitTemplatePathCustomers",
         "live_assignment": True,
+    }
+
+
+def seller_route_customers_basic(settings: Any, username: str, path_id: str) -> dict[str, Any]:
+    # Fast route payload for Home/Route/Orders. Keeps identity/location,
+    # visit state and lightweight credit data; expensive finance aggregates
+    # stay on the existing full seller_route_customers path.
+    profile = _seller_profile(settings, username)
+    personnel_id = int(profile["personnel_id"])
+    try:
+        clean_path_id = str(UUID(str(path_id)))
+    except (ValueError, TypeError, AttributeError) as exc:
+        raise SellerRouteNotFound("Current seller route was not found") from exc
+
+    customers_sql = f"""
+SELECT path.Id AS PathId, path.PathTitle, assigned.RowIndex,
+       customer.BackOfficeId, customer.CustomerCode, customer.CustomerName,
+       customer.StoreName, customer.Address, customer.Phone, customer.Mobile,
+       customer.Latitude, customer.Longitude, customer.IgnoreLocation,
+       backoffice_customer.BedCredit, backoffice_customer.AsnCredit,
+       backoffice_customer.HasBedCredit, backoffice_customer.HasAsnCredit,
+       COALESCE(credit_snapshot.RemBedCredit, backoffice_customer.BedCredit) AS RemBedCredit,
+       COALESCE(credit_snapshot.RemAsnCredit, backoffice_customer.AsnCredit) AS RemAsnCredit,
+       credit_snapshot.RemAmount AS CustomerRemaining,
+       credit_snapshot.OpenChequeCount, credit_snapshot.OpenChequeAmount,
+       credit_snapshot.ReturnChequeCount, credit_snapshot.ReturnChequeAmount,
+       credit_snapshot.DcRef AS CreditDcRef, credit_snapshot.LastUpdate AS CreditLastUpdate,
+       CAST(0 AS float) AS CustomerCardexBalance,
+       CAST(0 AS float) AS OpenInvoiceRemaining,
+       CAST(0 AS int) AS OpenInvoiceCount
+FROM NGT.Personnels AS personnel
+INNER JOIN NGT.VisitTemplates AS template ON template.Id = personnel.VisitTemplateUniqueId
+INNER JOIN NGT.VisitTemplatePaths AS path ON path.VisitTemplateUniqueId = template.Id
+INNER JOIN (
+  SELECT VisitTemplatePathUniqueId, CustomerUniqueId, MIN(RowIndex) AS RowIndex
+  FROM (
+    SELECT VisitTemplatePathUniqueId, CustomerUniqueId, RowIndex
+    FROM NGT.VisitTemplatePathCustomers
+    WHERE ISNULL(IsRemoved, 0) = 0
+    UNION ALL
+    SELECT VisitTemplatePathUniqueId, CustomerUniqueId, RowIndex
+    FROM NGT.VisitTemplatePathSecondaryCustomers
+    WHERE ISNULL(IsRemoved, 0) = 0
+  ) AS all_links
+  GROUP BY VisitTemplatePathUniqueId, CustomerUniqueId
+) AS assigned ON assigned.VisitTemplatePathUniqueId = path.Id
+INNER JOIN NGT.Customers AS customer ON customer.Id = assigned.CustomerUniqueId
+LEFT JOIN GNR.tblCust AS backoffice_customer
+  ON backoffice_customer.ID = TRY_CONVERT(int, customer.BackOfficeId)
+OUTER APPLY (
+  SELECT TOP 1 order_header.DcRefSDS
+  FROM NGT.CustomerCallOrders AS order_header
+  WHERE TRY_CONVERT(int, order_header.DealerRefSDS) = {personnel_id}
+    AND order_header.DcRefSDS IS NOT NULL
+    AND ISNULL(order_header.IsRemoved, 0) = 0
+  ORDER BY order_header.LastUpdate DESC
+) AS recent_order_context
+OUTER APPLY (
+  SELECT TOP 1 info.RemAmount, info.RemBedCredit, info.RemAsnCredit,
+         info.OpenChequeCount, info.OpenChequeAmount,
+         info.ReturnChequeCount, info.ReturnChequeAmount,
+         info.DcRef, info.LastUpdate
+  FROM Acc.tblCustRemInfo AS info
+  WHERE info.CustRef = TRY_CONVERT(int, customer.BackOfficeId)
+  ORDER BY CASE WHEN info.DcRef = recent_order_context.DcRefSDS THEN 0 ELSE 1 END,
+           info.LastUpdate DESC, info.DcRef
+) AS credit_snapshot
+WHERE personnel.BackOfficeId = N'{personnel_id}'
+  AND path.Id = CAST(N'{clean_path_id}' AS uniqueidentifier)
+  AND ISNULL(personnel.IsRemoved, 0) = 0
+  AND ISNULL(personnel.PersonnelIsActive, 1) = 1
+  AND ISNULL(template.IsRemoved, 0) = 0
+  AND ISNULL(path.IsRemoved, 0) = 0
+  AND ISNULL(customer.IsRemoved, 0) = 0
+  AND ISNULL(customer.IsActive, 1) = 1
+ORDER BY assigned.RowIndex, customer.StoreName, customer.CustomerName
+""".strip()
+    assigned = _query_rows(settings, customers_sql)
+    if not assigned:
+        route_check_sql = f"""
+SELECT path.Id AS PathId, path.PathTitle
+FROM NGT.Personnels AS personnel
+INNER JOIN NGT.VisitTemplates AS template ON template.Id = personnel.VisitTemplateUniqueId
+INNER JOIN NGT.VisitTemplatePaths AS path ON path.VisitTemplateUniqueId = template.Id
+WHERE personnel.BackOfficeId = N'{personnel_id}'
+  AND path.Id = CAST(N'{clean_path_id}' AS uniqueidentifier)
+  AND ISNULL(personnel.IsRemoved, 0) = 0
+  AND ISNULL(personnel.PersonnelIsActive, 1) = 1
+  AND ISNULL(template.IsRemoved, 0) = 0
+  AND ISNULL(path.IsRemoved, 0) = 0
+""".strip()
+        route = _query_rows(settings, route_check_sql)
+        if not route:
+            raise SellerRouteNotFound("Current seller route was not found")
+        path_title = str(route[0]["PathTitle"] or "").strip()
+    else:
+        path_title = str(assigned[0]["PathTitle"] or "").strip()
+
+    with sqlite_connection(settings.sqlite_path) as connection:
+        saved_locations = {
+            str(item["customer_id"]): dict(item)
+            for item in connection.execute(
+                "SELECT customer_id, latitude, longitude, source FROM customer_geo_locations"
+            )
+        }
+    visit_resolutions = _route_visit_resolutions(settings, username, clean_path_id)
+    customers = [
+        {
+            "id": int(row["BackOfficeId"]) if str(row["BackOfficeId"] or "").isdigit() else str(row["BackOfficeId"] or ""),
+            "code": str(row["CustomerCode"] or "").strip(),
+            "name": str(row["CustomerName"] or "").strip(),
+            "store_name": str(row["StoreName"] or "").strip(),
+            "address": str(row["Address"] or "").strip(),
+            "latitude": _coordinate(saved_locations.get(str(row["BackOfficeId"]), {}).get("latitude")) or _coordinate(row["Latitude"]),
+            "longitude": _coordinate(saved_locations.get(str(row["BackOfficeId"]), {}).get("longitude")) or _coordinate(row["Longitude"]),
+            "location_source": str(saved_locations.get(str(row["BackOfficeId"]), {}).get("source") or ("erp" if _coordinate(row["Latitude"]) and _coordinate(row["Longitude"]) else "")),
+            "location_check_exempt": bool(row.get("IgnoreLocation")),
+            "phone": str(row["Phone"] or "").strip(),
+            "mobile": str(row["Mobile"] or "").strip(),
+            "visit_resolution": visit_resolutions.get(str(row["BackOfficeId"])),
+            "cardex_balance": 0.0,
+            "open_invoice_remaining": 0.0,
+            "open_invoice_count": 0,
+            "financial_snapshot": {
+                "bed_credit": float(row.get("BedCredit") or 0),
+                "remaining_bed_credit": float(row.get("RemBedCredit") or 0),
+                "asn_credit": float(row.get("AsnCredit") or 0),
+                "remaining_asn_credit": float(row.get("RemAsnCredit") or 0),
+                "has_bed_credit": bool(row.get("HasBedCredit")),
+                "has_asn_credit": bool(row.get("HasAsnCredit")),
+                "combined_remaining": float(row.get("RemBedCredit") or 0) + float(row.get("RemAsnCredit") or 0),
+                "customer_remaining": float(row.get("CustomerRemaining") or 0),
+                "open_cheque_count": int(row.get("OpenChequeCount") or 0),
+                "open_cheque_amount": float(row.get("OpenChequeAmount") or 0),
+                "returned_cheque_count": int(row.get("ReturnChequeCount") or 0),
+                "returned_cheque_amount": float(row.get("ReturnChequeAmount") or 0),
+                "dc_ref": int(row["CreditDcRef"]) if row.get("CreditDcRef") is not None else None,
+                "updated_at": str(row.get("CreditLastUpdate") or ""),
+                "source": "GNR.tblCust + Acc.tblCustRemInfo",
+            },
+        }
+        for row in assigned
+    ]
+    return {
+        "route": {"id": clean_path_id, "title": path_title},
+        "customer_count": len(customers),
+        "customers": customers,
+        "visit_location_policy": _resolve_seller_location_policy(settings, personnel_id),
+        "source": "NGT.VisitTemplatePathCustomers",
+        "live_assignment": True,
+        "detail": "basic",
     }
 
 
@@ -994,7 +1249,7 @@ def save_seller_route_customer_profile_draft(
             value = value.strip()
         if field in allowed_ids and value and value not in allowed_ids[field]:
             raise SellerWorkspaceError(f"Invalid NGT lookup value for {field}")
-        normalized[field] = value if value not in ("​",) else ""
+        normalized[field] = value if value not in ("â€‹",) else ""
     owner_refs = {item["ref"] for item in lookups["owner_type"]}
     if normalized["owner_type_ref"] is not None and normalized["owner_type_ref"] not in owner_refs:
         raise SellerWorkspaceError("Invalid NGT lookup value for owner_type_ref")
@@ -1435,7 +1690,7 @@ ORDER BY CustomerId, RecordKind, InvoiceCount DESC, BrandName
         customer_id = str(row["CustomerId"] or "")
         if str(row.get("RecordKind") or "brand") == "line":
             customer_line_purchase_summary.setdefault(customer_id, []).append({
-                "name": str(row.get("SalesLine") or "").strip() or "لاین نامشخص",
+                "name": str(row.get("SalesLine") or "").strip() or "ظ„ط§غŒظ† ظ†ط§ظ…ط´ط®طµ",
                 "branch": str(row.get("BranchName") or "").strip(),
                 "invoice_count": int(row.get("InvoiceCount") or 0),
                 "net_sales": float(row.get("NetSales") or 0),

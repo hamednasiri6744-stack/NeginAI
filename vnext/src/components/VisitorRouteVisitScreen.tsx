@@ -53,6 +53,8 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
     activeCustomerId,
     activeVisit,
     activeDraftId,
+    applyRoutePlan,
+    updateNavigationMetrics,
     selectCustomer,
     adoptServerVisit,
     completeVisit,
@@ -335,7 +337,7 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
           <div>
             <span>مسیر فعال · {activeRouteTitle || 'NGT'}</span>
             <h1>مسیر امروز</h1>
-            <p>{routeSummary.visited} بازدید تعیین‌تکلیف شده · {routeSummary.remaining} ایستگاه باقی‌مانده</p>
+            <p>{routeSummary.resolved} بازدید تعیین‌تکلیف شده · {routeSummary.remaining} ایستگاه باقی‌مانده</p>
           </div>
           <div className="vr-heading-side"><button type="button" className="vr-ai-open" onClick={() => onNavigate(`/visitor/ai?context=route&customer=${activeStop.customerId}${activeVisit ? `&visit=${activeVisit.id}` : ``}`)}>Negin AI</button><div className="vr-progress"><strong>{routeSummary.progress}٪</strong><small>پیشرفت</small></div></div>
         </section>
@@ -360,6 +362,8 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
               onSelectCustomer={selectStop}
               onPrimaryCustomer={selectPlanPrimary}
               onOrderChange={handlePlanOrder}
+              onPlan={applyRoutePlan}
+              onNavigationMetrics={updateNavigationMetrics}
               onNotice={flash}
             />
           </div>
@@ -369,7 +373,7 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
           <div className="vr-active-top">
             <span className="vr-store"><StoreIcon /></span>
             <div><small>ایستگاه انتخاب‌شده</small><strong>{activeStop.name}</strong><span>{joinRouteMeta(activeStop.area, activeStop.distance)}</span></div>
-            <span className={`vr-priority p-${activeStop.priority.toLowerCase()}`}>{activeStop.priority}</span>
+            {activeStop.priorityKnown ? <span className={`vr-priority p-${activeStop.priority.toLowerCase()}`}>{activeStop.priority}</span> : null}
           </div>
           <div className="vr-active-meta">
             <span><ClockIcon /> {activeStop.eta}</span>

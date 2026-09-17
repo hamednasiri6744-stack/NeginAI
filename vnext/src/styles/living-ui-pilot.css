@@ -1,0 +1,387 @@
+/* NeginAI Living UI pilot ? Home only, opt-in via ?liveui=1.
+   Reversible: remove this import/file and the page returns to its prior visual behavior. */
+
+@property --route-progress {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+
+.vh-live-ui {
+  --vh-live-ease: cubic-bezier(.22,.8,.2,1);
+  --vh-live-gold: rgba(238, 187, 74, .34);
+}
+
+.vh-live-ui .vh-command {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.vh-live-ui .vh-command > * {
+  position: relative;
+  z-index: 1;
+}
+
+.vh-live-ui .vh-command::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  inset: -35%;
+  pointer-events: none;
+  opacity: .34;
+  background: conic-gradient(from 210deg at 50% 50%, transparent 0 34%, rgba(240,190,78,.12) 42%, transparent 50% 100%);
+  transform: translate3d(-7%, 1%, 0) rotate(0deg);
+  animation: vh-live-ambient 10s var(--vh-live-ease) infinite alternate;
+}
+
+.vh-live-ui .vh-command[data-live-state='syncing']::after {
+  opacity: .52;
+  animation-duration: 4.8s;
+}
+
+.vh-live-ui .vh-command[data-live-state='error']::after {
+  opacity: .12;
+  animation: none;
+}
+
+.vh-live-ui .vh-progress {
+  transition: --route-progress 780ms var(--vh-live-ease), box-shadow 420ms ease;
+  box-shadow: 0 0 18px rgba(231,178,62,.13), 0 0 0 1px rgba(235,190,83,.04);
+}
+
+.vh-live-ui .vh-progress::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  pointer-events: none;
+  border: 1px solid rgba(239,191,78,.16);
+  box-shadow: 0 0 16px rgba(239,184,63,.10);
+  animation: vh-live-ring 3.8s ease-in-out infinite;
+}
+
+.vh-live-ui .vh-command-actions button,
+.vh-live-ui .vh-mini-action,
+.vh-live-ui .vh-nav-item,
+.vh-live-ui .vh-order {
+  transition: transform 180ms var(--vh-live-ease), box-shadow 260ms ease, border-color 260ms ease, filter 260ms ease;
+}
+
+.vh-live-ui .vh-command-actions button:active,
+.vh-live-ui .vh-mini-action:active,
+.vh-live-ui .vh-nav-item:active,
+.vh-live-ui .vh-order:active {
+  transform: scale(.965);
+}
+
+.vh-live-ui .vh-kpi[data-live='true'] small {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vh-live-ui .vh-kpi[data-live='true'] small::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  flex: 0 0 6px;
+  border-radius: 50%;
+  background: #55ddb4;
+  box-shadow: 0 0 0 0 rgba(85,221,180,.34);
+  animation: vh-live-dot 2.5s ease-out infinite;
+}
+
+.vh-live-ui .vh-bell b {
+  animation: vh-live-badge 5.5s ease-in-out infinite;
+}
+
+.vh-live-ui .vh-live-state:not(.error) {
+  animation: vh-live-sync 2.6s ease-in-out infinite alternate;
+}
+
+@keyframes vh-live-ambient {
+  0% { transform: translate3d(-8%, 2%, 0) rotate(-4deg); }
+  100% { transform: translate3d(8%, -3%, 0) rotate(5deg); }
+}
+
+@keyframes vh-live-ring {
+  0%, 100% { opacity: .38; transform: scale(.99); }
+  50% { opacity: .72; transform: scale(1.035); }
+}
+
+@keyframes vh-live-dot {
+  0% { box-shadow: 0 0 0 0 rgba(85,221,180,.32); }
+  70%, 100% { box-shadow: 0 0 0 7px rgba(85,221,180,0); }
+}
+
+@keyframes vh-live-badge {
+  0%, 88%, 100% { transform: scale(1); }
+  92% { transform: scale(1.09); }
+  96% { transform: scale(.98); }
+}
+
+@keyframes vh-live-sync {
+  from { filter: brightness(.97); }
+  to { filter: brightness(1.045); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vh-live-ui *,
+  .vh-live-ui *::before,
+  .vh-live-ui *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .001ms !important;
+  }
+}
+
+/* Pilot visibility pass v2: unmistakable activation, still isolated to Home. */
+.vh-live-ui .vh-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.vh-live-ui .vh-eyebrow::after {
+  content: 'LIVE';
+  padding: 2px 6px;
+  border: 1px solid rgba(91, 228, 183, .26);
+  border-radius: 999px;
+  color: #65e6bd;
+  background: rgba(61, 206, 161, .07);
+  box-shadow: 0 0 14px rgba(67, 218, 171, .08);
+  font: 800 8px/1 Inter, Arial, sans-serif;
+  letter-spacing: .12em;
+}
+
+.vh-live-ui .vh-command {
+  animation: vh-live-command-breathe 5.2s ease-in-out infinite;
+}
+
+.vh-live-ui .vh-kpi[data-live='true'] {
+  border-color: rgba(84, 226, 181, .17);
+  animation: vh-live-kpi-breathe 4.2s ease-in-out infinite;
+}
+
+.vh-live-ui .vh-secondary {
+  position: relative;
+  overflow: hidden;
+}
+
+.vh-live-ui .vh-secondary::after {
+  content: '';
+  position: absolute;
+  inset: -40% auto -40% -28%;
+  width: 24%;
+  transform: skewX(-16deg);
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(255, 224, 145, .18), transparent);
+  animation: vh-live-button-sweep 6.8s ease-in-out infinite;
+}
+
+.vh-live-ui .vh-nav-item.active svg {
+  animation: vh-live-nav-glow 3.6s ease-in-out infinite;
+}
+
+@keyframes vh-live-command-breathe {
+  0%, 100% { border-color: rgba(230,181,67,.22); box-shadow: 0 18px 38px rgba(0,0,0,.34), inset 0 1px rgba(255,255,255,.06), 0 0 22px rgba(219,157,43,.045); }
+  50% { border-color: rgba(236,190,78,.34); box-shadow: 0 18px 38px rgba(0,0,0,.34), inset 0 1px rgba(255,255,255,.07), 0 0 34px rgba(219,157,43,.10); }
+}
+
+@keyframes vh-live-kpi-breathe {
+  0%, 100% { box-shadow: var(--neu-soft); filter: brightness(1); }
+  50% { box-shadow: var(--neu-soft), 0 0 24px rgba(67,218,171,.08); filter: brightness(1.025); }
+}
+
+@keyframes vh-live-button-sweep {
+  0%, 68% { left: -28%; opacity: 0; }
+  72% { opacity: .9; }
+  88% { left: 116%; opacity: .28; }
+  100% { left: 116%; opacity: 0; }
+}
+
+@keyframes vh-live-nav-glow {
+  0%, 100% { filter: drop-shadow(0 0 7px rgba(239,189,67,.22)); }
+  50% { filter: drop-shadow(0 0 13px rgba(239,189,67,.50)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vh-live-ui .vh-eyebrow::after {
+    content: 'LIVE · REDUCED';
+    color: #f2ce70;
+    border-color: rgba(242, 206, 112, .28);
+    background: rgba(242, 206, 112, .07);
+  }
+}
+
+/* Pilot visibility pass v3: stronger presence without changing layout or behavior. */
+.vh-live-ui .vh-command::after {
+  opacity: .48;
+  background:
+    radial-gradient(circle at 68% 24%, rgba(244,196,84,.16), transparent 20%),
+    conic-gradient(from 210deg at 50% 50%, transparent 0 30%, rgba(240,190,78,.16) 40%, transparent 52% 100%);
+  animation-duration: 7.2s;
+}
+
+.vh-live-ui .vh-progress {
+  animation: vh-live-progress-aura 3.2s ease-in-out infinite;
+}
+
+.vh-live-ui .vh-progress::after {
+  inset: -6px;
+  border-color: rgba(239,191,78,.28);
+  box-shadow: 0 0 22px rgba(239,184,63,.18), inset 0 0 8px rgba(239,184,63,.05);
+  animation-duration: 2.8s;
+}
+
+.vh-live-ui .vh-kpi[data-live='true'] {
+  transform-origin: center;
+  animation: vh-live-kpi-active 3.4s ease-in-out infinite;
+}
+
+.vh-live-ui .vh-primary {
+  position: relative;
+  overflow: hidden;
+}
+
+.vh-live-ui .vh-primary::after {
+  content: '';
+  position: absolute;
+  top: -45%;
+  bottom: -45%;
+  left: -34%;
+  width: 22%;
+  pointer-events: none;
+  transform: skewX(-18deg);
+  background: linear-gradient(90deg, transparent, rgba(255,255,238,.58), transparent);
+  animation: vh-live-gold-sweep 4.8s ease-in-out infinite;
+}
+
+.vh-live-ui .vh-day-datetime time {
+  animation: vh-live-time-glow 3.6s ease-in-out infinite;
+}
+
+.vh-live-ui .vh-nav-item.active {
+  animation: vh-live-active-nav 3.4s ease-in-out infinite;
+}
+
+.vh-live-ui .vh-bell:has(b) svg {
+  transform-origin: 50% 12%;
+  animation: vh-live-bell 6.4s ease-in-out infinite;
+}
+
+@keyframes vh-live-progress-aura {
+  0%,100% { filter: drop-shadow(0 0 3px rgba(238,184,64,.12)); }
+  50% { filter: drop-shadow(0 0 10px rgba(238,184,64,.34)); }
+}
+
+@keyframes vh-live-kpi-active {
+  0%,100% { transform: translateY(0); box-shadow: var(--neu-soft), 0 0 14px rgba(67,218,171,.05); }
+  50% { transform: translateY(-1px); box-shadow: var(--neu-soft), 0 0 26px rgba(67,218,171,.13); }
+}
+
+@keyframes vh-live-gold-sweep {
+  0%,60% { left:-34%; opacity:0; }
+  66% { opacity:.9; }
+  84% { left:116%; opacity:.45; }
+  100% { left:116%; opacity:0; }
+}
+
+@keyframes vh-live-time-glow {
+  0%,100% { color:#f2ce70; text-shadow:0 0 0 rgba(242,206,112,0); }
+  50% { color:#ffe39a; text-shadow:0 0 12px rgba(242,206,112,.25); }
+}
+
+@keyframes vh-live-active-nav {
+  0%,100% { transform:translateY(0); }
+  50% { transform:translateY(-1px); }
+}
+
+@keyframes vh-live-bell {
+  0%,88%,100% { transform:rotate(0deg); }
+  91% { transform:rotate(7deg); }
+  94% { transform:rotate(-6deg); }
+  97% { transform:rotate(3deg); }
+}
+
+/* Living UI v4 - data-reactive accents, Home pilot only */
+.vh-live-ui .vh-progress-beacon {
+  position:absolute; left:50%; top:50%; width:8px; height:8px; margin:-4px;
+  border-radius:50%; pointer-events:none; z-index:2;
+  background:#ffe59a; box-shadow:0 0 0 3px rgba(255,221,132,.10),0 0 14px rgba(255,205,92,.58);
+  transform:rotate(var(--route-angle,0deg)) translateY(-31px);
+  transform-origin:center;
+  animation:vh-live-beacon 1.8s ease-in-out infinite;
+}
+.vh-live-ui .vh-live-clock { display:inline-flex; align-items:baseline; direction:ltr; }
+.vh-live-ui .vh-live-seconds { margin-left:1px; color:#aa9360; font-size:9px; font-weight:800; min-width:14px; }
+.vh-live-ui .vh-kpi[data-live='true'] { position:relative; overflow:hidden; }
+.vh-live-ui .vh-kpi[data-live='true']::after {
+  content:''; position:absolute; inset-block-start:0; inset-inline-start:-26%;
+  inline-size:24%; block-size:1px; pointer-events:none;
+  background:linear-gradient(90deg,transparent,#66efc0,transparent);
+  box-shadow:0 0 9px rgba(81,231,181,.45);
+  animation:vh-live-data-rail 3.2s ease-in-out infinite;
+}
+.vh-live-ui .vh-next-card[data-live='true'] { position:relative; overflow:hidden; }
+.vh-live-ui .vh-next-card[data-live='true']::before {
+  content:''; position:absolute; inset-block-start:0; inset-inline-end:12%;
+  inline-size:22%; block-size:1px; pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(244,195,75,.78),transparent);
+  animation:vh-live-next-rail 4.4s ease-in-out infinite;
+}@keyframes vh-live-beacon {
+  0%,100% { opacity:.68; box-shadow:0 0 0 2px rgba(255,221,132,.08),0 0 9px rgba(255,205,92,.34); }
+  50% { opacity:1; box-shadow:0 0 0 5px rgba(255,221,132,.03),0 0 18px rgba(255,205,92,.72); }
+}
+@keyframes vh-live-data-rail {
+  0%,15% { inset-inline-start:-26%; opacity:0; }
+  22% { opacity:1; }
+  72% { inset-inline-start:102%; opacity:.75; }
+  100% { inset-inline-start:102%; opacity:0; }
+}
+@keyframes vh-live-next-rail {
+  0%,35% { transform:translateX(0); opacity:.18; }
+  58% { transform:translateX(-190%); opacity:.9; }
+  82%,100% { transform:translateX(-360%); opacity:0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vh-live-ui .vh-progress-beacon,
+  .vh-live-ui .vh-kpi[data-live='true']::after,
+  .vh-live-ui .vh-next-card[data-live='true']::before { animation:none !important; }
+}
+
+/* Living UI v6 — event-driven feedback. Animations fire when real values remount/change. */
+.vh-live-ui .vh-reactive-pop {
+  animation: vh-reactive-pop 420ms cubic-bezier(.2,.85,.25,1) both;
+  transform-origin: center;
+}
+.vh-live-ui .vh-reactive-soft {
+  animation: vh-reactive-soft 520ms ease both;
+}
+.vh-live-ui .vh-reactive-panel {
+  animation: vh-reactive-panel 560ms cubic-bezier(.2,.8,.2,1) both;
+}
+.vh-live-ui .vh-command[data-live-state='ready'] {
+  transition: border-color 320ms ease, box-shadow 320ms ease;
+}
+@keyframes vh-reactive-pop {
+  0% { opacity:.45; transform:translateY(4px) scale(.94); filter:brightness(1.35); }
+  55% { opacity:1; transform:translateY(-1px) scale(1.045); }
+  100% { opacity:1; transform:translateY(0) scale(1); filter:brightness(1); }
+}
+@keyframes vh-reactive-soft {
+  0% { opacity:.35; transform:translateY(3px); }
+  100% { opacity:1; transform:translateY(0); }
+}
+@keyframes vh-reactive-panel {
+  0% { opacity:.72; transform:translateY(5px) scale(.992); border-color:rgba(239,190,76,.28); }
+  65% { opacity:1; transform:translateY(-1px) scale(1.003); }
+  100% { opacity:1; transform:translateY(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vh-live-ui .vh-reactive-pop,
+  .vh-live-ui .vh-reactive-soft,
+  .vh-live-ui .vh-reactive-panel { animation:none !important; }
+}

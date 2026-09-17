@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { neginApi, type RouteCustomersResponse, type SellerCustomer, type SellerRoute, type SellerRoutesResponse } from '../api/neginApi'
+import { getRouteMapPlan, neginApi, type RouteCustomersResponse, type SellerCustomer, type SellerRoute, type SellerRoutesResponse, type SellerWorkCalendar } from '../api/neginApi'
 import { useVisitorAuth } from './VisitorAuthContext'
 import { useVisitorWorkflow } from './VisitorWorkflowContext'
 
@@ -12,6 +12,7 @@ type VisitorLiveDataValue = {
   customers: SellerCustomer[]
   customerCount: number
   liveAssignment: boolean
+  workCalendar: SellerWorkCalendar | null
   reload: () => Promise<void>
   customerById: (customerId: string) => SellerCustomer | undefined
 }
@@ -20,7 +21,7 @@ const VisitorLiveDataContext = createContext<VisitorLiveDataValue | null>(null)
 
 export function VisitorLiveDataProvider({ children }: { children: ReactNode }) {
   const { authenticated, restoringSession } = useVisitorAuth()
-  const { hydrateLiveRoute, resetWorkflow } = useVisitorWorkflow()
+  const { applyRoutePlan, hydrateLiveRoute, resetWorkflow } = useVisitorWorkflow()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [routesData, setRoutesData] = useState<SellerRoutesResponse | null>(null)
@@ -36,9 +37,7 @@ export function VisitorLiveDataProvider({ children }: { children: ReactNode }) {
       const selectedRoute = routes.day_route?.id
         ? routes.routes.find((route) => route.id === routes.day_route?.id)
           ?? routes.routes.find((route) => route.can_start_visit)
-          ?? routes.routes[0]
         : routes.routes.find((route) => route.can_start_visit)
-          ?? routes.routes[0]
 
       if (!selectedRoute) {
         setCustomersData(null)
@@ -50,6 +49,9 @@ export function VisitorLiveDataProvider({ children }: { children: ReactNode }) {
       const customers = await neginApi.routeCustomers(selectedRoute.id)
       setCustomersData(customers)
       hydrateLiveRoute(selectedRoute.id, customers.customers)
+      void getRouteMapPlan(selectedRoute.id, 'sales_priority')
+        .then((plan) => applyRoutePlan(plan))
+        .catch(() => undefined)
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : 'دریافت اطلاعات زنده ویزیتور انجام نشد.'
       setRoutesData(null)
@@ -59,7 +61,7 @@ export function VisitorLiveDataProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false)
     }
-  }, [authenticated, hydrateLiveRoute])
+  }, [authenticated, applyRoutePlan, hydrateLiveRoute])
 
   useEffect(() => {
     if (!authenticated) {
@@ -90,9 +92,10 @@ export function VisitorLiveDataProvider({ children }: { children: ReactNode }) {
     customers,
     customerCount: customersData?.customer_count ?? customers.length,
     liveAssignment: Boolean(customersData?.live_assignment ?? routesData?.live_assignment),
+    workCalendar: routesData?.work_calendar ?? null,
     reload: load,
     customerById,
-  }), [activeRouteId, activeRouteTitle, customerById, customers, customersData?.customer_count, customersData?.live_assignment, error, load, loading, routesData?.live_assignment, routesData?.routes])
+  }), [activeRouteId, activeRouteTitle, customerById, customers, customersData?.customer_count, customersData?.live_assignment, error, load, loading, routesData?.live_assignment, routesData?.routes, routesData?.work_calendar])
 
   return <VisitorLiveDataContext.Provider value={value}>{children}</VisitorLiveDataContext.Provider>
 }

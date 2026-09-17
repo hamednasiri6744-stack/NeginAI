@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import {
   BellIcon,
@@ -18,7 +18,7 @@ import {
 import { useVisitorAuth } from '../state/VisitorAuthContext'
 import { useVisitorLiveData } from '../state/VisitorLiveDataContext'
 import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
-import type { SellerCustomer } from '../api/neginApi'
+import { neginApi, type SellerCustomer } from '../api/neginApi'
 
 type Props = { onNavigate: (path: string) => void }
 type CustomerFilter = 'همه' | 'فعال' | 'پیگیری' | 'انجام شده'
@@ -65,8 +65,28 @@ function navigateCustomer(customer: SellerCustomer) {
 export function VisitorCustomersScreen({ onNavigate }: Props) {
   const { unreadCount } = useVisitorNotifications()
   const { profile } = useVisitorAuth()
-  const { customers, customerCount, activeRouteTitle, loading, error, reload } = useVisitorLiveData()
+  const { customers, customerCount, activeRouteId, activeRouteTitle, loading, error, reload } = useVisitorLiveData()
+  const [fullCustomers, setFullCustomers] = useState<SellerCustomer[] | null>(null)
   const [searchParams, setSearchParams] = useSearchParams()
+
+  useEffect(() => {
+    let cancelled = false
+    if (!activeRouteId) {
+      setFullCustomers(null)
+      return () => { cancelled = true }
+    }
+    setFullCustomers(null)
+    void neginApi.routeCustomers(activeRouteId, 'full')
+      .then((data) => {
+        if (!cancelled) setFullCustomers(data.customers)
+      })
+      .catch(() => {
+        if (!cancelled) setFullCustomers(null)
+      })
+    return () => { cancelled = true }
+  }, [activeRouteId])
+
+  const displayCustomers = fullCustomers ?? customers
   const query = searchParams.get('q') ?? ''
   const rawFilter = searchParams.get('status')
   const filter: CustomerFilter = ['فعال', 'پیگیری', 'انجام شده'].includes(rawFilter ?? '')
@@ -89,16 +109,16 @@ export function VisitorCustomersScreen({ onNavigate }: Props) {
 
   const visibleCustomers = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase('fa-IR')
-    return customers.filter((customer) => {
+    return displayCustomers.filter((customer) => {
       const haystack = `${customerTitle(customer)} ${customer.name} ${customer.code} ${customer.address}`.toLocaleLowerCase('fa-IR')
       const matchesQuery = !normalized || haystack.includes(normalized)
       const matchesFilter = filter === 'همه' || customerStatus(customer) === filter
       return matchesQuery && matchesFilter
     })
-  }, [customers, filter, query])
+  }, [displayCustomers, filter, query])
 
-  const completed = customers.filter((customer) => customer.visit_resolution?.status === 'completed').length
-  const followUp = customers.filter((customer) => Number(customer.financial_snapshot?.returned_cheque_count ?? 0) > 0).length
+  const completed = displayCustomers.filter((customer) => customer.visit_resolution?.status === 'completed').length
+  const followUp = displayCustomers.filter((customer) => Number(customer.financial_snapshot?.returned_cheque_count ?? 0) > 0).length
 
   return (
     <main className="vh-page" dir="rtl">
@@ -174,7 +194,7 @@ export function VisitorCustomersScreen({ onNavigate }: Props) {
                     <span><PinIcon /> {customer.address || 'نشانی ثبت نشده'}</span>
                     <span><ClockIcon /> آخرین تعیین‌تکلیف: {visitDate(customer)}</span>
                   </div>
-                  <div className="vc-commerce"><span><CartIcon /> فاکتور باز: {customer.open_invoice_count.toLocaleString('fa-IR')}</span><strong>{money(customer.open_invoice_remaining)}</strong></div>
+                  <div className="vc-commerce"><span><CartIcon /> فاکتور باز: {fullCustomers ? customer.open_invoice_count.toLocaleString('fa-IR') : '—'}</span><strong>{fullCustomers ? money(customer.open_invoice_remaining) : '—'}</strong></div>
                 </div>
                 <div className="vc-card-actions">
                   <button type="button" disabled={!hasPhone} aria-label={`تماس با ${customerTitle(customer)}`} onClick={() => callCustomer(customer)}><PhoneIcon /></button>
@@ -186,7 +206,7 @@ export function VisitorCustomersScreen({ onNavigate }: Props) {
           })}
 
           {!loading && visibleCustomers.length === 0 ? (
-            <div className="vc-empty"><UserGroupIcon /><strong>مشتری پیدا نشد</strong><span>{customers.length ? 'عبارت جستجو یا فیلتر را تغییر بده.' : 'برای این مسیر مشتری فعالی دریافت نشد.'}</span></div>
+            <div className="vc-empty"><UserGroupIcon /><strong>مشتری پیدا نشد</strong><span>{displayCustomers.length ? 'عبارت جستجو یا فیلتر را تغییر بده.' : 'برای این مسیر مشتری فعالی دریافت نشد.'}</span></div>
           ) : null}
         </section>
 

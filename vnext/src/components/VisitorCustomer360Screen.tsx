@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { neginApi, type CustomerProfileResponse, type SellerCustomer } from '../api/neginApi'
+import { neginApi, type CustomerProfileEditable, type CustomerProfileResponse, type SellerCustomer } from '../api/neginApi'
 import { useVisitorAuth } from '../state/VisitorAuthContext'
 import { useVisitorLiveData } from '../state/VisitorLiveDataContext'
 import {
@@ -29,6 +29,42 @@ type Props = {
 }
 
 type Tab = 'overview' | 'financial' | 'history'
+type EditableField = keyof CustomerProfileEditable
+
+const EDIT_FIELD_LABELS: Record<EditableField, string> = {
+  phone: 'تلفن',
+  national_code: 'کد ملی',
+  economic_code: 'کد اقتصادی',
+  store_name: 'نام فروشگاه',
+  address: 'آدرس',
+  mobile: 'موبایل',
+  customer_activity_id: 'نوع فعالیت',
+  state_id: 'استان',
+  city_id: 'شهر',
+  county_id: 'شهرستان',
+  city_zone: 'منطقه شهری',
+  customer_level_id: 'سطح مشتری',
+  customer_category_id: 'گروه مشتری',
+  owner_type_ref: 'نوع مالکیت',
+  postal_code: 'کد پستی',
+  customer_code: 'کد مشتری',
+  latitude: 'عرض جغرافیایی',
+  longitude: 'طول جغرافیایی',
+}
+
+const LOOKUP_FIELDS: Partial<Record<EditableField, string>> = {
+  customer_activity_id: 'activity',
+  state_id: 'state',
+  city_id: 'city',
+  county_id: 'county',
+  customer_level_id: 'level',
+  customer_category_id: 'category',
+  owner_type_ref: 'owner_type',
+}
+
+const NUMERIC_FIELDS = new Set<EditableField>(['city_zone', 'owner_type_ref', 'latitude', 'longitude'])
+const WIDE_EDIT_FIELDS = new Set<EditableField>(['store_name', 'address'])
+
 
 function titleOf(customer: SellerCustomer) {
   return customer.store_name || customer.name || `مشتری ${customer.code}`
@@ -57,11 +93,21 @@ export function VisitorCustomer360Screen({ customerId = '', onNavigate, onBack }
   const [profile, setProfile] = useState<CustomerProfileResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState<CustomerProfileEditable>({})
+  const [saveBusy, setSaveBusy] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [saveNotice, setSaveNotice] = useState<string | null>(null)
+  const [locationBusy, setLocationBusy] = useState(false)
 
   useEffect(() => {
     let cancelled = false
     if (!activeRouteId || !customerId) {
       setProfile(null)
+      setDraft({})
+      setEditing(false)
+      setSaveError(null)
+      setSaveNotice(null)
       setError('مسیر فعال یا شناسه مشتری در دسترس نیست.')
       return
     }
@@ -70,7 +116,12 @@ export function VisitorCustomer360Screen({ customerId = '', onNavigate, onBack }
     setError(null)
     void neginApi.customerProfile(activeRouteId, customerId)
       .then((data) => {
-        if (!cancelled) setProfile(data)
+        if (cancelled) return
+        setProfile(data)
+        setDraft(data.draft ?? data.customer.editable ?? {})
+        setEditing(false)
+        setSaveError(null)
+        setSaveNotice(null)
       })
       .catch((caught) => {
         if (!cancelled) setError(caught instanceof Error ? caught.message : 'پروفایل مشتری دریافت نشد.')
@@ -93,6 +144,74 @@ export function VisitorCustomer360Screen({ customerId = '', onNavigate, onBack }
   const hasPhone = Boolean(customer?.mobile || customer?.phone)
   const hasLocation = customer?.latitude !== null && customer?.longitude !== null
   const activeFields = profile?.editable_contract?.active_fields ?? []
+  const editableFields = activeFields.filter(
+    (field): field is EditableField => Object.prototype.hasOwnProperty.call(EDIT_FIELD_LABELS, field),
+  )
+
+  function cancelEditing() {
+    setDraft(profile?.draft ?? profile?.customer.editable ?? {})
+    setSaveError(null)
+    setEditing(false)
+  }
+
+  function setDraftField(field: EditableField, rawValue: string) {
+    let value: string | number | null = rawValue
+    if (NUMERIC_FIELDS.has(field)) value = rawValue.trim() === '' ? null : Number(rawValue)
+    setDraft((current) => {
+      const next = { ...current, [field]: value } as CustomerProfileEditable
+      if (field === 'state_id' && current.state_id !== rawValue) next.city_id = null
+      return next
+    })
+  }
+
+  function captureCurrentLocation() {
+    if (!navigator.geolocation) {
+      setSaveError('دسترسی GPS در این دستگاه در دسترس نیست.')
+      return
+    }
+    setLocationBusy(true)
+    setSaveError(null)
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setDraft((current) => ({
+          ...current,
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        }))
+        setLocationBusy(false)
+      },
+      () => {
+        setSaveError('موقعیت فعلی دریافت نشد. مجوز GPS و دقت موقعیت را بررسی کنید.')
+        setLocationBusy(false)
+      },
+      { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 },
+    )
+  }
+
+  async function saveProfileDraft() {
+    if (!activeRouteId || !customerId || !profile || saveBusy) return
+    setSaveBusy(true)
+    setSaveError(null)
+    setSaveNotice(null)
+    try {
+      const payload = Object.fromEntries(
+        editableFields.map((field) => [field, draft[field] ?? null]),
+      ) as CustomerProfileEditable
+      const result = await neginApi.saveCustomerProfileDraft(activeRouteId, customerId, payload)
+      setDraft(result.draft)
+      setProfile((current) => current ? {
+        ...current,
+        draft: result.draft,
+        draft_updated_at: result.updated_at,
+      } : current)
+      setEditing(false)
+      setSaveNotice('پیش‌نویس محلی ذخیره شد؛ هنوز به NGT/Varanegar ارسال نشده است.')
+    } catch (caught) {
+      setSaveError(caught instanceof Error ? caught.message : 'ذخیره پیش‌نویس انجام نشد.')
+    } finally {
+      setSaveBusy(false)
+    }
+  }
 
   return (
     <main className="vh-page" dir="rtl">
@@ -153,7 +272,18 @@ export function VisitorCustomer360Screen({ customerId = '', onNavigate, onBack }
             {tab === 'overview' ? (
               <section className="c360-stack">
                 <article className="c360-panel">
-                  <div className="c360-panel-head"><strong>اطلاعات مشتری</strong><span>{activeFields.length ? `${activeFields.length.toLocaleString('fa-IR')} فیلد قابل ویرایش` : 'فقط خواندنی'}</span></div>
+                  <div className="c360-panel-head">
+                    <strong>اطلاعات مشتری</strong>
+                    {editableFields.length ? (
+                      <button type="button" onClick={() => {
+                        setSaveError(null)
+                        setSaveNotice(null)
+                        setEditing((value) => !value)
+                      }}>
+                        {editing ? 'بستن ویرایش' : `ویرایش ${editableFields.length.toLocaleString('fa-IR')} فیلد`}
+                      </button>
+                    ) : <span>فقط خواندنی</span>}
+                  </div>
                   <dl className="c360-info-grid">
                     <div><dt>تلفن</dt><dd>{customer.phone || '—'}</dd></div>
                     <div><dt>موبایل</dt><dd>{customer.mobile || '—'}</dd></div>
@@ -161,6 +291,73 @@ export function VisitorCustomer360Screen({ customerId = '', onNavigate, onBack }
                     {profile?.customer.activity_name ? <div><dt>فعالیت</dt><dd>{profile.customer.activity_name}</dd></div> : null}
                     {profile?.customer.level_name ? <div><dt>سطح مشتری</dt><dd>{profile.customer.level_name}</dd></div> : null}
                   </dl>
+                  {editing && editableFields.length ? (
+                    <div className="c360-edit-form">
+                      <div className="c360-edit-grid">
+                        {editableFields.map((field) => {
+                          const lookupKind = LOOKUP_FIELDS[field]
+                          let options = lookupKind ? (profile?.lookups?.[lookupKind] ?? []) : []
+                          if (field === 'city_id' && draft.state_id) {
+                            options = options.filter((item) => !item.parent_id || item.parent_id === draft.state_id)
+                          }
+                          const value = draft[field]
+                          const displayValue = value === null || value === undefined ? '' : String(value)
+                          const wide = WIDE_EDIT_FIELDS.has(field)
+                          if (lookupKind) {
+                            return (
+                              <label className={`c360-edit-field ${wide ? 'wide' : ''}`} key={field}>
+                                <span>{EDIT_FIELD_LABELS[field]}</span>
+                                <select value={displayValue} onChange={(event) => setDraftField(field, event.target.value)}>
+                                  <option value="">انتخاب نشده</option>
+                                  {options.map((item) => (
+                                    <option
+                                      key={`${field}-${item.id}-${item.ref ?? ''}`}
+                                      value={field === 'owner_type_ref' ? String(item.ref ?? '') : item.id}
+                                    >
+                                      {item.title}
+                                    </option>
+                                  ))}
+                                </select>
+                              </label>
+                            )
+                          }
+                          if (field === 'address') {
+                            return (
+                              <label className="c360-edit-field wide" key={field}>
+                                <span>{EDIT_FIELD_LABELS[field]}</span>
+                                <textarea value={displayValue} onChange={(event) => setDraftField(field, event.target.value)} />
+                              </label>
+                            )
+                          }
+                          return (
+                            <label className={`c360-edit-field ${wide ? 'wide' : ''}`} key={field}>
+                              <span>{EDIT_FIELD_LABELS[field]}</span>
+                              <input
+                                type={NUMERIC_FIELDS.has(field) ? 'number' : 'text'}
+                                inputMode={NUMERIC_FIELDS.has(field) ? 'decimal' : undefined}
+                                value={displayValue}
+                                onChange={(event) => setDraftField(field, event.target.value)}
+                              />
+                            </label>
+                          )
+                        })}
+                      </div>
+                      {editableFields.includes('latitude') && editableFields.includes('longitude') ? (
+                        <button type="button" className="c360-location-capture" onClick={captureCurrentLocation} disabled={locationBusy}>
+                          <PinIcon /> {locationBusy ? 'در حال دریافت موقعیت…' : 'ثبت موقعیت فعلی'}
+                        </button>
+                      ) : null}
+                      {saveError ? <p className="c360-edit-message" role="alert">{saveError}</p> : null}
+                      <div className="c360-edit-actions">
+                        <button type="button" onClick={cancelEditing} disabled={saveBusy}>انصراف</button>
+                        <button type="button" className="primary" onClick={() => void saveProfileDraft()} disabled={saveBusy}>
+                          {saveBusy ? 'در حال ذخیره…' : 'ذخیره پیش‌نویس'}
+                        </button>
+                      </div>
+                      <p className="c360-permission-note">این تغییرات فقط به‌صورت پیش‌نویس محلی ذخیره می‌شوند و به NGT/Varanegar ارسال نمی‌شوند.</p>
+                    </div>
+                  ) : null}
+                  {saveNotice ? <p className="c360-permission-note" role="status">{saveNotice}</p> : null}
                 </article>
 
                 <article className="c360-panel c360-location-card">

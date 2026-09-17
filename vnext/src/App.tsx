@@ -1,4 +1,4 @@
-import { Navigate, Outlet, useParams, useSearchParams } from 'react-router'
+﻿import { Navigate, Outlet, useParams, useSearchParams } from 'react-router'
 import { LoginScreen } from './components/LoginScreen'
 import { VisitorHomeScreen } from './components/VisitorHomeScreen'
 import { VisitorCustomersScreen } from './components/VisitorCustomersScreen'
@@ -19,6 +19,17 @@ import { VisitorNotificationsProvider, useVisitorNotifications } from './state/V
 import { clearPrototypeDrafts } from './state/visitorDraftStore'
 import { clearVisitorOrderWorkspace } from './state/visitorOrderWorkspaceStore'
 
+const LIVING_UI_PILOT_KEY = 'neginai.pilot.living-ui'
+
+if (typeof window !== 'undefined') {
+  try {
+    const livingUiParam = new URLSearchParams(window.location.search).get('liveui')
+    if (livingUiParam === '1') localStorage.setItem(LIVING_UI_PILOT_KEY, '1')
+    if (livingUiParam === '0') localStorage.removeItem(LIVING_UI_PILOT_KEY)
+  } catch {
+    // Pilot flag is non-critical; storage failures must never block the app.
+  }
+}
 function protectedView(authenticated: boolean, restoringSession: boolean, node: React.ReactNode) {
   if (restoringSession) return null
   return authenticated ? node : <Navigate to={'/'} replace />
@@ -128,9 +139,12 @@ export function VisitorReportsRoute() {
 }
 
 export function VisitorNotificationsRoute() {
-  const { go } = useVisitorNavigation()
+  const { go, back } = useVisitorNavigation()
   const { authenticated, restoringSession } = useVisitorAuth()
-  return protectedView(authenticated, restoringSession, <VisitorNotificationsScreen onNavigate={(path) => go(path)} />)
+  return protectedView(authenticated, restoringSession, <VisitorNotificationsScreen
+      onNavigate={(path) => go(path)}
+      onClose={() => back('/visitor/home')}
+    />)
 }
 
 export function VisitorCustomersRoute() {

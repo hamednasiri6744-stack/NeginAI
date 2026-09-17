@@ -5,6 +5,7 @@ import {
   getPrevisitContext,
   getVisitDraft,
   previewPrevisit,
+  updateVisitDraft,
   type PrevisitContextResponse,
   type PrevisitPreviewResponse,
   type PrevisitProduct,
@@ -68,6 +69,7 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
   const [catalogId, setCatalogId] = useState('')
   const [inStockOnly, setInStockOnly] = useState(true)
   const [cart, setCart] = useState<Record<string, number>>({})
+  const [saleUnitFactorByProduct, setSaleUnitFactorByProduct] = useState<Record<string, number>>({})
   const [orderTypeRef, setOrderTypeRef] = useState<number | null>(null)
   const [paymentRef, setPaymentRef] = useState('')
   const [warehouseRef, setWarehouseRef] = useState<number | null>(null)
@@ -77,6 +79,7 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
   const [notice, setNotice] = useState<string | null>(null)
   const [customerPicker, setCustomerPicker] = useState(false)
   const [savedRequest, setSavedRequest] = useState<RouteSavedRequest | null>(null)
+  const [draftSyncState, setDraftSyncState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const hydratedVisitRef = useRef('')
 
   const routeId = visitDraft?.route_id ?? activeVisit?.routeId ?? activeRouteId
@@ -206,6 +209,28 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
     return Number(product.indicative_price || 0)
   }, [orderTypeRef])
 
+  const saleUnitFor = useCallback((product: PrevisitProduct) => {
+    const requestedFactor = Number(saleUnitFactorByProduct[product.id] || 0)
+    return product.sale_units.find((unit) => Number(unit.factor) === requestedFactor)
+      ?? product.sale_units.find((unit) => unit.is_default)
+      ?? product.sale_units.find((unit) => Number(unit.factor) === 1)
+      ?? { ref: null, name: product.unit, factor: 1, is_default: true }
+  }, [saleUnitFactorByProduct])
+
+  const previewDiscountBreakdown = useMemo(() => {
+    const total = { cash: 0, volume: 0, goods: 0, other: 0, unclassified: 0 }
+    for (const item of preview?.items ?? []) {
+      const parts = item.discount_breakdown
+      if (!parts) continue
+      total.cash += Number(parts.cash?.amount || 0)
+      total.volume += Number(parts.volume?.amount || 0)
+      total.goods += Number(parts.goods?.amount || 0)
+      total.other += Number(parts.other?.amount || 0)
+      total.unclassified += Number(parts.unclassified?.amount || 0)
+    }
+    return total
+  }, [preview])
+
   const visibleProducts = useMemo(() => {
     const q = query.trim().toLocaleLowerCase('fa')
     const catalogProductIds = selectedCatalog ? new Set(selectedCatalog.product_ids.map(String)) : null
@@ -230,6 +255,35 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
     (sum, line) => sum + indicativePriceFor(line.product) * line.quantity,
     0,
   )
+
+  useEffect(() => {
+    if (!effectiveVisitId || !context || hydratedVisitRef.current !== effectiveVisitId) return
+    const orderType = context.order_types.find((item) => item.id === orderTypeRef)
+    const paymentType = context.payment_types.find((item) => item.id === paymentRef)
+    const warehouse = context.warehouses.find((item) => item.ref === warehouseRef)
+    const timer = window.setTimeout(() => {
+      setDraftSyncState('saving')
+      void updateVisitDraft(effectiveVisitId, {
+        lines: cartLines.map(({ product, quantity }) => ({
+          product_id: product.id,
+          quantity,
+          unit_price: indicativePriceFor(product),
+          discount_amount: 0,
+          title: product.name,
+        })),
+        payment_type: paymentType?.name ?? '',
+        order_type: orderType?.name ?? '',
+        warehouse_ref: warehouse?.ref ?? warehouseRef,
+        warehouse_name: warehouse?.name ?? '',
+      })
+        .then((draft) => {
+          setVisitDraft(draft)
+          setDraftSyncState('saved')
+        })
+        .catch(() => setDraftSyncState('error'))
+    }, 750)
+    return () => window.clearTimeout(timer)
+  }, [cartLines, context, effectiveVisitId, indicativePriceFor, orderTypeRef, paymentRef, warehouseRef])
 
   function setQuantity(product: PrevisitProduct, requested: number) {
     const available = availableFor(product)
@@ -433,6 +487,10 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
                     const qty = Number(cart[product.id] ?? 0)
                     const available = availableFor(product)
                     const price = indicativePriceFor(product)
+                    const saleUnit = saleUnitFor(product)
+                    const saleFactor = Math.max(1, Number(saleUnit.factor) || 1)
+                    const maxOrder = Number(product.max_order_qty || 0)
+                    const effectiveMax = maxOrder > 0 ? Math.min(maxOrder, available) : available
                     return (
                       <article className="vo-product-card" key={product.id}>
                         <div className="vo-product-top">
@@ -443,15 +501,27 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
                           <span>{product.group || 'بدون گروه'}</span>
                           <span>{product.unit}</span>
                           {context.inventory.show_stock_level ? <span>موجودی: <b>{number(available)}</b></span> : <span>کنترل موجودی: NGT</span>}
+                          {Number(product.min_order_qty || 0) > 0 ? <span>حداقل: <b>{number(product.min_order_qty)}</b> {product.unit}</span> : null}
+                          {Number(product.max_order_qty || 0) > 0 ? <span>حداکثر: <b>{number(product.max_order_qty)}</b> {product.unit}</span> : null}
                         </div>
+                        {product.sale_units.length > 1 ? (
+                          <div className="vo-sale-units" aria-label="واحد فروش">
+                            {product.sale_units.map((unit) => (
+                              <button type="button" key={`${product.id}-${unit.ref ?? unit.name}-${unit.factor}`} className={Number(unit.factor) === saleFactor ? 'active' : ''} onClick={() => setSaleUnitFactorByProduct((current) => ({ ...current, [product.id]: Number(unit.factor) }))}>
+                                <span>{unit.name}</span>
+                                {Number(unit.factor) !== 1 ? <small>× {number(Number(unit.factor))} {product.unit}</small> : null}
+                              </button>
+                            ))}
+                          </div>
+                        ) : null}
                         <div className="vo-product-price">
                           <strong>{price > 0 ? number(price) : '—'}</strong>
                           <small>قیمت پایه NGT · مبلغ نهایی بعد از Preview</small>
                         </div>
                         <div className="vo-stepper">
-                          <button type="button" onClick={() => setQuantity(product, qty - 1)} disabled={qty <= 0}>−</button>
-                          <strong>{number(qty)}</strong>
-                          <button type="button" onClick={() => setQuantity(product, qty + 1)} disabled={available <= qty}>+</button>
+                          <button type="button" onClick={() => setQuantity(product, qty - saleFactor)} disabled={qty <= 0}>−</button>
+                          <strong><b>{number(qty / saleFactor)}</b><small>{saleUnit.name}</small></strong>
+                          <button type="button" onClick={() => setQuantity(product, qty + saleFactor)} disabled={effectiveMax < qty + saleFactor}>+</button>
                         </div>
                       </article>
                     )
@@ -479,7 +549,11 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
             {view === 'cart' ? (
               <section className="vo-cart-view">
                 <div className="vo-cart-head">
-                  <div><strong>سبد سفارش</strong><span>{number(cartLines.length)} قلم · {number(cartCount)} واحد پایه</span></div>
+                  <div>
+                    <strong>سبد سفارش</strong>
+                    <span>{number(cartLines.length)} قلم · {number(cartCount)} واحد پایه</span>
+                    {effectiveVisitId ? <small className={`vo-draft-sync ${draftSyncState}`}>{draftSyncState === 'saving' ? 'در حال ذخیره پیش‌نویس…' : draftSyncState === 'saved' ? 'پیش‌نویس ذخیره شد' : draftSyncState === 'error' ? 'ذخیره پیش‌نویس ناموفق' : 'پیش‌نویس سرور'}</small> : null}
+                  </div>
                   <button type="button" onClick={() => void handlePreview()} disabled={!cartLines.length || previewBusy}><ClipboardIcon /> {previewBusy ? 'در حال محاسبه…' : 'محاسبه رسمی NGT'}</button>
                 </div>
 
@@ -487,6 +561,8 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
                   <div className="vo-cart-lines">
                     {cartLines.map(({ product, quantity }) => {
                       const official = preview?.items.find((item) => String(item.product_id) === product.id)
+                      const saleUnit = saleUnitFor(product)
+                      const saleFactor = Math.max(1, Number(saleUnit.factor) || 1)
                       return (
                         <article key={product.id} className="vo-cart-line">
                           <span className="vo-cart-icon"><BoxIcon /></span>
@@ -497,11 +573,12 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
                           </div>
                           <button type="button" className="vo-trash" onClick={() => setQuantity(product, 0)} aria-label={`حذف ${product.name}`}><TrashIcon /></button>
                           <div className="vo-cart-stepper">
-                            <button type="button" onClick={() => setQuantity(product, quantity - 1)}>−</button>
-                            <strong>{number(quantity)}</strong>
-                            <button type="button" onClick={() => setQuantity(product, quantity + 1)}>+</button>
+                            <button type="button" onClick={() => setQuantity(product, quantity - saleFactor)}>−</button>
+                            <strong><b>{number(quantity / saleFactor)}</b><small>{saleUnit.name}</small></strong>
+                            <button type="button" onClick={() => setQuantity(product, quantity + saleFactor)}>+</button>
                           </div>
                           <strong className="vo-line-total">{official ? number(official.net_amount) : number(indicativePriceFor(product) * quantity)}</strong>
+                          {official && official.discount_amount > 0 ? <small className="vo-line-discount">تخفیف رسمی: {number(official.discount_amount)}</small> : null}
                         </article>
                       )
                     })}
@@ -533,15 +610,48 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
                   )}
                 </section>
 
+                {preview && preview.totals.discount > 0 ? (
+                  <section className="vo-official-details">
+                    <div className="vo-detail-head"><div><strong>جزئیات تخفیف رسمی</strong><span>تفکیک مستقیم از EVC نگین‌توزیع</span></div><b>{number(preview.totals.discount)}</b></div>
+                    <div className="vo-detail-grid">
+                      {previewDiscountBreakdown.cash > 0 ? <span><small>نقدی</small><strong>{number(previewDiscountBreakdown.cash)}</strong></span> : null}
+                      {previewDiscountBreakdown.volume > 0 ? <span><small>حجمی</small><strong>{number(previewDiscountBreakdown.volume)}</strong></span> : null}
+                      {previewDiscountBreakdown.goods > 0 ? <span><small>کالایی</small><strong>{number(previewDiscountBreakdown.goods)}</strong></span> : null}
+                      {previewDiscountBreakdown.other > 0 ? <span><small>سایر</small><strong>{number(previewDiscountBreakdown.other)}</strong></span> : null}
+                      {previewDiscountBreakdown.unclassified > 0 ? <span><small>طبقه‌بندی‌نشده</small><strong>{number(previewDiscountBreakdown.unclassified)}</strong></span> : null}
+                    </div>
+                  </section>
+                ) : null}
+
                 {preview?.credit_control ? (
-                  <section className={preview.credit_control.allowed === false ? 'vh-live-state error' : 'vh-live-state'}>
-                    <div><strong>کنترل اعتبار NGT</strong><span>{preview.credit_control.message || (preview.credit_control.allowed ? 'مجاز' : 'نیازمند بررسی')}</span></div>
+                  <section className={`vo-credit-card ${preview.credit_control.allowed === false ? 'blocked' : 'allowed'}`}>
+                    <div className="vo-detail-head"><div><strong>کنترل اعتبار NGT</strong><span>{preview.credit_control.mode_label || 'کنترل رسمی پیش‌فروش'}</span></div><b>{preview.credit_control.allowed === false ? 'مسدود' : 'مجاز'}</b></div>
+                    <p>{preview.credit_control.message || 'نتیجه کنترل اعتبار از NGT دریافت شد.'}</p>
+                    <div className="vo-credit-grid">
+                      {preview.credit_control.available_amount !== null && preview.credit_control.available_amount !== undefined ? <span><small>اعتبار در دسترس</small><strong>{number(Number(preview.credit_control.available_amount))}</strong></span> : null}
+                      {preview.credit_control.evaluated_total !== undefined ? <span><small>جمع ارزیابی‌شده</small><strong>{number(Number(preview.credit_control.evaluated_total))}</strong></span> : null}
+                      {Number(preview.credit_control.deficit || 0) > 0 ? <span className="danger"><small>کسری</small><strong>{number(Number(preview.credit_control.deficit))}</strong></span> : null}
+                      {preview.credit_control.financials?.open_invoice_count ? <span><small>فاکتور باز</small><strong>{number(Number(preview.credit_control.financials.open_invoice_count))}</strong></span> : null}
+                      {preview.credit_control.financials?.returned_cheque_count ? <span className="danger"><small>چک برگشتی</small><strong>{number(Number(preview.credit_control.financials.returned_cheque_count))}</strong></span> : null}
+                    </div>
                   </section>
                 ) : null}
 
                 {preview?.gift_lines?.length ? (
-                  <section className="vo-promo">
-                    <div><strong>هدایای رسمی NGT</strong><span>{number(preview.gift_lines.length)} مورد</span></div>
+                  <section className="vo-official-details vo-gifts">
+                    <div className="vo-detail-head"><div><strong>هدایای رسمی NGT</strong><span>فقط اقلام برگشتی از EVC</span></div><b>{number(preview.gift_lines.length)} مورد</b></div>
+                    <div className="vo-gift-list">
+                      {preview.gift_lines.map((gift, index) => (
+                        <div key={`${gift.product_id}-${index}`}><span><strong>{gift.title || `کالای ${gift.product_id}`}</strong><small>{gift.source}</small></span><b>{number(gift.quantity)}</b></div>
+                      ))}
+                    </div>
+                  </section>
+                ) : null}
+
+                {preview?.restrictions?.length ? (
+                  <section className="vo-restrictions">
+                    <strong>محدودیت رسمی NGT</strong>
+                    <span>{number(preview.restrictions.length)} مورد از EVC برگشته است. جزئیات خام تا زمانی که قرارداد نمایشی پایدار نشود تفسیر نمی‌شوند.</span>
                   </section>
                 ) : null}
 
