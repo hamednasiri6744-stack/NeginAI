@@ -2094,6 +2094,20 @@ def preview_previsit(
         order_total=float(result["totals"]["net"]),
     )
     result["ok"] = bool(result["ok"] and result["credit_control"]["allowed"])
+    try:
+        from app.operational_notification_service import observe_credit_block, observe_official_quote
+        observe_credit_block(
+            settings, username, route_id=str(payload.route_id), customer_id=str(payload.customer_id),
+            credit_control=result["credit_control"],
+        )
+        observe_official_quote(
+            settings, username, route_id=str(payload.route_id), customer_id=str(payload.customer_id),
+            order_type_ref=payload.order_type_ref, payment_usance_ref=payload.payment_usance_ref,
+            warehouse_ref=warehouse_ref, requested_lines=requested, result=result,
+        )
+    except Exception:
+        # Operational alerting is best-effort and must never block official NGT preview.
+        pass
     if include_submission_contract:
         raw_envelope = _lookup(raw, "Data", "Result", default=raw)
         raw_result = raw_envelope if isinstance(raw_envelope, dict) else raw

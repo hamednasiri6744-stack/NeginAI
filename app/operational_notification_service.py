@@ -280,12 +280,28 @@ def refresh_operational_alerts(settings: Any, username: str) -> dict[str, bool]:
     from app.seller_workspace_service import (
         seller_distribution_in_progress,
         seller_returned_cheques,
+        seller_route_customers_basic,
         seller_routes,
+        seller_voucher_return_report,
     )
-    result = {"route": False, "returned_cheques": False, "distribution": False}
+    result = {"route": False, "route_customers": False, "returned_cheques": False, "distribution": False, "returns": False}
+    route_payload: dict[str, Any] = {}
     try:
-        seller_routes(settings, username)
+        route_payload = seller_routes(settings, username)
         result["route"] = True
+    except Exception:
+        pass
+    try:
+        day_route = route_payload.get("day_route") or {}
+        route_id = str(day_route.get("id") or "")
+        if route_id:
+            observe_route_customers(settings, username, seller_route_customers_basic(settings, username, route_id))
+            result["route_customers"] = True
+    except Exception:
+        pass
+    try:
+        observe_voucher_returns(settings, username, seller_voucher_return_report(settings, username))
+        result["returns"] = True
     except Exception:
         pass
     try:
@@ -299,3 +315,193 @@ def refresh_operational_alerts(settings: Any, username: str) -> dict[str, bool]:
     except Exception:
         pass
     return result
+
+
+def observe_route_customers(settings: Any, username: str, payload: dict[str, Any]) -> None:
+    route = payload.get("route") or {}
+    route_id = str(route.get("id") or "")
+    if not route_id:
+        return
+    current = {
+        str(item.get("id")): {
+            "id": item.get("id"),
+            "name": item.get("store_name") or item.get("name"),
+            "code": item.get("code"),
+            "alarm": str(item.get("alarm") or "").strip(),
+        }
+        for item in payload.get("customers") or [] if item.get("id") is not None
+    }
+    previous = _snapshot_state(settings, username, f"route_customers:{route_id}", {"items": current})
+    if previous is None:
+        return
+    old = previous.get("items") or {}
+    old_ids, current_ids = set(old), set(current)
+
+    for customer_id in sorted(old_ids - current_ids):
+        before = old.get(customer_id) or {}
+        name = str(before.get("name") or customer_id)
+        emit_operational_notification(
+            settings, username=username, title="فهرست فعال مسیر امروز تغییر کرد",
+            body=f"{name} دیگر در فهرست فعال همین مسیر روز دیده نمی‌شود؛ مسیر را قبل از مراجعه بررسی کنید.",
+            severity="high", category="customer", source=str(payload.get("source") or "NGT"),
+            entity_type="customer", entity_id=customer_id, action_path="/visitor/route",
+            dedupe_key=f"route-customer:removed:{route_id}:{customer_id}:{_event_key(json.dumps(current, sort_keys=True, default=str))}",
+            payload={"route_id": route_id, "customer": before},
+        )
+    for customer_id in sorted(current_ids - old_ids):
+        item = current[customer_id]
+        name = str(item.get("name") or customer_id)
+        emit_operational_notification(
+            settings, username=username, title="مشتری جدید در مسیر امروز",
+            body=f"{name} به فهرست فعال مسیر امروز اضافه شده است.",
+            severity="medium", category="customer", source=str(payload.get("source") or "NGT"),
+            entity_type="customer", entity_id=customer_id, action_path="/visitor/route",
+            dedupe_key=f"route-customer:added:{route_id}:{customer_id}:{_event_key(json.dumps(current, sort_keys=True, default=str))}",
+            payload={"route_id": route_id, "customer": item},
+        )
+    for customer_id in sorted(current_ids & old_ids):
+        before, item = old[customer_id], current[customer_id]
+        if str(before.get("alarm") or "").strip() == str(item.get("alarm") or "").strip():
+            continue
+        new_alarm = str(item.get("alarm") or "").strip()
+        if not new_alarm:
+            continue
+        name = str(item.get("name") or customer_id)
+        emit_operational_notification(
+            settings, username=username, title="هشدار مشتری در NGT تغییر کرد",
+            body=f"{name}: {new_alarm}", severity="medium", category="customer",
+            source="NGT.Customers.Alarm", entity_type="customer", entity_id=customer_id,
+            action_path="/visitor/route",
+            dedupe_key=f"customer-alarm:{customer_id}:{_event_key(new_alarm)}",
+            payload={"route_id": route_id, "customer": item},
+        )
+
+
+def observe_voucher_returns(settings: Any, username: str, payload: dict[str, Any]) -> None:
+    month = str(payload.get("report_month") or "")
+    current = {
+        "full_returned_count": int(payload.get("full_returned_count") or 0),
+        "undistributed_count": int(payload.get("undistributed_count") or 0),
+        "voucher_count": int(payload.get("voucher_count") or 0),
+    }
+    previous = _snapshot_state(settings, username, f"voucher_returns:{month or 'current'}", current)
+    if previous is None:
+        return
+    old_returns = int(previous.get("full_returned_count") or 0)
+    new_returns = current["full_returned_count"]
+    if new_returns > old_returns:
+        delta = new_returns - old_returns
+        emit_operational_notification(
+            settings, username=username, title="برگشتی کامل جدید ثبت شد",
+            body=f"تعداد حواله‌های برگشتی کامل این ماه {delta} مورد افزایش یافت و اکنون {new_returns} مورد است.",
+            severity="high", category="return", source=str(payload.get("source") or "SLE.tblSaleVocherHdr"),
+            entity_type="sales_return", entity_id=month or None, action_path="/visitor/reports",
+            dedupe_key=f"voucher-return:{month}:{new_returns}", payload={**payload, "delta": delta},
+        )
+    old_undistributed = int(previous.get("undistributed_count") or 0)
+    new_undistributed = current["undistributed_count"]
+    if new_undistributed > old_undistributed:
+        emit_operational_notification(
+            settings, username=username, title="حواله توزیع‌نشده افزایش یافت",
+            body=f"تعداد حواله‌های توزیع‌نشده این ماه از {old_undistributed} به {new_undistributed} رسید.",
+            severity="medium", category="distribution", source=str(payload.get("source") or "SLE.tblSaleVocherHdr"),
+            entity_type="voucher", entity_id=month or None, action_path="/visitor/reports",
+            dedupe_key=f"undistributed-voucher:{month}:{new_undistributed}", payload=payload,
+        )
+
+
+def observe_credit_block(
+    settings: Any,
+    username: str,
+    *,
+    route_id: str,
+    customer_id: str,
+    credit_control: dict[str, Any],
+) -> None:
+    if credit_control.get("allowed") is not False:
+        return
+    mode = str(credit_control.get("mode") or "unknown")
+    deficit = float(credit_control.get("deficit") or 0)
+    available = credit_control.get("available_amount")
+    evaluated = float(credit_control.get("evaluated_total") or 0)
+    day_key = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    emit_operational_notification(
+        settings, username=username, title="کنترل اعتبار سفارش را متوقف کرد",
+        body=str(credit_control.get("message") or "ثبت سفارش طبق کنترل اعتبار رسمی NGT مجاز نیست."),
+        severity="high", category="credit", source=str(credit_control.get("source") or "NGT presale credit-control parity"),
+        entity_type="customer", entity_id=str(customer_id), action_path="/visitor/orders",
+        dedupe_key=f"credit-block:{day_key}:{customer_id}:{mode}",
+        payload={"route_id": route_id, "customer_id": customer_id, "mode": mode,
+                 "deficit": deficit, "available_amount": available, "evaluated_total": evaluated},
+    )
+
+
+def observe_official_quote(
+    settings: Any,
+    username: str,
+    *,
+    route_id: str,
+    customer_id: str,
+    order_type_ref: int | str,
+    payment_usance_ref: int | str,
+    warehouse_ref: int | str,
+    requested_lines: list[dict[str, Any]],
+    result: dict[str, Any],
+) -> None:
+    context = {
+        "route_id": str(route_id), "customer_id": str(customer_id),
+        "order_type_ref": str(order_type_ref), "payment_usance_ref": str(payment_usance_ref),
+        "warehouse_ref": str(warehouse_ref),
+        "lines": sorted(
+            [{"product_id": str(line.get("product_id")), "quantity": float(line.get("quantity") or 0)} for line in requested_lines],
+            key=lambda item: item["product_id"],
+        ),
+    }
+    context_key = _event_key(json.dumps(context, ensure_ascii=False, sort_keys=True))
+
+    quote = {
+        "prices": {
+            str(item.get("product_id")): float(item.get("unit_price") or 0)
+            for item in result.get("items") or []
+        },
+        "discounts": {
+            str(item.get("product_id")): {
+                "amount": float(item.get("discount_amount") or 0),
+                "percent": float(item.get("discount_percent") or 0),
+                "breakdown": item.get("discount_breakdown") or {},
+            }
+            for item in result.get("items") or []
+        },
+        "gifts": sorted(
+            [{"product_id": str(item.get("product_id") or ""), "quantity": float(item.get("quantity") or 0)}
+             for item in result.get("gift_lines") or []],
+            key=lambda item: (item["product_id"], item["quantity"]),
+        ),
+        "restrictions": result.get("restrictions") or [],
+    }
+    previous = _snapshot_state(settings, username, f"official_quote:{context_key}", quote)
+    if previous is None:
+        return
+    changes: list[str] = []
+    high = False
+    if previous.get("prices") != quote["prices"]:
+        changes.append("قیمت رسمی")
+        high = True
+    if previous.get("discounts") != quote["discounts"]:
+        changes.append("تخفیف")
+    if previous.get("gifts") != quote["gifts"]:
+        changes.append("اشانتیون")
+    if previous.get("restrictions") != quote["restrictions"]:
+        changes.append("محدودیت فروش")
+        high = True
+    if not changes:
+        return
+    fingerprint = _event_key(json.dumps(quote, ensure_ascii=False, sort_keys=True, default=str))
+    emit_operational_notification(
+        settings, username=username, title="شرایط رسمی سفارش تغییر کرد",
+        body=f"در محاسبه مجدد رسمی NGT برای همین ترکیب سفارش، {'، '.join(changes)} تغییر کرده است؛ قبل از ثبت نهایی دوباره بررسی کنید.",
+        severity="high" if high else "medium", category="pricing", source="NGT EVC presale",
+        entity_type="customer", entity_id=str(customer_id), action_path="/visitor/orders",
+        dedupe_key=f"official-quote:{context_key}:{fingerprint}",
+        payload={"context": context, "quote": quote, "changed": changes},
+    )
