@@ -52,6 +52,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
   const { loading, error, activeRouteTitle, liveAssignment, workCalendar, targetPulse, reload } = useVisitorLiveData()
   const [notice, setNotice] = useState<string | null>(null)
   const [now, setNow] = useState(() => new Date())
+  const [homePanel, setHomePanel] = useState<'plan' | 'insights' | null>(null)
   const { routeStops, routeSummary } = useVisitorWorkflow()
   const livingUiEnabled = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('liveui') !== '0' && localStorage.getItem('neginai.pilot.living-ui') !== '0'
   const liveState = loading ? 'syncing' : error ? 'error' : 'ready'
@@ -253,39 +254,37 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
           </div>
         </section>
 
-        <section className="vh-two-col">
-          <article className="vh-panel">
-            <div className="vh-section-title">
-              <div><ClockIcon /><strong>برنامه امروز</strong></div>
-              <button type="button" onClick={() => onNavigate('/visitor/route')}>همه</button>
-            </div>
-            <div className="vh-task-list">
-              {tasks.map((task, index) => (
-                <button className="vh-task ng-living-interactive" type="button" key={`${task.time}-${task.title}`} onClick={() => onNavigate(`/visitor/route?customer=${task.customerId}`)}>
-                  <span className={`vh-task-state ${index === 0 ? 'active' : ''}`}>{task.icon}</span>
-                  <span className="vh-task-copy"><strong>{task.title}</strong><small>{task.meta}</small></span>
-                  <time>{task.time}</time>
-                </button>
-              ))}
-            </div>
-          </article>
-
-          <article className="vh-panel vh-ai-panel">
-            <div className="vh-section-title">
-              <div><AiSparkIcon /><strong>پیشنهادها</strong></div>
-            </div>
-            <button className="vh-insight ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/ai?context=home&prompt=sales-opportunity')}>
-              <span className="vh-insight-icon"><ChartIcon /></span>
-              <span><strong>فرصت فروش</strong><small>تحلیل زنده را از Negin AI بپرس.</small></span>
-              <ChevronLeftIcon />
-            </button>
-            <button className="vh-insight ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/ai?context=home&prompt=stock')}>
-              <span className="vh-insight-icon"><BoxIcon /></span>
-              <span><strong>تأمین موجودی</strong><small>هشدارهای موجودی را از داده زنده بررسی کن.</small></span>
-              <ChevronLeftIcon />
-            </button>
-          </article>
+        <section className="vh-home-actions" aria-label="ابزارهای خانه">
+          <button className={`vh-home-action ng-living-interactive ${homePanel === 'plan' ? 'active' : ''}`} type="button" aria-expanded={homePanel === 'plan'} onClick={() => setHomePanel((value) => value === 'plan' ? null : 'plan')}>
+            <ClockIcon /><span><strong>برنامه امروز</strong><small>{tasks.length ? `${tasks.length.toLocaleString('fa-IR')} اقدام بعدی` : 'مسیر امروز'}</small></span><ChevronLeftIcon />
+          </button>
+          <button className={`vh-home-action ng-living-interactive ${homePanel === 'insights' ? 'active' : ''}`} type="button" aria-expanded={homePanel === 'insights'} onClick={() => setHomePanel((value) => value === 'insights' ? null : 'insights')}>
+            <AiSparkIcon /><span><strong>پیشنهادهای Negin AI</strong><small>فرصت فروش و موجودی</small></span><ChevronLeftIcon />
+          </button>
         </section>
+
+        {homePanel ? (
+          <section key={homePanel} className="vh-home-sheet ng-living-surface ng-living-panel-change" data-living-state="active">
+            {homePanel === 'plan' ? (
+              <>
+                <div className="vh-section-title"><div><ClockIcon /><strong>برنامه امروز</strong></div><button type="button" onClick={() => onNavigate('/visitor/route')}>همه</button></div>
+                <div className="vh-task-list">
+                  {tasks.map((task, index) => (
+                    <button className="vh-task ng-living-interactive" type="button" key={`${task.time}-${task.title}`} onClick={() => onNavigate(`/visitor/route?customer=${task.customerId}`)}>
+                      <span className={`vh-task-state ${index === 0 ? 'active' : ''}`}>{task.icon}</span><span className="vh-task-copy"><strong>{task.title}</strong><small>{task.meta}</small></span><time>{task.time}</time>
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="vh-section-title"><div><AiSparkIcon /><strong>پیشنهادها</strong></div><button type="button" onClick={() => setHomePanel(null)}>بستن</button></div>
+                <button className="vh-insight ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/ai?context=home&prompt=sales-opportunity')}><span className="vh-insight-icon"><ChartIcon /></span><span><strong>فرصت فروش</strong><small>تحلیل زنده را از Negin AI بپرس.</small></span><ChevronLeftIcon /></button>
+                <button className="vh-insight ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/ai?context=home&prompt=stock')}><span className="vh-insight-icon"><BoxIcon /></span><span><strong>تأمین موجودی</strong><small>هشدارهای موجودی را از داده زنده بررسی کن.</small></span><ChevronLeftIcon /></button>
+              </>
+            )}
+          </section>
+        ) : null}
 
         {notice ? <div className="vh-toast" role="status">{notice}</div> : null}
 
