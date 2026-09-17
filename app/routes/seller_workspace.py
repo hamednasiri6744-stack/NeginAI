@@ -17,6 +17,7 @@ from app.seller_workspace_service import (
     SellerRouteNotFound,
     SellerWorkspaceError,
     seller_brands,
+    seller_customer_profile_any_route,
     seller_customer_visit_workspace,
     seller_customer_open_invoices,
     seller_distribution_in_progress,
@@ -274,6 +275,16 @@ def get_my_route_saved_requests(path_id: str, request: Request):
                 path_id,
             )
         }
+    except SellerRouteNotFound as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except SellerWorkspaceError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+
+
+@router.get("/customers/{customer_id}/profile")
+def get_my_customer_profile_any_route(customer_id: str, request: Request):
+    try:
+        return seller_customer_profile_any_route(request.app.state.settings, _username(request), customer_id)
     except SellerRouteNotFound as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except SellerWorkspaceError as exc:

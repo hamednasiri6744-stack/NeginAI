@@ -1097,6 +1097,39 @@ def _assigned_route_customer(settings: Any, username: str, path_id: str, custome
     return route, customer
 
 
+def seller_customer_profile_any_route(settings: Any, username: str, customer_id: str) -> dict[str, Any]:
+    """Read one assigned customer profile without claiming a day route is active."""
+    profile = _seller_profile(settings, username)
+    personnel_id = int(profile["personnel_id"])
+    safe_customer_id = _sql_text(customer_id)
+    rows = _query_rows(settings, f"""
+SELECT TOP 1 CONVERT(varchar(36), path.Id) AS PathId
+FROM NGT.Personnels AS personnel
+INNER JOIN NGT.VisitTemplates AS template ON template.Id = personnel.VisitTemplateUniqueId
+INNER JOIN NGT.VisitTemplatePaths AS path ON path.VisitTemplateUniqueId = template.Id
+INNER JOIN (
+  SELECT VisitTemplatePathUniqueId, CustomerUniqueId, MIN(RowIndex) AS RowIndex
+  FROM (
+    SELECT VisitTemplatePathUniqueId, CustomerUniqueId, RowIndex FROM NGT.VisitTemplatePathCustomers WHERE ISNULL(IsRemoved,0)=0
+    UNION ALL
+    SELECT VisitTemplatePathUniqueId, CustomerUniqueId, RowIndex FROM NGT.VisitTemplatePathSecondaryCustomers WHERE ISNULL(IsRemoved,0)=0
+  ) AS links GROUP BY VisitTemplatePathUniqueId, CustomerUniqueId
+) AS assigned ON assigned.VisitTemplatePathUniqueId = path.Id
+INNER JOIN NGT.Customers AS customer ON customer.Id = assigned.CustomerUniqueId
+WHERE personnel.BackOfficeId = N'{personnel_id}'
+  AND customer.BackOfficeId = N'{safe_customer_id}'
+  AND ISNULL(personnel.IsRemoved,0)=0 AND ISNULL(personnel.PersonnelIsActive,1)=1
+  AND ISNULL(template.IsRemoved,0)=0 AND ISNULL(path.IsRemoved,0)=0
+  AND ISNULL(customer.IsRemoved,0)=0 AND ISNULL(customer.IsActive,1)=1
+ORDER BY path.RowIndex, assigned.RowIndex
+""".strip())
+    if not rows:
+        raise SellerRouteNotFound("Customer is not assigned to this seller")
+    result = seller_route_customer_profile(settings, username, str(rows[0]["PathId"]), customer_id)
+    result["browse_context"] = {"mode": "assigned_route_read_only", "day_route_active": False}
+    return result
+
+
 def _customer_profile_lookups(settings: Any) -> dict[str, list[dict[str, Any]]]:
     rows = _query_rows(settings, """
 SELECT 'activity' AS LookupKind, CONVERT(varchar(36), Id) AS Id,

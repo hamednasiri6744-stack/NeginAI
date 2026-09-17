@@ -48,7 +48,7 @@ function formatTimer(totalSeconds: number) {
 export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, intent: _intent }: Props) {
   const { unreadCount } = useVisitorNotifications()
   const { profile } = useVisitorAuth()
-  const { loading, error, activeRouteId, activeRouteTitle, customerById, reload } = useVisitorLiveData()
+  const { loading, error, activeRouteId, activeRouteTitle, customerById, reload, workCalendar, routes, offDay } = useVisitorLiveData()
   const {
     routeStops,
     routeSummary,
@@ -311,12 +311,41 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
 
   if (!activeStop) {
     return (
-      <main className="vh-page vh-live-ui ng-living-root vr-app-page" dir="rtl" data-live-ui="unified"><div className="vh-shell vr-shell">
-        <section className={error ? 'vh-live-state error' : 'vh-live-state'} role={error ? 'alert' : 'status'}>
-          <div><strong>{loading ? 'در حال دریافت مسیر واقعی…' : error ? 'مسیر امروز دریافت نشد' : 'برای امروز ایستگاهی وجود ندارد'}</strong><span>{error || 'اطلاعات Seller Workspace در حال بررسی است.'}</span></div>
-          {error ? <button type="button" onClick={() => void reload()}>تلاش دوباره</button> : null}
-        </section>
-      </div></main>
+      <main className="vh-page vh-live-ui ng-living-root vr-app-page" dir="rtl" data-live-ui="unified">
+        <div className="vh-shell vr-shell">
+          <header className="vh-header">
+            <button className="vh-profile" type="button" onClick={() => onNavigate('/visitor/profile')}>
+              <span className="vh-avatar">و</span>
+              <span className="vh-profile-copy"><strong>{profile?.full_name || profile?.username || 'ویزیتور'}</strong><small><PinIcon /> {profile?.branch || profile?.sales_line || 'حساب سازمانی'}</small></span>
+              <ChevronLeftIcon />
+            </button>
+            <button className="vh-bell" type="button" aria-label="اعلان‌ها" onClick={() => onNavigate('/visitor/notifications')}><BellIcon />{unreadCount ? <b>{unreadCount}</b> : null}</button>
+            <div className="vh-brand" dir="ltr"><img src="/assets/neginai-logo-transparent.png" alt="Negin AI" /><div><strong>Negin <span>AI</span></strong><small>VISITOR</small></div></div>
+          </header>
+
+          {offDay ? (
+            <section className="vr-offday-card ng-living-surface" data-living-state="ambient">
+              <div className="vr-offday-icon"><ClockIcon /></div>
+              <div className="vr-offday-copy"><span>تقویم رسمی NGT</span><h1>امروز روز کاری نیست</h1><p>{workCalendar?.date ? `${workCalendar.date} · ` : ''}برای امروز DayPath یا Tour فعالی تعریف نشده و این وضعیت خطا محسوب نمی‌شود.</p></div>
+              <div className="vr-offday-rail"><span><small>مسیرهای تخصیص‌یافته</small><strong>{routes.length.toLocaleString('fa-IR')}</strong></span><span><small>روز کاری سپری‌شده</small><strong>{Number(workCalendar?.elapsed_working_days ?? 0).toLocaleString('fa-IR')}</strong></span><span><small>روز کاری باقی‌مانده</small><strong>{Number(workCalendar?.remaining_working_days ?? 0).toLocaleString('fa-IR')}</strong></span></div>
+              <div className="vr-offday-actions"><button type="button" onClick={() => onNavigate('/visitor/home')}>بازگشت به خانه</button><button type="button" onClick={() => onNavigate('/visitor/notifications')}>اعلان‌ها</button></div>
+            </section>
+          ) : (
+            <section className={error ? 'vh-live-state error' : 'vh-live-state'} role={error ? 'alert' : 'status'}>
+              <div><strong>{loading ? 'در حال دریافت مسیر واقعی…' : error ? 'مسیر امروز دریافت نشد' : 'برای امروز ایستگاهی وجود ندارد'}</strong><span>{error || 'اطلاعات Seller Workspace در حال بررسی است.'}</span></div>
+              {error ? <button type="button" onClick={() => void reload()}>تلاش دوباره</button> : null}
+            </section>
+          )}
+
+          <nav className="vh-nav" aria-label="ناوبری ویزیتور">
+            <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/home')}><HomeIcon /><span>خانه</span></button>
+            <button className="vh-nav-item active" type="button" aria-current="page"><MapIcon /><span>مسیر</span></button>
+            <button className="vh-order" type="button" disabled={offDay} onClick={() => onNavigate('/visitor/orders')}><PlusIcon /><span>سفارش</span></button>
+            <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/customers')}><UserGroupIcon /><span>مشتریان</span></button>
+            <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/reports')}><ChartIcon /><span>گزارش‌ها</span></button>
+          </nav>
+        </div>
+      </main>
     )
   }
 

@@ -2143,3 +2143,24 @@ button:focus-visible,a:focus-visible { outline:2px solid rgba(240,193,82,.72); o
   .vr-context-sheet { margin-inline:4px; }
   .vr-route-bar .vr-ai-open { display:none; }
 }
+
+/* Off-day mode — preserve browsing without inventing an active NGT route. */
+.c360-workflow-card[data-visit-state='offday'] { border-color:rgba(126,153,176,.14); background:linear-gradient(150deg,rgba(255,255,255,.035),rgba(6,20,32,.82)); }
+.c360-workflow-card[data-visit-state='offday'] .c360-workflow-head > span { color:#91a3b3; }
+.c360-primary-actions button:disabled { opacity:.42; filter:saturate(.35); cursor:not-allowed; box-shadow:none; }
+.vr-offday-card { margin-top:18px; padding:18px; border-radius:24px; border:1px solid rgba(158,188,211,.13); background:linear-gradient(155deg,rgba(255,255,255,.045),rgba(5,18,29,.86)); box-shadow:0 18px 38px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.045); }
+.vr-offday-icon { width:48px; height:48px; display:grid; place-items:center; border-radius:16px; color:#d7b45f; background:rgba(226,169,53,.06); border:1px solid rgba(226,169,53,.12); }
+.vr-offday-icon svg { width:21px; }
+.vr-offday-copy { margin-top:12px; display:grid; gap:4px; }
+.vr-offday-copy > span { color:#71869a; font-size:11.5px; }
+.vr-offday-copy h1 { margin:0; color:#edf2f6; font-size:19px; }
+.vr-offday-copy p { margin:0; color:#8092a4; font-size:12px; line-height:1.75; }
+.vr-offday-rail { margin-top:14px; padding-top:10px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); border-top:1px solid rgba(151,181,205,.07); }
+.vr-offday-rail > span { min-width:0; display:grid; place-items:center; gap:4px; text-align:center; border-inline-start:1px solid rgba(151,181,205,.06); }
+.vr-offday-rail > span:first-child { border-inline-start:0; }
+.vr-offday-rail small { color:#657a8e; font-size:10.5px; }
+.vr-offday-rail strong { color:#dfe7ed; font:850 15px/1 Inter,Tahoma,Arial; }
+.vr-offday-actions { margin-top:14px; display:grid; grid-template-columns:1.2fr .8fr; gap:7px; }
+.vr-offday-actions button { min-height:44px; border-radius:13px; border:1px solid rgba(151,181,205,.10); color:#9eb0bf; background:rgba(255,255,255,.02); }
+.vr-offday-actions button:first-child { color:#171006; border-color:rgba(255,229,151,.48); background:linear-gradient(180deg,#f4d57a,#d89e39 68%,#a5651e); font-weight:850; }
+.vh-order:disabled { opacity:.35; pointer-events:none; }

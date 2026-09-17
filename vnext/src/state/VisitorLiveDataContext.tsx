@@ -13,6 +13,8 @@ type VisitorLiveDataValue = {
   customerCount: number
   liveAssignment: boolean
   workCalendar: SellerWorkCalendar | null
+  dayRouteStatus: string
+  offDay: boolean
   targetPulse: SellerTargetPulse | null
   reload: () => Promise<void>
   customerById: (customerId: string) => SellerCustomer | undefined
@@ -45,7 +47,11 @@ export function VisitorLiveDataProvider({ children }: { children: ReactNode }) {
       if (!selectedRoute) {
         setCustomersData(null)
         hydrateLiveRoute('', [])
-        setError('برای امروز مسیر فعالی در NGT تعیین نشده است.')
+        if (routes.work_calendar?.is_working_day === false) {
+          setError(null)
+        } else {
+          setError('برای امروز مسیر فعالی در NGT تعیین نشده است.')
+        }
         return
       }
 
@@ -83,6 +89,7 @@ export function VisitorLiveDataProvider({ children }: { children: ReactNode }) {
   const activeRouteId = customersData?.route.id ?? routesData?.day_route?.id ?? null
   const activeRouteTitle = customersData?.route.title ?? routesData?.day_route?.title ?? ''
   const customers = customersData?.customers ?? []
+  const offDay = routesData?.work_calendar?.is_working_day === false && !activeRouteId
 
   const customerById = useCallback((customerId: string) => (
     customers.find((customer) => String(customer.id) === String(customerId))
@@ -98,10 +105,12 @@ export function VisitorLiveDataProvider({ children }: { children: ReactNode }) {
     customerCount: customersData?.customer_count ?? customers.length,
     liveAssignment: Boolean(customersData?.live_assignment ?? routesData?.live_assignment),
     workCalendar: routesData?.work_calendar ?? null,
+    dayRouteStatus: routesData?.day_route_status ?? 'unknown',
+    offDay,
     targetPulse,
     reload: load,
     customerById,
-  }), [activeRouteId, activeRouteTitle, customerById, customers, customersData?.customer_count, customersData?.live_assignment, error, load, loading, routesData?.live_assignment, routesData?.routes, routesData?.work_calendar, targetPulse])
+  }), [activeRouteId, activeRouteTitle, customerById, customers, customersData?.customer_count, customersData?.live_assignment, error, load, loading, routesData?.live_assignment, routesData?.routes, routesData?.work_calendar, routesData?.day_route_status, offDay, targetPulse])
 
   return <VisitorLiveDataContext.Provider value={value}>{children}</VisitorLiveDataContext.Provider>
 }

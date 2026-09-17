@@ -420,6 +420,10 @@ export const neginApi = {
     return request<CustomerProfileResponse>(`/seller-workspace/routes/${encodeURIComponent(routeId)}/customers/${encodeURIComponent(customerId)}/profile`)
   },
 
+  async customerProfileAnyRoute(customerId: string) {
+    return request<CustomerProfileResponse>(`/seller-workspace/customers/${encodeURIComponent(customerId)}/profile`)
+  },
+
   async saveCustomerProfileDraft(routeId: string, customerId: string, payload: CustomerProfileEditable) {
     return request<CustomerProfileDraftSaveResponse>(`/seller-workspace/routes/${encodeURIComponent(routeId)}/customers/${encodeURIComponent(customerId)}/profile-draft`, {
       method: 'PUT',

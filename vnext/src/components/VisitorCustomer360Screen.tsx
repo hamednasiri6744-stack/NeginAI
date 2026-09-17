@@ -91,7 +91,7 @@ function navigateCustomer(customer: SellerCustomer) {
 export function VisitorCustomer360Screen({ customerId = '', onNavigate, onBack }: Props) {
   const { unreadCount } = useVisitorNotifications()
   const { profile: userProfile } = useVisitorAuth()
-  const { activeRouteId, customerById } = useVisitorLiveData()
+  const { activeRouteId, customerById, offDay, loading: liveDataLoading, workCalendar } = useVisitorLiveData()
   const { activeVisit } = useVisitorWorkflow()
   const [tab, setTab] = useState<Tab>('overview')
   const [profile, setProfile] = useState<CustomerProfileResponse | null>(null)
@@ -106,19 +106,23 @@ export function VisitorCustomer360Screen({ customerId = '', onNavigate, onBack }
 
   useEffect(() => {
     let cancelled = false
-    if (!activeRouteId || !customerId) {
+    if (!customerId) {
       setProfile(null)
-      setDraft({})
-      setEditing(false)
-      setSaveError(null)
-      setSaveNotice(null)
-      setError('مسیر فعال یا شناسه مشتری در دسترس نیست.')
+      setError('شناسه مشتری در دسترس نیست.')
+      return
+    }
+    if (!activeRouteId && !offDay) {
+      setProfile(null)
+      setError(liveDataLoading ? null : 'مسیر فعال مشتری در دسترس نیست.')
       return
     }
 
     setLoading(true)
     setError(null)
-    void neginApi.customerProfile(activeRouteId, customerId)
+    const profileRequest = activeRouteId
+      ? neginApi.customerProfile(activeRouteId, customerId)
+      : neginApi.customerProfileAnyRoute(customerId)
+    void profileRequest
       .then((data) => {
         if (cancelled) return
         setProfile(data)
@@ -135,7 +139,7 @@ export function VisitorCustomer360Screen({ customerId = '', onNavigate, onBack }
       })
 
     return () => { cancelled = true }
-  }, [activeRouteId, customerId])
+  }, [activeRouteId, customerId, liveDataLoading, offDay])
 
   const customer = profile?.customer ?? customerById(customerId)
   const finance = customer?.financial_snapshot ?? {}
@@ -151,9 +155,9 @@ export function VisitorCustomer360Screen({ customerId = '', onNavigate, onBack }
   const returnedChequeCount = Number(finance.returned_cheque_count ?? 0)
   const openInvoiceCount = Number(customer?.open_invoice_count ?? 0)
   const activeFields = profile?.editable_contract?.active_fields ?? []
-  const editableFields = activeFields.filter(
+  const editableFields = activeRouteId && !offDay ? activeFields.filter(
     (field): field is EditableField => Object.prototype.hasOwnProperty.call(EDIT_FIELD_LABELS, field),
-  )
+  ) : []
 
   function cancelEditing() {
     setDraft(profile?.draft ?? profile?.customer.editable ?? {})
@@ -258,11 +262,11 @@ export function VisitorCustomer360Screen({ customerId = '', onNavigate, onBack }
               </div>
             </section>
 
-            <section className="c360-workflow-card ng-living-surface" data-visit-state={activeVisitHere ? 'active' : 'ready'} aria-label="اقدام بعدی مشتری">
-              <div className="c360-workflow-head"><span>{activeVisitHere ? 'ویزیت فعال' : 'گام بعدی'}</span><strong>{activeVisitHere ? 'ادامه کار با همین مشتری' : 'برای این مشتری چه کاری انجام می‌دهی؟'}</strong><small>{activeVisitHere ? 'ویزیت باز است؛ سفارش و نتیجه ویزیت در همان جریان ادامه پیدا می‌کند.' : 'شروع بازدید، سفارش و اقدامات تماس بدون خروج از زمینه مشتری.'}</small></div>
+            <section className="c360-workflow-card ng-living-surface" data-visit-state={offDay ? 'offday' : activeVisitHere ? 'active' : 'ready'} aria-label="اقدام بعدی مشتری">
+              <div className="c360-workflow-head"><span>{offDay ? 'روز غیرکاری' : activeVisitHere ? 'ویزیت فعال' : 'گام بعدی'}</span><strong>{offDay ? 'امروز در تقویم NGT روز کاری نیست' : activeVisitHere ? 'ادامه کار با همین مشتری' : 'برای این مشتری چه کاری انجام می‌دهی؟'}</strong><small>{offDay ? `پروفایل برای مرور در دسترس است${workCalendar?.date ? ` · ${workCalendar.date}` : ''}؛ شروع ویزیت و سفارش تا مسیر روز کاری بعدی غیرفعال است.` : activeVisitHere ? 'ویزیت باز است؛ سفارش و نتیجه ویزیت در همان جریان ادامه پیدا می‌کند.' : 'شروع بازدید، سفارش و اقدامات تماس بدون خروج از زمینه مشتری.'}</small></div>
               <div className="c360-primary-actions">
-                <button type="button" className="visit ng-living-interactive" onClick={() => onNavigate(`/visitor/route?customer=${customer.id}&intent=visit`)}><RouteArrowIcon /><span>{activeVisitHere ? 'ادامه بازدید' : 'شروع بازدید'}</span></button>
-                <button type="button" className="order ng-living-interactive" onClick={() => onNavigate(`/visitor/orders?customer=${customer.id}${activeVisitHere ? `&visit=${encodeURIComponent(activeVisit?.id ?? '')}` : ''}`)}><CartIcon /><span>سفارش</span></button>
+                <button type="button" className="visit ng-living-interactive" disabled={offDay} onClick={() => onNavigate(`/visitor/route?customer=${customer.id}&intent=visit`)}><RouteArrowIcon /><span>{offDay ? 'بازدید غیرفعال' : activeVisitHere ? 'ادامه بازدید' : 'شروع بازدید'}</span></button>
+                <button type="button" className="order ng-living-interactive" disabled={offDay} onClick={() => onNavigate(`/visitor/orders?customer=${customer.id}${activeVisitHere ? `&visit=${encodeURIComponent(activeVisit?.id ?? '')}` : ''}`)}><CartIcon /><span>{offDay ? 'سفارش غیرفعال' : 'سفارش'}</span></button>
               </div>
               <div className="c360-utility-actions"><button type="button" disabled={!hasPhone} onClick={() => callCustomer(customer)}><PhoneIcon /><span>تماس</span></button><button type="button" disabled={!hasLocation} onClick={() => navigateCustomer(customer)}><MapIcon /><span>مسیریابی</span></button></div>
               <div className="c360-pulse-rail" role="list" aria-label="وضعیت سریع مشتری">
