@@ -55,6 +55,21 @@ export function VisitorNotificationsProvider({ children }: { children: ReactNode
     void reload()
   }, [authenticated, reload, restoringSession])
 
+  useEffect(() => {
+    if (restoringSession || !authenticated) return
+    const refreshVisible = () => {
+      if (document.visibilityState === 'visible') void reload()
+    }
+    const timer = window.setInterval(refreshVisible, 90_000)
+    window.addEventListener('focus', refreshVisible)
+    document.addEventListener('visibilitychange', refreshVisible)
+    return () => {
+      window.clearInterval(timer)
+      window.removeEventListener('focus', refreshVisible)
+      document.removeEventListener('visibilitychange', refreshVisible)
+    }
+  }, [authenticated, reload, restoringSession])
+
   const markRead = useCallback((id: number) => {
     const target = items.find((item) => item.id === id)
     if (!target || target.read) return

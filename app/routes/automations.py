@@ -14,6 +14,7 @@ from app.automation_service import (
 )
 from app.models import AutomationCreateRequest, NotificationReadRequest
 from app.routes.dependencies import require_user_or_local
+from app.operational_notification_service import refresh_operational_alerts
 
 
 router = APIRouter(
@@ -87,11 +88,13 @@ def delete_my_automation(automation_id: int, request: Request):
 def list_my_notifications(
     request: Request, unread_only: bool = False, limit: int = 20
 ):
+    username = _username(request)
+    try:
+        refresh_operational_alerts(request.app.state.settings, username)
+    except Exception:
+        pass
     return {"notifications": list_notifications(
-        request.app.state.settings,
-        _username(request),
-        unread_only,
-        max(1, min(limit, 100)),
+        request.app.state.settings, username, unread_only, max(1, min(limit, 100))
     )}
 
 
