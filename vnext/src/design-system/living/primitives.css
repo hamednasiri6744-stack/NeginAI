@@ -1,0 +1,23 @@
+/* Shared behavioral primitives. Enabled only inside an opted-in Living root. */
+:where(.ng-living-root[data-living-ui='on']) .ng-living-surface {
+  transition:
+    transform var(--ng-motion-state) var(--ng-ease-state),
+    box-shadow var(--ng-motion-state) ease,
+    border-color var(--ng-motion-state) ease,
+    filter var(--ng-motion-state) ease;
+}
+
+:where(.ng-living-root[data-living-ui='on']) .ng-living-interactive {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+:where(.ng-living-root[data-living-ui='on']) .ng-living-interactive:active {
+  transform: scale(.97);
+  transition-duration: var(--ng-motion-touch);
+}
+
+:where(.ng-living-root[data-living-ui='on']) .ng-living-live {
+  position: relative;
+  isolation: isolate;
+}

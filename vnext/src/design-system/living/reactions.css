@@ -1,0 +1,35 @@
+/* Event-driven reactions. Apply only after a real state/value change. */
+:where(.ng-living-root[data-living-ui='on']) .ng-living-reactive {
+  animation: ng-living-reactive-pop var(--ng-motion-data) var(--ng-ease-data) 1;
+}
+
+:where(.ng-living-root[data-living-ui='on']) .ng-living-reactive-soft {
+  animation: ng-living-reactive-soft var(--ng-motion-state) var(--ng-ease-state) 1;
+}
+
+:where(.ng-living-root[data-living-ui='on']) .ng-living-panel-change {
+  animation: ng-living-panel-change var(--ng-motion-data) var(--ng-ease-data) 1;
+}
+
+@keyframes ng-living-reactive-pop {
+  0% { transform: translateY(2px) scale(.985); opacity: .78; filter: brightness(.96); }
+  48% { transform: translateY(-1px) scale(1.035); opacity: 1; filter: brightness(1.12); }
+  100% { transform: translateY(0) scale(1); opacity: 1; filter: brightness(1); }
+}
+
+@keyframes ng-living-reactive-soft {
+  0% { opacity: .55; }
+  100% { opacity: 1; }
+}
+
+@keyframes ng-living-panel-change {
+  0% { transform: translateY(5px) scale(.99); opacity: .5; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :where(.ng-living-root[data-living-ui='on']) .ng-living-reactive,
+  :where(.ng-living-root[data-living-ui='on']) .ng-living-reactive-soft,
+  :where(.ng-living-root[data-living-ui='on']) .ng-living-panel-change {
+    animation: none !important;
+  }
+}

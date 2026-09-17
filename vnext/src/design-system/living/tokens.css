@@ -1,0 +1,23 @@
+/* NeginAI Living Layer — canonical motion/state tokens */
+:root {
+  --ng-motion-instant: 90ms;
+  --ng-motion-touch: 160ms;
+  --ng-motion-state: 320ms;
+  --ng-motion-data: 520ms;
+  --ng-motion-attention: 760ms;
+  --ng-motion-ambient: 6200ms;
+
+  --ng-ease-touch: cubic-bezier(.2,.8,.2,1);
+  --ng-ease-state: cubic-bezier(.22,.8,.2,1);
+  --ng-ease-data: cubic-bezier(.16,1,.3,1);
+  --ng-ease-ambient: cubic-bezier(.45,.05,.35,1);
+
+  --ng-live-gold: rgba(238,187,74,.34);
+  --ng-live-mint: rgba(85,221,180,.34);
+  --ng-live-blue: rgba(109,183,255,.30);
+  --ng-live-danger: rgba(255,96,112,.28);
+
+  --ng-live-depth-rest: 0 12px 28px rgba(0,0,0,.26);
+  --ng-live-depth-raised: 0 18px 36px rgba(0,0,0,.34);
+  --ng-live-focus-ring: 0 0 0 3px rgba(238,187,74,.10);
+}

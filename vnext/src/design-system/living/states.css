@@ -1,0 +1,57 @@
+/* Semantic living states: idle / ambient / live / updating / changed / attention / active */
+:where(.ng-living-root[data-living-ui='on']) .ng-living-surface[data-living-state='ambient'] {
+  animation: ng-living-breathe var(--ng-motion-ambient) var(--ng-ease-ambient) infinite;
+}
+
+:where(.ng-living-root[data-living-ui='on']) .ng-living-surface[data-living-state='live'] {
+  border-color: color-mix(in srgb, currentColor 8%, transparent);
+}
+
+:where(.ng-living-root[data-living-ui='on']) .ng-living-surface[data-living-state='updating'] {
+  animation: ng-living-sync 1.8s ease-in-out infinite alternate;
+}
+
+:where(.ng-living-root[data-living-ui='on']) .ng-living-surface[data-living-state='changed'] {
+  animation: ng-living-change var(--ng-motion-data) var(--ng-ease-data) 1;
+}
+
+:where(.ng-living-root[data-living-ui='on']) .ng-living-surface[data-living-state='attention'] {
+  animation: ng-living-attention var(--ng-motion-attention) var(--ng-ease-state) 1;
+}
+
+:where(.ng-living-root[data-living-ui='on']) .ng-living-surface[data-living-state='active'] {
+  transform: translateY(-1px);
+  box-shadow: var(--ng-live-depth-raised);
+}
+@keyframes ng-living-breathe {
+  0%,100% { filter: brightness(1); }
+  50% { filter: brightness(1.018); }
+}
+
+@keyframes ng-living-sync {
+  from { filter: brightness(.97) saturate(.98); }
+  to { filter: brightness(1.04) saturate(1.03); }
+}
+
+@keyframes ng-living-change {
+  0% { transform: scale(1); filter: brightness(1); }
+  45% { transform: scale(1.022); filter: brightness(1.10); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+@keyframes ng-living-attention {
+  0%,100% { transform: translateY(0); }
+  40% { transform: translateY(-2px); }
+  70% { transform: translateY(1px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  :where(.ng-living-root[data-living-ui='on']) .ng-living-surface,
+  :where(.ng-living-root[data-living-ui='on']) .ng-living-interactive,
+  :where(.ng-living-root[data-living-ui='on']) .ng-living-live,
+  :where(.ng-living-root[data-living-ui='on']) .ng-living-surface::before,
+  :where(.ng-living-root[data-living-ui='on']) .ng-living-surface::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+}
