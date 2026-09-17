@@ -21,6 +21,9 @@ import {
   WalletIcon,
 } from './Icons'
 import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
+import { useVisitorWorkflow } from '../state/VisitorWorkflowContext'
+import '../design-system/living/index.css'
+import '../styles/living-ui-pilot.css'
 
 type Props = {
   customerId?: string
@@ -89,6 +92,7 @@ export function VisitorCustomer360Screen({ customerId = '', onNavigate, onBack }
   const { unreadCount } = useVisitorNotifications()
   const { profile: userProfile } = useVisitorAuth()
   const { activeRouteId, customerById } = useVisitorLiveData()
+  const { activeVisit } = useVisitorWorkflow()
   const [tab, setTab] = useState<Tab>('overview')
   const [profile, setProfile] = useState<CustomerProfileResponse | null>(null)
   const [loading, setLoading] = useState(false)
@@ -143,6 +147,9 @@ export function VisitorCustomer360Screen({ customerId = '', onNavigate, onBack }
 
   const hasPhone = Boolean(customer?.mobile || customer?.phone)
   const hasLocation = customer?.latitude !== null && customer?.longitude !== null
+  const activeVisitHere = Boolean(activeVisit && customer && String(activeVisit.customerId) === String(customer.id))
+  const returnedChequeCount = Number(finance.returned_cheque_count ?? 0)
+  const openInvoiceCount = Number(customer?.open_invoice_count ?? 0)
   const activeFields = profile?.editable_contract?.active_fields ?? []
   const editableFields = activeFields.filter(
     (field): field is EditableField => Object.prototype.hasOwnProperty.call(EDIT_FIELD_LABELS, field),
@@ -214,7 +221,7 @@ export function VisitorCustomer360Screen({ customerId = '', onNavigate, onBack }
   }
 
   return (
-    <main className="vh-page" dir="rtl">
+    <main className="vh-page vh-live-ui ng-living-root c360-app-page" dir="rtl" data-live-ui="unified">
       <div className="vh-shell c360-shell">
         <header className="vh-header">
           <button className="vh-profile" type="button" onClick={() => onNavigate('/visitor/profile')}>
@@ -241,26 +248,26 @@ export function VisitorCustomer360Screen({ customerId = '', onNavigate, onBack }
 
         {customer ? (
           <>
-            <section className="c360-identity">
+            <section className="c360-identity ng-living-surface" data-state={returnedChequeCount ? 'attention' : 'live'}>
               <div className="c360-store-icon"><StoreIcon /></div>
               <div className="c360-identity-copy">
-                <div className="c360-title-row"><h2>{titleOf(customer)}</h2><span className="c360-live">زنده</span></div>
+                <div className="c360-title-row"><h2>{titleOf(customer)}</h2><span className="c360-live">زنده</span>{returnedChequeCount ? <span className="c360-risk">چک برگشتی</span> : null}</div>
                 <p>{customer.name || '—'} · کد {customer.code || '—'}</p>
                 <span><PinIcon /> {customer.address || 'نشانی ثبت نشده'} · {profile?.route.title || 'مسیر روز'}</span>
+                {profile?.customer.alarm ? <div className="c360-inline-alert"><strong>هشدار NGT</strong><span>{profile.customer.alarm}</span></div> : null}
               </div>
             </section>
 
-            <section className="c360-actions" aria-label="اقدامات سریع مشتری">
-              <button type="button" disabled={!hasPhone} onClick={() => callCustomer(customer)}><PhoneIcon /><span>تماس</span></button>
-              <button type="button" disabled={!hasLocation} onClick={() => navigateCustomer(customer)}><MapIcon /><span>مسیریابی</span></button>
-              <button type="button" className="primary" onClick={() => onNavigate(`/visitor/route?customer=${customer.id}&intent=visit`)}><RouteArrowIcon /><span>رفتن به بازدید</span></button>
-              <button type="button" className="gold" onClick={() => onNavigate(`/visitor/orders?customer=${customer.id}`)}><CartIcon /><span>سفارش</span></button>
-            </section>
-
-            <section className="c360-kpis" aria-label="خلاصه مشتری">
-              <article><span>بازدیدها</span><strong>{Number(profile?.customer.visit_count ?? 0).toLocaleString('fa-IR')}</strong><small>NGT</small></article>
-              <article><span>سفارش‌ها</span><strong>{Number(profile?.customer.order_count ?? 0).toLocaleString('fa-IR')}</strong><small>NGT</small></article>
-              <article><span>مانده کاردکس</span><strong>{money(customer.cardex_balance)}</strong><small>داده مالی مجاز</small></article>
+            <section className="c360-workflow-card ng-living-surface" data-visit-state={activeVisitHere ? 'active' : 'ready'} aria-label="اقدام بعدی مشتری">
+              <div className="c360-workflow-head"><span>{activeVisitHere ? 'ویزیت فعال' : 'گام بعدی'}</span><strong>{activeVisitHere ? 'ادامه کار با همین مشتری' : 'برای این مشتری چه کاری انجام می‌دهی؟'}</strong><small>{activeVisitHere ? 'ویزیت باز است؛ سفارش و نتیجه ویزیت در همان جریان ادامه پیدا می‌کند.' : 'شروع بازدید، سفارش و اقدامات تماس بدون خروج از زمینه مشتری.'}</small></div>
+              <div className="c360-primary-actions">
+                <button type="button" className="visit ng-living-interactive" onClick={() => onNavigate(`/visitor/route?customer=${customer.id}&intent=visit`)}><RouteArrowIcon /><span>{activeVisitHere ? 'ادامه بازدید' : 'شروع بازدید'}</span></button>
+                <button type="button" className="order ng-living-interactive" onClick={() => onNavigate(`/visitor/orders?customer=${customer.id}${activeVisitHere ? `&visit=${encodeURIComponent(activeVisit?.id ?? '')}` : ''}`)}><CartIcon /><span>سفارش</span></button>
+              </div>
+              <div className="c360-utility-actions"><button type="button" disabled={!hasPhone} onClick={() => callCustomer(customer)}><PhoneIcon /><span>تماس</span></button><button type="button" disabled={!hasLocation} onClick={() => navigateCustomer(customer)}><MapIcon /><span>مسیریابی</span></button></div>
+              <div className="c360-pulse-rail" role="list" aria-label="وضعیت سریع مشتری">
+                <span role="listitem"><small>بازدید</small><strong>{Number(profile?.customer.visit_count ?? 0).toLocaleString('fa-IR')}</strong></span><span role="listitem"><small>سفارش</small><strong>{Number(profile?.customer.order_count ?? 0).toLocaleString('fa-IR')}</strong></span><span role="listitem" className={openInvoiceCount ? 'attention' : ''}><small>فاکتور باز</small><strong>{openInvoiceCount.toLocaleString('fa-IR')}</strong></span><span role="listitem" className={returnedChequeCount ? 'danger' : 'safe'}><small>چک برگشتی</small><strong>{returnedChequeCount.toLocaleString('fa-IR')}</strong></span>
+              </div>
             </section>
 
             <div className="c360-tabs" role="tablist" aria-label="بخش‌های پروفایل مشتری">
@@ -365,8 +372,6 @@ export function VisitorCustomer360Screen({ customerId = '', onNavigate, onBack }
                   <div className="c360-location-body"><div className="c360-pin"><PinIcon /></div><div><strong>{locationLabel}</strong><span>{customer.location_source || 'NGT / ERP'}</span></div></div>
                 </article>
 
-                {profile?.customer.alarm ? <article className="c360-panel"><div className="c360-panel-head"><strong>هشدار مشتری</strong></div><p>{profile.customer.alarm}</p></article> : null}
-
                 <article className="c360-panel c360-ai-card">
                   <div className="c360-panel-head"><strong>Negin AI</strong><span className="ai-dot">✦</span></div>
                   <p>برای تحلیل این مشتری، گفتگو را با زمینه همین Customer 360 باز کن. پاسخ از سرویس واقعی NeginAI دریافت می‌شود.</p>
@@ -377,13 +382,11 @@ export function VisitorCustomer360Screen({ customerId = '', onNavigate, onBack }
 
             {tab === 'financial' ? (
               <section className="c360-stack">
-                <div className="c360-finance-grid">
-                  <article><WalletIcon /><span>مانده کاردکس</span><strong>{money(customer.cardex_balance)}</strong><small>Acc.vwCustomerBalance</small></article>
-                  <article><InvoiceIcon /><span>فاکتور باز</span><strong>{customer.open_invoice_count.toLocaleString('fa-IR')}</strong><small>{money(customer.open_invoice_remaining)}</small></article>
-                  <article><ChartIcon /><span>اعتبار باقیمانده</span><strong>{money(finance.combined_remaining)}</strong><small>Bed + Asn</small></article>
-                  <article className={Number(finance.returned_cheque_count ?? 0) ? '' : 'safe'}><ChequeIcon /><span>چک برگشتی</span><strong>{Number(finance.returned_cheque_count ?? 0).toLocaleString('fa-IR')}</strong><small>{money(finance.returned_cheque_amount)}</small></article>
-                </div>
-                <p className="c360-permission-note">این مقادیر از پاسخ مجاز Seller Workspace نمایش داده می‌شوند؛ Frontend مستقیماً به دیتابیس متصل نیست.</p>
+                <article className="c360-panel c360-finance-sheet ng-living-surface">
+                  <div className="c360-panel-head"><strong>وضعیت مالی مشتری</strong><span>داده زنده مجاز</span></div>
+                  <div className="c360-finance-list"><div><WalletIcon /><span><small>مانده کاردکس</small><strong>{money(customer.cardex_balance)}</strong></span></div><div className={openInvoiceCount ? 'attention' : ''}><InvoiceIcon /><span><small>فاکتور باز</small><strong>{customer.open_invoice_count.toLocaleString('fa-IR')} · {money(customer.open_invoice_remaining)}</strong></span></div><div><ChartIcon /><span><small>اعتبار باقیمانده</small><strong>{money(finance.combined_remaining)}</strong></span></div><div className={returnedChequeCount ? 'danger' : 'safe'}><ChequeIcon /><span><small>چک برگشتی</small><strong>{returnedChequeCount.toLocaleString('fa-IR')} · {money(finance.returned_cheque_amount)}</strong></span></div></div>
+                </article>
+                <p className="c360-permission-note">Frontend فقط پاسخ مجاز Seller Workspace را نمایش می‌دهد و مستقیماً به دیتابیس وصل نیست.</p>
               </section>
             ) : null}
 

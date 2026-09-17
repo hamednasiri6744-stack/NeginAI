@@ -411,3 +411,15 @@
   0%,62%,100% { box-shadow:0 0 0 4px rgba(233,181,65,.08),0 0 12px rgba(233,181,65,.22); }
   78% { box-shadow:0 0 0 7px rgba(233,181,65,0),0 0 17px rgba(233,181,65,.34); }
 }
+
+/* Appification wave: Customer Workspace — state motion, not decorative motion. */
+.c360-app-page .c360-workflow-card[data-visit-state='active'] { animation:c360-visit-state 520ms cubic-bezier(.2,.8,.2,1) both; }
+.c360-app-page .c360-inline-alert { animation:c360-attention-in 420ms ease both; }
+.c360-app-page .c360-primary-actions button:active,
+.c360-app-page .c360-utility-actions button:active { transform:scale(.97); }
+@keyframes c360-visit-state { from { opacity:.72; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
+@keyframes c360-attention-in { from { opacity:.45; transform:translateY(3px); } to { opacity:1; transform:translateY(0); } }
+@media (prefers-reduced-motion:reduce) {
+  .c360-app-page .c360-workflow-card[data-visit-state='active'],
+  .c360-app-page .c360-inline-alert { animation:none !important; }
+}
