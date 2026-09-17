@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import time
 from datetime import datetime, timezone
 from typing import Any, Literal
 
@@ -11,6 +12,8 @@ from app.push_service import send_user_push
 NotificationSeverity = Literal["critical", "high", "medium", "info"]
 VALID_SEVERITIES = {"critical", "high", "medium", "info"}
 PUSH_SEVERITIES = {"critical", "high"}
+_COMMERCIAL_REFRESH_AT: dict[str, float] = {}
+COMMERCIAL_REFRESH_SECONDS = 300.0
 
 
 def _utc_iso(value: datetime | None = None) -> str:
@@ -284,7 +287,7 @@ def refresh_operational_alerts(settings: Any, username: str) -> dict[str, bool]:
         seller_routes,
         seller_voucher_return_report,
     )
-    result = {"route": False, "route_customers": False, "returned_cheques": False, "distribution": False, "returns": False}
+    result = {"route": False, "route_customers": False, "returned_cheques": False, "distribution": False, "returns": False, "commercial_policy": False}
     route_payload: dict[str, Any] = {}
     try:
         route_payload = seller_routes(settings, username)
@@ -312,6 +315,16 @@ def refresh_operational_alerts(settings: Any, username: str) -> dict[str, bool]:
     try:
         observe_distribution(settings, username, seller_distribution_in_progress(settings, username))
         result["distribution"] = True
+    except Exception:
+        pass
+    try:
+        now = time.monotonic()
+        last = _COMMERCIAL_REFRESH_AT.get(username, 0.0)
+        if now - last >= COMMERCIAL_REFRESH_SECONDS:
+            from app.commercial_policy_snapshot import seller_commercial_policy_snapshot
+            observe_commercial_policy(settings, username, seller_commercial_policy_snapshot(settings, username))
+            _COMMERCIAL_REFRESH_AT[username] = now
+            result["commercial_policy"] = True
     except Exception:
         pass
     return result
@@ -505,3 +518,144 @@ def observe_official_quote(
         dedupe_key=f"official-quote:{context_key}:{fingerprint}",
         payload={"context": context, "quote": quote, "changed": changes},
     )
+
+
+def _promotion_change_labels(before: dict[str, Any], after: dict[str, Any]) -> list[str]:
+    fields = {
+        "title": "عنوان قانون",
+        "discount_percent": "درصد تخفیف",
+        "discount_amount": "مبلغ تخفیف",
+        "min_qty": "حداقل تعداد",
+        "max_qty": "حداکثر تعداد",
+        "min_amount": "حداقل مبلغ",
+        "max_amount": "حداکثر مبلغ",
+        "prize_quantity": "تعداد جایزه",
+        "prize_product_id": "کالای جایزه",
+        "prize_step": "گام جایزه",
+        "start_date": "تاریخ شروع",
+        "end_date": "تاریخ پایان",
+        "conditions": "شرایط اعمال",
+        "products": "دامنه کالاها",
+        "brands": "دامنه برندها",
+    }
+    return [label for key, label in fields.items() if before.get(key) != after.get(key)]
+
+
+def observe_commercial_policy(settings: Any, username: str, payload: dict[str, Any]) -> None:
+    current = {
+        "prices": payload.get("prices") or {},
+        "promotions": payload.get("promotions") or {},
+    }
+    previous = _snapshot_state(settings, username, "commercial_policy", current)
+    if previous is None:
+        return
+    old_prices = previous.get("prices") or {}
+    new_prices = current["prices"]
+    price_changes_by_brand: dict[str, list[dict[str, Any]]] = {}
+    for key in sorted(set(old_prices) | set(new_prices)):
+        before = old_prices.get(key)
+        after = new_prices.get(key)
+        if before == after:
+            continue
+        item = after or before or {}
+        brand = str(item.get("brand_name") or "بدون برند").strip() or "بدون برند"
+        product_name = str(item.get("product_name") or item.get("product_code") or key)
+        order_name = str(item.get("order_type_name") or item.get("order_type_ref") or "")
+        change = {
+            "key": key,
+            "product_id": item.get("product_id"),
+            "product_name": product_name,
+            "brand_name": brand,
+            "order_type": order_name,
+            "before": before,
+            "after": after,
+        }
+        price_changes_by_brand.setdefault(brand, []).append(change)
+
+    for brand, changes in price_changes_by_brand.items():
+        sale_price_changes = [
+            change for change in changes
+            if (change.get("before") or {}).get("sale_price") != (change.get("after") or {}).get("sale_price")
+        ]
+        sample_parts: list[str] = []
+        for change in sale_price_changes[:3]:
+            before_price = (change.get("before") or {}).get("sale_price")
+            after_price = (change.get("after") or {}).get("sale_price")
+            sample_parts.append(
+                f"{change['product_name']}: {float(before_price or 0):,.0f} → {float(after_price or 0):,.0f} ریال"
+            )
+        if not sample_parts:
+            sample_parts = [f"{change['product_name']} ({change['order_type']})" for change in changes[:3]]
+        more = len(changes) - len(sample_parts)
+        body = "؛ ".join(sample_parts)
+        if more > 0:
+            body += f"؛ و {more} مورد دیگر"
+        fingerprint = _event_key(json.dumps(changes, ensure_ascii=False, sort_keys=True, default=str))
+        emit_operational_notification(
+            settings,
+            username=username,
+            title=f"قیمت فروش برند {brand} تغییر کرد",
+            body=body,
+            severity="high" if sale_price_changes else "medium",
+            category="pricing",
+            source="NGT.ContractPrices",
+            entity_type="brand",
+            entity_id=brand,
+            action_path="/visitor/orders",
+            dedupe_key=f"seller-brand-price:{brand}:{fingerprint}",
+            payload={
+                "brand": brand,
+                "change_count": len(changes),
+                "sale_price_change_count": len(sale_price_changes),
+                "changes": changes,
+                "price_semantics": "active generic base contract; final price remains NGT EVC dependent",
+            },
+        )
+
+    old_rules = previous.get("promotions") or {}
+    new_rules = current["promotions"]
+    for rule_id in sorted(set(old_rules) | set(new_rules), key=lambda value: int(value)):
+        before = old_rules.get(rule_id)
+        after = new_rules.get(rule_id)
+        if before == after:
+            continue
+        item = after or before or {}
+        kind = str(item.get("kind") or "discount")
+        kind_label = "جایزه/اشانتیون" if kind == "prize" else "تخفیف"
+        brands = "، ".join(item.get("brands") or []) or "برندهای تخصیص‌یافته فروشنده"
+        rule_title = str(item.get("title") or f"قانون {item.get('rule_code') or rule_id}")
+        if before is None:
+            title = f"قانون {kind_label} جدید فعال شد"
+            detail = f"{rule_title} برای {brands} وارد مجموعه قوانین فعال شد."
+            change_labels = ["فعال‌شدن قانون"]
+        elif after is None:
+            title = f"قانون {kind_label} دیگر فعال نیست"
+            detail = f"{rule_title} برای {brands} دیگر در مجموعه قوانین فعال دیده نمی‌شود."
+            change_labels = ["غیرفعال/منقضی‌شدن قانون"]
+        else:
+            change_labels = _promotion_change_labels(before, after)
+            title = f"قانون {kind_label} تغییر کرد"
+            labels = "، ".join(change_labels) or "تعریف قانون"
+            detail = f"{rule_title} برای {brands} تغییر کرد: {labels}."
+        fingerprint = _event_key(json.dumps(after or before or {}, ensure_ascii=False, sort_keys=True, default=str))
+        emit_operational_notification(
+            settings,
+            username=username,
+            title=title,
+            body=detail,
+            severity="high",
+            category="promotion",
+            source="SLE.tblDiscount + SLE.tblDiscountCondition",
+            entity_type="promotion_rule",
+            entity_id=str(rule_id),
+            action_path="/visitor/orders",
+            dedupe_key=f"seller-promotion:{rule_id}:{fingerprint}:{'on' if after is not None else 'off'}",
+            payload={
+                "rule_id": rule_id,
+                "kind": kind,
+                "brands": item.get("brands") or [],
+                "change_labels": change_labels,
+                "before": before,
+                "after": after,
+            },
+        )
