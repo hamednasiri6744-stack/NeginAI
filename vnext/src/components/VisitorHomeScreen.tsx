@@ -1,17 +1,12 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState } from 'react'
 import {
-  getSellerDistributionInProgress,
-  getSellerPortfolioOpenInvoices,
   getSellerPortfolioReturnedCheques,
-  getSellerVoucherReturnReport,
-  type SellerDistributionInProgressResponse,
-  type SellerPortfolioOpenInvoicesResponse,
   type SellerPortfolioReturnedChequesResponse,
-  type SellerVoucherReturnReportResponse,
 } from '../api/neginApi'
 import { useVisitorAuth } from '../state/VisitorAuthContext'
 import { useVisitorLiveData } from '../state/VisitorLiveDataContext'
 import { useVisitorWorkflow } from '../state/VisitorWorkflowContext'
+import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
 import {
   AiSparkIcon,
   BellIcon,
@@ -20,7 +15,6 @@ import {
   ChevronLeftIcon,
   ClockIcon,
   HomeIcon,
-  InvoiceIcon,
   MapIcon,
   PinIcon,
   PlusIcon,
@@ -28,66 +22,33 @@ import {
   StoreIcon,
   UserGroupIcon,
 } from './Icons'
-import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
 import { AppHeader, BottomDock, InsightCard } from '../design-system/components'
 import '../design-system/living/index.css'
 import '../styles/living-ui-pilot.css'
 import '../styles/design-system-atlas-home.css'
 
 type Props = { onNavigate: (path: string) => void }
-type HomeLayer = 'performance' | 'risk' | 'today' | 'intelligence'
-type DetailKey =
-  | 'invoice-count'
-  | 'sales'
-  | 'target'
-  | 'open-invoices'
-  | 'returned-cheques'
-  | 'returns'
-  | 'working-day'
-  | 'route'
-  | 'distribution'
-  | 'alerts'
-  | 'ai'
-
-type HomePerformance = {
-  openInvoices: SellerPortfolioOpenInvoicesResponse | null
-  returnedCheques: SellerPortfolioReturnedChequesResponse | null
-  distribution: SellerDistributionInProgressResponse | null
-  voucherReturn: SellerVoucherReturnReportResponse | null
-}
-
-type LayerItem = {
-  key: DetailKey
-  label: string
-  value: string
-  meta: string
-  icon: ReactNode
-  tone?: 'gold' | 'mint' | 'danger' | 'blue'
-}
-
-function compactRial(value: number | null | undefined) {
-  const amount = Number(value || 0)
-  if (!Number.isFinite(amount)) return '—'
-  return `${new Intl.NumberFormat('fa-IR', { notation: 'compact', maximumFractionDigits: 1 }).format(amount)} ریال`
-}
 
 export function VisitorHomeScreen({ onNavigate }: Props) {
-  const { items: notificationItems, attentionCount, highestSeverity } = useVisitorNotifications()
+  const { attentionCount, highestSeverity } = useVisitorNotifications()
   const { profile } = useVisitorAuth()
-  const { error, liveAssignment, workCalendar, targetPulse, offDay, stale, lastSyncedAt, reload } = useVisitorLiveData()
+  const {
+    error,
+    liveAssignment,
+    workCalendar,
+    targetPulse,
+    offDay,
+    stale,
+    lastSyncedAt,
+    reload,
+  } = useVisitorLiveData()
   const { routeStops, routeSummary } = useVisitorWorkflow()
+
   const [now, setNow] = useState(() => new Date())
-  const [layer, setLayer] = useState<HomeLayer | null>(null)
-  const [detail, setDetail] = useState<DetailKey | null>(null)
-  const [performance, setPerformance] = useState<HomePerformance>({
-    openInvoices: null,
-    returnedCheques: null,
-    distribution: null,
-    voucherReturn: null,
-  })
-  const [performanceLoading, setPerformanceLoading] = useState(true)
-  const [performanceError, setPerformanceError] = useState<string | null>(null)
-  const [performanceRevision, setPerformanceRevision] = useState(0)
+  const [returnedCheques, setReturnedCheques] = useState<SellerPortfolioReturnedChequesResponse | null>(null)
+  const [riskLoading, setRiskLoading] = useState(true)
+  const [riskError, setRiskError] = useState<string | null>(null)
+  const [riskRevision, setRiskRevision] = useState(0)
 
   const livingUiEnabled = typeof window !== 'undefined'
     && new URLSearchParams(window.location.search).get('liveui') !== '0'
@@ -100,48 +61,40 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
 
   useEffect(() => {
     let cancelled = false
-    setPerformanceLoading(true)
-    setPerformanceError(null)
-    void Promise.allSettled([
-      getSellerPortfolioOpenInvoices(),
-      getSellerPortfolioReturnedCheques(),
-      getSellerDistributionInProgress(),
-      getSellerVoucherReturnReport(),
-    ]).then((results) => {
-      if (cancelled) return
-      const [openInvoices, returnedCheques, distribution, voucherReturn] = results
-      setPerformance({
-        openInvoices: openInvoices.status === 'fulfilled' ? openInvoices.value : null,
-        returnedCheques: returnedCheques.status === 'fulfilled' ? returnedCheques.value : null,
-        distribution: distribution.status === 'fulfilled' ? distribution.value : null,
-        voucherReturn: voucherReturn.status === 'fulfilled' ? voucherReturn.value : null,
+    setRiskLoading(true)
+    setRiskError(null)
+
+    void getSellerPortfolioReturnedCheques()
+      .then((result) => {
+        if (!cancelled) setReturnedCheques(result)
       })
-      if (results.every((result) => result.status === 'rejected')) setPerformanceError('خلاصه عملکرد از ERP دریافت نشد.')
-    }).finally(() => {
-      if (!cancelled) setPerformanceLoading(false)
-    })
-    return () => { cancelled = true }
-  }, [performanceRevision])
+      .catch((caught) => {
+        if (!cancelled) {
+          setReturnedCheques(null)
+          setRiskError(caught instanceof Error ? caught.message : 'وضعیت ریسک مالی دریافت نشد.')
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setRiskLoading(false)
+      })
 
-  useEffect(() => {
-    const handlePop = () => {
-      if (detail) {
-        setDetail(null)
-        return
-      }
-      if (layer) setLayer(null)
+    return () => {
+      cancelled = true
     }
-    window.addEventListener('popstate', handlePop)
-    return () => window.removeEventListener('popstate', handlePop)
-  }, [detail, layer])
+  }, [riskRevision])
 
-  const weekday = new Intl.DateTimeFormat('fa-IR', { weekday: 'long', timeZone: 'Asia/Tehran' }).format(now)
+  const weekday = new Intl.DateTimeFormat('fa-IR', {
+    weekday: 'long',
+    timeZone: 'Asia/Tehran',
+  }).format(now)
+
   const persianDate = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
     timeZone: 'Asia/Tehran',
   }).format(now)
+
   const currentTime = new Intl.DateTimeFormat('fa-IR', {
     hour: '2-digit',
     minute: '2-digit',
@@ -154,341 +107,79 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
   const targetAchievement = targetSemanticReady && targetPulse?.configured && targetPulse.achievement_percent != null
     ? targetPulse.achievement_percent
     : null
-  const targetStateLabel = !targetSemanticReady
-    ? 'KPI هدف در حال اعتبارسنجی'
+
+  const targetValue = !targetSemanticReady
+    ? '—'
+    : targetAchievement != null
+      ? `${targetAchievement.toLocaleString('fa-IR', { maximumFractionDigits: 1 })}٪`
+      : targetPulse?.configured
+        ? 'فعال'
+        : '—'
+
+  const targetLabel = !targetSemanticReady
+    ? 'هدف · در اعتبارسنجی'
     : !targetPulse?.configured
-      ? 'هدف ماه تنظیم نشده'
-      : targetPulse.status === 'ahead'
-        ? 'جلوتر از ریتم هدف'
-        : targetPulse.status === 'behind'
-          ? 'عقب‌تر از ریتم هدف'
-          : targetPulse.status === 'on_track'
-            ? 'هم‌ریتم با هدف'
-            : 'هدف فروش فعال'
+      ? 'هدف · تنظیم نشده'
+      : targetPulse?.status === 'ahead'
+        ? 'هدف · جلوتر از ریتم'
+        : targetPulse?.status === 'behind'
+          ? 'هدف · عقب‌تر از ریتم'
+          : targetPulse?.status === 'on_track'
+            ? 'هدف · هم‌ریتم'
+            : 'هدف ماه'
 
   const nextStop = routeStops.find((stop) => ['active', 'pending'].includes(stop.status))
     ?? routeStops.find((stop) => stop.status === 'unlocated')
-  const fullReturnCount = performance.voucherReturn?.full_returned_count ?? 0
-  const routeSummaryLabel = offDay
-    ? 'امروز روز کاری نیست'
-    : liveAssignment
-      ? `${routeSummary.progress.toLocaleString('fa-IR')}٪ مسیر انجام شده`
-      : 'مسیر فعالی برای امروز نیست'
-  const performanceSummary = targetPulse
-    ? `${targetPulse.actual_invoice_count.toLocaleString('fa-IR')} فاکتور ماه`
-    : performanceLoading ? 'در حال دریافت عملکرد…' : 'عملکرد در دسترس نیست'
-  const riskMeta = performance.returnedCheques
-    ? `${performance.returnedCheques.cheque_count.toLocaleString('fa-IR')} چک برگشتی`
-    : 'ریسک مالی در حال دریافت'
-  const intelligenceSummary = attentionCount
-    ? `${attentionCount.toLocaleString('fa-IR')} هشدار فعال`
-    : 'بدون هشدار بحرانی'
 
-  const urgentNotification = notificationItems.find((item) =>
-    (!item.read || (item.requires_ack && !item.acknowledged))
-    && (!highestSeverity || item.severity === highestSeverity),
-  ) ?? notificationItems.find((item) => !item.read || (item.requires_ack && !item.acknowledged))
-
-  const returnedChequeCount = Number(performance.returnedCheques?.cheque_count ?? 0)
-  const distributionCount = Number(performance.distribution?.invoice_count ?? 0)
-
-  const nextBestAction = urgentNotification
+  const operationalAction = offDay
     ? {
-        eyebrow: highestSeverity === 'critical' ? 'اقدام فوری' : 'نیازمند توجه',
-        title: urgentNotification.title,
-        body: urgentNotification.body,
-        action: 'بررسی هشدار',
-        path: urgentNotification.action_path || '/visitor/notifications',
-        tone: 'danger' as const,
-        icon: <BellIcon />,
+        eyebrow: 'آماده‌سازی روز کاری بعد',
+        title: 'کاتالوگ و موجودی فروش را مرور کن',
+        body: 'امروز روز غیرکاری NGT است؛ بدون شروع ویزیت، زمینه فروش روز بعد را آماده کن.',
+        action: 'مرور فروش',
+        path: '/visitor/orders',
+        tone: 'info' as const,
+        icon: <StoreIcon />,
       }
-    : returnedChequeCount > 0
+    : liveAssignment && nextStop
       ? {
-          eyebrow: 'قبل از فروش بعدی',
-          title: `${returnedChequeCount.toLocaleString('fa-IR')} چک برگشتی نیازمند بررسی است`,
-          body: 'ریسک مالی فعال است؛ وضعیت مشتری را قبل از ثبت سفارش بعدی بررسی کن.',
-          action: 'بررسی ریسک',
-          path: '/visitor/reports',
-          tone: 'danger' as const,
-          icon: <ChequeIcon />,
+          eyebrow: 'گام عملیاتی',
+          title: `حرکت به ${nextStop.name}`,
+          body: `${routeSummary.remaining.toLocaleString('fa-IR')} ایستگاه باقی مانده · ${routeSummary.progress.toLocaleString('fa-IR')}٪ مسیر تعیین‌تکلیف شده`,
+          action: 'ادامه مسیر',
+          path: '/visitor/route',
+          tone: 'gold' as const,
+          icon: <RouteArrowIcon />,
         }
-      : !offDay && nextStop
+      : liveAssignment
         ? {
-            eyebrow: 'Next Best Action',
-            title: `حرکت به ${nextStop.name}`,
-            body: `${routeSummary.remaining.toLocaleString('fa-IR')} ایستگاه باقی مانده · پیشرفت مسیر ${routeSummary.progress.toLocaleString('fa-IR')}٪`,
-            action: 'ادامه مسیر',
+            eyebrow: 'وضعیت مسیر',
+            title: 'مسیر امروز تعیین‌تکلیف شده است',
+            body: 'جزئیات مسیر و نتایج ویزیت‌ها در Field Execution باقی می‌ماند.',
+            action: 'مشاهده مسیر',
             path: '/visitor/route',
-            tone: 'gold' as const,
-            icon: <RouteArrowIcon />,
+            tone: 'success' as const,
+            icon: <MapIcon />,
           }
         : {
-            eyebrow: offDay ? 'آماده‌سازی فروش بعدی' : 'فرصت بعدی',
-            title: offDay ? 'کاتالوگ و موجودی فروش را مرور کن' : 'Negin AI آماده تحلیل فرصت‌هاست',
-            body: offDay
-              ? 'روز غیرکاری است؛ برای ویزیت بعدی کالاهای قابل سفارش و موجودی را مرور کن.'
-              : 'هشدار فعالی ثبت نشده؛ می‌توانی فرصت فروش بعدی را از داده‌های حساب تحلیل کنی.',
-            action: offDay ? 'مرور فروش' : 'تحلیل فرصت',
-            path: offDay ? '/visitor/orders' : '/visitor/ai?context=home&prompt=sales-opportunity',
-            tone: 'mint' as const,
-            icon: offDay ? <StoreIcon /> : <AiSparkIcon />,
+            eyebrow: 'برنامه امروز',
+            title: 'مسیر فعالی برای امروز ثبت نشده است',
+            body: 'مشتریان تخصیص‌یافته را مرور کن؛ Route فقط در ماژول Field Execution مدیریت می‌شود.',
+            action: 'مشتریان',
+            path: '/visitor/customers',
+            tone: 'info' as const,
+            icon: <UserGroupIcon />,
           }
 
-  function openLayer(next: HomeLayer) {
-    window.history.pushState({ neginHomeDepth: 1 }, '', window.location.href)
-    setLayer(next)
-    setDetail(null)
-  }
+  const elapsedWorkingDays = Number(workCalendar?.elapsed_working_days ?? 0)
+  const totalWorkingDays = Number(workCalendar?.total_working_days ?? 0)
+  const remainingWorkingDays = Number(workCalendar?.remaining_working_days ?? 0)
+  const returnedChequeCount = Number(returnedCheques?.cheque_count ?? 0)
 
-  function openDetail(next: DetailKey) {
-    window.history.pushState({ neginHomeDepth: 2 }, '', window.location.href)
-    setDetail(next)
+  const retryLiveData = () => {
+    void reload()
+    setRiskRevision((value) => value + 1)
   }
-
-  function goBack() {
-    window.history.back()
-  }
-
-  const layerMeta: Record<HomeLayer, { title: string; subtitle: string; icon: ReactNode }> = {
-    performance: { title: 'عملکرد', subtitle: 'فروش، هدف و خروجی ماه', icon: <ChartIcon /> },
-    risk: { title: 'ریسک مالی', subtitle: 'فاکتور باز، چک و برگشت', icon: <ChequeIcon /> },
-    today: { title: 'عملیات امروز', subtitle: 'روز کاری، مسیر و توزیع', icon: <ClockIcon /> },
-    intelligence: { title: 'هوش و هشدار', subtitle: 'Alert Center و Negin AI', icon: <AiSparkIcon /> },
-  }
-
-  const layerItems: Record<HomeLayer, LayerItem[]> = {
-    performance: [
-      {
-        key: 'invoice-count',
-        label: 'فاکتور ماه',
-        value: targetPulse ? targetPulse.actual_invoice_count.toLocaleString('fa-IR') : '—',
-        meta: 'ثبت‌شده در ERP',
-        icon: <InvoiceIcon />,
-        tone: 'gold',
-      },
-      {
-        key: 'sales',
-        label: 'فروش ماه',
-        value: targetSemanticReady ? compactRial(targetPulse?.actual_sales_rial) : 'در انتظار تأیید KPI',
-        meta: targetSemanticReady ? 'فروش تأییدشده در قرارداد KPI' : 'Semantic Validation هنوز بسته نشده',
-        icon: <ChartIcon />,
-        tone: 'blue',
-      },
-      {
-        key: 'target',
-        label: 'هدف فروش',
-        value: targetAchievement != null ? `${targetAchievement.toLocaleString('fa-IR', { maximumFractionDigits: 1 })}٪` : 'در اعتبارسنجی',
-        meta: targetStateLabel,
-        icon: <RouteArrowIcon />,
-        tone: targetAchievement != null ? 'mint' : 'gold',
-      },
-    ],
-    risk: [
-      {
-        key: 'open-invoices',
-        label: 'مانده فاکتور باز',
-        value: performance.openInvoices ? compactRial(performance.openInvoices.open_invoice_remaining) : '—',
-        meta: performance.openInvoices ? `${performance.openInvoices.customer_count.toLocaleString('fa-IR')} مشتری` : 'در حال دریافت',
-        icon: <InvoiceIcon />,
-        tone: 'gold',
-      },
-      {
-        key: 'returned-cheques',
-        label: 'چک برگشتی',
-        value: performance.returnedCheques ? performance.returnedCheques.cheque_count.toLocaleString('fa-IR') : '—',
-        meta: performance.returnedCheques?.cheque_count ? 'نیازمند توجه' : 'بدون مورد فعال',
-        icon: <ChequeIcon />,
-        tone: performance.returnedCheques?.cheque_count ? 'danger' : 'mint',
-      },
-      {
-        key: 'returns',
-        label: 'برگشت کامل',
-        value: fullReturnCount.toLocaleString('fa-IR'),
-        meta: fullReturnCount ? 'ثبت‌شده در ماه جاری' : 'موردی ثبت نشده',
-        icon: <StoreIcon />,
-        tone: fullReturnCount ? 'danger' : 'mint',
-      },
-    ],
-    today: [
-      {
-        key: 'working-day',
-        label: 'تقویم کاری',
-        value: offDay ? 'روز غیرکاری' : weekday,
-        meta: workCalendar
-          ? `${workCalendar.elapsed_working_days.toLocaleString('fa-IR')} از ${workCalendar.total_working_days.toLocaleString('fa-IR')} روز کاری`
-          : 'تقویم NGT در حال دریافت',
-        icon: <ClockIcon />,
-        tone: offDay ? 'blue' : 'mint',
-      },
-      {
-        key: 'route',
-        label: 'مسیر',
-        value: offDay ? 'غیرفعال' : liveAssignment ? `${routeSummary.progress.toLocaleString('fa-IR')}٪` : '—',
-        meta: offDay ? 'جزئیات در ماژول مسیر' : liveAssignment ? `${routeSummary.remaining.toLocaleString('fa-IR')} ایستگاه باقی‌مانده` : 'Route فعال نیست',
-        icon: <MapIcon />,
-        tone: 'gold',
-      },
-      {
-        key: 'distribution',
-        label: 'توزیع در جریان',
-        value: performance.distribution ? performance.distribution.invoice_count.toLocaleString('fa-IR') : '—',
-        meta: performance.distribution?.invoice_count ? 'فاکتور در فرآیند توزیع' : 'موردی ثبت نشده',
-        icon: <StoreIcon />,
-        tone: 'mint',
-      },
-    ],
-    intelligence: [
-      {
-        key: 'alerts',
-        label: 'هشدارهای عملیاتی',
-        value: attentionCount.toLocaleString('fa-IR'),
-        meta: highestSeverity === 'critical' ? 'حداقل یک مورد بحرانی نیازمند تأیید است' : 'Alert Center زنده',
-        icon: <BellIcon />,
-        tone: attentionCount ? 'danger' : 'mint',
-      },
-      {
-        key: 'ai',
-        label: 'Negin AI Coach',
-        value: 'تحلیل زنده',
-        meta: 'فرصت، ریسک و اقدام پیشنهادی',
-        icon: <AiSparkIcon />,
-        tone: 'gold',
-      },
-    ],
-  }
-
-  const detailMap: Record<DetailKey, {
-    title: string
-    value: string
-    description: string
-    meta?: string
-    icon: ReactNode
-    tone: 'gold' | 'mint' | 'danger' | 'blue'
-    action: string
-    path: string
-  }> = {
-    'invoice-count': {
-      title: 'فاکتورهای ماه',
-      value: targetPulse ? targetPulse.actual_invoice_count.toLocaleString('fa-IR') : '—',
-      description: 'تعداد فاکتورهای ثبت‌شده برای این فروشنده در ماه جاری.',
-      meta: 'برای تحلیل جزئی‌تر وارد گزارش‌ها شو.',
-      icon: <InvoiceIcon />,
-      tone: 'gold',
-      action: 'گزارش فروش',
-      path: '/visitor/reports',
-    },
-    sales: {
-      title: 'فروش ماه',
-      value: targetSemanticReady ? compactRial(targetPulse?.actual_sales_rial) : 'در انتظار تأیید KPI',
-      description: targetSemanticReady
-        ? 'فروش ماه بر اساس قرارداد معنایی تأییدشده.'
-        : 'عدد رسمی فروش تا بسته‌شدن Semantic Validation در Home منتشر نمی‌شود.',
-      icon: <ChartIcon />,
-      tone: 'blue',
-      action: 'مشاهده گزارش',
-      path: '/visitor/reports',
-    },
-    target: {
-      title: 'هدف فروش',
-      value: targetAchievement != null ? `${targetAchievement.toLocaleString('fa-IR', { maximumFractionDigits: 1 })}٪` : 'در اعتبارسنجی',
-      description: targetStateLabel,
-      meta: targetSemanticReady ? 'وضعیت نسبت به هدف ماه' : 'از نمایش KPI اثبات‌نشده جلوگیری شده است.',
-      icon: <RouteArrowIcon />,
-      tone: targetAchievement != null ? 'mint' : 'gold',
-      action: 'جزئیات عملکرد',
-      path: '/visitor/reports',
-    },
-    'open-invoices': {
-      title: 'مانده فاکتور باز',
-      value: performance.openInvoices ? compactRial(performance.openInvoices.open_invoice_remaining) : '—',
-      description: performance.openInvoices
-        ? `${performance.openInvoices.customer_count.toLocaleString('fa-IR')} مشتری دارای مانده فاکتور باز هستند.`
-        : 'داده ERP در حال دریافت است.',
-      icon: <InvoiceIcon />,
-      tone: 'gold',
-      action: 'تحلیل مالی',
-      path: '/visitor/reports',
-    },
-    'returned-cheques': {
-      title: 'چک‌های برگشتی',
-      value: performance.returnedCheques ? performance.returnedCheques.cheque_count.toLocaleString('fa-IR') : '—',
-      description: performance.returnedCheques?.cheque_count ? 'ریسک فعال مالی؛ قبل از فروش بعدی بررسی شود.' : 'چک برگشتی فعالی ثبت نشده است.',
-      icon: <ChequeIcon />,
-      tone: performance.returnedCheques?.cheque_count ? 'danger' : 'mint',
-      action: attentionCount ? 'هشدارها' : 'گزارش مالی',
-      path: attentionCount ? '/visitor/notifications' : '/visitor/reports',
-    },
-    returns: {
-      title: 'برگشت کامل',
-      value: fullReturnCount.toLocaleString('fa-IR'),
-      description: fullReturnCount ? 'برگشت‌های کامل ثبت‌شده در گزارش ماه جاری.' : 'برگشت کامل فعالی ثبت نشده است.',
-      icon: <StoreIcon />,
-      tone: fullReturnCount ? 'danger' : 'mint',
-      action: 'گزارش برگشتی',
-      path: '/visitor/reports',
-    },
-    'working-day': {
-      title: 'تقویم کاری',
-      value: offDay ? 'روز غیرکاری' : weekday,
-      description: workCalendar
-        ? `${workCalendar.elapsed_working_days.toLocaleString('fa-IR')} روز کاری سپری شده و ${workCalendar.remaining_working_days.toLocaleString('fa-IR')} روز باقی مانده است.`
-        : 'تقویم کاری NGT در حال دریافت است.',
-      meta: persianDate,
-      icon: <ClockIcon />,
-      tone: offDay ? 'blue' : 'mint',
-      action: 'بررسی مسیر',
-      path: '/visitor/route',
-    },
-    route: {
-      title: 'وضعیت مسیر',
-      value: offDay ? 'روز غیرکاری' : liveAssignment ? `${routeSummary.progress.toLocaleString('fa-IR')}٪` : 'بدون Route فعال',
-      description: offDay
-        ? 'جزئیات مسیرهای تخصیص‌یافته در ماژول مسیر قابل مرور است.'
-        : nextStop
-          ? `اقدام بعدی: ${nextStop.name} · ${routeSummary.remaining.toLocaleString('fa-IR')} ایستگاه باقی مانده`
-          : 'وضعیت کامل Route را در ماژول مسیر بررسی کن.',
-      icon: <MapIcon />,
-      tone: 'gold',
-      action: 'ورود به مسیر',
-      path: '/visitor/route',
-    },
-    distribution: {
-      title: 'توزیع در جریان',
-      value: performance.distribution ? performance.distribution.invoice_count.toLocaleString('fa-IR') : '—',
-      description: performance.distribution?.invoice_count
-        ? 'فاکتورهایی که در فرآیند توزیع قرار دارند.'
-        : 'در حال حاضر فاکتوری در فرآیند توزیع ثبت نشده است.',
-      icon: <StoreIcon />,
-      tone: 'mint',
-      action: 'گزارش عملیات',
-      path: '/visitor/reports',
-    },
-    alerts: {
-      title: 'هشدارهای عملیاتی',
-      value: attentionCount.toLocaleString('fa-IR'),
-      description: highestSeverity === 'critical'
-        ? 'حداقل یک هشدار بحرانی نیازمند Acknowledge است.'
-        : attentionCount
-          ? 'هشدارهای مهم را قبل از ادامه عملیات بررسی کن.'
-          : 'هشدار مهم فعالی وجود ندارد.',
-      icon: <BellIcon />,
-      tone: attentionCount ? 'danger' : 'mint',
-      action: 'باز کردن Alert Center',
-      path: '/visitor/notifications',
-    },
-    ai: {
-      title: 'Negin AI Coach',
-      value: 'تحلیل زنده',
-      description: 'تحلیل فرصت فروش، ریسک مالی و Next Best Action بر اساس داده‌های همین حساب.',
-      icon: <AiSparkIcon />,
-      tone: 'gold',
-      action: 'شروع تحلیل',
-      path: '/visitor/ai?context=home&prompt=performance',
-    },
-  }
-
-  const currentDetail = detail ? detailMap[detail] : null
-  const depth = detail ? 2 : layer ? 1 : 0
 
   return (
     <main
@@ -497,7 +188,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
       data-live-ui={livingUiEnabled ? 'pilot' : 'off'}
       data-living-ui={livingUiEnabled ? 'on' : 'off'}
       data-design-system="atlas-v1"
-      data-home-depth={depth}
+      data-home-depth="0"
     >
       <div className="vh-shell">
         <AppHeader
@@ -516,150 +207,187 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
               onClick={() => onNavigate('/visitor/notifications')}
             >
               <BellIcon />
-              {attentionCount ? <b key={`${attentionCount}-${highestSeverity ?? 'none'}`} className="ng-living-reactive">{attentionCount}</b> : null}
+              {attentionCount ? (
+                <b
+                  key={`${attentionCount}-${highestSeverity ?? 'none'}`}
+                  className="ng-living-reactive"
+                >
+                  {attentionCount}
+                </b>
+              ) : null}
             </button>
           )}
         />
 
-        <section className="vhd-stage ng-depth-stage" data-depth={depth}>
-          <span className="vhd-backplane vhd-backplane-one ng-depth-backplane" data-plane="1" aria-hidden="true" />
-          <span className="vhd-backplane vhd-backplane-two ng-depth-backplane" data-plane="2" aria-hidden="true" />
+        <section className="vhd-stage vhd-mission-stage" data-depth="0">
+          <div className="vhd-layer vhd-layer-root vhd-cockpit-root">
+            <section className="vhd-cockpit ng-layer-surface ng-living-surface" data-tone="gold">
+              <span className="vhd-cockpit-ambient" aria-hidden="true" />
 
-          {depth === 0 ? (
-            <div className="vhd-layer vhd-layer-root vhd-cockpit-root">
-              <section className="vhd-cockpit ng-layer-surface ng-living-surface" data-tone={nextBestAction.tone}>
-                <span className="vhd-cockpit-ambient" aria-hidden="true" />
-                <div className="vhd-cockpit-head">
-                  <div>
-                    <span className="vhd-live"><i /> NeginAI LIVE</span>
-                    <h1>سلام{profile?.full_name ? `، ${profile.full_name}` : ''}</h1>
-                    <p>{offDay ? 'امروز روز غیرکاری است؛ آماده‌سازی فروش بعدی ادامه دارد.' : `${routeSummary.remaining.toLocaleString('fa-IR')} اقدام مسیر هنوز باز است.`}</p>
-                  </div>
-                  <div className="vhd-date vhd-date-live">
-                    <strong>{currentTime}</strong>
-                    <span>{weekday}</span>
-                    <small>{persianDate}</small>
-                  </div>
+              <div className="vhd-cockpit-head">
+                <div>
+                  <span className="vhd-live"><i /> NeginAI LIVE</span>
+                  <h1>سلام{profile?.full_name ? `، ${profile.full_name}` : ''}</h1>
+                  <p>
+                    {offDay
+                      ? 'امروز روز غیرکاری است؛ اپ در حالت آماده‌سازی فروش قرار دارد.'
+                      : liveAssignment
+                        ? `${routeSummary.remaining.toLocaleString('fa-IR')} اقدام مسیر هنوز باز است.`
+                        : 'Route فعالی برای امروز ثبت نشده است.'}
+                  </p>
                 </div>
 
-                <div className="vhd-route-energy" aria-label="پیشرفت عملیات امروز">
-                  <span><b style={{ width: `${Math.max(4, Math.min(100, offDay ? 4 : routeSummary.progress))}%` }} /></span>
-                  <small>{offDay ? 'Route امروز غیرفعال' : `${routeSummary.progress.toLocaleString('fa-IR')}٪ مسیر تکمیل شده`}</small>
+                <div className="vhd-date vhd-date-live">
+                  <strong>{currentTime}</strong>
+                  <span>{weekday}</span>
+                  <small>{persianDate}</small>
                 </div>
-              </section>
+              </div>
 
-              {(error || performanceError) ? (
+              <div className="vhd-mission-meta" aria-label="وضعیت روز کاری و هدف">
+                <span className="vhd-mission-chip">
+                  <ClockIcon />
+                  <span>
+                    <small>روز کاری</small>
+                    <strong>
+                      {workCalendar
+                        ? `${elapsedWorkingDays.toLocaleString('fa-IR')} / ${totalWorkingDays.toLocaleString('fa-IR')}`
+                        : 'در حال دریافت'}
+                    </strong>
+                    <em>{workCalendar ? `${remainingWorkingDays.toLocaleString('fa-IR')} روز باقی‌مانده` : 'NGT Calendar'}</em>
+                  </span>
+                </span>
+
                 <button
                   type="button"
-                  className="vhd-inline-alert ng-living-interactive"
-                  onClick={() => { void reload(); setPerformanceRevision((value) => value + 1) }}
+                  className={`vhd-mission-chip vhd-target-chip ng-living-interactive${targetSemanticReady ? '' : ' is-gated'}`}
+                  onClick={() => onNavigate('/visitor/reports')}
                 >
+                  <ChartIcon />
                   <span>
-                    <strong>{stale ? 'حالت آفلاین · آخرین داده ذخیره‌شده' : 'بخشی از داده زنده در دسترس نیست'}</strong>
-                    <small>{stale && lastSyncedAt ? `آخرین همگام‌سازی ${new Date(lastSyncedAt).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })} · برای تلاش دوباره لمس کن` : 'برای تلاش دوباره لمس کن'}</small>
+                    <small>{targetLabel}</small>
+                    <strong>{targetValue}</strong>
+                    <em>{targetSemanticReady ? 'جزئیات در Analysis' : 'تا تأیید Semantic KPI منتشر نمی‌شود'}</em>
                   </span>
-                  <ChevronLeftIcon />
                 </button>
-              ) : null}
-
-              <InsightCard
-                className="vhd-next-insight"
-                icon={nextBestAction.icon}
-                eyebrow={nextBestAction.eyebrow}
-                title={nextBestAction.title}
-                body={nextBestAction.body}
-                actionLabel={nextBestAction.action}
-                tone={nextBestAction.tone === 'mint' ? 'success' : nextBestAction.tone}
-                onAction={() => onNavigate(nextBestAction.path)}
-              />
-
-              <section className="vhd-pulse-deck ng-layer-surface" aria-label="پالس تجاری زنده">
-                <div className="vhd-pulse-title"><span><i /> پالس زنده</span><small>ERP · NGT · Alert Center</small></div>
-                <div className="vhd-pulse-grid">
-                  <button type="button" className="vhd-pulse-cell ng-living-interactive" onClick={() => openLayer('today')}>
-                    <span><MapIcon /></span><strong>{routeSummary.remaining.toLocaleString('fa-IR')}</strong><small>اقدام مسیر</small>
-                  </button>
-                  <button type="button" className={`vhd-pulse-cell ng-living-interactive ${attentionCount ? 'attention' : ''}`} onClick={() => openLayer('intelligence')}>
-                    <span><BellIcon /></span><strong>{attentionCount.toLocaleString('fa-IR')}</strong><small>هشدار فعال</small>
-                  </button>
-                  <button type="button" className={`vhd-pulse-cell ng-living-interactive ${returnedChequeCount ? 'danger' : ''}`} onClick={() => openLayer('risk')}>
-                    <span><ChequeIcon /></span><strong>{returnedChequeCount.toLocaleString('fa-IR')}</strong><small>چک برگشتی</small>
-                  </button>
-                  <button type="button" className="vhd-pulse-cell ng-living-interactive" onClick={() => openLayer('today')}>
-                    <span><StoreIcon /></span><strong>{distributionCount.toLocaleString('fa-IR')}</strong><small>در توزیع</small>
-                  </button>
-                </div>
-              </section>
-
-              <section className="vhd-control-deck ng-layer-surface" aria-label="کنترل‌های عمقی خانه">
-                <button className="vhd-depth-control ng-living-interactive" data-tone="gold" type="button" onClick={() => openLayer('performance')}>
-                  <span className="ng-portal-accent"><ChartIcon /></span><span><small>عملکرد</small><strong>{performanceSummary}</strong></span><ChevronLeftIcon />
-                </button>
-                <button className="vhd-depth-control ng-living-interactive" data-tone="danger" type="button" onClick={() => openLayer('risk')}>
-                  <span className="ng-portal-accent"><ChequeIcon /></span><span><small>ریسک</small><strong>{riskMeta}</strong></span><ChevronLeftIcon />
-                </button>
-                <button className="vhd-depth-control ng-living-interactive" data-tone="blue" type="button" onClick={() => openLayer('today')}>
-                  <span className="ng-portal-accent"><ClockIcon /></span><span><small>امروز</small><strong>{offDay ? 'روز غیرکاری' : routeSummaryLabel}</strong></span><ChevronLeftIcon />
-                </button>
-                <button className="vhd-depth-control ng-living-interactive" data-tone="mint" type="button" onClick={() => openLayer('intelligence')}>
-                  <span className="ng-portal-accent"><AiSparkIcon /></span><span><small>هوش</small><strong>{intelligenceSummary}</strong></span><ChevronLeftIcon />
-                </button>
-              </section>
-            </div>
-          ) : null}
-
-          {depth === 1 && layer ? (
-            <div className="vhd-layer vhd-layer-section ng-layer-surface">
-              <header className="vhd-layer-head">
-                <button type="button" className="vhd-back ng-living-interactive" onClick={goBack} aria-label="بازگشت"><ChevronLeftIcon /></button>
-                <span className="vhd-layer-head-icon">{layerMeta[layer].icon}</span>
-                <span><small>خانه · {layerMeta[layer].title}</small><strong>{layerMeta[layer].title}</strong><em>{layerMeta[layer].subtitle}</em></span>
-              </header>
-
-              <div className="vhd-layer-items">
-                {layerItems[layer].map((item) => (
-                  <button
-                    type="button"
-                    key={item.key}
-                    className="vhd-layer-item ng-portal-surface ng-living-interactive" data-tone={item.tone ?? 'blue'}
-                    onClick={() => openDetail(item.key)}
-                  >
-                    <span className="vhd-layer-item-icon ng-portal-accent">{item.icon}</span>
-                    <span className="vhd-layer-item-copy"><small>{item.label}</small><strong>{performanceLoading ? '…' : item.value}</strong><em>{item.meta}</em></span>
-                    <ChevronLeftIcon />
-                  </button>
-                ))}
               </div>
-            </div>
-          ) : null}
 
-          {depth === 2 && currentDetail ? (
-            <div className="vhd-layer vhd-layer-detail ng-layer-surface" data-tone={currentDetail.tone}>
-              <header className="vhd-layer-head">
-                <button type="button" className="vhd-back ng-living-interactive" onClick={goBack} aria-label="بازگشت"><ChevronLeftIcon /></button>
-                <span className="vhd-layer-head-icon">{currentDetail.icon}</span>
-                <span><small>{layer ? `${layerMeta[layer].title} · جزئیات` : 'جزئیات'}</small><strong>{currentDetail.title}</strong><em>نمای متمرکز این شاخص</em></span>
-              </header>
+              <div className="vhd-route-energy" aria-label="پیشرفت عملیات امروز">
+                <span>
+                  <b style={{ width: `${Math.max(4, Math.min(100, offDay ? 4 : routeSummary.progress))}%` }} />
+                </span>
+                <small>
+                  {offDay
+                    ? 'Route امروز غیرفعال'
+                    : liveAssignment
+                      ? `${routeSummary.progress.toLocaleString('fa-IR')}٪ مسیر تکمیل شده`
+                      : 'بدون Route فعال'}
+                </small>
+              </div>
+            </section>
 
-              <section className="vhd-detail-card ng-detail-surface ng-living-surface">
-                <span className="vhd-detail-icon ng-portal-accent">{currentDetail.icon}</span>
-                <small>{currentDetail.title}</small>
-                <strong>{currentDetail.value}</strong>
-                <p>{currentDetail.description}</p>
-                {currentDetail.meta ? <em>{currentDetail.meta}</em> : null}
-              </section>
-
-              <button type="button" className="vhd-detail-action ng-living-interactive" onClick={() => onNavigate(currentDetail.path)}>
-                {currentDetail.action}<ChevronLeftIcon />
+            {(error || riskError) ? (
+              <button
+                type="button"
+                className="vhd-inline-alert ng-living-interactive"
+                onClick={retryLiveData}
+              >
+                <span>
+                  <strong>
+                    {stale
+                      ? 'حالت آفلاین · آخرین داده ذخیره‌شده'
+                      : 'بخشی از داده زنده در دسترس نیست'}
+                  </strong>
+                  <small>
+                    {stale && lastSyncedAt
+                      ? `آخرین همگام‌سازی ${new Date(lastSyncedAt).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })} · برای تلاش دوباره لمس کن`
+                      : 'برای تلاش دوباره لمس کن'}
+                  </small>
+                </span>
+                <ChevronLeftIcon />
               </button>
-            </div>
-          ) : null}
+            ) : null}
+
+            <InsightCard
+              className="vhd-next-insight"
+              icon={operationalAction.icon}
+              eyebrow={operationalAction.eyebrow}
+              title={operationalAction.title}
+              body={operationalAction.body}
+              actionLabel={operationalAction.action}
+              tone={operationalAction.tone}
+              onAction={() => onNavigate(operationalAction.path)}
+            />
+
+            <section className="vhd-pulse-deck ng-layer-surface" aria-label="سیگنال‌های امروز">
+              <div className="vhd-pulse-title">
+                <span><i /> سیگنال‌های امروز</span>
+                <small>NGT · Varanegar · Alert Center</small>
+              </div>
+
+              <div className="vhd-pulse-grid">
+                <button
+                  type="button"
+                  className="vhd-pulse-cell ng-living-interactive"
+                  onClick={() => onNavigate('/visitor/route')}
+                >
+                  <span><MapIcon /></span>
+                  <strong>{offDay ? '—' : routeSummary.remaining.toLocaleString('fa-IR')}</strong>
+                  <small>ایستگاه باز</small>
+                </button>
+
+                <button
+                  type="button"
+                  className={`vhd-pulse-cell ng-living-interactive${targetSemanticReady ? '' : ' gated'}`}
+                  onClick={() => onNavigate('/visitor/reports')}
+                >
+                  <span><ChartIcon /></span>
+                  <strong>{targetValue}</strong>
+                  <small>هدف ماه</small>
+                </button>
+
+                <button
+                  type="button"
+                  className={`vhd-pulse-cell ng-living-interactive ${attentionCount ? 'attention' : ''}`}
+                  onClick={() => onNavigate('/visitor/notifications')}
+                >
+                  <span><BellIcon /></span>
+                  <strong>{attentionCount.toLocaleString('fa-IR')}</strong>
+                  <small>هشدار فعال</small>
+                </button>
+
+                <button
+                  type="button"
+                  className={`vhd-pulse-cell ng-living-interactive ${returnedChequeCount ? 'danger' : ''}`}
+                  onClick={() => onNavigate('/visitor/reports')}
+                >
+                  <span><ChequeIcon /></span>
+                  <strong>{riskLoading ? '…' : returnedChequeCount.toLocaleString('fa-IR')}</strong>
+                  <small>چک برگشتی</small>
+                </button>
+              </div>
+            </section>
+
+            <button
+              type="button"
+              className="vhd-ai-entry ng-layer-surface ng-living-interactive"
+              onClick={() => onNavigate('/visitor/ai?context=home')}
+            >
+              <span className="vhd-ai-entry-icon"><AiSparkIcon /></span>
+              <span>
+                <small>Negin AI</small>
+                <strong>تحلیل زمینه امروز</strong>
+                <em>Workspace عمیق AI · بدون ایجاد Workflow موازی</em>
+              </span>
+              <ChevronLeftIcon />
+            </button>
+          </div>
         </section>
 
         <BottomDock
           ariaLabel="ناوبری ویزیتور"
           items={[
-            { key: 'home', label: 'خانه', icon: <HomeIcon />, active: true, onClick: () => { setLayer(null); setDetail(null) } },
+            { key: 'home', label: 'خانه', icon: <HomeIcon />, active: true, onClick: () => onNavigate('/visitor/home') },
             { key: 'route', label: 'مسیر', icon: <MapIcon />, onClick: () => onNavigate('/visitor/route') },
             { key: 'customers', label: 'مشتریان', icon: <UserGroupIcon />, onClick: () => onNavigate('/visitor/customers') },
             { key: 'reports', label: 'گزارش‌ها', icon: <ChartIcon />, onClick: () => onNavigate('/visitor/reports') },
