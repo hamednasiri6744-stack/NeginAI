@@ -4,6 +4,7 @@ import type { NotificationSeverity } from '../api/neginApi'
 import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
 import '../design-system/living/index.css'
 import '../styles/living-ui-pilot.css'
+import '../styles/design-system-atlas-notifications.css'
 import {
   BellIcon,
   ChartIcon,
@@ -60,6 +61,7 @@ export function VisitorNotificationsScreen({ onNavigate, onClose }: Props) {
     highestSeverity,
     loading,
     error,
+    liveConnected,
     reload,
     markRead,
     markAcknowledged,
@@ -85,7 +87,7 @@ export function VisitorNotificationsScreen({ onNavigate, onClose }: Props) {
   const readCount = items.filter((item) => item.read && (!item.requires_ack || item.acknowledged)).length
 
   return (
-    <main className="vh-page ng-living-root vh-live-ui" dir="rtl" data-live-ui="unified" data-living-ui="on">
+    <main className="vh-page ng-living-root vh-live-ui" dir="rtl" data-live-ui="unified" data-living-ui="on" data-design-system="atlas-v1" data-screen="notifications">
       <div className="vh-shell vn-shell">
         <header className="vh-header">
           <button className="vh-profile ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/profile')}>
@@ -116,6 +118,9 @@ export function VisitorNotificationsScreen({ onNavigate, onClose }: Props) {
                 ? `${attentionCount.toLocaleString('fa-IR')} هشدار نیازمند توجه${highestSeverity ? ` · سطح ${severityLabel[highestSeverity]}` : ''}`
                 : '\u0647\u0645\u0647 \u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627\u06cc \u0641\u0639\u0644\u06cc \u062e\u0648\u0627\u0646\u062f\u0647 \u0634\u062f\u0647\u200c\u0627\u0646\u062f.'}
             </p>
+            <span className={`vn-live-link ${liveConnected ? 'connected' : 'reconnecting'}`}>
+              <i />{liveConnected ? 'اتصال زنده برقرار' : 'در حال اتصال زنده'}
+            </span>
           </div>
           <button className="ng-living-interactive" type="button" disabled={!unreadCount} onClick={markAllRead}>
             {'\u062e\u0648\u0627\u0646\u062f\u0646 \u0647\u0645\u0647'}
