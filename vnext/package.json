@@ -9,10 +9,17 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "typecheck": "tsc -b --pretty false",
-    "build": "npm run typecheck && vite build",
+    "tokens:build": "style-dictionary build --config style-dictionary.config.mjs",
+    "api:generate": "orval --config orval.config.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "storybook": "storybook dev -p 6006",
+    "storybook:build": "storybook build",
+    "build": "npm run tokens:build && npm run typecheck && vite build",
     "preview": "vite preview --host 0.0.0.0"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.103.1",
     "maplibre-gl": "6.9.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
@@ -21,11 +28,21 @@
   "devDependencies": {
     "@babel/core": "8.0.5",
     "@rolldown/plugin-babel": "0.2.4",
+    "@storybook/addon-a11y": "^10.6.0",
+    "@storybook/react-vite": "^10.6.0",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "@vitejs/plugin-react": "6.1.1",
     "babel-plugin-react-compiler": "1.0.0",
+    "jsdom": "^29.1.1",
+    "orval": "^8.33.0",
+    "storybook": "^10.6.0",
+    "style-dictionary": "^5.5.3",
     "typescript": "7.0.2",
-    "vite": "8.2.2"
+    "vite": "8.2.2",
+    "vitest": "^5.0.1"
   }
 }

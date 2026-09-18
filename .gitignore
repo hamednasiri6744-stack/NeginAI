@@ -80,3 +80,6 @@ vnext/.tmp_*.css
 .pytest-runtime/
 
 vnext/*.tsbuildinfo
+
+# Generated Storybook build output
+vnext/storybook-static/

@@ -1,0 +1,50 @@
+name: vnext-quality
+
+on:
+  pull_request:
+    paths:
+      - 'vnext/**'
+      - '.github/workflows/vnext-quality.yml'
+  push:
+    branches:
+      - main
+      - dev/hamed
+      - 'feature/**'
+    paths:
+      - 'vnext/**'
+      - '.github/workflows/vnext-quality.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  frontend-quality:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: vnext
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: vnext/package-lock.json
+      - name: Install
+        run: npm ci
+      - name: Generate design tokens
+        run: npm run tokens:build
+      - name: Verify generated tokens are committed
+        run: git diff --exit-code -- src/design-system/generated
+      - name: Generate typed API client
+        run: npm run api:generate
+      - name: Verify generated API is committed
+        run: git diff --exit-code -- src/api/generated
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Unit tests
+        run: npm test
+      - name: Production build
+        run: npm run build
+      - name: Storybook build
+        run: npm run storybook:build
