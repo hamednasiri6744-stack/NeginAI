@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router'
 import {
   BellIcon,
   CartIcon,
   ChartIcon,
+  ChequeIcon,
   ChevronLeftIcon,
   ClockIcon,
   HomeIcon,
@@ -15,28 +16,25 @@ import {
   StoreIcon,
   UserGroupIcon,
 } from './Icons'
+import { VisitorPicker } from './VisitorPicker'
 import { useVisitorAuth } from '../state/VisitorAuthContext'
 import { useVisitorLiveData } from '../state/VisitorLiveDataContext'
 import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
 import { neginApi, type SellerCustomer } from '../api/neginApi'
+import '../design-system/living/index.css'
 
 type Props = { onNavigate: (path: string) => void }
-type CustomerFilter = 'همه' | 'فعال' | 'پیگیری' | 'انجام شده'
+type CustomerFocus = 'pending' | 'risk' | 'completed' | 'all'
+
+type FocusMeta = {
+  title: string
+  subtitle: string
+  icon: ReactNode
+  tone: 'gold' | 'danger' | 'mint' | 'blue'
+}
 
 function customerTitle(customer: SellerCustomer) {
   return customer.store_name || customer.name || `مشتری ${customer.code}`
-}
-
-function customerStatus(customer: SellerCustomer): Exclude<CustomerFilter, 'همه'> {
-  if (customer.visit_resolution?.status === 'completed') return 'انجام شده'
-  if (Number(customer.financial_snapshot?.returned_cheque_count ?? 0) > 0) return 'پیگیری'
-  return 'فعال'
-}
-
-function statusClass(status: Exclude<CustomerFilter, 'همه'>) {
-  if (status === 'فعال') return 'active'
-  if (status === 'انجام شده') return 'new'
-  return 'follow'
 }
 
 function visitDate(customer: SellerCustomer) {
@@ -62,13 +60,23 @@ function navigateCustomer(customer: SellerCustomer) {
   window.location.href = `geo:${customer.latitude},${customer.longitude}?q=${customer.latitude},${customer.longitude}(${label})`
 }
 
+function isCompleted(customer: SellerCustomer) {
+  return customer.visit_resolution?.status === 'completed'
+}
+
+function hasFinancialRisk(customer: SellerCustomer) {
+  return Number(customer.financial_snapshot?.returned_cheque_count ?? 0) > 0
+}
+
 export function VisitorCustomersScreen({ onNavigate }: Props) {
-  const { unreadCount } = useVisitorNotifications()
+  const { attentionCount, highestSeverity } = useVisitorNotifications()
   const { profile } = useVisitorAuth()
   const { customers, customerCount, activeRouteId, activeRouteTitle, routes, offDay, loading, error, reload } = useVisitorLiveData()
   const [fullCustomers, setFullCustomers] = useState<SellerCustomer[] | null>(null)
   const [browseRouteId, setBrowseRouteId] = useState('')
+  const [focus, setFocus] = useState<CustomerFocus | null>(null)
   const [searchParams, setSearchParams] = useSearchParams()
+
   const effectiveRouteId = activeRouteId || browseRouteId
   const effectiveRouteTitle = activeRouteTitle || routes.find((route) => route.id === browseRouteId)?.title || ''
 
@@ -94,12 +102,61 @@ export function VisitorCustomersScreen({ onNavigate }: Props) {
     return () => { cancelled = true }
   }, [effectiveRouteId])
 
+  useEffect(() => {
+    const onPopState = () => setFocus(null)
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [])
+
   const displayCustomers = fullCustomers ?? customers
+  const total = fullCustomers?.length ?? customerCount
+  const completed = displayCustomers.filter(isCompleted).length
+  const pending = Math.max(0, total - completed)
+  const financialRisk = displayCustomers.filter(hasFinancialRisk).length
+  const completionPercent = total > 0 ? Math.round((completed / total) * 100) : 0
   const query = searchParams.get('q') ?? ''
-  const rawFilter = searchParams.get('status')
-  const filter: CustomerFilter = ['فعال', 'پیگیری', 'انجام شده'].includes(rawFilter ?? '')
-    ? rawFilter as Exclude<CustomerFilter, 'همه'>
-    : 'همه'
+
+  const focusMeta: Record<CustomerFocus, FocusMeta> = {
+    pending: {
+      title: 'در انتظار بازدید',
+      subtitle: 'مشتریانی که هنوز تعیین‌تکلیف نشده‌اند',
+      icon: <ClockIcon />,
+      tone: 'gold',
+    },
+    risk: {
+      title: 'نیازمند توجه مالی',
+      subtitle: 'مشتریان دارای چک برگشتی ثبت‌شده',
+      icon: <ChequeIcon />,
+      tone: 'danger',
+    },
+    completed: {
+      title: 'تعیین‌تکلیف‌شده',
+      subtitle: 'بازدیدهای پایان‌یافته این Route',
+      icon: <ChartIcon />,
+      tone: 'mint',
+    },
+    all: {
+      title: 'همه مشتریان',
+      subtitle: 'فهرست کامل Route انتخاب‌شده',
+      icon: <UserGroupIcon />,
+      tone: 'blue',
+    },
+  }
+
+  const visibleCustomers = useMemo(() => {
+    const normalized = query.trim().toLocaleLowerCase('fa-IR')
+    return displayCustomers.filter((customer) => {
+      const matchesFocus = !focus
+        || focus === 'all'
+        || (focus === 'pending' && !isCompleted(customer))
+        || (focus === 'risk' && hasFinancialRisk(customer))
+        || (focus === 'completed' && isCompleted(customer))
+      if (!matchesFocus) return false
+      if (!normalized) return true
+      const haystack = `${customerTitle(customer)} ${customer.name} ${customer.code} ${customer.address}`.toLocaleLowerCase('fa-IR')
+      return haystack.includes(normalized)
+    })
+  }, [displayCustomers, focus, query])
 
   function updateSearch(nextQuery: string) {
     const next = new URLSearchParams(searchParams)
@@ -108,31 +165,29 @@ export function VisitorCustomersScreen({ onNavigate }: Props) {
     setSearchParams(next, { replace: true })
   }
 
-  function updateFilter(nextFilter: CustomerFilter) {
+  function openFocus(nextFocus: CustomerFocus) {
     const next = new URLSearchParams(searchParams)
-    if (nextFilter === 'همه') next.delete('status')
-    else next.set('status', nextFilter)
+    next.delete('q')
     setSearchParams(next, { replace: true })
+    window.history.pushState({ neginCustomerDepth: 1 }, '', window.location.href)
+    setFocus(nextFocus)
   }
 
-  const visibleCustomers = useMemo(() => {
-    const normalized = query.trim().toLocaleLowerCase('fa-IR')
-    return displayCustomers.filter((customer) => {
-      const haystack = `${customerTitle(customer)} ${customer.name} ${customer.code} ${customer.address}`.toLocaleLowerCase('fa-IR')
-      const matchesQuery = !normalized || haystack.includes(normalized)
-      const matchesFilter = filter === 'همه' || customerStatus(customer) === filter
-      return matchesQuery && matchesFilter
-    })
-  }, [displayCustomers, filter, query])
+  function closeFocus() {
+    window.history.back()
+  }
 
-  const completed = displayCustomers.filter((customer) => customer.visit_resolution?.status === 'completed').length
-  const followUp = displayCustomers.filter((customer) => Number(customer.financial_snapshot?.returned_cheque_count ?? 0) > 0).length
+  const routeOptions = routes.map((route) => ({
+    value: route.id,
+    label: route.title,
+    meta: `${Number(route.customer_count ?? 0).toLocaleString('fa-IR')} مشتری`,
+  }))
 
   return (
-    <main className="vh-page" dir="rtl">
+    <main className="vh-page vh-live-ui ng-living-root vc-depth-page" dir="rtl" data-live-ui="unified" data-living-ui="on">
       <div className="vh-shell vc-shell">
         <header className="vh-header">
-          <button className="vh-profile" type="button" onClick={() => onNavigate('/visitor/profile')}>
+          <button className="vh-profile ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/profile')}>
             <span className="vh-avatar">و</span>
             <span className="vh-profile-copy">
               <strong>{profile?.full_name || profile?.username || 'ویزیتور'}</strong>
@@ -141,9 +196,15 @@ export function VisitorCustomersScreen({ onNavigate }: Props) {
             <ChevronLeftIcon />
           </button>
 
-          <button className="vh-bell" type="button" aria-label="اعلان‌ها" onClick={() => onNavigate('/visitor/notifications')}>
+          <button
+            className={`vh-bell ng-living-interactive ${highestSeverity ? `severity-${highestSeverity}` : ''}`}
+            data-severity={highestSeverity ?? 'none'}
+            type="button"
+            aria-label="اعلان‌ها"
+            onClick={() => onNavigate('/visitor/notifications')}
+          >
             <BellIcon />
-            {unreadCount ? <b>{unreadCount}</b> : null}
+            {attentionCount ? <b className="ng-living-reactive">{attentionCount}</b> : null}
           </button>
 
           <div className="vh-brand" dir="ltr">
@@ -152,89 +213,129 @@ export function VisitorCustomersScreen({ onNavigate }: Props) {
           </div>
         </header>
 
-        <section className="vc-heading">
-          <div><span>{offDay ? 'مرور مشتریان تخصیص‌یافته' : (activeRouteTitle || 'مسیر روز NGT')}</span><h1>مشتریان</h1></div>
-        </section>
+        <section className="vc-depth-stage ng-depth-stage" data-depth={focus ? 1 : 0}>
+          <span className="ng-depth-backplane" data-plane="1" aria-hidden="true" />
 
-        {error && !offDay ? (
-          <section className="vh-live-state error" role="alert">
-            <div><strong>لیست مشتریان دریافت نشد</strong><span>{error}</span></div>
-            <button type="button" onClick={() => void reload()}>تلاش دوباره</button>
-          </section>
-        ) : loading ? (
-          <section className="vh-live-state" role="status"><strong>در حال دریافت مشتریان واقعی…</strong><span>اطلاعات از Seller Workspace خوانده می‌شود.</span></section>
-        ) : null}
+          {!focus ? (
+            <div className="vc-depth-layer vc-depth-root">
+              <section className="vc-command ng-layer-surface">
+                <div className="vc-command-copy">
+                  <span className="vc-command-live"><i /> مشتریان · داده زنده</span>
+                  <h1>{pending.toLocaleString('fa-IR')} مشتری هنوز بازدید نشده</h1>
+                  <p>{offDay ? 'حالت مرور؛ Customer 360 فقط خواندنی است.' : `${completionPercent.toLocaleString('fa-IR')}٪ مشتریان این مسیر تعیین‌تکلیف شده‌اند.`}</p>
+                </div>
+                <div className="vc-command-progress" aria-label={`پیشرفت ${completionPercent} درصد`}>
+                  <strong>{completionPercent.toLocaleString('fa-IR')}٪</strong>
+                  <small>تکمیل</small>
+                </div>
+              </section>
 
+              {offDay && routeOptions.length ? (
+                <VisitorPicker
+                  className="vc-depth-route-picker"
+                  label="مسیر مرور"
+                  value={effectiveRouteId || ''}
+                  options={routeOptions}
+                  onChange={(value) => setBrowseRouteId(value)}
+                  sheetTitle="انتخاب مسیر مشتریان"
+                />
+              ) : null}
 
-        {offDay ? (
-          <section className="vc-offday-browser ng-living-surface">
-            <div><strong>روز غیرکاری · حالت مرور</strong><span>یک مسیر را انتخاب کن؛ Customer 360 فقط خواندنی باز می‌شود.</span></div>
-            <div className="vc-route-browser">
-              {routes.map((route) => (
-                <button type="button" key={route.id} className={effectiveRouteId === route.id ? 'active' : ''} onClick={() => setBrowseRouteId(route.id)}>{route.title}<small>{Number(route.customer_count ?? 0).toLocaleString('fa-IR')} مشتری</small></button>
-              ))}
+              {error && !offDay ? (
+                <button type="button" className="vc-depth-error ng-living-interactive" onClick={() => void reload()}>
+                  <span><strong>داده مشتریان دریافت نشد</strong><small>{error}</small></span>
+                  <ChevronLeftIcon />
+                </button>
+              ) : null}
+
+              <div className="vc-depth-portals" aria-label="دسته‌های مشتریان">
+                <button type="button" className="vc-depth-portal ng-portal-surface ng-living-interactive" data-tone="gold" onClick={() => openFocus('pending')}>
+                  <span className="vc-depth-portal-icon ng-portal-accent"><ClockIcon /></span>
+                  <span><small>در انتظار بازدید</small><strong>{pending.toLocaleString('fa-IR')}</strong><em>اقدام باز امروز</em></span>
+                  <ChevronLeftIcon />
+                </button>
+
+                <button type="button" className="vc-depth-portal ng-portal-surface ng-living-interactive" data-tone={financialRisk ? 'danger' : 'mint'} onClick={() => openFocus('risk')}>
+                  <span className="vc-depth-portal-icon ng-portal-accent"><ChequeIcon /></span>
+                  <span><small>توجه مالی</small><strong>{financialRisk.toLocaleString('fa-IR')}</strong><em>{financialRisk ? 'دارای چک برگشتی' : 'مورد فعالی نیست'}</em></span>
+                  <ChevronLeftIcon />
+                </button>
+
+                <button type="button" className="vc-depth-portal ng-portal-surface ng-living-interactive" data-tone="mint" onClick={() => openFocus('completed')}>
+                  <span className="vc-depth-portal-icon ng-portal-accent"><ChartIcon /></span>
+                  <span><small>تعیین‌تکلیف‌شده</small><strong>{completed.toLocaleString('fa-IR')}</strong><em>بازدید پایان‌یافته</em></span>
+                  <ChevronLeftIcon />
+                </button>
+
+                <button type="button" className="vc-depth-portal ng-portal-surface ng-living-interactive" data-tone="blue" onClick={() => openFocus('all')}>
+                  <span className="vc-depth-portal-icon ng-portal-accent"><UserGroupIcon /></span>
+                  <span><small>همه مشتریان</small><strong>{total.toLocaleString('fa-IR')}</strong><em>{effectiveRouteTitle || 'Route انتخاب‌شده'}</em></span>
+                  <ChevronLeftIcon />
+                </button>
+              </div>
             </div>
-          </section>
-        ) : null}
+          ) : (
+            <div className="vc-depth-layer vc-depth-list ng-layer-surface">
+              <header className="vc-depth-head">
+                <button type="button" className="vc-depth-back ng-living-interactive" onClick={closeFocus} aria-label="بازگشت"><ChevronLeftIcon /></button>
+                <span className="vc-depth-head-icon ng-portal-accent" data-tone={focusMeta[focus].tone}>{focusMeta[focus].icon}</span>
+                <span>
+                  <small>مشتریان · {effectiveRouteTitle || 'Route'}</small>
+                  <strong>{focusMeta[focus].title}</strong>
+                  <em>{focusMeta[focus].subtitle}</em>
+                </span>
+              </header>
 
-        <section className="vc-summary" aria-label="خلاصه مشتریان">
-          <article><span>مشتریان مسیر</span><strong>{(fullCustomers?.length ?? customerCount).toLocaleString('fa-IR')}</strong><small>{offDay ? 'مرور تخصیص NGT' : 'NGT زنده'}</small></article>
-          <article><span>تعیین‌تکلیف امروز</span><strong>{completed.toLocaleString('fa-IR')}</strong><small>بازدیدهای پایان‌یافته</small></article>
-          <article><span>نیازمند توجه مالی</span><strong>{followUp.toLocaleString('fa-IR')}</strong><small>دارای چک برگشتی</small></article>
-        </section>
+              <label className="vc-depth-search">
+                <SearchIcon />
+                <input value={query} onChange={(event) => updateSearch(event.target.value)} placeholder="نام، کد یا آدرس مشتری" aria-label="جستجوی مشتری" />
+                <b>{visibleCustomers.length.toLocaleString('fa-IR')}</b>
+              </label>
 
-        <section className="vc-tools" aria-label="جستجوی مشتریان">
-          <label className="vc-search">
-            <SearchIcon />
-            <input value={query} onChange={(event) => updateSearch(event.target.value)} placeholder="نام، کد یا آدرس مشتری" aria-label="جستجوی مشتری" />
-          </label>
-        </section>
+              <section className="vc-depth-customer-list" aria-label={focusMeta[focus].title}>
+                {loading && !fullCustomers ? (
+                  <div className="vc-depth-loading"><strong>در حال دریافت مشتریان واقعی…</strong><span>Seller Workspace</span></div>
+                ) : null}
 
-        <div className="vc-chips" role="tablist" aria-label="فیلتر وضعیت مشتری">
-          {(['همه', 'فعال', 'پیگیری', 'انجام شده'] as const).map((item) => (
-            <button type="button" role="tab" aria-selected={filter === item} className={filter === item ? 'active' : ''} key={item} onClick={() => updateFilter(item)}>{item}</button>
-          ))}
-        </div>
+                {visibleCustomers.map((customer) => {
+                  const hasPhone = Boolean(customer.mobile || customer.phone)
+                  const hasLocation = customer.latitude !== null && customer.longitude !== null
+                  const risk = hasFinancialRisk(customer)
+                  return (
+                    <article className="vc-depth-customer ng-detail-surface" key={String(customer.id)}>
+                      <span className={`vc-depth-customer-icon ${risk ? 'risk' : ''}`}><StoreIcon /></span>
+                      <button type="button" className="vc-depth-customer-main" onClick={() => onNavigate(`/visitor/customers/${customer.id}`)}>
+                        <span className="vc-depth-customer-title"><strong>{customerTitle(customer)}</strong>{risk ? <b>ریسک مالی</b> : null}</span>
+                        <small>{customer.name || `کد ${customer.code}`}</small>
+                        <em>{customer.address || 'نشانی ثبت نشده'}</em>
+                        <span className="vc-depth-customer-meta">
+                          <i><ClockIcon /> {isCompleted(customer) ? `تعیین‌تکلیف ${visitDate(customer)}` : 'بازدید باز'}</i>
+                          {fullCustomers && customer.open_invoice_remaining > 0 ? <i><CartIcon /> مانده {money(customer.open_invoice_remaining)}</i> : null}
+                        </span>
+                      </button>
+                      <div className="vc-depth-customer-actions">
+                        <button type="button" disabled={!hasPhone} aria-label="تماس" onClick={() => callCustomer(customer)}><PhoneIcon /></button>
+                        <button type="button" disabled={!hasLocation} aria-label="مسیریابی" onClick={() => navigateCustomer(customer)}><MapIcon /></button>
+                        <button type="button" aria-label="Customer 360" onClick={() => onNavigate(`/visitor/customers/${customer.id}`)}><ChevronLeftIcon /></button>
+                      </div>
+                    </article>
+                  )
+                })}
 
-        <section className="vc-list" aria-label="لیست مشتریان">
-          <div className="vc-list-head"><strong>{visibleCustomers.length.toLocaleString('fa-IR')} مشتری</strong><span>{effectiveRouteTitle || 'ترتیب رسمی مسیر NGT'}</span></div>
-
-          {visibleCustomers.map((customer) => {
-            const status = customerStatus(customer)
-            const hasPhone = Boolean(customer.mobile || customer.phone)
-            const hasLocation = customer.latitude !== null && customer.longitude !== null
-            return (
-              <article className="vc-card" key={String(customer.id)}>
-                <div className="vc-customer-icon"><StoreIcon /></div>
-                <div className="vc-card-main">
-                  <div className="vc-card-title"><strong>{customerTitle(customer)}</strong><span className={`vc-status vc-status-${statusClass(status)}`}>{status}</span></div>
-                  <span className="vc-owner">{customer.name || `کد ${customer.code}`}</span>
-                  <div className="vc-meta">
-                    <span><PinIcon /> {customer.address || 'نشانی ثبت نشده'}</span>
-                    <span><ClockIcon /> آخرین تعیین‌تکلیف: {visitDate(customer)}</span>
-                  </div>
-                  <div className="vc-commerce"><span><CartIcon /> فاکتور باز: {fullCustomers ? customer.open_invoice_count.toLocaleString('fa-IR') : '—'}</span><strong>{fullCustomers ? money(customer.open_invoice_remaining) : '—'}</strong></div>
-                </div>
-                <div className="vc-card-actions">
-                  <button type="button" disabled={!hasPhone} aria-label={`تماس با ${customerTitle(customer)}`} onClick={() => callCustomer(customer)}><PhoneIcon /></button>
-                  <button type="button" disabled={!hasLocation} aria-label={`مسیریابی ${customerTitle(customer)}`} onClick={() => navigateCustomer(customer)}><MapIcon /></button>
-                  <button type="button" aria-label={`جزئیات ${customerTitle(customer)}`} onClick={() => onNavigate(`/visitor/customers/${customer.id}`)}><ChevronLeftIcon /></button>
-                </div>
-              </article>
-            )
-          })}
-
-          {!loading && visibleCustomers.length === 0 ? (
-            <div className="vc-empty"><UserGroupIcon /><strong>مشتری پیدا نشد</strong><span>{displayCustomers.length ? 'عبارت جستجو یا فیلتر را تغییر بده.' : 'برای این مسیر مشتری فعالی دریافت نشد.'}</span></div>
-          ) : null}
+                {!loading && visibleCustomers.length === 0 ? (
+                  <div className="vc-depth-empty"><UserGroupIcon /><strong>مشتری‌ای در این دسته نیست</strong><span>دسته یا جستجو را تغییر بده.</span></div>
+                ) : null}
+              </section>
+            </div>
+          )}
         </section>
 
         <nav className="vh-nav" aria-label="ناوبری ویزیتور">
-          <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/home')}><HomeIcon /><span>خانه</span></button>
-          <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/route')}><MapIcon /><span>مسیر</span></button>
-          <button className="vh-order" type="button" onClick={() => onNavigate('/visitor/orders')}><PlusIcon /><span>سفارش</span></button>
-          <button className="vh-nav-item active" type="button" aria-current="page" onClick={() => onNavigate('/visitor/customers')}><UserGroupIcon /><span>مشتریان</span></button>
-          <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/reports')}><ChartIcon /><span>گزارش‌ها</span></button>
+          <button className="vh-nav-item ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/home')}><HomeIcon /><span>خانه</span></button>
+          <button className="vh-nav-item ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/route')}><MapIcon /><span>مسیر</span></button>
+          <button className="vh-order ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/orders')}><PlusIcon /><span>سفارش</span></button>
+          <button className="vh-nav-item active ng-living-interactive" type="button" aria-current="page" onClick={() => setFocus(null)}><UserGroupIcon /><span>مشتریان</span></button>
+          <button className="vh-nav-item ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/reports')}><ChartIcon /><span>گزارش‌ها</span></button>
         </nav>
       </div>
     </main>
