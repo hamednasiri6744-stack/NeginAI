@@ -15,7 +15,7 @@ import {
   StoreIcon,
   UserGroupIcon,
 } from './Icons'
-import { completeServerVisit, getVisitPolicy, getVisitWorkspace, startServerVisit, type SellerVisitPolicyResponse, type SellerVisitWorkspaceResponse } from '../api/neginApi'
+import { completeServerVisit, getVisitPolicy, getVisitWorkspace, neginApi, startServerVisit, type SellerCustomer, type SellerVisitPolicyResponse, type SellerVisitWorkspaceResponse } from '../api/neginApi'
 import { VisitorNeshanMap } from './VisitorNeshanMap'
 import { VisitorPicker } from './VisitorPicker'
 import { useVisitorWorkflow } from '../state/VisitorWorkflowContext'
@@ -64,6 +64,12 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
   } = useVisitorWorkflow()
   const [mode, setMode] = useState<RouteMode>('sales')
   const [showStops, setShowStops] = useState(false)
+  const [offDayLayer, setOffDayLayer] = useState<'overview' | 'routes' | 'customers'>('overview')
+  const [browseRouteId, setBrowseRouteId] = useState('')
+  const [browseRouteCustomers, setBrowseRouteCustomers] = useState<SellerCustomer[]>([])
+  const [browseRouteRevision, setBrowseRouteRevision] = useState(0)
+  const [browseRouteLoading, setBrowseRouteLoading] = useState(false)
+  const [browseRouteError, setBrowseRouteError] = useState<string | null>(null)
   const [selectedCustomerId, setSelectedCustomerId] = useState(() => requestedCustomerId ?? activeVisit?.customerId ?? activeCustomerId ?? routeStops[0]?.customerId ?? '1')
   const [visitState, setVisitState] = useState<VisitState>(() => activeVisit ? 'active' : 'idle')
   const [elapsed, setElapsed] = useState(() => activeVisit ? Math.max(0, Math.floor((Date.now() - activeVisit.startedAt) / 1000)) : 0)
@@ -76,6 +82,32 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
   const [mapRecenterNonce, setMapRecenterNonce] = useState(0)
   const [planOrderCustomerIds, setPlanOrderCustomerIds] = useState<string[]>([])
   const outcomeDialogRef = useRef<HTMLElement | null>(null)
+
+  const browseRoute = useMemo(
+    () => routes.find((route) => route.id === browseRouteId),
+    [browseRouteId, routes],
+  )
+
+  useEffect(() => {
+    if (!offDay || offDayLayer !== 'customers' || !browseRouteId) return
+    let cancelled = false
+    setBrowseRouteLoading(true)
+    setBrowseRouteError(null)
+    void neginApi.routeCustomers(browseRouteId, 'basic')
+      .then((result) => {
+        if (!cancelled) setBrowseRouteCustomers(result.customers ?? [])
+      })
+      .catch((caught) => {
+        if (!cancelled) {
+          setBrowseRouteCustomers([])
+          setBrowseRouteError(caught instanceof Error ? caught.message : 'مشتریان Route دریافت نشدند.')
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setBrowseRouteLoading(false)
+      })
+    return () => { cancelled = true }
+  }, [browseRouteId, browseRouteRevision, offDay, offDayLayer])
 
   const sortedRouteStops = useMemo(() => {
     if (!planOrderCustomerIds.length) return routeStops
@@ -325,39 +357,96 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
           </header>
 
           {offDay ? (
-            <section className="vr-offday-stage ng-depth-stage" data-depth="0">
-              <div className="vr-offday-command ng-layer-surface">
-                <span className="vr-offday-icon"><ClockIcon /></span>
-                <span className="vr-offday-copy">
-                  <small>تقویم رسمی NGT</small>
-                  <strong>امروز روز کاری نیست</strong>
-                  <em>{workCalendar?.date ? `${workCalendar.date} · ` : ''}عملیات فروش روزانه غیرفعال است؛ مرور و تحلیل همچنان در دسترس است.</em>
-                </span>
-                <span className="vr-offday-days">
-                  <b>{Number(workCalendar?.elapsed_working_days ?? 0).toLocaleString('fa-IR')}</b>
-                  <small>روز سپری‌شده</small>
-                </span>
-              </div>
+            <section className="vr-offday-stage ng-depth-stage" data-depth={offDayLayer === 'overview' ? 0 : offDayLayer === 'routes' ? 1 : 2}>
+              <span className="ng-depth-backplane" data-plane="1" aria-hidden="true" />
+              <span className="ng-depth-backplane" data-plane="2" aria-hidden="true" />
 
-              <div className="vr-offday-portals">
-                <button type="button" className="vr-offday-portal ng-portal-surface ng-living-interactive" data-tone="blue" onClick={() => onNavigate('/visitor/customers')}>
-                  <span className="vr-offday-portal-icon ng-portal-accent"><UserGroupIcon /></span>
-                  <span><small>مشتریان</small><strong>{routes.length.toLocaleString('fa-IR')} مسیر تخصیص‌یافته</strong><em>مرور مشتریان و Customer 360</em></span>
-                  <ChevronLeftIcon />
-                </button>
+              {offDayLayer === 'overview' ? (
+                <div className="vr-offday-layer vr-offday-overview">
+                  <div className="vr-offday-command ng-layer-surface">
+                    <span className="vr-offday-icon"><ClockIcon /></span>
+                    <span className="vr-offday-copy">
+                      <small>تقویم رسمی NGT</small>
+                      <strong>امروز روز کاری نیست</strong>
+                      <em>{workCalendar?.date ? `${workCalendar.date} · ` : ''}مسیر فعال نداریم؛ Routeهای تخصیص‌یافته همین‌جا قابل مرورند.</em>
+                    </span>
+                    <span className="vr-offday-days">
+                      <b>{Number(workCalendar?.remaining_working_days ?? 0).toLocaleString('fa-IR')}</b>
+                      <small>روز باقی‌مانده</small>
+                    </span>
+                  </div>
 
-                <button type="button" className="vr-offday-portal ng-portal-surface ng-living-interactive" data-tone="gold" onClick={() => onNavigate('/visitor/orders')}>
-                  <span className="vr-offday-portal-icon ng-portal-accent"><CartIcon /></span>
-                  <span><small>کاتالوگ</small><strong>مرور محصولات NGT</strong><em>قیمت، موجودی و اطلاعات محصول</em></span>
-                  <ChevronLeftIcon />
-                </button>
+                  <div className="vr-offday-route-deck ng-layer-surface">
+                    <button type="button" className="vr-offday-route-entry ng-living-interactive" onClick={() => setOffDayLayer('routes')}>
+                      <span className="vr-offday-route-entry-icon"><MapIcon /></span>
+                      <span><small>عمق Route</small><strong>Routeهای تخصیص‌یافته</strong><em>{routes.length.toLocaleString('fa-IR')} مسیر · مشتریان هر مسیر را همین‌جا باز کن</em></span>
+                      <ChevronLeftIcon />
+                    </button>
+                    <div className="vr-offday-route-metrics">
+                      <span><small>مجموع مشتری</small><strong>{routes.reduce((sum, route) => sum + Number(route.customer_count ?? 0), 0).toLocaleString('fa-IR')}</strong></span>
+                      <span><small>روز سپری‌شده</small><strong>{Number(workCalendar?.elapsed_working_days ?? 0).toLocaleString('fa-IR')}</strong></span>
+                      <span><small>روز باقی‌مانده</small><strong>{Number(workCalendar?.remaining_working_days ?? 0).toLocaleString('fa-IR')}</strong></span>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
 
-                <button type="button" className="vr-offday-portal ng-portal-surface ng-living-interactive" data-tone="mint" onClick={() => onNavigate('/visitor/reports')}>
-                  <span className="vr-offday-portal-icon ng-portal-accent"><ChartIcon /></span>
-                  <span><small>عملکرد</small><strong>{Number(workCalendar?.remaining_working_days ?? 0).toLocaleString('fa-IR')} روز کاری باقی‌مانده</strong><em>تحلیل فروش و وضعیت ماه</em></span>
-                  <ChevronLeftIcon />
-                </button>
-              </div>
+              {offDayLayer === 'routes' ? (
+                <div className="vr-offday-layer vr-offday-depth ng-layer-surface">
+                  <header className="vr-offday-depth-head">
+                    <button type="button" className="vr-offday-back ng-living-interactive" onClick={() => setOffDayLayer('overview')}><ChevronLeftIcon /></button>
+                    <span className="vr-offday-depth-icon"><MapIcon /></span>
+                    <span><small>مسیر · لایه ۱</small><strong>Routeهای تخصیص‌یافته</strong><em>بدون خروج از ماژول مسیر</em></span>
+                  </header>
+                  <div className="vr-offday-route-list">
+                    {routes.map((route) => (
+                      <button
+                        type="button"
+                        className="vr-offday-route-row ng-detail-surface ng-living-interactive"
+                        key={route.id}
+                        onClick={() => { setBrowseRouteId(route.id); setOffDayLayer('customers') }}
+                      >
+                        <span className="vr-offday-route-index"><RouteArrowIcon /></span>
+                        <span><strong>{route.title}</strong><small>{Number(route.customer_count ?? 0).toLocaleString('fa-IR')} مشتری در Route</small></span>
+                        <ChevronLeftIcon />
+                      </button>
+                    ))}
+                    {!routes.length ? <div className="vr-offday-empty">Route تخصیص‌یافته‌ای ثبت نشده است.</div> : null}
+                  </div>
+                </div>
+              ) : null}
+
+              {offDayLayer === 'customers' ? (
+                <div className="vr-offday-layer vr-offday-depth ng-layer-surface">
+                  <header className="vr-offday-depth-head">
+                    <button type="button" className="vr-offday-back ng-living-interactive" onClick={() => setOffDayLayer('routes')}><ChevronLeftIcon /></button>
+                    <span className="vr-offday-depth-icon"><UserGroupIcon /></span>
+                    <span><small>مسیر · لایه ۲</small><strong>{browseRoute?.title || 'مشتریان Route'}</strong><em>{browseRouteCustomers.length.toLocaleString('fa-IR')} مشتری · مرور درون‌ماژولی</em></span>
+                  </header>
+
+                  {browseRouteError ? (
+                    <button type="button" className="vr-offday-error" onClick={() => setBrowseRouteRevision((value) => value + 1)}>
+                      <strong>دریافت مشتریان ناموفق بود</strong><small>{browseRouteError}</small>
+                    </button>
+                  ) : null}
+
+                  <div className="vr-offday-customer-list">
+                    {browseRouteLoading ? <div className="vr-offday-empty">در حال دریافت مشتریان Route…</div> : null}
+                    {!browseRouteLoading && browseRouteCustomers.map((customer, index) => {
+                      const phone = (customer.mobile || customer.phone || '').replace(/[^\d+]/g, '')
+                      const risk = Number(customer.financial_snapshot?.returned_cheque_count ?? 0) > 0
+                      return (
+                        <article className="vr-offday-customer ng-detail-surface" key={String(customer.id)}>
+                          <span className={risk ? 'risk' : ''}>{index + 1}</span>
+                          <div><strong>{customer.store_name || customer.name || customer.code}</strong><small>{customer.address || 'نشانی ثبت نشده'}</small>{risk ? <em>هشدار مالی ثبت‌شده</em> : null}</div>
+                          <button type="button" disabled={!phone} onClick={() => { if (phone) window.location.href = `tel:${phone}` }}><PhoneIcon /></button>
+                        </article>
+                      )
+                    })}
+                    {!browseRouteLoading && !browseRouteCustomers.length && !browseRouteError ? <div className="vr-offday-empty">مشتری فعالی برای این Route دریافت نشد.</div> : null}
+                  </div>
+                </div>
+              ) : null}
             </section>
           ) : (
             <section className={error ? 'vh-live-state error' : 'vh-live-state'} role={error ? 'alert' : 'status'}>
@@ -369,7 +458,7 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
           <nav className="vh-nav" aria-label="ناوبری ویزیتور">
             <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/home')}><HomeIcon /><span>خانه</span></button>
             <button className="vh-nav-item active" type="button" aria-current="page"><MapIcon /><span>مسیر</span></button>
-            <button className="vh-order" type="button" disabled={offDay} onClick={() => onNavigate('/visitor/orders')}><PlusIcon /><span>سفارش</span></button>
+            <button className="vh-order" type="button" onClick={() => onNavigate('/visitor/orders')}><PlusIcon /><span>سفارش</span></button>
             <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/customers')}><UserGroupIcon /><span>مشتریان</span></button>
             <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/reports')}><ChartIcon /><span>گزارش‌ها</span></button>
           </nav>

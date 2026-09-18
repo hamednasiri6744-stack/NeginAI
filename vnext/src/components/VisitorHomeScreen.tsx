@@ -70,7 +70,7 @@ function compactRial(value: number | null | undefined) {
 }
 
 export function VisitorHomeScreen({ onNavigate }: Props) {
-  const { attentionCount, highestSeverity } = useVisitorNotifications()
+  const { items: notificationItems, attentionCount, highestSeverity } = useVisitorNotifications()
   const { profile } = useVisitorAuth()
   const { error, liveAssignment, workCalendar, targetPulse, offDay, reload } = useVisitorLiveData()
   const { routeStops, routeSummary } = useVisitorWorkflow()
@@ -175,21 +175,62 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
   const performanceSummary = targetPulse
     ? `${targetPulse.actual_invoice_count.toLocaleString('fa-IR')} فاکتور ماه`
     : performanceLoading ? 'در حال دریافت عملکرد…' : 'عملکرد در دسترس نیست'
-  const performanceMeta = targetSemanticReady && targetPulse?.configured && targetAchievement != null
-    ? `${targetAchievement.toLocaleString('fa-IR', { maximumFractionDigits: 1 })}٪ تحقق هدف`
-    : 'هدف هنوز تأیید نشده'
-  const riskSummary = performance.openInvoices
-    ? `${compactRial(performance.openInvoices.open_invoice_remaining)} مانده باز`
-    : performanceLoading ? 'در حال دریافت وضعیت مالی…' : 'وضعیت مالی در دسترس نیست'
   const riskMeta = performance.returnedCheques
     ? `${performance.returnedCheques.cheque_count.toLocaleString('fa-IR')} چک برگشتی`
     : 'ریسک مالی در حال دریافت'
   const intelligenceSummary = attentionCount
     ? `${attentionCount.toLocaleString('fa-IR')} هشدار فعال`
     : 'بدون هشدار بحرانی'
-  const intelligenceMeta = attentionCount
-    ? (highestSeverity === 'critical' ? 'حداقل یک مورد بحرانی' : 'نیازمند بررسی')
-    : 'AI آماده تحلیل'
+
+  const urgentNotification = notificationItems.find((item) =>
+    (!item.read || (item.requires_ack && !item.acknowledged))
+    && (!highestSeverity || item.severity === highestSeverity),
+  ) ?? notificationItems.find((item) => !item.read || (item.requires_ack && !item.acknowledged))
+
+  const returnedChequeCount = Number(performance.returnedCheques?.cheque_count ?? 0)
+  const distributionCount = Number(performance.distribution?.invoice_count ?? 0)
+
+  const nextBestAction = urgentNotification
+    ? {
+        eyebrow: highestSeverity === 'critical' ? 'اقدام فوری' : 'نیازمند توجه',
+        title: urgentNotification.title,
+        body: urgentNotification.body,
+        action: 'بررسی هشدار',
+        path: urgentNotification.action_path || '/visitor/notifications',
+        tone: 'danger' as const,
+        icon: <BellIcon />,
+      }
+    : returnedChequeCount > 0
+      ? {
+          eyebrow: 'قبل از فروش بعدی',
+          title: `${returnedChequeCount.toLocaleString('fa-IR')} چک برگشتی نیازمند بررسی است`,
+          body: 'ریسک مالی فعال است؛ وضعیت مشتری را قبل از ثبت سفارش بعدی بررسی کن.',
+          action: 'بررسی ریسک',
+          path: '/visitor/reports',
+          tone: 'danger' as const,
+          icon: <ChequeIcon />,
+        }
+      : !offDay && nextStop
+        ? {
+            eyebrow: 'Next Best Action',
+            title: `حرکت به ${nextStop.name}`,
+            body: `${routeSummary.remaining.toLocaleString('fa-IR')} ایستگاه باقی مانده · پیشرفت مسیر ${routeSummary.progress.toLocaleString('fa-IR')}٪`,
+            action: 'ادامه مسیر',
+            path: '/visitor/route',
+            tone: 'gold' as const,
+            icon: <RouteArrowIcon />,
+          }
+        : {
+            eyebrow: offDay ? 'آماده‌سازی فروش بعدی' : 'فرصت بعدی',
+            title: offDay ? 'کاتالوگ و موجودی فروش را مرور کن' : 'Negin AI آماده تحلیل فرصت‌هاست',
+            body: offDay
+              ? 'روز غیرکاری است؛ برای ویزیت بعدی کالاهای قابل سفارش و موجودی را مرور کن.'
+              : 'هشدار فعالی ثبت نشده؛ می‌توانی فرصت فروش بعدی را از داده‌های حساب تحلیل کنی.',
+            action: offDay ? 'مرور فروش' : 'تحلیل فرصت',
+            path: offDay ? '/visitor/orders' : '/visitor/ai?context=home&prompt=sales-opportunity',
+            tone: 'mint' as const,
+            icon: offDay ? <StoreIcon /> : <AiSparkIcon />,
+          }
 
   function openLayer(next: HomeLayer) {
     window.history.pushState({ neginHomeDepth: 1 }, '', window.location.href)
@@ -488,17 +529,25 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
           <span className="vhd-backplane vhd-backplane-two ng-depth-backplane" data-plane="2" aria-hidden="true" />
 
           {depth === 0 ? (
-            <div className="vhd-layer vhd-layer-root">
-              <section className="vhd-overview ng-layer-surface ng-living-surface">
-                <div>
-                  <span className="vhd-live"><i /> وضعیت جامع · زنده</span>
-                  <h1>سلام{profile?.full_name ? `، ${profile.full_name}` : ''}</h1>
-
+            <div className="vhd-layer vhd-layer-root vhd-cockpit-root">
+              <section className="vhd-cockpit ng-layer-surface ng-living-surface" data-tone={nextBestAction.tone}>
+                <span className="vhd-cockpit-ambient" aria-hidden="true" />
+                <div className="vhd-cockpit-head">
+                  <div>
+                    <span className="vhd-live"><i /> NeginAI LIVE</span>
+                    <h1>سلام{profile?.full_name ? `، ${profile.full_name}` : ''}</h1>
+                    <p>{offDay ? 'امروز روز غیرکاری است؛ آماده‌سازی فروش بعدی ادامه دارد.' : `${routeSummary.remaining.toLocaleString('fa-IR')} اقدام مسیر هنوز باز است.`}</p>
+                  </div>
+                  <div className="vhd-date vhd-date-live">
+                    <strong>{currentTime}</strong>
+                    <span>{weekday}</span>
+                    <small>{persianDate}</small>
+                  </div>
                 </div>
-                <div className="vhd-date">
-                  <strong>{currentTime}</strong>
-                  <span>{weekday}</span>
-                  <small>{persianDate}</small>
+
+                <div className="vhd-route-energy" aria-label="پیشرفت عملیات امروز">
+                  <span><b style={{ width: `${Math.max(4, Math.min(100, offDay ? 4 : routeSummary.progress))}%` }} /></span>
+                  <small>{offDay ? 'Route امروز غیرفعال' : `${routeSummary.progress.toLocaleString('fa-IR')}٪ مسیر تکمیل شده`}</small>
                 </div>
               </section>
 
@@ -513,31 +562,53 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
                 </button>
               ) : null}
 
-              <div className="vhd-portals" aria-label="دسته‌های اصلی خانه">
-                <button className="vhd-portal ng-portal-surface ng-living-interactive" data-tone="gold" type="button" onClick={() => openLayer('performance')}>
-                  <span className="vhd-portal-icon ng-portal-accent"><ChartIcon /></span>
-                  <span className="vhd-portal-copy"><small>عملکرد</small><strong>{performanceSummary}</strong><em>{performanceMeta}</em></span>
-                  <ChevronLeftIcon />
-                </button>
+              <button
+                type="button"
+                className={`vhd-next-action ng-living-interactive ng-living-surface tone-${nextBestAction.tone}`}
+                data-tone={nextBestAction.tone}
+                onClick={() => onNavigate(nextBestAction.path)}
+              >
+                <span className="vhd-next-action-icon">{nextBestAction.icon}</span>
+                <span className="vhd-next-action-copy">
+                  <small>{nextBestAction.eyebrow}</small>
+                  <strong>{nextBestAction.title}</strong>
+                  <em>{nextBestAction.body}</em>
+                </span>
+                <span className="vhd-next-action-cta">{nextBestAction.action}<ChevronLeftIcon /></span>
+              </button>
 
-                <button className="vhd-portal ng-portal-surface ng-living-interactive" data-tone="danger" type="button" onClick={() => openLayer('risk')}>
-                  <span className="vhd-portal-icon ng-portal-accent"><ChequeIcon /></span>
-                  <span className="vhd-portal-copy"><small>ریسک مالی</small><strong>{riskSummary}</strong><em>{riskMeta}</em></span>
-                  <ChevronLeftIcon />
-                </button>
+              <section className="vhd-pulse-deck ng-layer-surface" aria-label="پالس تجاری زنده">
+                <div className="vhd-pulse-title"><span><i /> پالس زنده</span><small>ERP · NGT · Alert Center</small></div>
+                <div className="vhd-pulse-grid">
+                  <button type="button" className="vhd-pulse-cell ng-living-interactive" onClick={() => openLayer('today')}>
+                    <span><MapIcon /></span><strong>{routeSummary.remaining.toLocaleString('fa-IR')}</strong><small>اقدام مسیر</small>
+                  </button>
+                  <button type="button" className={`vhd-pulse-cell ng-living-interactive ${attentionCount ? 'attention' : ''}`} onClick={() => openLayer('intelligence')}>
+                    <span><BellIcon /></span><strong>{attentionCount.toLocaleString('fa-IR')}</strong><small>هشدار فعال</small>
+                  </button>
+                  <button type="button" className={`vhd-pulse-cell ng-living-interactive ${returnedChequeCount ? 'danger' : ''}`} onClick={() => openLayer('risk')}>
+                    <span><ChequeIcon /></span><strong>{returnedChequeCount.toLocaleString('fa-IR')}</strong><small>چک برگشتی</small>
+                  </button>
+                  <button type="button" className="vhd-pulse-cell ng-living-interactive" onClick={() => openLayer('today')}>
+                    <span><StoreIcon /></span><strong>{distributionCount.toLocaleString('fa-IR')}</strong><small>در توزیع</small>
+                  </button>
+                </div>
+              </section>
 
-                <button className="vhd-portal ng-portal-surface ng-living-interactive" data-tone="blue" type="button" onClick={() => openLayer('today')}>
-                  <span className="vhd-portal-icon ng-portal-accent"><ClockIcon /></span>
-                  <span className="vhd-portal-copy"><small>عملیات امروز</small><strong>{offDay ? 'امروز روز غیرکاری است' : routeSummaryLabel}</strong><em>{offDay ? 'مرور مسیرها' : nextStop ? `بعدی: ${nextStop.name}` : 'مسیر و توزیع'}</em></span>
-                  <ChevronLeftIcon />
+              <section className="vhd-control-deck ng-layer-surface" aria-label="کنترل‌های عمقی خانه">
+                <button className="vhd-depth-control ng-living-interactive" data-tone="gold" type="button" onClick={() => openLayer('performance')}>
+                  <span className="ng-portal-accent"><ChartIcon /></span><span><small>عملکرد</small><strong>{performanceSummary}</strong></span><ChevronLeftIcon />
                 </button>
-
-                <button className="vhd-portal ng-portal-surface ng-living-interactive" data-tone="mint" type="button" onClick={() => openLayer('intelligence')}>
-                  <span className="vhd-portal-icon ng-portal-accent"><AiSparkIcon /></span>
-                  <span className="vhd-portal-copy"><small>هوش و هشدار</small><strong>{intelligenceSummary}</strong><em>{intelligenceMeta}</em></span>
-                  <ChevronLeftIcon />
+                <button className="vhd-depth-control ng-living-interactive" data-tone="danger" type="button" onClick={() => openLayer('risk')}>
+                  <span className="ng-portal-accent"><ChequeIcon /></span><span><small>ریسک</small><strong>{riskMeta}</strong></span><ChevronLeftIcon />
                 </button>
-              </div>
+                <button className="vhd-depth-control ng-living-interactive" data-tone="blue" type="button" onClick={() => openLayer('today')}>
+                  <span className="ng-portal-accent"><ClockIcon /></span><span><small>امروز</small><strong>{offDay ? 'روز غیرکاری' : routeSummaryLabel}</strong></span><ChevronLeftIcon />
+                </button>
+                <button className="vhd-depth-control ng-living-interactive" data-tone="mint" type="button" onClick={() => openLayer('intelligence')}>
+                  <span className="ng-portal-accent"><AiSparkIcon /></span><span><small>هوش</small><strong>{intelligenceSummary}</strong></span><ChevronLeftIcon />
+                </button>
+              </section>
             </div>
           ) : null}
 
