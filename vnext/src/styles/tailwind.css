@@ -3,13 +3,19 @@
 @theme inline {
   --color-ng-bg: var(--ng-bg);
   --color-ng-text: var(--ng-text);
+  --color-ng-text-soft: var(--ng-text-soft);
   --color-ng-muted: var(--ng-muted);
+  --color-ng-muted-dim: var(--ng-muted-dim);
+  --color-ng-ink: var(--ng-ink);
   --color-ng-gold: var(--ng-gold-2);
   --color-ng-gold-soft: var(--ng-gold-3);
   --color-ng-mint: var(--ng-mint);
   --color-ng-danger: var(--ng-danger);
   --color-ng-warning: var(--ng-warning);
   --color-ng-info: var(--ng-info);
+  --color-ng-surface: var(--ng-surface-base);
+  --color-ng-surface-raised: var(--ng-surface-raised);
+  --color-ng-surface-glass: var(--ng-surface-glass);
   --radius-ng-control: var(--ng-radius-control);
   --radius-ng-surface: var(--ng-radius-surface);
   --radius-ng-stage: var(--ng-radius-stage);

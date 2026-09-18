@@ -1,0 +1,99 @@
+/*
+ * NeginAI Visual Baseline v1
+ * Canonical visual identity. Layout is intentionally NOT defined here.
+ * Do not change these values unless the visual baseline is explicitly revised.
+ */
+:root {
+  color-scheme: dark;
+
+  --ng-canvas: var(--ng-bg);
+  --ng-surface-base: var(--ng-navy-1);
+  --ng-surface-raised: var(--ng-navy-2);
+  --ng-surface-highlight: var(--ng-navy-3);
+
+  --ng-text-soft: #dce5ec;
+  --ng-muted-dim: #71869a;
+  --ng-ink: #171005;
+
+  --ng-surface-glass: rgba(7,22,35,.72);
+  --ng-surface-glass-strong: rgba(7,22,35,.86);
+  --ng-surface-quiet: rgba(255,255,255,.018);
+
+  --ng-line: rgba(170,199,221,.10);
+  --ng-line-strong: rgba(170,199,221,.16);
+  --ng-line-gold: rgba(242,203,104,.18);
+  --ng-gold-glow: rgba(242,203,104,.14);
+  --ng-mint-glow: rgba(84,239,189,.12);
+  --ng-danger-glow: rgba(255,109,120,.12);
+
+  /* Legacy aliases resolve into the canonical theme. */
+  --bg: var(--ng-bg);
+  --navy-1: var(--ng-navy-1);
+  --navy-2: var(--ng-navy-2);
+  --navy-3: var(--ng-navy-3);
+  --text: var(--ng-text);
+  --muted: var(--ng-muted);
+  --gold-1: var(--ng-gold-1);
+  --gold-2: var(--ng-gold-2);
+  --gold-3: var(--ng-gold-3);
+  --gold-4: var(--ng-gold-4);
+  --mint: var(--ng-mint);
+  --danger: var(--ng-danger);
+}
+
+html,
+body,
+#root {
+  background: var(--ng-bg);
+  color: var(--ng-text);
+}
+body {
+  background:
+    radial-gradient(circle at 50% -12%, rgba(38,91,126,.18), transparent 34%),
+    linear-gradient(180deg, #061522 0%, var(--ng-bg) 58%, #02070c 100%);
+}
+
+:where(.login-page, .vh-page, .vai-page) {
+  color: var(--ng-text) !important;
+  background:
+    radial-gradient(circle at 50% -12%, rgba(38,91,126,.18), transparent 34%),
+    radial-gradient(circle at 96% 88%, rgba(214,155,50,.045), transparent 24%),
+    linear-gradient(180deg, #061522 0%, var(--ng-bg) 58%, #02070c 100%) !important;
+}
+
+::selection {
+  color: var(--ng-ink);
+  background: var(--ng-gold-2);
+}
+
+:where(input, textarea, select) {
+  color: var(--ng-text);
+  caret-color: var(--ng-gold-2);
+}
+
+:where(input, textarea)::placeholder {
+  color: var(--ng-muted-dim);
+  opacity: 1;
+}
+:where(button, a, input, textarea, select):focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(242,203,104,.13);
+}
+
+* {
+  scrollbar-color: rgba(144,160,180,.28) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(144,160,180,.22);
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}

@@ -1,4 +1,4 @@
-/* NeginAI shared component layer — screen agnostic. */
+/* NeginAI shared component layer â€” screen agnostic. */
 .ng-button {
   display:inline-flex;
   align-items:center;
@@ -315,7 +315,7 @@
   display:grid;
   place-items:center;
   border-radius:50%;
-  color:#171005;
+  color:var(--ng-ink);
   font-weight:900;
   background:linear-gradient(180deg,var(--ng-gold-1),var(--ng-gold-3));
   box-shadow:var(--ng-shadow-contact);
@@ -437,8 +437,8 @@
   place-items:center;
   border:1px solid #ffe6a0;
   border-radius:50%;
-  color:#171005;
-  background:linear-gradient(180deg,#ffe08a,#e9ae3e 58%,#b9731c);
+  color:var(--ng-ink);
+  background:linear-gradient(180deg,var(--ng-gold-1),#e9ae3e 58%,#b9731c);
   box-shadow:0 8px 22px rgba(0,0,0,.36),0 0 18px rgba(233,173,57,.18),inset 0 1px rgba(255,255,255,.48);
 }
 .ng-bottom-dock-primary-icon svg { width:25px; height:25px; }

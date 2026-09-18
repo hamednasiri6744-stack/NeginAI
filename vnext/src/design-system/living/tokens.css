@@ -1,4 +1,4 @@
-/* NeginAI Living Layer — canonical motion/state tokens */
+/* NeginAI Living Layer â€” canonical motion/state tokens */
 :root {
   --ng-motion-instant: 90ms;
   --ng-motion-touch: 160ms;
@@ -56,7 +56,7 @@
   --ng-depth-plane-1: 0 18px 38px rgba(0,0,0,.24);
   --ng-depth-plane-2: 0 26px 52px rgba(0,0,0,.30);
 }
-/* DS v2 visual normalization — derived from Customer Workspace material */
+/* DS v2 visual normalization â€” derived from Customer Workspace material */
 :root {
   --ng-radius-stage: 22px;
   --ng-radius-surface: 18px;
@@ -76,10 +76,10 @@
   --ng-border-strong: rgba(170,199,221,.13);
   --ng-border-accent: rgba(226,169,53,.14);
 
-  --ng-text-primary: #edf2f6;
+  --ng-text-primary: var(--ng-text-soft);
   --ng-text-secondary: #8496a7;
-  --ng-text-muted: #667a8d;
-  --ng-text-accent: #efc45d;
+  --ng-text-muted: var(--ng-muted-dim);
+  --ng-text-accent: var(--ng-gold-2);
 
   --ng-type-label: 12.5px;
   --ng-type-body: 14px;

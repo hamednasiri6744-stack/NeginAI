@@ -10,6 +10,7 @@ import './styles/tailwind.css'
 import './design-system/components/components.css'
 import './styles/global.css'
 import './styles/layout-architecture-v1.css'
+import './design-system/theme/visual-baseline.css'
 
 const root = document.getElementById('root')
 
