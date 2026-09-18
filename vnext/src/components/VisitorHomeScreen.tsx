@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { motion, useReducedMotion } from 'motion/react'
 import {
   getSellerPortfolioReturnedCheques,
   type SellerPortfolioReturnedChequesResponse,
@@ -23,9 +24,6 @@ import {
   UserGroupIcon,
 } from './Icons'
 import { AppHeader, BottomDock } from '../design-system/components'
-import { ActionRail, AppScene, ContextStrip, FocusSurface, Pressable } from '../design-system/composition'
-import '../design-system/living/index.css'
-import '../styles/home-composition.css'
 
 type Props = { onNavigate: (path: string) => void }
 
@@ -49,6 +47,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
   const [riskLoading, setRiskLoading] = useState(true)
   const [riskError, setRiskError] = useState<string | null>(null)
   const [riskRevision, setRiskRevision] = useState(0)
+  const reducedMotion = useReducedMotion()
 
   const livingUiEnabled = typeof window !== 'undefined'
     && new URLSearchParams(window.location.search).get('liveui') !== '0'
@@ -183,13 +182,16 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
 
   return (
     <main
-      className={'vh-page vhome-page ng-living-root' + (livingUiEnabled ? ' vhome-live' : '')}
+      className="relative h-dvh min-h-dvh overflow-hidden bg-ng-bg text-ng-text"
       dir="rtl"
-      data-living-ui={livingUiEnabled ? 'on' : 'off'}
-      data-design-system="atlas-v1"
-      data-home-composition="v1"
+      data-home-ui="tailwind-v1"
     >
-      <div className="vh-shell vhome-shell">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_-10%,rgba(38,91,126,.20),transparent_34%)]"
+      />
+
+      <div className="relative mx-auto flex h-dvh w-full max-w-[430px] flex-col px-3 pt-[max(12px,env(safe-area-inset-top))] pb-[calc(96px+env(safe-area-inset-bottom))]">
         <AppHeader
           avatarText={profile?.full_name?.charAt(0) || profile?.username?.charAt(0) || 'و'}
           title={profile?.full_name || profile?.username || 'ویزیتور'}
@@ -198,117 +200,115 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
           profileTrailing={<ChevronLeftIcon />}
           onProfileClick={() => onNavigate('/visitor/profile')}
           action={(
-            <button
-              className={'vh-bell ng-living-interactive' + (highestSeverity ? ' severity-' + highestSeverity : '')}
-              data-severity={highestSeverity ?? 'none'}
+            <motion.button
               type="button"
               aria-label="اعلان‌ها"
               onClick={() => onNavigate('/visitor/notifications')}
+              className="relative grid size-11 place-items-center rounded-[15px] border border-[var(--ng-border-subtle)] bg-[rgba(7,22,35,.74)] text-ng-gold shadow-[var(--ng-shadow-contact)]"
+              {...(reducedMotion || !livingUiEnabled ? {} : { whileTap: { scale: 0.96 } })}
+              transition={{ type: 'spring', stiffness: 520, damping: 34, mass: 0.45 }}
             >
               <BellIcon />
               {attentionCount ? (
-                <b key={attentionCount + '-' + (highestSeverity ?? 'none')}>
+                <b className="absolute -end-1 -top-1 grid min-w-5 place-items-center rounded-full bg-ng-danger px-1 text-[10px] font-black text-white">
                   {attentionCount}
                 </b>
               ) : null}
-            </button>
+            </motion.button>
           )}
         />
 
-        <AppScene className="vhome-scene">
-          <ContextStrip className="vhome-context" aria-label="خلاصه وضعیت روز">
-            <div className="vhome-context-item">
-              <ClockIcon />
-              <strong>{currentTime}</strong>
-              <small>{weekday}</small>
-              <em>{persianDate}</em>
+        <section
+          aria-label="خلاصه وضعیت روز"
+          className="mt-2 grid shrink-0 grid-cols-4 divide-x divide-[var(--ng-border-subtle)] rounded-[var(--ng-radius-stage)] border border-[var(--ng-border-subtle)] bg-[rgba(4,15,25,.56)] p-1 backdrop-blur-[var(--ng-blur)]"
+        >
+          <div className="flex min-h-14 min-w-0 flex-col items-center justify-center gap-0.5 px-1 text-center">
+            <span className="[&>svg]:size-4 text-ng-gold-soft"><ClockIcon /></span>
+            <strong className="max-w-full truncate text-xs font-extrabold">{currentTime}</strong>
+            <small className="max-w-full truncate text-[9px] text-ng-muted">{weekday}</small>
+          </div>
+
+          <div className="flex min-h-14 min-w-0 flex-col items-center justify-center gap-0.5 px-1 text-center">
+            <span className="[&>svg]:size-4 text-ng-gold-soft"><RouteArrowIcon /></span>
+            <strong className="max-w-full truncate text-xs font-extrabold">
+              {workCalendar
+                ? elapsedWorkingDays.toLocaleString('fa-IR') + ' / ' + totalWorkingDays.toLocaleString('fa-IR')
+                : '…'}
+            </strong>
+            <small className="max-w-full truncate text-[9px] text-ng-muted">
+              {workCalendar ? remainingWorkingDays.toLocaleString('fa-IR') + ' روز مانده' : 'روز کاری'}
+            </small>
+          </div>
+
+          <motion.button
+            type="button"
+            onClick={() => onNavigate('/visitor/reports')}
+            aria-label="وضعیت هدف فروش"
+            className="flex min-h-14 min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-center"
+            {...(reducedMotion || !livingUiEnabled ? {} : { whileTap: { scale: 0.97 } })}
+            transition={{ type: 'spring', stiffness: 520, damping: 34, mass: 0.45 }}
+          >
+            <span className="[&>svg]:size-4 text-ng-gold-soft"><ChartIcon /></span>
+            <strong className="max-w-full truncate text-xs font-extrabold">{targetValue}</strong>
+            <small className="max-w-full truncate text-[9px] text-ng-muted">{targetLabel}</small>
+          </motion.button>
+
+          <motion.button
+            type="button"
+            onClick={() => onNavigate('/visitor/notifications')}
+            aria-label="هشدارهای فعال"
+            className="flex min-h-14 min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-center"
+            {...(reducedMotion || !livingUiEnabled ? {} : { whileTap: { scale: 0.97 } })}
+            transition={{ type: 'spring', stiffness: 520, damping: 34, mass: 0.45 }}
+          >
+            <span className="[&>svg]:size-4 text-ng-gold-soft"><BellIcon /></span>
+            <strong className={attentionCount ? 'max-w-full truncate text-xs font-extrabold text-ng-warning' : 'max-w-full truncate text-xs font-extrabold'}>
+              {attentionCount.toLocaleString('fa-IR')}
+            </strong>
+            <small className="max-w-full truncate text-[9px] text-ng-muted">
+              {highestSeverity ? 'نیازمند توجه' : 'هشدار فعال'}
+            </small>
+          </motion.button>
+        </section>
+
+        <div className="mt-2 min-h-0 flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <section className="relative overflow-hidden rounded-[var(--ng-radius-stage)] border border-[var(--ng-border-subtle)] bg-[linear-gradient(155deg,rgba(255,255,255,.035),rgba(255,255,255,.004)_46%),var(--ng-surface-stage)] p-4 shadow-[var(--ng-shadow-contact)]">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_84%_12%,rgba(242,203,104,.09),transparent_34%)]"
+            />
+
+            <div className="relative flex items-center justify-between gap-3">
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-black text-ng-mint">
+                <i className={'size-1.5 rounded-full bg-current ' + (livingUiEnabled && !reducedMotion ? 'animate-pulse' : '')} />
+                NeginAI LIVE
+              </span>
+              <span className="text-[9px] text-ng-muted">{persianDate}</span>
             </div>
 
-            <div className="vhome-context-item">
-              <RouteArrowIcon />
-              <strong>
-                {workCalendar
-                  ? elapsedWorkingDays.toLocaleString('fa-IR') + ' / ' + totalWorkingDays.toLocaleString('fa-IR')
-                  : '…'}
-              </strong>
-              <small>روز کاری</small>
-              <em>
-                {workCalendar
-                  ? remainingWorkingDays.toLocaleString('fa-IR') + ' روز مانده'
-                  : 'تقویم NGT'}
-              </em>
-            </div>
-
-            <Pressable
-              emphasis="quiet"
-              className="vhome-context-item"
-              onClick={() => onNavigate('/visitor/reports')}
-              aria-label="وضعیت هدف فروش"
-            >
-              <ChartIcon />
-              <strong>{targetValue}</strong>
-              <small>{targetLabel}</small>
-              <em>{targetSemanticReady ? 'Analysis' : 'KPI gated'}</em>
-            </Pressable>
-
-            <Pressable
-              emphasis="quiet"
-              className={'vhome-context-item' + (attentionCount ? ' is-alert' : '')}
-              onClick={() => onNavigate('/visitor/notifications')}
-              aria-label="هشدارهای فعال"
-            >
-              <BellIcon />
-              <strong>{attentionCount.toLocaleString('fa-IR')}</strong>
-              <small>هشدار فعال</small>
-              <em>{highestSeverity ? 'نیازمند توجه' : 'Alert Center'}</em>
-            </Pressable>
-          </ContextStrip>
-
-          <FocusSurface className="vhome-focus">
-            <div className="vhome-focus-head">
-              <span className="vhome-live-badge"><i /> NeginAI LIVE</span>
-            </div>
-
-            {(error || riskError) ? (
-              <Pressable
-                emphasis="standard"
-                className="vhome-sync-alert"
-                onClick={retryLiveData}
-              >
-                <span>
-                  <strong>
-                    {stale
-                      ? 'حالت آفلاین · آخرین داده ذخیره‌شده'
-                      : 'بخشی از داده زنده در دسترس نیست'}
-                  </strong>
-                  <small>
-                    {stale && lastSyncedAt
-                      ? 'آخرین همگام‌سازی ' + new Date(lastSyncedAt).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }) + ' · لمس برای تلاش دوباره'
-                      : 'برای تلاش دوباره لمس کن'}
-                  </small>
-                </span>
-                <ChevronLeftIcon />
-              </Pressable>
-            ) : null}
-
-            <div className="vhome-focus-body">
-              <span className="vhome-focus-icon">{operationalAction.icon}</span>
-              <div className="vhome-focus-copy min-w-0">
-                <small>{operationalAction.eyebrow}</small>
-                <h1>{operationalAction.title}</h1>
-                <p>{operationalAction.body}</p>
+            <div className="relative mt-4 grid grid-cols-[48px_minmax(0,1fr)] items-center gap-3">
+              <span className="grid size-12 place-items-center rounded-2xl border border-[rgba(242,203,104,.18)] bg-[rgba(242,203,104,.05)] text-ng-gold [&>svg]:size-6">
+                {operationalAction.icon}
+              </span>
+              <div className="min-w-0">
+                <small className="text-[10px] font-extrabold text-ng-gold-soft">{operationalAction.eyebrow}</small>
+                <h1 className="mt-1 text-[clamp(19px,5.2vw,24px)] font-black leading-[1.45] text-ng-text">
+                  {operationalAction.title}
+                </h1>
+                <p className="mt-1 text-[11px] leading-7 text-ng-muted">{operationalAction.body}</p>
               </div>
             </div>
 
-            <div className="vhome-progress" aria-label="پیشرفت عملیات امروز">
-              <span className="vhome-progress-track">
+            <div className="relative mt-4">
+              <div className="h-1 overflow-hidden rounded-full bg-[rgba(255,255,255,.055)]">
                 <i
+                  className="block h-full rounded-full bg-gradient-to-l from-ng-gold to-[var(--ng-gold-4)] shadow-[0_0_12px_rgba(242,203,104,.24)]"
                   style={{
                     width: Math.max(4, Math.min(100, offDay ? 4 : routeSummary.progress)) + '%',
                   }}
                 />
-              </span>
-              <small>
+              </div>
+              <small className="mt-1.5 block text-[9px] text-ng-muted">
                 {offDay
                   ? 'Route امروز غیرفعال'
                   : liveAssignment
@@ -317,63 +317,98 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
               </small>
             </div>
 
-            <div className="vhome-focus-footer">
-              <ActionRail className="vhome-actions" aria-label="اقدام‌های زمینه‌ای">
-                {(riskLoading || riskError || returnedChequeCount > 0) ? (
-                  <Pressable
-                    className={'vhome-action vhome-action-risk' + (returnedChequeCount ? ' is-danger' : '')}
-                    onClick={() => onNavigate('/visitor/reports')}
-                  >
-                    <span><ChequeIcon /></span>
-                    <span>
-                      <strong>ریسک مالی</strong>
-                      <small>
-                        {riskLoading
-                          ? 'در حال دریافت…'
-                          : returnedChequeCount
-                            ? returnedChequeCount.toLocaleString('fa-IR') + ' چک برگشتی'
-                            : 'دریافت نشد'}
-                      </small>
-                    </span>
-                  </Pressable>
-                ) : null}
+            <motion.button
+              type="button"
+              onClick={() => onNavigate(operationalAction.path)}
+              className="relative mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[rgba(255,230,160,.72)] bg-gradient-to-b from-[#ffe8a3] to-[#dda22c] px-6 font-black text-[#171005] shadow-[0_10px_24px_rgba(0,0,0,.28),inset_0_1px_rgba(255,255,255,.45)]"
+              {...(reducedMotion || !livingUiEnabled ? {} : { whileTap: { scale: 0.97, y: 1 } })}
+              transition={{ type: 'spring', stiffness: 520, damping: 34, mass: 0.45 }}
+            >
+              <span>{operationalAction.action}</span>
+              <span className="[&>svg]:size-3 [&>svg]:rotate-180"><ChevronLeftIcon /></span>
+            </motion.button>
+          </section>
 
-                {attentionCount ? (
-                  <Pressable
-                    className="vhome-action vhome-action-alert"
-                    onClick={() => onNavigate('/visitor/notifications')}
-                  >
-                    <span><BellIcon /></span>
-                    <span>
-                      <strong>هشدارها</strong>
-                      <small>{attentionCount.toLocaleString('fa-IR')} مورد نیازمند توجه</small>
-                    </span>
-                  </Pressable>
-                ) : null}
+          {(error || riskError) ? (
+            <motion.button
+              type="button"
+              onClick={retryLiveData}
+              className="mt-2 flex w-full items-center justify-between gap-3 border-y border-[rgba(242,184,79,.14)] bg-[rgba(242,184,79,.035)] px-3 py-2 text-start"
+              {...(reducedMotion || !livingUiEnabled ? {} : { whileTap: { scale: 0.99 } })}
+              transition={{ type: 'spring', stiffness: 520, damping: 34, mass: 0.45 }}
+            >
+              <span className="min-w-0">
+                <strong className="block text-[10px] text-ng-warning">
+                  {stale ? 'حالت آفلاین · آخرین داده ذخیره‌شده' : 'بخشی از داده زنده در دسترس نیست'}
+                </strong>
+                <small className="mt-0.5 block truncate text-[9px] text-ng-muted">
+                  {stale && lastSyncedAt
+                    ? 'آخرین همگام‌سازی ' + new Date(lastSyncedAt).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }) + ' · لمس برای تلاش دوباره'
+                    : 'برای تلاش دوباره لمس کن'}
+                </small>
+              </span>
+              <span className="[&>svg]:size-3 [&>svg]:rotate-180 text-ng-muted"><ChevronLeftIcon /></span>
+            </motion.button>
+          ) : null}
 
-                <Pressable
-                  className="vhome-action vhome-action-ai"
-                  onClick={() => onNavigate('/visitor/ai?context=home')}
-                >
-                  <span><AiSparkIcon /></span>
-                  <span>
-                    <strong>Negin AI</strong>
-                    <small>تحلیل زمینه امروز</small>
-                  </span>
-                </Pressable>
-              </ActionRail>
-
-              <Pressable
-                emphasis="primary"
-                className="vhome-focus-action"
-                onClick={() => onNavigate(operationalAction.path)}
+          <section className="mt-2 divide-y divide-[var(--ng-border-subtle)] border-y border-[var(--ng-border-subtle)]">
+            {(riskLoading || returnedChequeCount > 0) ? (
+              <motion.button
+                type="button"
+                onClick={() => onNavigate('/visitor/reports')}
+                className="grid min-h-14 w-full grid-cols-[38px_minmax(0,1fr)_14px] items-center gap-3 px-2 text-start"
+                {...(reducedMotion || !livingUiEnabled ? {} : { whileTap: { scale: 0.99 } })}
+                transition={{ type: 'spring', stiffness: 520, damping: 34, mass: 0.45 }}
               >
-                <span>{operationalAction.action}</span>
-                <ChevronLeftIcon />
-              </Pressable>
-            </div>
-          </FocusSurface>
-        </AppScene>
+                <span className={riskLoading
+                  ? "grid size-9 place-items-center rounded-xl bg-[rgba(119,185,232,.05)] text-ng-info [&>svg]:size-4"
+                  : "grid size-9 place-items-center rounded-xl bg-[rgba(255,109,120,.06)] text-ng-danger [&>svg]:size-4"
+                }><ChequeIcon /></span>
+                <span className="min-w-0">
+                  <strong className={riskLoading ? "block text-xs text-ng-text" : "block text-xs text-ng-danger"}>ریسک مالی</strong>
+                  <small className="mt-0.5 block truncate text-[9px] text-ng-muted">
+                    {riskLoading ? 'در حال دریافت…' : returnedChequeCount.toLocaleString('fa-IR') + ' چک برگشتی'}
+                  </small>
+                </span>
+                <span className="[&>svg]:size-3 [&>svg]:rotate-180 text-ng-muted"><ChevronLeftIcon /></span>
+              </motion.button>
+            ) : null}
+
+            {attentionCount > 0 ? (
+              <motion.button
+                type="button"
+                onClick={() => onNavigate('/visitor/notifications')}
+                className="grid min-h-14 w-full grid-cols-[38px_minmax(0,1fr)_14px] items-center gap-3 px-2 text-start"
+                {...(reducedMotion || !livingUiEnabled ? {} : { whileTap: { scale: 0.99 } })}
+                transition={{ type: 'spring', stiffness: 520, damping: 34, mass: 0.45 }}
+              >
+                <span className="grid size-9 place-items-center rounded-xl bg-[rgba(242,184,79,.05)] text-ng-warning [&>svg]:size-4"><BellIcon /></span>
+                <span className="min-w-0">
+                  <strong className="block text-xs text-ng-text">هشدارها</strong>
+                  <small className="mt-0.5 block truncate text-[9px] text-ng-muted">
+                    {attentionCount.toLocaleString('fa-IR')} مورد نیازمند توجه
+                  </small>
+                </span>
+                <span className="[&>svg]:size-3 [&>svg]:rotate-180 text-ng-muted"><ChevronLeftIcon /></span>
+              </motion.button>
+            ) : null}
+
+            <motion.button
+              type="button"
+              onClick={() => onNavigate('/visitor/ai?context=home')}
+              className="grid min-h-14 w-full grid-cols-[38px_minmax(0,1fr)_14px] items-center gap-3 px-2 text-start"
+              {...(reducedMotion || !livingUiEnabled ? {} : { whileTap: { scale: 0.99 } })}
+              transition={{ type: 'spring', stiffness: 520, damping: 34, mass: 0.45 }}
+            >
+              <span className="grid size-9 place-items-center rounded-xl bg-[rgba(242,203,104,.045)] text-ng-gold-soft [&>svg]:size-4"><AiSparkIcon /></span>
+              <span className="min-w-0">
+                <strong className="block text-xs text-ng-text">Negin AI</strong>
+                <small className="mt-0.5 block truncate text-[9px] text-ng-muted">تحلیل زمینه امروز</small>
+              </span>
+              <span className="[&>svg]:size-3 [&>svg]:rotate-180 text-ng-muted"><ChevronLeftIcon /></span>
+            </motion.button>
+          </section>
+        </div>
 
         <BottomDock
           ariaLabel="ناوبری ویزیتور"
