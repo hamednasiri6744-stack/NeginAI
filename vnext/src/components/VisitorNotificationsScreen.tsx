@@ -1,6 +1,14 @@
 import { useMemo, useState } from 'react'
-import { useVisitorAuth } from '../state/VisitorAuthContext'
 import type { NotificationSeverity } from '../api/neginApi'
+import {
+  Button,
+  FeedbackState,
+  LiveIndicator,
+  NotificationItem,
+  SegmentedControl,
+  Surface,
+} from '../design-system/components'
+import { useVisitorAuth } from '../state/VisitorAuthContext'
 import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
 import '../design-system/living/index.css'
 import '../styles/living-ui-pilot.css'
@@ -28,28 +36,34 @@ function notificationTime(value: string) {
   }).format(date)
 }
 
-const severityRank: Record<NotificationSeverity, number> = { critical: 4, high: 3, medium: 2, info: 1 }
+const severityRank: Record<NotificationSeverity, number> = {
+  critical: 4,
+  high: 3,
+  medium: 2,
+  info: 1,
+}
+
 const severityLabel: Record<NotificationSeverity, string> = {
   critical: 'بحرانی',
-  high: 'مهم',
+  high: 'بالا',
   medium: 'متوسط',
-  info: 'اطلاع',
+  info: 'اطلاعاتی',
 }
 
 const categoryLabel: Record<string, string> = {
-  pricing: 'قیمت فروش',
-  promotion: 'تخفیف / جایزه',
-  finance: 'ریسک مالی',
-  credit: 'کنترل اعتبار',
+  pricing: 'قیمت‌گذاری',
+  promotion: 'پروموشن / جایزه',
+  finance: 'مالی',
+  credit: 'اعتباری',
   route: 'مسیر',
   customer: 'مشتری',
   distribution: 'توزیع',
-  return: 'برگشت',
-  general: 'عملیاتی',
+  return: 'مرجوعی',
+  general: 'عمومی',
 }
 
 function notificationCategory(value: string) {
-  return categoryLabel[value] || value || 'عملیاتی'
+  return categoryLabel[value] || value || 'عمومی'
 }
 
 export function VisitorNotificationsScreen({ onNavigate, onClose }: Props) {
@@ -75,6 +89,7 @@ export function VisitorNotificationsScreen({ onNavigate, onClose }: Props) {
       : filter === 'read'
         ? items.filter((item) => item.read && (!item.requires_ack || item.acknowledged))
         : items
+
     return [...filtered].sort((a, b) => {
       const aAttention = !a.read || (a.requires_ack && !a.acknowledged) ? 1 : 0
       const bAttention = !b.read || (b.requires_ack && !b.acknowledged) ? 1 : 0
@@ -84,24 +99,47 @@ export function VisitorNotificationsScreen({ onNavigate, onClose }: Props) {
       return new Date(b.occurred_at || b.created_at).valueOf() - new Date(a.occurred_at || a.created_at).valueOf()
     })
   }, [filter, items])
+
   const readCount = items.filter((item) => item.read && (!item.requires_ack || item.acknowledged)).length
+  const tabs = [
+    { value: 'all' as const, label: 'همه', count: items.length },
+    { value: 'unread' as const, label: 'خوانده‌نشده', count: unreadCount },
+    { value: 'read' as const, label: 'خوانده‌شده', count: readCount },
+  ]
 
   return (
-    <main className="vh-page ng-living-root vh-live-ui" dir="rtl" data-live-ui="unified" data-living-ui="on" data-design-system="atlas-v1" data-screen="notifications">
+    <main
+      className="vh-page ng-living-root vh-live-ui"
+      dir="rtl"
+      data-live-ui="unified"
+      data-living-ui="on"
+      data-design-system="atlas-v1"
+      data-screen="notifications"
+    >
       <div className="vh-shell vn-shell">
         <header className="vh-header">
           <button className="vh-profile ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/profile')}>
-            <span className="vh-avatar">{profile?.full_name?.charAt(0) || profile?.username?.charAt(0) || 'و'}</span>
+            <span className="vh-avatar">{profile?.full_name?.charAt(0) || profile?.username?.charAt(0) || 'ن'}</span>
             <span className="vh-profile-copy">
               <strong>{profile?.full_name || profile?.username || 'کاربر'}</strong>
-              <small><PinIcon /> {profile?.branch || profile?.sales_line || 'حساب سازمانی'}</small>
+              <small><PinIcon /> {profile?.branch || profile?.sales_line || 'دفتر فروش'}</small>
             </span>
             <ChevronLeftIcon />
           </button>
 
-          <button className={`vh-bell active ng-living-interactive ${highestSeverity ? `severity-${highestSeverity}` : ''}`} data-severity={highestSeverity ?? 'none'} type="button" aria-label="\u0628\u0633\u062a\u0646 \u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627" onClick={onClose}>
+          <button
+            className={`vh-bell active ng-living-interactive ${highestSeverity ? `severity-${highestSeverity}` : ''}`}
+            data-severity={highestSeverity ?? 'none'}
+            type="button"
+            aria-label="بستن اعلان‌ها"
+            onClick={onClose}
+          >
             <BellIcon />
-            {attentionCount ? <b key={`${attentionCount}-${highestSeverity ?? 'none'}`} className="ng-living-reactive">{attentionCount}</b> : null}
+            {attentionCount ? (
+              <b key={`${attentionCount}-${highestSeverity ?? 'none'}`} className="ng-living-reactive">
+                {attentionCount}
+              </b>
+            ) : null}
           </button>
 
           <div className="vh-brand" dir="ltr">
@@ -110,109 +148,82 @@ export function VisitorNotificationsScreen({ onNavigate, onClose }: Props) {
           </div>
         </header>
 
-        <section className="vn-heading ng-living-surface" aria-live="polite">
+        <Surface as="section" tone="stage" className="vn-heading" aria-live="polite">
           <div>
-            <h1>{'\u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627'}</h1>
+            <h1>اعلان‌ها</h1>
             <p>
               {attentionCount
                 ? `${attentionCount.toLocaleString('fa-IR')} هشدار نیازمند توجه${highestSeverity ? ` · سطح ${severityLabel[highestSeverity]}` : ''}`
-                : '\u0647\u0645\u0647 \u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627\u06cc \u0641\u0639\u0644\u06cc \u062e\u0648\u0627\u0646\u062f\u0647 \u0634\u062f\u0647\u200c\u0627\u0646\u062f.'}
+                : 'همه اعلان‌های فعلی خوانده شده‌اند.'}
             </p>
-            <span className={`vn-live-link ${liveConnected ? 'connected' : 'reconnecting'}`}>
-              <i />{liveConnected ? 'اتصال زنده برقرار' : 'در حال اتصال زنده'}
-            </span>
+            <LiveIndicator state={liveConnected ? 'connected' : 'reconnecting'} />
           </div>
-          <button className="ng-living-interactive" type="button" disabled={!unreadCount} onClick={markAllRead}>
-            {'\u062e\u0648\u0627\u0646\u062f\u0646 \u0647\u0645\u0647'}
-          </button>
-        </section>
+          <Button variant="ghost" disabled={!unreadCount} onClick={markAllRead}>
+            خواندن همه
+          </Button>
+        </Surface>
 
         {error ? (
-          <section className="vh-live-state error" role="alert">
-            <div>
-              <strong>{'\u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627 \u0628\u0627\u0631\u06af\u0630\u0627\u0631\u06cc \u0646\u0634\u062f\u0646\u062f'}</strong>
-              <span>{liveConnected ? 'اتصال زنده برقرار است؛ همگام‌سازی فهرست اعلان‌ها دوباره تلاش می‌شود.' : error}</span>
-            </div>
-            <button type="button" onClick={() => void reload()}>{'\u062a\u0644\u0627\u0634 \u062f\u0648\u0628\u0627\u0631\u0647'}</button>
-          </section>
+          <FeedbackState
+            kind="error"
+            title="اعلان‌ها بارگذاری نشدند"
+            description={liveConnected ? 'اتصال زنده برقرار است؛ همگام‌سازی فهرست اعلان‌ها دوباره تلاش می‌شود.' : error}
+            actionLabel="تلاش دوباره"
+            onAction={() => void reload()}
+          />
         ) : null}
 
-        <section className="vn-tabs" role="tablist" aria-label="\u0641\u06cc\u0644\u062a\u0631 \u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627">
-          <button
-            className={`${filter === 'all' ? 'active ' : ''}ng-living-interactive`}
-            type="button"
-            role="tab"
-            aria-selected={filter === 'all'}
-            onClick={() => setFilter('all')}
-          >
-            <span>{'\u0647\u0645\u0647'}</span><b>{items.length.toLocaleString('fa-IR')}</b>
-          </button>
-          <button
-            className={`${filter === 'unread' ? 'active ' : ''}ng-living-interactive`}
-            type="button"
-            role="tab"
-            aria-selected={filter === 'unread'}
-            onClick={() => setFilter('unread')}
-          >
-            <span>{'\u062e\u0648\u0627\u0646\u062f\u0647\u200c\u0646\u0634\u062f\u0647'}</span><b key={unreadCount} className="ng-living-reactive">{unreadCount.toLocaleString('fa-IR')}</b>
-          </button>
-          <button
-            className={`${filter === 'read' ? 'active ' : ''}ng-living-interactive`}
-            type="button"
-            role="tab"
-            aria-selected={filter === 'read'}
-            onClick={() => setFilter('read')}
-          >
-            <span>{'\u062e\u0648\u0627\u0646\u062f\u0647\u200c\u0634\u062f\u0647'}</span><b>{readCount.toLocaleString('fa-IR')}</b>
-          </button>
-        </section>
+        <SegmentedControl
+          value={filter}
+          items={tabs}
+          onChange={setFilter}
+          ariaLabel="فیلتر اعلان‌ها"
+          className="vn-tabs"
+        />
 
-        <section key={filter} className="vn-list ng-living-panel-change" aria-label="\u0641\u0647\u0631\u0633\u062a \u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627">
+        <Surface as="section" tone="detail" className="vn-list ng-living-panel-change" aria-label="فهرست اعلان‌ها">
           {visibleItems.length ? visibleItems.map((item) => (
-            <article
-              className={`vn-card ${item.read ? 'read' : 'unread'} severity-${item.severity} ng-living-surface`}
-              data-severity={item.severity}
-              data-living-state={item.requires_ack && !item.acknowledged ? 'attention' : item.read ? 'settled' : 'live'}
+            <NotificationItem
               key={item.id}
-            >
-              <button className="vn-card-main ng-living-interactive" type="button" onClick={() => { markRead(item.id); if (item.action_path) onNavigate(item.action_path) }}>
-                <span className="vn-icon"><BellIcon /></span>
-                <span className="vn-copy">
-                  <span className="vn-meta"><b className={`vn-severity ${item.severity}`}>{severityLabel[item.severity]}</b><i className="vn-category" data-category={item.category}>{notificationCategory(item.category)}</i><time>{notificationTime(item.occurred_at || item.created_at)}</time></span>
-                  <strong>{item.title}</strong>
-                  <small>{item.body}</small>
-                  <em>{item.source === 'NGT' || item.source === 'varanegar' ? 'منبع: ورانگر / NGT' : item.source}</em>
-                </span>
-                {!item.read || (item.requires_ack && !item.acknowledged) ? <span className="vn-unread-dot ng-living-reactive" aria-label="نیازمند توجه" /> : <ChevronLeftIcon />}
-              </button>
-              {item.requires_ack && !item.acknowledged ? (
-                <div className="vn-card-foot critical-ack"><span>این هشدار نیازمند تأیید است</span><button type="button" onClick={() => markAcknowledged(item.id)}>تأیید اطلاع</button></div>
-              ) : null}
-            </article>
+              icon={<BellIcon />}
+              tone={item.severity}
+              toneLabel={severityLabel[item.severity]}
+              categoryLabel={notificationCategory(item.category)}
+              timeLabel={notificationTime(item.occurred_at || item.created_at)}
+              title={item.title}
+              body={item.body}
+              sourceLabel={item.source === 'NGT' || item.source === 'varanegar' ? 'منبع: وارانگر / NGT' : item.source}
+              unread={!item.read}
+              attention={item.requires_ack && !item.acknowledged}
+              acknowledgeHint="این اعلان نیازمند تأیید شماست"
+              acknowledgeLabel="تأیید کردم"
+              onOpen={() => {
+                markRead(item.id)
+                if (item.action_path) onNavigate(item.action_path)
+              }}
+              onAcknowledge={item.requires_ack && !item.acknowledged ? () => markAcknowledged(item.id) : undefined}
+              trailing={item.read && (!item.requires_ack || item.acknowledged) ? <ChevronLeftIcon /> : undefined}
+            />
           )) : loading ? (
-            <div className="vn-loading-list" role="status" aria-live="polite">
-              <div className="vn-skeleton-row"><i /><span><b /><em /></span></div>
-              <div className="vn-skeleton-row"><i /><span><b /><em /></span></div>
-              <div className="vn-skeleton-row"><i /><span><b /><em /></span></div>
-              <small>در حال همگام‌سازی اعلان‌ها…</small>
-            </div>
+            <FeedbackState kind="loading" rows={3} description="در حال همگام‌سازی اعلان‌ها…" />
           ) : error ? null : (
-            <div className="vn-empty">
-              <BellIcon />
-              <strong>{'\u0627\u0639\u0644\u0627\u0646\u06cc \u0628\u0631\u0627\u06cc \u0646\u0645\u0627\u06cc\u0634 \u0646\u06cc\u0633\u062a'}</strong>
-              <span>{filter === 'unread'
-                ? '\u0627\u0639\u0644\u0627\u0646 \u062e\u0648\u0627\u0646\u062f\u0647\u200c\u0646\u0634\u062f\u0647\u200c\u0627\u06cc \u0648\u062c\u0648\u062f \u0646\u062f\u0627\u0631\u062f.'
-                : '\u0628\u0631\u0627\u06cc \u0627\u06cc\u0646 \u06a9\u0627\u0631\u0628\u0631 \u0647\u0646\u0648\u0632 \u0627\u0639\u0644\u0627\u0646\u06cc \u062b\u0628\u062a \u0646\u0634\u062f\u0647 \u0627\u0633\u062a.'}</span>
-            </div>
+            <FeedbackState
+              kind="empty"
+              icon={<BellIcon />}
+              title="اعلانی برای نمایش نیست"
+              description={filter === 'unread'
+                ? 'اعلان خوانده‌نشده‌ای وجود ندارد.'
+                : 'برای این کاربر هنوز اعلانی ثبت نشده است.'}
+            />
           )}
-        </section>
+        </Surface>
 
-        <nav className="vh-nav" aria-label="\u0646\u0627\u0648\u0628\u0631\u06cc">
-          <button className="vh-nav-item ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/home')}><HomeIcon /><span>{'\u062e\u0627\u0646\u0647'}</span></button>
-          <button className="vh-nav-item ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/route')}><MapIcon /><span>{'\u0645\u0633\u06cc\u0631'}</span></button>
-          <button className="vh-order ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/orders')}><PlusIcon /><span>{'\u0633\u0641\u0627\u0631\u0634'}</span></button>
-          <button className="vh-nav-item ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/customers')}><UserGroupIcon /><span>{'\u0645\u0634\u062a\u0631\u06cc\u0627\u0646'}</span></button>
-          <button className="vh-nav-item ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/reports')}><ChartIcon /><span>{"\u06af\u0632\u0627\u0631\u0634\u200c\u0647\u0627"}</span></button>
+        <nav className="vh-nav" aria-label="ناوبری">
+          <button className="vh-nav-item ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/home')}><HomeIcon /><span>خانه</span></button>
+          <button className="vh-nav-item ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/route')}><MapIcon /><span>مسیر</span></button>
+          <button className="vh-order ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/orders')}><PlusIcon /><span>سفارش</span></button>
+          <button className="vh-nav-item ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/customers')}><UserGroupIcon /><span>مشتریان</span></button>
+          <button className="vh-nav-item ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/reports')}><ChartIcon /><span>گزارش‌ها</span></button>
         </nav>
       </div>
     </main>

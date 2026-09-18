@@ -6,6 +6,7 @@ import { queryClient } from './queryClient'
 import { router } from './router'
 import { PersianDigitsLayer } from './components/PersianDigitsLayer'
 import './design-system/core/index.css'
+import './design-system/components/components.css'
 import './styles/global.css'
 
 const root = document.getElementById('root')
