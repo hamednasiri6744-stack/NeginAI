@@ -1,0 +1,70 @@
+/* NeginAI Design System Atlas v1 — canonical design tokens */
+:root {
+  --ng-bg: #020a12;
+  --ng-navy-1: #061624;
+  --ng-navy-2: #0b2032;
+  --ng-navy-3: #102b41;
+  --ng-text: #f5f8ff;
+  --ng-muted: #90a0b4;
+  --ng-gold-1: #fff0b5;
+  --ng-gold-2: #f2cb68;
+  --ng-gold-3: #d69b32;
+  --ng-gold-4: #805116;
+  --ng-mint: #54efbd;
+  --ng-danger: #ff6d78;
+  --ng-warning: #f2b84f;
+  --ng-info: #77b9e8;
+  --ng-border-subtle: rgba(170,199,221,.10);
+  --ng-border-strong: rgba(170,199,221,.16);
+  --ng-border-accent: rgba(226,169,53,.16);
+  --ng-glass-alpha: .82;
+  --ng-blur: 20px;
+  --ng-surface-stage: rgba(7,22,35,.84);
+  --ng-surface-panel: rgba(7,22,35,.80);
+  --ng-surface-detail: rgba(7,22,35,.76);
+}
+:root {
+  --ng-radius-xs: 8px;
+  --ng-radius-sm: 12px;
+  --ng-radius-control: 13px;
+  --ng-radius-surface: 18px;
+  --ng-radius-stage: 22px;
+  --ng-space-1: 4px;
+  --ng-space-2: 8px;
+  --ng-space-3: 12px;
+  --ng-space-4: 16px;
+  --ng-space-5: 24px;
+  --ng-space-6: 32px;
+  --ng-type-label: 12px;
+  --ng-type-body: 14px;
+  --ng-type-title: 20px;
+  --ng-type-value: 22px;
+  --ng-line-body: 1.6;
+  --ng-weight-regular: 500;
+  --ng-weight-medium: 650;
+  --ng-weight-strong: 800;
+  --ng-weight-heavy: 900;
+  --ng-shadow-contact: 0 10px 24px rgba(0,0,0,.22);
+  --ng-shadow-raised: 0 18px 38px rgba(0,0,0,.30);
+  --ng-shadow-floating: 0 26px 52px rgba(0,0,0,.34);
+}
+:root {
+  --ng-motion-instant: 90ms;
+  --ng-motion-touch: 160ms;
+  --ng-motion-state: 320ms;
+  --ng-motion-data: 520ms;
+  --ng-motion-attention: 760ms;
+  --ng-motion-ambient: 6200ms;
+  --ng-ease-touch: cubic-bezier(.2,.8,.2,1);
+  --ng-ease-state: cubic-bezier(.22,.8,.2,1);
+  --ng-ease-data: cubic-bezier(.16,1,.3,1);
+  --ng-ease-ambient: cubic-bezier(.45,.05,.35,1);
+  --ng-touch-target: 44px;
+  --ng-content-max: 1200px;
+  --ng-density-control: 44px;
+  --ng-layer-stage: 0;
+  --ng-layer-sticky: 20;
+  --ng-layer-overlay: 40;
+  --ng-layer-modal: 60;
+  --ng-layer-toast: 80;
+}

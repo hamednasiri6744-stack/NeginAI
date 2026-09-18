@@ -1,0 +1,62 @@
+/* Atlas v1 Home adapter — reversible, Home-only, no business logic. */
+.vh-page[data-design-system='atlas-v1'] .vhd-cockpit {
+  border-radius: var(--ng-radius-stage);
+  border-color: var(--ng-border-strong);
+}
+.vh-page[data-design-system='atlas-v1'] .vhd-next-action,
+.vh-page[data-design-system='atlas-v1'] .vhd-pulse-deck,
+.vh-page[data-design-system='atlas-v1'] .vhd-control-deck {
+  border-radius: var(--ng-radius-surface);
+  border-color: var(--ng-border-subtle);
+}
+.vh-page[data-design-system='atlas-v1'] .vhd-next-action {
+  background:
+    linear-gradient(150deg, color-mix(in srgb, var(--action-accent) 7%, rgba(255,255,255,.03)), rgba(255,255,255,.006) 44%),
+    var(--ng-surface-panel);
+}
+.vh-page[data-design-system='atlas-v1'] .vhd-pulse-deck,
+.vh-page[data-design-system='atlas-v1'] .vhd-control-deck {
+  background:
+    linear-gradient(155deg, rgba(255,255,255,.04), rgba(255,255,255,.006) 46%),
+    var(--ng-surface-panel);
+}
+.vh-page[data-design-system='atlas-v1'] .vhd-depth-control {
+  min-height: var(--ng-touch-target);
+  border-radius: var(--ng-radius-control);
+  border-color: var(--ng-border-subtle);
+}
+.vh-page[data-design-system='atlas-v1'] .vhd-depth-control:focus-visible,
+.vh-page[data-design-system='atlas-v1'] .vhd-next-action:focus-visible,
+.vh-page[data-design-system='atlas-v1'] .vhd-pulse-cell:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(238,187,74,.12), var(--ng-shadow-contact);
+}
+.vh-page[data-design-system='atlas-v1'] .vhd-layer-item.ng-portal-surface,
+.vh-page[data-design-system='atlas-v1'] .vhd-detail-card.ng-detail-surface {
+  border-radius: var(--ng-radius-surface);
+}
+.vh-page[data-design-system='atlas-v1'] .vh-nav {
+  border: 1px solid var(--ng-border-subtle);
+  border-radius: var(--ng-radius-stage);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.006)),
+    rgba(4,15,25,.94);
+  backdrop-filter: blur(var(--ng-blur)) saturate(1.06);
+}
+.vh-page[data-design-system='atlas-v1'] .vh-nav-item,
+.vh-page[data-design-system='atlas-v1'] .vh-order {
+  min-height: var(--ng-touch-target);
+}
+.vh-page[data-design-system='atlas-v1'] .vhd-pulse-title > span,
+.vh-page[data-design-system='atlas-v1'] .vhd-layer-head strong {
+  color: var(--ng-text);
+}
+@media (prefers-reduced-motion: reduce) {
+  .vh-page[data-design-system='atlas-v1'] *,
+  .vh-page[data-design-system='atlas-v1'] *::before,
+  .vh-page[data-design-system='atlas-v1'] *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+}

@@ -1,0 +1,60 @@
+/* App-like interaction grammar: tactile, contextual, stateful. */
+.ng-interactive {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    transform var(--ng-motion-touch) var(--ng-ease-touch),
+    border-color var(--ng-motion-state) var(--ng-ease-state),
+    box-shadow var(--ng-motion-state) ease,
+    filter var(--ng-motion-state) ease;
+}
+.ng-interactive:hover {
+  border-color: var(--ng-border-strong);
+}
+.ng-interactive:active {
+  transform: translateY(1px) scale(.975);
+}
+.ng-interactive:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(238,187,74,.12), var(--ng-shadow-contact);
+}
+.ng-action-primary,
+.ng-action-secondary,
+.ng-action-ghost {
+  min-height: var(--ng-touch-target);
+  border-radius: var(--ng-radius-control);
+  font-weight: var(--ng-weight-strong);
+}
+.ng-action-primary {
+  color: #181005;
+  border: 1px solid rgba(255,230,158,.64);
+  background: linear-gradient(180deg, var(--ng-gold-1), var(--ng-gold-3));
+  box-shadow: var(--ng-shadow-contact), 0 0 18px rgba(236,177,56,.13);
+}
+.ng-action-secondary {
+  color: var(--ng-text);
+  border: 1px solid var(--ng-border-strong);
+  background: rgba(7,23,36,.72);
+}
+.ng-action-ghost {
+  color: var(--ng-muted);
+  border: 1px solid transparent;
+  background: transparent;
+}
+.ng-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 10px color-mix(in srgb, currentColor 60%, transparent);
+}
+.ng-tone-gold { color: var(--ng-gold-2); }
+.ng-tone-mint { color: var(--ng-mint); }
+.ng-tone-danger { color: var(--ng-danger); }
+.ng-tone-warning { color: var(--ng-warning); }
+.ng-tone-info { color: var(--ng-info); }
+.ng-sticky-action {
+  position: sticky;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + var(--ng-space-3));
+  z-index: var(--ng-layer-sticky);
+}

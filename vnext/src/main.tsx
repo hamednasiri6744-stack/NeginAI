@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router'
 import { router } from './router'
 import { PersianDigitsLayer } from './components/PersianDigitsLayer'
+import './design-system/core/index.css'
 import './styles/global.css'
 
 const root = document.getElementById('root')

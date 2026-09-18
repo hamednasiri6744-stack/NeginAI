@@ -31,6 +31,7 @@ import {
 import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
 import '../design-system/living/index.css'
 import '../styles/living-ui-pilot.css'
+import '../styles/design-system-atlas-home.css'
 
 type Props = { onNavigate: (path: string) => void }
 type HomeLayer = 'performance' | 'risk' | 'today' | 'intelligence'
@@ -494,6 +495,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
       dir="rtl"
       data-live-ui={livingUiEnabled ? 'pilot' : 'off'}
       data-living-ui={livingUiEnabled ? 'on' : 'off'}
+      data-design-system="atlas-v1"
       data-home-depth={depth}
     >
       <div className="vh-shell">
