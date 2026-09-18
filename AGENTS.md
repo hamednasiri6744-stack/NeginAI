@@ -21,6 +21,8 @@ For any seller/Visitor feature work, the following are authoritative:
 - `docs/architecture/NEGINAI_ARCHITECTURE_CONTRACT_V1.md`
 - `docs/architecture/NEGINAI_CANONICAL_CAPABILITY_REGISTRY_V1.csv`
 - `docs/architecture/NEGINAI_CURRENT_UI_CAPABILITY_AUDIT_V1.csv`
+- `docs/architecture/NEGINAI_TARGET_INFORMATION_ARCHITECTURE_V1.md`
+- `docs/architecture/NEGINAI_TARGET_SCREEN_STRUCTURE_V1.csv`
 
 Before adding, moving, or duplicating a business feature:
 1. resolve its capability ID,
@@ -40,5 +42,9 @@ Run:
 and:
 
 `python scripts/architecture/validate_ui_capability_audit.py`
+
+and:
+
+`python scripts/architecture/validate_target_screen_structure.py`
 
 before committing architecture changes.

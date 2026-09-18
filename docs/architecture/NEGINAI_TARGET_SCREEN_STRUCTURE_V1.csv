@@ -1,0 +1,36 @@
+surface,level,section,capabilities,ownership_rule
+Global,L0,AppHeader,CAP-IAM-001|CAP-ALT-002|CAP-SYS-001,identity plus alert badge plus sync state only
+Global,L0,BottomDock,CAP-FLD-002|CAP-COM-000|CAP-CUS-001|CAP-ANA-001,stable seller jobs only
+Global,L1,Alert Center,CAP-ALT-001|CAP-ALT-002,global event lifecycle
+Global,L1,Contextual AI,CAP-AI-001|CAP-AI-002|CAP-AI-004,current-context intelligence only
+Global,L2,AI Workspace,CAP-AI-005,deep reasoning not ERP ownership
+Today,L0,Working state,CAP-FLD-001,canonical Today context
+Today,L0,Route summary,CAP-FLD-002,summary projection only
+Today,L0,Next Best Action,CAP-AI-003,backend evidence-backed intelligence
+Today,L0,Finance risk signal,CAP-FIN-008,alert projection only
+Today,L0,Distribution signal,CAP-DST-001,signal projection only
+Today,L0,Performance target,CAP-ANA-001|CAP-ANA-003,summary only and target gated
+Customers,L0,Customer segments,CAP-CUS-002,canonical customer navigation
+Customers,L1,Customer list,CAP-CUS-001,canonical discovery
+Customers,L1,Finance attention,CAP-FIN-008,badge/filter projection only
+Customer360,L2,Identity,CAP-CUS-003,canonical customer context
+Customer360,L2,Visit action,CAP-FLD-005,deep-link only
+Customer360,L2,Order action,CAP-COM-000,deep-link only
+Customer360,L3,Overview,CAP-CUS-001|CAP-CUS-003,customer-owned context
+Customer360,L3,Finance,CAP-FIN-001|CAP-FIN-002|CAP-FIN-003|CAP-FIN-004|CAP-FIN-005|CAP-FIN-006|CAP-FIN-007|CAP-FIN-008,finance-owned contextual depth
+Customer360,L3,History,CAP-CUS-004|CAP-FLD-005|CAP-COM-014,relationship history
+Route,L0,Map execution,CAP-FLD-002|CAP-FLD-008,canonical field execution
+Route,L1,Stop plan,CAP-FLD-003,route-local customer list only
+Route,L2,Visit Workspace,CAP-FLD-004|CAP-FLD-005,canonical visit workflow
+Route,L3,Telemetry,CAP-FLD-006|CAP-FLD-007,GRS Cloud only after validation
+Orders,L0,Selling context,CAP-COM-000|CAP-CUS-001,canonical order session plus customer projection
+Orders,L1,Discovery,CAP-COM-001|CAP-COM-002|CAP-COM-004,canonical catalog discovery
+Orders,L2,Product interaction,CAP-COM-003|CAP-COM-005|CAP-COM-006|CAP-COM-013,canonical product selling interaction
+Orders,L3,Cart policy,CAP-COM-007|CAP-COM-008|CAP-COM-013,canonical order policy and cart
+Orders,L4,Official preview,CAP-COM-009|CAP-COM-010|CAP-COM-011|CAP-COM-012,gated official NGT output only
+Orders,L5,Save submit,CAP-COM-014|CAP-COM-015,saved request distinct from final Varanegar commit
+Reports,L0,Analysis domains,CAP-ANA-001|CAP-ANA-002|CAP-ANA-003|CAP-ANA-004|CAP-ANA-005,analysis navigation
+Reports,L1,Finance analysis,CAP-FIN-002|CAP-FIN-008,aggregate only
+Reports,L1,Distribution analysis,CAP-DST-001|CAP-DST-002,aggregate only
+Reports,L2,Drilldown,CAP-ANA-001|CAP-ANA-002|CAP-ANA-004|CAP-ANA-005,analytical detail only
+Profile,L1,Identity settings,CAP-IAM-001|CAP-IAM-002|CAP-IAM-003|CAP-SYS-002,canonical account and system settings
