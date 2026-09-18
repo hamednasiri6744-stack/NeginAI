@@ -7,7 +7,6 @@ import {
   BellIcon,
   ChartIcon,
   ChevronLeftIcon,
-  ClockIcon,
   HomeIcon,
   MapIcon,
   PinIcon,

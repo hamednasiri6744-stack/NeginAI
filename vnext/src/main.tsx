@@ -1,4 +1,4 @@
-﻿import { StrictMode } from 'react'
+import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from 'react-router'
@@ -39,7 +39,8 @@ if ('serviceWorker' in navigator) {
   })
 
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).then((registration) => {
+    const serviceWorkerUrl = '/sw-vnext-v2.js?v=' + encodeURIComponent(new URL(import.meta.url).pathname)
+    navigator.serviceWorker.register(serviceWorkerUrl, { updateViaCache: 'none' }).then((registration) => {
       // Always revalidate the worker itself. The new worker claims open tabs and the
       // controllerchange handler above performs one clean reload onto the new app shell.
       void registration.update()
