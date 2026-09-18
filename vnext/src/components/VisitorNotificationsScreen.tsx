@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import type { NotificationSeverity } from '../api/neginApi'
 import {
+  AppHeader,
+  BottomDock,
   Button,
   FeedbackState,
   LiveIndicator,
@@ -117,36 +119,30 @@ export function VisitorNotificationsScreen({ onNavigate, onClose }: Props) {
       data-screen="notifications"
     >
       <div className="vh-shell vn-shell">
-        <header className="vh-header">
-          <button className="vh-profile ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/profile')}>
-            <span className="vh-avatar">{profile?.full_name?.charAt(0) || profile?.username?.charAt(0) || 'ن'}</span>
-            <span className="vh-profile-copy">
-              <strong>{profile?.full_name || profile?.username || 'کاربر'}</strong>
-              <small><PinIcon /> {profile?.branch || profile?.sales_line || 'دفتر فروش'}</small>
-            </span>
-            <ChevronLeftIcon />
-          </button>
-
-          <button
-            className={`vh-bell active ng-living-interactive ${highestSeverity ? `severity-${highestSeverity}` : ''}`}
-            data-severity={highestSeverity ?? 'none'}
-            type="button"
-            aria-label="بستن اعلان‌ها"
-            onClick={onClose}
-          >
-            <BellIcon />
-            {attentionCount ? (
-              <b key={`${attentionCount}-${highestSeverity ?? 'none'}`} className="ng-living-reactive">
-                {attentionCount}
-              </b>
-            ) : null}
-          </button>
-
-          <div className="vh-brand" dir="ltr">
-            <img src="/assets/neginai-logo-transparent.png" alt="Negin AI" />
-            <div><strong>Negin <span>AI</span></strong><small>VISITOR</small></div>
-          </div>
-        </header>
+        <AppHeader
+          avatarText={profile?.full_name?.charAt(0) || profile?.username?.charAt(0) || 'ن'}
+          title={profile?.full_name || profile?.username || 'کاربر'}
+          subtitle={profile?.branch || profile?.sales_line || 'دفتر فروش'}
+          subtitleIcon={<PinIcon />}
+          profileTrailing={<ChevronLeftIcon />}
+          onProfileClick={() => onNavigate('/visitor/profile')}
+          action={(
+            <button
+              className={`vh-bell active ng-living-interactive ${highestSeverity ? `severity-${highestSeverity}` : ''}`}
+              data-severity={highestSeverity ?? 'none'}
+              type="button"
+              aria-label="بستن اعلان‌ها"
+              onClick={onClose}
+            >
+              <BellIcon />
+              {attentionCount ? (
+                <b key={`${attentionCount}-${highestSeverity ?? 'none'}`} className="ng-living-reactive">
+                  {attentionCount}
+                </b>
+              ) : null}
+            </button>
+          )}
+        />
 
         <Surface as="section" tone="stage" className="vn-heading" aria-live="polite">
           <div>
@@ -218,13 +214,20 @@ export function VisitorNotificationsScreen({ onNavigate, onClose }: Props) {
           )}
         </Surface>
 
-        <nav className="vh-nav" aria-label="ناوبری">
-          <button className="vh-nav-item ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/home')}><HomeIcon /><span>خانه</span></button>
-          <button className="vh-nav-item ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/route')}><MapIcon /><span>مسیر</span></button>
-          <button className="vh-order ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/orders')}><PlusIcon /><span>سفارش</span></button>
-          <button className="vh-nav-item ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/customers')}><UserGroupIcon /><span>مشتریان</span></button>
-          <button className="vh-nav-item ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/reports')}><ChartIcon /><span>گزارش‌ها</span></button>
-        </nav>
+        <BottomDock
+          ariaLabel="ناوبری"
+          items={[
+            { key: 'home', label: 'خانه', icon: <HomeIcon />, onClick: () => onNavigate('/visitor/home') },
+            { key: 'route', label: 'مسیر', icon: <MapIcon />, onClick: () => onNavigate('/visitor/route') },
+            { key: 'customers', label: 'مشتریان', icon: <UserGroupIcon />, onClick: () => onNavigate('/visitor/customers') },
+            { key: 'reports', label: 'گزارش‌ها', icon: <ChartIcon />, onClick: () => onNavigate('/visitor/reports') },
+          ]}
+          primary={{
+            label: 'سفارش',
+            icon: <PlusIcon />,
+            onClick: () => onNavigate('/visitor/orders'),
+          }}
+        />
       </div>
     </main>
   )

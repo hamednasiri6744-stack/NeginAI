@@ -27,16 +27,16 @@ Not allowed in screen CSS:
 - LiveIndicator
 - FeedbackState
 - NotificationItem
+- AppHeader
+- BottomDock
+- StatusChip
+- Metric / ProgressBar
+- BottomSheet
 
-The Notifications screen is the first migrated consumer.
+Current migrated consumers: Notifications, Home shell/navigation, and Customer360 shell/navigation/states.
 
 ## Next shared components
 
-- AppHeader
-- BottomNavigation / BottomDock
-- StatusChip
-- Metric / Progress
-- BottomSheet
 - EntityHeader
 - CustomerCard / Customer360 primitives
 - QuantityStepper

@@ -23,8 +23,10 @@ import {
 import { VisitorPicker } from './VisitorPicker'
 import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
 import { useVisitorWorkflow } from '../state/VisitorWorkflowContext'
+import { AppHeader, BottomDock, FeedbackState, SegmentedControl, StatusChip } from '../design-system/components'
 import '../design-system/living/index.css'
 import '../styles/living-ui-pilot.css'
+import '../styles/design-system-atlas-customer360.css'
 
 type Props = {
   customerId?: string
@@ -226,32 +228,39 @@ export function VisitorCustomer360Screen({ customerId = '', onNavigate, onBack }
   }
 
   return (
-    <main className="vh-page vh-live-ui ng-living-root c360-app-page" dir="rtl" data-live-ui="unified">
+    <main className="vh-page vh-live-ui ng-living-root c360-app-page" dir="rtl" data-live-ui="unified" data-design-system="atlas-v1" data-screen="customer360">
       <div className="vh-shell c360-shell">
-        <header className="vh-header">
-          <button className="vh-profile" type="button" onClick={() => onNavigate('/visitor/profile')}>
-            <span className="vh-avatar">و</span>
-            <span className="vh-profile-copy">
-              <strong>{userProfile?.full_name || userProfile?.username || 'ویزیتور'}</strong>
-              <small><PinIcon /> {userProfile?.branch || userProfile?.sales_line || 'حساب سازمانی'}</small>
-            </span>
-            <ChevronLeftIcon />
-          </button>
-          <button className="vh-bell" type="button" aria-label="اعلان‌ها" onClick={() => onNavigate('/visitor/notifications')}>
-            <BellIcon />{unreadCount ? <b>{unreadCount}</b> : null}
-          </button>
-          <div className="vh-brand" dir="ltr"><img src="/assets/neginai-logo-transparent.png" alt="Negin AI" /><div><strong>Negin <span>AI</span></strong><small>VISITOR</small></div></div>
-        </header>
+        <AppHeader
+          avatarText={userProfile?.full_name?.charAt(0) || userProfile?.username?.charAt(0) || 'و'}
+          title={userProfile?.full_name || userProfile?.username || 'ویزیتور'}
+          subtitle={userProfile?.branch || userProfile?.sales_line || 'حساب سازمانی'}
+          subtitleIcon={<PinIcon />}
+          profileTrailing={<ChevronLeftIcon />}
+          onProfileClick={() => onNavigate('/visitor/profile')}
+          action={(
+            <button className="vh-bell" type="button" aria-label="اعلان‌ها" onClick={() => onNavigate('/visitor/notifications')}>
+              <BellIcon />{unreadCount ? <b>{unreadCount}</b> : null}
+            </button>
+          )}
+        />
 
-        {error ? <section className="vh-live-state error" role="alert"><div><strong>پروفایل مشتری دریافت نشد</strong><span>{error}</span></div></section> : null}
-        {loading ? <section className="vh-live-state" role="status"><strong>در حال دریافت Customer 360…</strong><span>اطلاعات از NGT و منابع مالی مجاز خوانده می‌شود.</span></section> : null}
+        {error ? (
+          <FeedbackState kind="error" title="پروفایل مشتری دریافت نشد" description={error} />
+        ) : null}
+        {loading ? (
+          <FeedbackState kind="loading" rows={2} description="در حال دریافت Customer 360 از NGT و منابع مالی مجاز…" />
+        ) : null}
 
         {customer ? (
           <>
             <section className="c360-identity ng-living-surface" data-state={returnedChequeCount ? 'attention' : 'live'}>
               <div className="c360-store-icon"><StoreIcon /></div>
               <div className="c360-identity-copy">
-                <div className="c360-title-row"><h2>{titleOf(customer)}</h2><span className="c360-live">زنده</span>{returnedChequeCount ? <span className="c360-risk">چک برگشتی</span> : null}</div>
+                <div className="c360-title-row">
+                  <h2>{titleOf(customer)}</h2>
+                  <StatusChip tone="success" dot>زنده</StatusChip>
+                  {returnedChequeCount ? <StatusChip tone="danger" dot>چک برگشتی</StatusChip> : null}
+                </div>
                 <p>{customer.name || '—'} · کد {customer.code || '—'}</p>
                 <span><PinIcon /> {customer.address || 'نشانی ثبت نشده'} · {profile?.route.title || 'مسیر روز'}</span>
                 {profile?.customer.alarm ? <div className="c360-inline-alert"><strong>هشدار NGT</strong><span>{profile.customer.alarm}</span></div> : null}
@@ -279,11 +288,17 @@ export function VisitorCustomer360Screen({ customerId = '', onNavigate, onBack }
                 <span role="listitem"><small>بازدید</small><strong dir="ltr">{Number(profile?.customer.visit_count ?? 0).toLocaleString('fa-IR')}</strong></span><span role="listitem"><small>سفارش</small><strong dir="ltr">{Number(profile?.customer.order_count ?? 0).toLocaleString('fa-IR')}</strong></span><span role="listitem" className={openInvoiceCount ? 'attention' : ''}><small>فاکتور باز</small><strong dir="ltr">{openInvoiceCount.toLocaleString('fa-IR')}</strong></span><span role="listitem" className={returnedChequeCount ? 'danger' : 'safe'}><small>چک برگشتی</small><strong dir="ltr">{returnedChequeCount.toLocaleString('fa-IR')}</strong></span>
               </div>
             </section>
-            <div className="c360-tabs" role="tablist" aria-label="بخش‌های پروفایل مشتری">
-              <button type="button" role="tab" aria-selected={tab === 'overview'} className={tab === 'overview' ? 'active' : ''} onClick={() => setTab('overview')}>نمای کلی</button>
-              <button type="button" role="tab" aria-selected={tab === 'financial'} className={tab === 'financial' ? 'active' : ''} onClick={() => setTab('financial')}>مالی</button>
-              <button type="button" role="tab" aria-selected={tab === 'history'} className={tab === 'history' ? 'active' : ''} onClick={() => setTab('history')}>سوابق</button>
-            </div>
+            <SegmentedControl
+              value={tab}
+              onChange={setTab}
+              ariaLabel="بخش‌های پروفایل مشتری"
+              className="c360-ds-tabs"
+              items={[
+                { value: 'overview', label: 'نمای کلی' },
+                { value: 'financial', label: 'مالی' },
+                { value: 'history', label: 'سوابق' },
+              ]}
+            />
 
             {tab === 'overview' ? (
               <section className="c360-stack">
@@ -414,13 +429,21 @@ export function VisitorCustomer360Screen({ customerId = '', onNavigate, onBack }
           </>
         ) : null}
 
-        <nav className="vh-nav" aria-label="ناوبری ویزیتور">
-          <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/home')}><HomeIcon /><span>خانه</span></button>
-          <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/route')}><MapIcon /><span>مسیر</span></button>
-          <button className="vh-order" type="button" disabled={offDay} aria-disabled={offDay} onClick={() => onNavigate(customer ? `/visitor/orders?customer=${customer.id}` : '/visitor/orders')}><PlusIcon /><span>سفارش</span></button>
-          <button className="vh-nav-item active" type="button" aria-current="page" onClick={() => onNavigate('/visitor/customers')}><UserGroupIcon /><span>مشتریان</span></button>
-          <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/reports')}><ChartIcon /><span>گزارش‌ها</span></button>
-        </nav>
+        <BottomDock
+          ariaLabel="ناوبری ویزیتور"
+          items={[
+            { key: 'home', label: 'خانه', icon: <HomeIcon />, onClick: () => onNavigate('/visitor/home') },
+            { key: 'route', label: 'مسیر', icon: <MapIcon />, onClick: () => onNavigate('/visitor/route') },
+            { key: 'customers', label: 'مشتریان', icon: <UserGroupIcon />, active: true, onClick: () => onNavigate('/visitor/customers') },
+            { key: 'reports', label: 'گزارش‌ها', icon: <ChartIcon />, onClick: () => onNavigate('/visitor/reports') },
+          ]}
+          primary={{
+            label: 'سفارش',
+            icon: <PlusIcon />,
+            disabled: offDay,
+            onClick: () => onNavigate(customer ? `/visitor/orders?customer=${customer.id}` : '/visitor/orders'),
+          }}
+        />
       </div>
     </main>
   )

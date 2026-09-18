@@ -1,0 +1,38 @@
+/* Customer360 screen adapter: layout only. */
+.vh-page[data-design-system='atlas-v1'][data-screen='customer360'] {
+  background:
+    radial-gradient(circle at 80% 4%,rgba(242,203,104,.045),transparent 25%),
+    radial-gradient(circle at 14% 22%,rgba(62,126,170,.055),transparent 26%),
+    var(--ng-bg);
+}
+.vh-page[data-design-system='atlas-v1'][data-screen='customer360'] .c360-shell {
+  padding-bottom:calc(104px + env(safe-area-inset-bottom));
+}
+.vh-page[data-design-system='atlas-v1'][data-screen='customer360'] .c360-ds-tabs {
+  margin-top:9px;
+  position:sticky;
+  top:8px;
+  z-index:8;
+}
+.vh-page[data-design-system='atlas-v1'][data-screen='customer360'] .c360-title-row {
+  align-items:center;
+  flex-wrap:wrap;
+}
+.vh-page[data-design-system='atlas-v1'][data-screen='customer360'] .c360-title-row .ng-status-chip {
+  min-height:24px;
+  padding:3px 7px;
+  font-size:9.5px;
+}
+.vh-page[data-design-system='atlas-v1'][data-screen='customer360'] .ng-feedback {
+  margin-top:8px;
+}
+.vh-page[data-design-system='atlas-v1'][data-screen='customer360'] .c360-identity,
+.vh-page[data-design-system='atlas-v1'][data-screen='customer360'] .c360-workflow-card,
+.vh-page[data-design-system='atlas-v1'][data-screen='customer360'] .c360-panel {
+  border-color:var(--ng-border-subtle);
+}
+@media (max-width:520px) {
+  .vh-page[data-design-system='atlas-v1'][data-screen='customer360'] .c360-ds-tabs {
+    top:6px;
+  }
+}
