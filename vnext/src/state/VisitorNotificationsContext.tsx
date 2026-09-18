@@ -78,7 +78,7 @@ export function VisitorNotificationsProvider({ children }: { children: ReactNode
   useEffect(() => {
     if (restoringSession || !authenticated) return
     const refreshVisible = () => {
-      if (document.visibilityState === 'visible') void reload()
+      if (document.visibilityState === 'visible' && !liveConnected) void reload()
     }
     const timer = window.setInterval(refreshVisible, 90_000)
     window.addEventListener('focus', refreshVisible)
@@ -88,7 +88,7 @@ export function VisitorNotificationsProvider({ children }: { children: ReactNode
       window.removeEventListener('focus', refreshVisible)
       document.removeEventListener('visibilitychange', refreshVisible)
     }
-  }, [authenticated, reload, restoringSession])
+  }, [authenticated, liveConnected, reload, restoringSession])
 
   useEffect(() => {
     if (restoringSession || !authenticated || typeof EventSource === 'undefined') {

@@ -93,6 +93,12 @@ function protectedView(authenticated: boolean, restoringSession: boolean, node: 
   return authenticated ? node : <Navigate to={'/'} replace />
 }
 
+function FloatingNeginAiGate() {
+  const { authenticated, restoringSession } = useVisitorAuth()
+  if (!authenticated || restoringSession) return null
+  return <Suspense fallback={null}><FloatingNeginAi /></Suspense>
+}
+
 function RouteLoadingFallback() {
   return (
     <main className="ng-stage" style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', borderRadius: 0 }}>
@@ -115,7 +121,7 @@ export function AppShellRoute() {
               <Suspense fallback={<RouteLoadingFallback />}>
                 <Outlet />
               </Suspense>
-              <Suspense fallback={null}><FloatingNeginAi /></Suspense>
+              <FloatingNeginAiGate />
             </VisitorNotificationsProvider>
           </VisitorLiveDataProvider>
         </VisitorWorkflowProvider>

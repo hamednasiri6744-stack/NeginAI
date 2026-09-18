@@ -325,7 +325,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
       data-home-ui="home-card-style-lab-v3"
       data-home-card-style={cardStyle}
       data-home-motion={HOME_DYNAMIC_STYLES.has(cardStyle) ? 'dynamic' : 'static'}
-      data-home-motion-enabled={styleIntensity > 0 && !reducedMotion ? 'true' : 'false'}
+      data-home-motion-enabled={styleLabEnabled && styleIntensity > 0 && !reducedMotion ? 'true' : 'false'}
       style={{
         '--home-style-intensity': styleIntensity / 100,
         '--home-style-speed': `${Math.max(7, 24 - styleIntensity * 0.15)}s`,
