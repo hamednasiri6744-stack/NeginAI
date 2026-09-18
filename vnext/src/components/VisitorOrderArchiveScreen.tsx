@@ -104,7 +104,7 @@ export function VisitorOrderArchiveScreen({ onNavigate }: Props) {
   )
 
   return (
-    <main className="vh-page" dir="rtl">
+    <main className="vh-page ng-living-root vh-live-ui" dir="rtl" data-living-ui="on">
       <div className="vh-shell voa-shell">
         <header className="vh-header">
           <button className="vh-profile" type="button" onClick={() => onNavigate('/visitor/profile')}>
@@ -141,7 +141,11 @@ export function VisitorOrderArchiveScreen({ onNavigate }: Props) {
         ) : loading ? (
           <section className="vh-live-state" role="status"><strong>در حال دریافت درخواست‌های ذخیره‌شده…</strong></section>
         ) : !activeRouteId ? (
-          <section className="vh-live-state"><strong>مسیر فعالی برای نمایش آرشیو امروز وجود ندارد.</strong></section>
+          <section className="voa-no-route ng-layer-surface">
+            <span className="voa-no-route-icon"><ClipboardIcon /></span>
+            <div><strong>برای امروز Route فعالی وجود ندارد</strong><small>آرشیو ذخیره‌شده به Route واقعی روز وابسته است؛ مرور کاتالوگ و مشتریان همچنان در دسترس است.</small></div>
+            <div><button type="button" onClick={() => onNavigate('/visitor/orders')}>مرور کاتالوگ</button><button type="button" onClick={() => onNavigate('/visitor/customers')}>مشتریان</button></div>
+          </section>
         ) : null}
 
         {activeRouteId || requests.length ? (
@@ -206,7 +210,7 @@ export function VisitorOrderArchiveScreen({ onNavigate }: Props) {
               <div className="vo-sheet-handle" />
               <div className="voa-invoice-head">
                 <div>
-                  <small>Saved Request</small>
+                  <small>درخواست ذخیره‌شده</small>
                   <h2>درخواست {selected.request_number.toLocaleString('fa-IR')}</h2>
                   <span dir="ltr">{selected.id}</span>
                 </div>

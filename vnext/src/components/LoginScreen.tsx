@@ -186,7 +186,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                 <span className={remember ? 'check checked' : 'check'} aria-hidden="true">{remember ? '✓' : ''}</span>
                 <span>نام کاربری را به خاطر بسپار</span>
               </button>
-              <button className="forgot" type="button" onClick={() => setMessage('بازیابی رمز عبور هنوز Endpoint عملیاتی ندارد؛ برای بازیابی با مدیر سیستم تماس بگیرید.')}>رمز را فراموش کرده‌اید؟</button>
+              <span className="forgot-help">بازیابی رمز: مدیر سیستم</span>
             </div>
 
             <button className="primary-button" type="submit" disabled={loading}>

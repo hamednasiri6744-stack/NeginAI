@@ -26,22 +26,10 @@ type Props = {
   onClose: () => void
 }
 
-type ToggleKey = 'notifications'
-
-const settingsKeys: Record<ToggleKey, string> = {
-  notifications: 'neginai.settings.notifications',
-}
-
-function initialToggle(key: ToggleKey, fallback = true) {
-  const stored = localStorage.getItem(settingsKeys[key])
-  return stored === null ? fallback : stored === 'true'
-}
-
 export function VisitorProfileSettingsScreen({ onNavigate, onLogout, onClose }: Props) {
   const { unreadCount } = useVisitorNotifications()
   const { profile, changePassword } = useVisitorAuth()
   const { activeRouteTitle, loading, reload } = useVisitorLiveData()
-  const [notifications, setNotifications] = useState(() => initialToggle('notifications'))
   const [notice, setNotice] = useState<string | null>(null)
   const [logoutOpen, setLogoutOpen] = useState(false)
   const [passwordOpen, setPasswordOpen] = useState(false)
@@ -54,11 +42,6 @@ export function VisitorProfileSettingsScreen({ onNavigate, onLogout, onClose }: 
   function flash(message: string) {
     setNotice(message)
     window.setTimeout(() => setNotice(null), 2200)
-  }
-
-  function updateToggle(key: ToggleKey, value: boolean) {
-    localStorage.setItem(settingsKeys[key], String(value))
-    if (key === 'notifications') setNotifications(value)
   }
 
   async function refreshLiveData() {
@@ -145,7 +128,7 @@ export function VisitorProfileSettingsScreen({ onNavigate, onLogout, onClose }: 
 
         <section className="vp-section">
           <div className="vp-section-title"><SettingsIcon /><strong>تنظیمات برنامه</strong></div>
-          <ToggleRow icon={<BellIcon />} title="اعلان‌های درون برنامه" description="هشدارهای مهم فروش و مسیر نمایش داده شوند" checked={notifications} onChange={(value) => updateToggle('notifications', value)} />
+          <div className="vp-static-row"><span>Alert Center</span><strong>فعال · داده عملیاتی زنده</strong></div>
           <div className="vp-static-row"><span>زبان رابط</span><strong>فارسی</strong></div>
           <div className="vp-static-row"><span>نمایش اعداد</span><strong>فارسی</strong></div>
           <div className="vp-static-row"><span>پوسته</span><strong>تیره سازمانی</strong></div>
@@ -202,23 +185,5 @@ export function VisitorProfileSettingsScreen({ onNavigate, onLogout, onClose }: 
         </nav>
       </div>
     </main>
-  )
-}
-
-type ToggleRowProps = {
-  icon: React.ReactNode
-  title: string
-  description: string
-  checked: boolean
-  onChange: (value: boolean) => void
-}
-
-function ToggleRow({ icon, title, description, checked, onChange }: ToggleRowProps) {
-  return (
-    <div className="vp-toggle-row">
-      <span className="vp-row-icon">{icon}</span>
-      <span><strong>{title}</strong><small>{description}</small></span>
-      <button type="button" className={checked ? 'vp-switch active' : 'vp-switch'} aria-pressed={checked} aria-label={title} onClick={() => onChange(!checked)}><span /></button>
-    </div>
   )
 }

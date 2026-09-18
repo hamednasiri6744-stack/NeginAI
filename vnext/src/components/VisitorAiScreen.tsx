@@ -2,6 +2,7 @@ import { useMemo, useState, type FormEvent } from 'react'
 import { neginApi } from '../api/neginApi'
 import { useVisitorLiveData } from '../state/VisitorLiveDataContext'
 import { useVisitorWorkflow } from '../state/VisitorWorkflowContext'
+import '../design-system/living/index.css'
 import {
   AiSparkIcon,
   CartIcon,
@@ -119,7 +120,7 @@ export function VisitorAiScreen({ context = 'home', customerId, visitId, draftId
   }
 
   return (
-    <main className="vai-page" dir="rtl">
+    <main className="vai-page ng-living-root vh-live-ui" dir="rtl" data-living-ui="on">
       <div className="vai-shell">
         <header className="vai-header">
           <button type="button" className="vai-back" onClick={onBack} aria-label="بازگشت"><ChevronLeftIcon /></button>
@@ -127,33 +128,33 @@ export function VisitorAiScreen({ context = 'home', customerId, visitId, draftId
           <span className="vai-status"><i /> {sending ? 'در حال پاسخ…' : 'متصل'}</span>
         </header>
 
-        <section className="vai-context">
+        <section className="vai-context ng-layer-surface">
           <div><small>زمینه فعال</small><strong>{contextLabels[context] ?? 'ویزیتور'}</strong><span>{contextSummary}</span></div>
           <span className="vai-context-icon">{context === 'customer' ? <StoreIcon /> : context === 'route' ? <MapIcon /> : context === 'order' ? <CartIcon /> : <AiSparkIcon />}</span>
         </section>
 
-        <section className="vai-integrity" role="status">
+        <section className="vai-integrity ng-detail-surface" role="status">
           <strong>سرویس واقعی NeginAI</strong>
           <span>پیام‌ها از مسیر احراز هویت‌شده Backend ارسال می‌شوند و پاسخ ساختگی در Frontend تولید نمی‌شود.</span>
         </section>
 
         <section className="vai-quick" aria-label="پیشنهادهای سریع">
-          {quickPrompts.map((item) => <button key={item} type="button" onClick={() => setText(item)}>{item}</button>)}
+          {quickPrompts.map((item) => <button className="ng-living-interactive" key={item} type="button" onClick={() => setText(item)}>{item}</button>)}
         </section>
 
         <section className="vai-thread" aria-live="polite">
           {messages.length === 0 ? (
             <div className="vai-empty"><AiSparkIcon /><strong>چه کمکی لازم داری؟</strong><span>پیام بنویس یا یکی از پیشنهادهای بالا را انتخاب کن.</span></div>
           ) : messages.map((message) => (
-            <article key={message.id} className={`vai-message ${message.role}`}>
+            <article key={message.id} className={`vai-message ${message.role} ng-detail-surface`}>
               <small>{message.role === 'user' ? 'شما' : message.role === 'assistant' ? 'Negin AI' : 'وضعیت سرویس'}</small>
               <p>{message.text}</p>
             </article>
           ))}
-          {sending ? <article className="vai-message assistant pending"><small>Negin AI</small><p>در حال پردازش…</p></article> : null}
+          {sending ? <article className="vai-message assistant pending ng-detail-surface ng-living-reactive"><small>Negin AI</small><p>در حال پردازش…</p></article> : null}
         </section>
 
-        <form className="vai-composer" onSubmit={submit}>
+        <form className="vai-composer ng-layer-surface" onSubmit={submit}>
           <label><textarea value={text} onChange={(event) => setText(event.target.value)} rows={1} placeholder="پیام به Negin AI..." disabled={sending} /></label>
           <button type="submit" className="vai-send" disabled={!text.trim() || sending} aria-label="ارسال"><SendIcon /></button>
         </form>
