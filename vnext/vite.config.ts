@@ -15,18 +15,16 @@ export default defineConfig({
     }),
     VitePWA({
       strategies: 'generateSW',
-      registerType: 'prompt',
+      registerType: 'autoUpdate',
       injectRegister: false,
       filename: 'sw.js',
       manifest: false,
       workbox: {
-        // Activate the freshly built worker immediately, but do not claim an already-open
-        // document. Existing tabs keep their current controller until the next navigation,
-        // so a deployment cannot swap lazy chunks underneath a running screen.
-        // Keep prior precaches available for those older controlled tabs; chunk recovery
-        // remains a second line of defence in App.tsx.
-        cleanupOutdatedCaches: false,
-        clientsClaim: false,
+        // Every deployment replaces the previous app shell atomically.
+        // main.tsx reloads once on controllerchange, so an open tab never mixes
+        // old lazy chunks with a new service-worker precache.
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
         skipWaiting: true,
         navigateFallback: '/index.html',
         globPatterns: ['**/*.{js,css,html,png,jpg,jpeg,svg,webp,woff,woff2}'],

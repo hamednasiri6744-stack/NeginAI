@@ -28,15 +28,21 @@ createRoot(root).render(
 
 
 if ('serviceWorker' in navigator) {
+  let refreshing = false
+
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing) return
+    refreshing = true
+    window.location.reload()
+  })
+
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').then((registration) => {
-      // Ask the browser to check on every app load instead of waiting for its periodic
-      // service-worker update window. The generated worker uses skipWaiting but not
-      // clientsClaim, so the next navigation gets the new shell without replacing the
-      // controller underneath the currently running document.
+    navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).then((registration) => {
+      // Always revalidate the worker itself. The new worker claims open tabs and the
+      // controllerchange handler above performs one clean reload onto the new app shell.
       void registration.update()
     }).catch(() => {
-      // The prototype remains usable when service workers are unavailable (for example over plain HTTP LAN/Tailscale URLs).
+      // The app remains usable when service workers are unavailable.
     })
   })
 }
