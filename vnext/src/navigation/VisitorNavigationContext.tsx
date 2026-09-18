@@ -1,4 +1,4 @@
-import {
+﻿import {
   createContext,
   useCallback,
   useContext,
@@ -61,27 +61,6 @@ function normalizePath(pathname: string, search: string) {
   return `${pathname}${search}`
 }
 
-type ViewTransitionDocument = Document & {
-  startViewTransition?: (callback: () => void | Promise<void>) => unknown
-}
-
-function runWithNavigationTransition(direction: 'forward' | 'back', action: () => void) {
-  const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-  const documentWithTransition = document as ViewTransitionDocument
-  if (reducedMotion || !documentWithTransition.startViewTransition) {
-    action()
-    return
-  }
-
-  document.documentElement.dataset.neginNav = direction
-  documentWithTransition.startViewTransition(() => {
-    action()
-    return new Promise<void>((resolve) => {
-      window.requestAnimationFrame(() => resolve())
-    })
-  })
-}
-
 export function VisitorNavigationProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate()
   const location = useLocation()
@@ -105,20 +84,18 @@ export function VisitorNavigationProvider({ children }: { children: ReactNode })
       __neginInternal: true,
       __neginFrom: currentPath,
     }
-    runWithNavigationTransition('forward', () => {
-      if (options.replace) navigate(to, { replace: true, state })
-      else navigate(to, { state })
-    })
+    if (options.replace) navigate(to, { replace: true, state })
+    else navigate(to, { state })
   }, [currentPath, navigate, saveScroll])
 
   const back = useCallback((fallback: string) => {
     saveScroll()
     const state = location.state as InternalNavigationState | null
     if (state?.__neginInternal && state.__neginFrom) {
-      runWithNavigationTransition('back', () => navigate(-1))
+      navigate(-1)
       return
     }
-    runWithNavigationTransition('back', () => navigate(fallback, { replace: true, state: { __neginInternal: true } }))
+    navigate(fallback, { replace: true, state: { __neginInternal: true } })
   }, [location.state, navigate, saveScroll])
 
   useLayoutEffect(() => {
