@@ -1,9 +1,3 @@
-.fai-root{position:fixed;inset:0;z-index:1200;pointer-events:none}
-.fai-trigger{pointer-events:auto;position:absolute;right:max(14px,env(safe-area-inset-right));bottom:calc(88px + env(safe-area-inset-bottom));width:58px;height:58px;border:1px solid rgba(242,203,104,.26);border-radius:20px;background:linear-gradient(145deg,rgba(16,38,52,.96),rgba(3,13,22,.98));color:var(--ng-gold-soft);display:grid;place-items:center;box-shadow:0 18px 40px rgba(0,0,0,.55),0 0 24px rgba(242,203,104,.055),inset 0 1px 0 rgba(255,245,210,.08);backdrop-filter:blur(18px);overflow:visible}
-.fai-trigger>span{position:relative;z-index:2;display:grid;place-items:center;width:25px;height:25px}
-.fai-trigger svg{width:25px;height:25px}
-.fai-orbit{position:absolute;inset:-7px;border:1px solid rgba(242,203,104,.12);border-radius:24px;animation:fai-orbit-pulse 3.8s ease-in-out infinite}
-.fai-root[data-open='true'] .fai-orbit{animation:none;opacity:.35}
 .fai-panel{pointer-events:auto;position:absolute;right:max(12px,env(safe-area-inset-right));bottom:calc(154px + env(safe-area-inset-bottom));width:min(404px,calc(100vw - 24px));height:min(620px,calc(100dvh - 178px));display:flex;flex-direction:column;overflow:hidden;border:1px solid rgba(169,209,229,.16);border-radius:28px;background:linear-gradient(160deg,rgba(14,35,49,.96),rgba(3,12,20,.98));box-shadow:0 30px 80px rgba(0,0,0,.66),0 0 34px rgba(67,159,205,.045),inset 0 1px 0 rgba(255,255,255,.06);backdrop-filter:blur(28px) saturate(135%);transform-origin:bottom right}
 .fai-panel::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 88% 0%,rgba(242,203,104,.07),transparent 26%),radial-gradient(circle at 12% 16%,rgba(74,160,208,.08),transparent 30%)}
 .fai-header{position:relative;z-index:1;display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:10px;padding:13px 14px;border-bottom:1px solid rgba(159,193,211,.08)}
@@ -42,7 +36,6 @@
 .fai-composer button{display:grid;place-items:center;border:1px solid rgba(242,203,104,.18);border-radius:14px;background:linear-gradient(145deg,rgba(242,203,104,.16),rgba(131,91,24,.10));color:var(--ng-gold-soft)}
 .fai-composer button:disabled{opacity:.34}
 .fai-composer button svg{width:19px}
-@keyframes fai-orbit-pulse{0%,100%{transform:scale(.92);opacity:.28}50%{transform:scale(1.08);opacity:.72}}
 @keyframes fai-dot{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-3px);opacity:1}}
-@media (max-width:480px){.fai-panel{left:12px;right:12px;width:auto;height:min(610px,calc(100dvh - 176px))}.fai-trigger{right:14px}}
-@media (prefers-reduced-motion:reduce){.fai-orbit,.fai-message.pending p i{animation:none!important}}
+@media(max-width:480px){.fai-panel{left:12px;right:12px;width:auto;height:min(610px,calc(100dvh - 176px))}}
+@media(prefers-reduced-motion:reduce){.fai-message.pending p i{animation:none!important}}

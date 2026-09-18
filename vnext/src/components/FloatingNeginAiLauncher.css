@@ -1,0 +1,9 @@
+.fai-root{position:fixed;inset:0;z-index:1200;pointer-events:none}
+.fai-trigger{pointer-events:auto;position:absolute;right:max(14px,env(safe-area-inset-right));bottom:calc(88px + env(safe-area-inset-bottom));width:58px;height:58px;border:1px solid rgba(242,203,104,.26);border-radius:20px;background:linear-gradient(145deg,rgba(16,38,52,.96),rgba(3,13,22,.98));color:var(--ng-gold-soft);display:grid;place-items:center;box-shadow:0 18px 40px rgba(0,0,0,.55),0 0 24px rgba(242,203,104,.055),inset 0 1px 0 rgba(255,245,210,.08);backdrop-filter:blur(18px);overflow:visible}
+.fai-trigger>span{position:relative;z-index:2;display:grid;place-items:center;width:25px;height:25px}
+.fai-trigger svg{width:25px;height:25px}
+.fai-orbit{position:absolute;inset:-7px;border:1px solid rgba(242,203,104,.12);border-radius:24px;animation:fai-orbit-pulse 3.8s ease-in-out infinite}
+.fai-root[data-open='true'] .fai-orbit{animation:none;opacity:.35}
+@keyframes fai-orbit-pulse{0%,100%{transform:scale(.92);opacity:.28}50%{transform:scale(1.08);opacity:.72}}
+@media(max-width:480px){.fai-trigger{right:14px}}
+@media(prefers-reduced-motion:reduce){.fai-orbit{animation:none!important}}

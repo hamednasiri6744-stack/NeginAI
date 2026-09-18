@@ -35,3 +35,9 @@ Next optimization target:
 Phase 2 runtime cleanup:
 - Removed eager map-plan prefetch from app bootstrap; the route map requests its plan only when the Route module is opened.
 - Removed unreachable legacy full-page Negin AI code and CSS after migration to the floating assistant.
+
+Phase 3 assistant isolation:
+- Floating assistant launcher remains lightweight and persistent.
+- Chat panel JS/CSS is now downloaded only after the user opens Negin AI for the first time.
+- While the assistant is closed before first use, it does not subscribe to Route/Customer/Workflow context updates.
+- Conversation state is owned by the launcher, so close/open preserves the current conversation while the panel itself can unmount.
