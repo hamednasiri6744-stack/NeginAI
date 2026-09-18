@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { getRouteMapPlan, neginApi, type RouteCustomersResponse, type SellerCustomer, type SellerRoute, type SellerRoutesResponse, type SellerTargetPulse, type SellerWorkCalendar } from '../api/neginApi'
+import { neginApi, type RouteCustomersResponse, type SellerCustomer, type SellerRoute, type SellerRoutesResponse, type SellerTargetPulse, type SellerWorkCalendar } from '../api/neginApi'
 import { useVisitorAuth } from './VisitorAuthContext'
 import { useVisitorWorkflow } from './VisitorWorkflowContext'
 import { loadVisitorOfflineSnapshot, saveVisitorOfflineSnapshot } from './visitorOfflineSnapshotStore'
@@ -27,7 +27,7 @@ const VisitorLiveDataContext = createContext<VisitorLiveDataValue | null>(null)
 
 export function VisitorLiveDataProvider({ children }: { children: ReactNode }) {
   const { authenticated, restoringSession, profile } = useVisitorAuth()
-  const { applyRoutePlan, hydrateLiveRoute, resetWorkflow } = useVisitorWorkflow()
+  const { hydrateLiveRoute, resetWorkflow } = useVisitorWorkflow()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [routesData, setRoutesData] = useState<SellerRoutesResponse | null>(null)
@@ -90,9 +90,6 @@ export function VisitorLiveDataProvider({ children }: { children: ReactNode }) {
           targetPulse: liveTarget,
         }).catch(() => undefined)
       }
-      void getRouteMapPlan(selectedRoute.id, 'sales_priority')
-        .then((plan) => applyRoutePlan(plan))
-        .catch(() => undefined)
     } catch (caught) {
       const snapshot = username
         ? await loadVisitorOfflineSnapshot(username).catch(() => null)
@@ -119,7 +116,7 @@ export function VisitorLiveDataProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false)
     }
-  }, [authenticated, applyRoutePlan, hydrateLiveRoute, profile?.username])
+  }, [authenticated, hydrateLiveRoute, profile?.username])
 
   useEffect(() => {
     if (!authenticated) {

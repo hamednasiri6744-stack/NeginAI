@@ -32,8 +32,8 @@ const routeFiles = fs.readdirSync(path.join(dist, 'assets'))
 
 const budgets = {
   entryJsKb: 370,
-  entryCssKb: 305,
-  initialTotalKb: 740,
+  entryCssKb: 295,
+  initialTotalKb: 725,
   routeJsKb: 70,
 }
 

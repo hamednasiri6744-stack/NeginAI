@@ -4,15 +4,15 @@ Goal: adding features must not silently degrade startup, navigation, animation s
 
 Current measured production baseline (2026-09-19):
 - Initial entry JS: ~351.9 KB raw
-- Initial entry CSS: ~293.7 KB raw
-- Initial HTML-linked assets: ~723.0 KB raw
+- Initial entry CSS: ~285.7 KB raw
+- Initial HTML-linked assets: ~714.9 KB raw
 - Largest current lazy Visitor feature chunk: ~42 KB raw
 - Floating Negin AI chunk: ~10.4 KB raw
 
 Enforced budgets:
 - Initial entry JS <= 370 KB
-- Initial entry CSS <= 305 KB
-- Initial HTML-linked assets <= 740 KB
+- Initial entry CSS <= 295 KB
+- Initial HTML-linked assets <= 725 KB
 - Each lazy Visitor/feature JS chunk <= 70 KB
 
 `npm run build` now runs the performance budget check after the production build. A regression fails the build.
@@ -31,3 +31,7 @@ Architecture rules:
 
 Next optimization target:
 - Split legacy global.css by route/component. It is currently the largest structural CSS cost and should be migrated incrementally and reversibly.
+
+Phase 2 runtime cleanup:
+- Removed eager map-plan prefetch from app bootstrap; the route map requests its plan only when the Route module is opened.
+- Removed unreachable legacy full-page Negin AI code and CSS after migration to the floating assistant.
