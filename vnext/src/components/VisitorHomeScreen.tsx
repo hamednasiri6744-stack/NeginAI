@@ -317,68 +317,62 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
               </small>
             </div>
 
-            <Pressable
-              emphasis="primary"
-              className="vhome-focus-action"
-              onClick={() => onNavigate(operationalAction.path)}
-            >
-              <span>{operationalAction.action}</span>
-              <ChevronLeftIcon />
-            </Pressable>
+            <div className="vhome-focus-footer">
+              <ActionRail className="vhome-actions" aria-label="اقدام‌های زمینه‌ای">
+                {(riskLoading || riskError || returnedChequeCount > 0) ? (
+                  <Pressable
+                    className={'vhome-action' + (returnedChequeCount ? ' is-danger' : '')}
+                    onClick={() => onNavigate('/visitor/reports')}
+                  >
+                    <span><ChequeIcon /></span>
+                    <span>
+                      <strong>ریسک مالی</strong>
+                      <small>
+                        {riskLoading
+                          ? 'در حال دریافت…'
+                          : returnedChequeCount
+                            ? returnedChequeCount.toLocaleString('fa-IR') + ' چک برگشتی'
+                            : 'دریافت نشد'}
+                      </small>
+                    </span>
+                  </Pressable>
+                ) : null}
+
+                {attentionCount ? (
+                  <Pressable
+                    className="vhome-action"
+                    onClick={() => onNavigate('/visitor/notifications')}
+                  >
+                    <span><BellIcon /></span>
+                    <span>
+                      <strong>هشدارها</strong>
+                      <small>{attentionCount.toLocaleString('fa-IR')} مورد نیازمند توجه</small>
+                    </span>
+                  </Pressable>
+                ) : null}
+
+                <Pressable
+                  className="vhome-action"
+                  onClick={() => onNavigate('/visitor/ai?context=home')}
+                >
+                  <span><AiSparkIcon /></span>
+                  <span>
+                    <strong>Negin AI</strong>
+                    <small>تحلیل زمینه امروز</small>
+                  </span>
+                </Pressable>
+              </ActionRail>
+
+              <Pressable
+                emphasis="primary"
+                className="vhome-focus-action"
+                onClick={() => onNavigate(operationalAction.path)}
+              >
+                <span>{operationalAction.action}</span>
+                <ChevronLeftIcon />
+              </Pressable>
+            </div>
           </FocusSurface>
-          <ActionRail className="vhome-actions" aria-label="اقدام‌های زمینه‌ای">
-            <Pressable
-              className={'vhome-action' + (returnedChequeCount ? ' is-danger' : '')}
-              onClick={() => onNavigate('/visitor/reports')}
-            >
-              <span><ChequeIcon /></span>
-              <span>
-                <strong>ریسک مالی</strong>
-                <small>
-                  {riskLoading
-                    ? 'در حال دریافت…'
-                    : returnedChequeCount
-                      ? returnedChequeCount.toLocaleString('fa-IR') + ' چک برگشتی'
-                      : 'مورد فعال ندارد'}
-                </small>
-              </span>
-            </Pressable>
-
-            {attentionCount ? (
-              <Pressable
-                className="vhome-action"
-                onClick={() => onNavigate('/visitor/notifications')}
-              >
-                <span><BellIcon /></span>
-                <span>
-                  <strong>هشدارها</strong>
-                  <small>{attentionCount.toLocaleString('fa-IR')} مورد نیازمند توجه</small>
-                </span>
-              </Pressable>
-            ) : (
-              <Pressable
-                className="vhome-action"
-                onClick={() => onNavigate('/visitor/customers')}
-              >
-                <span><UserGroupIcon /></span>
-                <span>
-                  <strong>مشتریان</strong>
-                  <small>Customer 360 و سابقه ویزیت</small>
-                </span>
-              </Pressable>
-            )}
-
-            <Pressable
-              className="vhome-action"
-              onClick={() => onNavigate('/visitor/ai?context=home')}
-            >
-              <span><AiSparkIcon /></span>
-              <span>
-                <strong>Negin AI</strong>
-                <small>تحلیل زمینه امروز</small>
-              </span>
-            </Pressable>
-          </ActionRail>
         </AppScene>
 
         <BottomDock
