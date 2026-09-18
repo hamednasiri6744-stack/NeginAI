@@ -78,7 +78,7 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
   const [brand, setBrand] = useState('')
   const [groupId, setGroupId] = useState('')
   const [catalogId, setCatalogId] = useState('')
-  const [inStockOnly, setInStockOnly] = useState(true)
+  const [stockFocus, setStockFocus] = useState<'orderable' | 'below-min' | 'out' | 'all'>('orderable')
   const [cart, setCart] = useState<Record<string, number>>({})
   const [saleUnitFactorByProduct, setSaleUnitFactorByProduct] = useState<Record<string, number>>({})
   const [orderTypeRef, setOrderTypeRef] = useState<number | null>(null)
@@ -300,7 +300,7 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
     return total
   }, [preview])
 
-  const visibleProducts = useMemo(() => {
+  const candidateProducts = useMemo(() => {
     const q = query.trim().toLocaleLowerCase('fa')
     const catalogProductIds = selectedCatalog ? new Set(selectedCatalog.product_ids.map(String)) : null
     return (context?.products ?? []).filter((product) => {
@@ -308,10 +308,32 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
       if (brand && product.brand !== brand) return false
       if (groupId && product.group_id !== groupId) return false
       if (catalogProductIds && !catalogProductIds.has(product.id)) return false
-      if (inStockOnly && availableFor(product) <= 0) return false
       return true
     })
-  }, [availableFor, brand, context, groupId, inStockOnly, query, selectedCatalog])
+  }, [brand, context, groupId, query, selectedCatalog])
+
+  const stockSignals = useMemo(() => {
+    let orderable = 0
+    let belowMin = 0
+    let out = 0
+    for (const product of candidateProducts) {
+      const available = availableFor(product)
+      const minimum = Math.max(1, Number(product.min_order_qty || 1))
+      if (available <= 0) out += 1
+      else if (available < minimum) belowMin += 1
+      else orderable += 1
+    }
+    return { orderable, belowMin, out, total: candidateProducts.length }
+  }, [availableFor, candidateProducts])
+
+  const visibleProducts = useMemo(() => candidateProducts.filter((product) => {
+    const available = availableFor(product)
+    const minimum = Math.max(1, Number(product.min_order_qty || 1))
+    if (stockFocus === 'orderable') return available >= minimum
+    if (stockFocus === 'below-min') return available > 0 && available < minimum
+    if (stockFocus === 'out') return available <= 0
+    return true
+  }), [availableFor, candidateProducts, stockFocus])
 
   const cartLines = useMemo(
     () => (context?.products ?? [])
@@ -550,6 +572,24 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
 
             {view === 'products' ? (
               <section className="vo-products-view">
+                <section className="vo-commercial-pulse ng-living-surface" aria-label="وضعیت فروش کالا">
+                  <div className="vo-commercial-pulse-head">
+                    <span><strong>وضعیت فروش این مشتری</strong><small>{stockSignals.total.toLocaleString('fa-IR')} کالا در فیلتر فعلی · {context.catalog_filters.brands.length.toLocaleString('fa-IR')} برند</small></span>
+                    <button type="button" className={stockFocus === 'all' ? 'active' : ''} onClick={() => setStockFocus('all')}>همه</button>
+                  </div>
+                  <div className="vo-stock-signals">
+                    <button type="button" className={stockFocus === 'orderable' ? 'active orderable' : 'orderable'} onClick={() => setStockFocus('orderable')}>
+                      <span><BoxIcon /></span><strong>{stockSignals.orderable.toLocaleString('fa-IR')}</strong><small>قابل سفارش</small>
+                    </button>
+                    <button type="button" className={stockFocus === 'below-min' ? 'active attention' : 'attention'} onClick={() => setStockFocus('below-min')}>
+                      <span><BoxIcon /></span><strong>{stockSignals.belowMin.toLocaleString('fa-IR')}</strong><small>کمتر از حداقل</small>
+                    </button>
+                    <button type="button" className={stockFocus === 'out' ? 'active out' : 'out'} onClick={() => setStockFocus('out')}>
+                      <span><BoxIcon /></span><strong>{stockSignals.out.toLocaleString('fa-IR')}</strong><small>ناموجود</small>
+                    </button>
+                  </div>
+                </section>
+
                 <div className="vo-toolbar">
                   <label className="vo-search"><SearchIcon /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="جست‌وجوی نام، کد، برند یا گروه…" /></label>
                   <div className="vo-filter-row" aria-label="فیلتر برند">
@@ -564,9 +604,7 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
                       <button type="button" key={item.id} className={groupId === item.id ? 'active' : ''} onClick={() => setGroupId(item.id)}>{item.name}</button>
                     ))}
                   </div>
-                  <button type="button" className={`vo-stock-toggle ${inStockOnly ? 'active' : ''}`} onClick={() => setInStockOnly((value) => !value)}>
-                    <BoxIcon /><span>فقط موجود</span><i aria-hidden="true" />
-                  </button>
+
                 </div>
 
                 {selectedCatalog ? (
