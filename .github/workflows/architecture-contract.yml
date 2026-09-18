@@ -28,3 +28,5 @@ jobs:
       - uses: actions/checkout@v4
       - name: Validate canonical capability registry
         run: python3 scripts/architecture/validate_capability_registry.py
+      - name: Validate current UI capability audit
+        run: python3 scripts/architecture/validate_ui_capability_audit.py

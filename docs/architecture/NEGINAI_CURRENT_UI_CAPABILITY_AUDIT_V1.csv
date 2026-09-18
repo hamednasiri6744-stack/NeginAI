@@ -1,0 +1,80 @@
+audit_id,current_surface,current_element,capability_id,decision,canonical_owner,target_surface,projection_type,source_truth,severity,required_action
+AUD-001,Home,Working day and date state,CAP-FLD-001,KEEP,Field Operations,Today / Mission Control,context,NGT,P1,Keep as Today context and do not recreate calendar logic elsewhere
+AUD-002,Home,Route progress summary,CAP-FLD-002,PROJECTION_ONLY,Field Operations,Route / Field Execution,summary,NGT,P1,Keep only progress and deep link to Route
+AUD-003,Home,Next Best Action frontend precedence,CAP-AI-003,MOVE,AI Intelligence,Today / Mission Control,signal,Validated multi-domain evidence,P0,Move prioritization into Commercial Intelligence read model and remove frontend-authored priority logic
+AUD-004,Home,Active alerts count,CAP-ALT-001,PROJECTION_ONLY,Identity & System,Alert Center,alert,Multi-source + NeginAI state,P1,Keep one alert signal and deep link to Alert Center
+AUD-005,Home,Returned cheque pulse,CAP-FIN-008,PROJECTION_ONLY,Finance & Collections,Finance contextual workspace,alert,Acc + dbo,P1,Keep count or severity only and deep link to finance context
+AUD-006,Home,Distribution pulse,CAP-DST-001,PROJECTION_ONLY,Distribution & Returns,Distribution contextual workspace,signal,SLE + dbo,P1,Keep compact operational signal only
+AUD-007,Home,Performance control deck,CAP-ANA-001,DUPLICATE,Intelligence & Analysis,Reports / Sales Analysis,summary,SLE + dbo,P1,Merge with single Home performance projection and remove second portal layer
+AUD-008,Home,Risk control deck,CAP-FIN-008,DUPLICATE,Finance & Collections,Finance contextual workspace,summary,Acc + dbo,P1,Merge with single risk signal and avoid separate Home risk workspace
+AUD-009,Home,Today control deck,CAP-FLD-001,DUPLICATE,Field Operations,Today / Mission Control,summary,NGT,P1,Merge with command surface and route summary
+AUD-010,Home,Intelligence control deck,CAP-AI-002,DUPLICATE,AI Intelligence,Current module/entity sheet,signal,Approved read models,P1,Merge AI entry with contextual copilot trigger
+AUD-011,Home,Performance depth details,CAP-ANA-001,MOVE,Intelligence & Analysis,Reports / Sales Analysis,deep-link,SLE + dbo,P1,Home keeps summary and detailed analysis moves to Reports
+AUD-012,Home,Open invoice risk depth,CAP-FIN-002,MOVE,Finance & Collections,Finance contextual workspace,deep-link,Acc,P1,Home retains urgency signal only
+AUD-013,Home,Returned cheque depth,CAP-FIN-008,MOVE,Finance & Collections,Finance contextual workspace,deep-link,Acc + dbo,P1,Remove full detail from Home and route to canonical finance detail
+AUD-014,Home,Returns depth,CAP-DST-002,MOVE,Distribution & Returns,Distribution contextual workspace,deep-link,SLE + dbo,P1,Keep only exception signal on Home
+AUD-015,Home,Target achievement,CAP-ANA-003,KEEP,Intelligence & Analysis,Today / Mission Control,summary,Planning + SLE,P0,Keep on canonical Today surface but display only after target semantic contract is validated
+AUD-016,Customers,Pending customers segment,CAP-CUS-002,KEEP,Customer Intelligence,Customers,context,NGT + GNR,P1,Keep as customer navigation with route state context
+AUD-017,Customers,Completed customers segment,CAP-CUS-002,KEEP,Customer Intelligence,Customers,context,NGT + GNR,P1,Keep as customer navigation with visit outcome context
+AUD-018,Customers,Financial attention segment,CAP-FIN-008,PROJECTION_ONLY,Finance & Collections,Finance contextual workspace,badge,Acc + dbo,P1,Keep as customer filter signal only and do not add cheque workflow here
+AUD-019,Customers,Customer search and list,CAP-CUS-001,KEEP,Customer Intelligence,Customers,context,GNR + NGT,P1,Keep canonical discovery surface
+AUD-020,Customers,Customer route browse selector,CAP-FLD-002,PROJECTION_ONLY,Field Operations,Route / Field Execution,context,NGT,P2,Keep only as browse context and do not expose route management
+AUD-021,Customer360,Customer identity and editable draft,CAP-CUS-003,KEEP,Customer Intelligence,Customer360,context,NGT + GNR + NeginAI state,P1,Keep canonical customer identity and local draft semantics
+AUD-022,Customer360,Start or continue visit action,CAP-FLD-005,PROJECTION_ONLY,Field Operations,Visit Workspace,deep-link,NGT + NeginAI state,P1,Keep action transition and do not implement visit lifecycle inside Customer360
+AUD-023,Customer360,Start order action,CAP-COM-000,PROJECTION_ONLY,Commercial & Orders,Orders / Selling Workspace,deep-link,NGT + NeginAI visit state,P1,Keep transition with customer context only
+AUD-024,Customer360,Visit and order counts,CAP-CUS-004,KEEP,Customer Intelligence,Customer360 > History,summary,NGT,P2,Keep aggregate relationship summary
+AUD-025,Customer360,Open invoice badge,CAP-FIN-002,PROJECTION_ONLY,Finance & Collections,Customer360 > Finance,badge,Acc,P1,Keep count and amount summary
+AUD-026,Customer360,Returned cheque badge,CAP-FIN-008,PROJECTION_ONLY,Finance & Collections,Customer360 > Finance,badge,Acc + dbo,P1,Keep risk badge and open finance detail
+AUD-027,Customer360,Customer location,CAP-CUS-001,KEEP,Customer Intelligence,Customer360,context,NGT + GNR,P2,Keep customer master context and route to navigation for map action
+AUD-028,Customer360,Negin AI card,CAP-AI-002,MOVE,AI Intelligence,Current module/entity sheet,context,Approved read models,P1,Replace page jump with in-context copilot sheet and preserve deep AI Workspace link
+AUD-029,Customer360,Finance summary,CAP-FIN-001,KEEP,Finance & Collections,Customer360 > Finance,context,Acc,P1,Keep as contextual finance depth with finance ownership
+AUD-030,Customer360,Customer specific open invoice detail,CAP-FIN-003,MISSING,Finance & Collections,Customer360 > Finance,context,Acc,P0,Wire existing customer-specific endpoint and avoid cross-customer report dependency
+AUD-031,Customer360,Cardex drilldown,CAP-FIN-004,MISSING,Finance & Collections,Customer360 > Finance > Cardex,context,Acc + dbo,P1,Add contextual drilldown using backend semantic route
+AUD-032,Customer360,Receipts and collections drilldown,CAP-FIN-005,MISSING,Finance & Collections,Customer360 > Finance > Collections,context,Acc + dbo,P1,Add only through canonical finance semantic route
+AUD-033,Customer360,Settlement drilldown,CAP-FIN-006,MISSING,Finance & Collections,Customer360 > Finance > Settlement,context,Acc + dbo,P1,Add canonical settlement depth
+AUD-034,Customer360,Cheque history drilldown,CAP-FIN-007,MISSING,Finance & Collections,Customer360 > Finance > Cheques,context,Acc + dbo,P1,Add cheque history without duplicating returned cheque logic
+AUD-035,Customer360,Detailed call and order timeline,CAP-CUS-004,MISSING,Customer Intelligence,Customer360 > History,history,NGT,P1,Build read model from NGT CustomerCalls family instead of synthetic events
+AUD-036,Route,Assigned route and progress,CAP-FLD-002,KEEP,Field Operations,Route / Field Execution,context,NGT,P1,Keep canonical field execution state
+AUD-037,Route,Map and route leg,CAP-FLD-008,KEEP,Field Operations,Route / Map,context,Neshan + NGT,P1,Keep Neshan for navigation while NGT owns assignment
+AUD-038,Route,Sales priority and shortest modes,CAP-FLD-008,KEEP,Field Operations,Route / Map,context,Neshan + Seller Workspace,P1,Keep only source-backed plan modes and preserve evidence for priority ordering
+AUD-039,Route,Visit score display,CAP-AI-003,PROJECTION_ONLY,AI Intelligence,Today / Mission Control,signal,Backend analytics,P0,Hide or relabel until visit score semantic evidence is explicitly registered
+AUD-040,Route,Debt warning,CAP-FIN-001,PROJECTION_ONLY,Finance & Collections,Customer360 > Finance,signal,Acc,P1,Keep only blocking or warning context for selected stop
+AUD-041,Route,Visit start timer and outcome,CAP-FLD-005,KEEP,Field Operations,Visit Workspace,context,NGT + NeginAI state,P1,Keep canonical lifecycle in Route
+AUD-042,Route,No order and no visit reasons,CAP-FLD-004,KEEP,Field Operations,Visit Workspace,context,NGT,P1,Keep NGT reason policy as source
+AUD-043,Route,Negin AI route button,CAP-AI-002,MOVE,AI Intelligence,Current module/entity sheet,context,Approved route context,P1,Replace page jump with contextual copilot
+AUD-044,Route,Actual movement and stop telemetry,CAP-FLD-007,MISSING,Field Operations,Route / Field Execution,context,Cloud / grs,P0,Add bounded read-only telemetry model before UI use
+AUD-045,Orders,Customer selling context,CAP-CUS-001,PROJECTION_ONLY,Customer Intelligence,Orders / Selling Workspace,context,GNR + NGT,P1,Keep identity context only
+AUD-046,Orders,Catalog and product discovery,CAP-COM-001,KEEP,Commercial & Orders,Orders / Catalog,context,NGT,P1,Keep canonical selling discovery
+AUD-047,Orders,Brand filters,CAP-COM-002,MERGE,Commercial & Orders,Orders / Catalog filters,context,NGT,P1,Reconcile catalog brand list with seller brand scope endpoint and keep one filter source
+AUD-048,Orders,Product units,CAP-COM-003,KEEP,Commercial & Orders,Orders / Product detail,context,NGT,P1,Keep unit policy from NGT
+AUD-049,Orders,Product images,CAP-COM-004,MISSING,Commercial & Orders,Orders / Product detail,context,NGT catalog image endpoint,P1,Use product or catalog image endpoint rather than assigning one catalog image to every product
+AUD-050,Orders,Stock signals,CAP-COM-005,KEEP,Commercial & Orders,Orders / Product detail,context,NGT + FRU + inv,P1,Keep stock context and validation source-backed
+AUD-051,Orders,Indicative contract price,CAP-COM-006,KEEP,Commercial & Orders,Orders / Product detail,context,NGT + SLE,P1,Keep clearly labeled as indicative until official preview succeeds
+AUD-052,Orders,Official NGT preview,CAP-COM-009,KEEP,Commercial & Orders,Orders / Official Preview,context,NGT EVC REST,P0,Gate visibly when NGT REST is not configured and never imply availability
+AUD-053,Orders,Official discount result,CAP-COM-010,KEEP,Commercial & Orders,Orders / Official Preview,context,NGT EVC + ERP evidence,P0,Render only successful official preview output
+AUD-054,Orders,Official gift result,CAP-COM-011,KEEP,Commercial & Orders,Orders / Official Preview,context,NGT EVC + ERP evidence,P0,Render only successful official preview output
+AUD-055,Orders,Credit control result,CAP-COM-012,KEEP,Commercial & Orders,Orders / Official Preview,context,ERP + NGT,P0,Keep as official preview output and do not recreate finance calculation
+AUD-056,Orders,Quantity editor and cart,CAP-COM-013,KEEP,Commercial & Orders,Orders / Cart,context,NeginAI draft + NGT units,P1,Keep canonical cart editing
+AUD-057,Orders,Saved request,CAP-COM-014,KEEP,Commercial & Orders,Orders / Saved Requests,context,NeginAI local state,P0,Keep but label explicitly as saved request and not final ERP order
+AUD-058,Orders,Final Varanegar commit,CAP-COM-015,MISSING,Commercial & Orders,Orders / Submission result,context,Controlled Varanegar bridge,P0,Remain unavailable until bridge commit and numbering contracts are verified
+AUD-059,Orders,Previsit warmup,CAP-COM-001,MISSING,Commercial & Orders,Orders / Catalog,context,NeginAI backend,P1,Use existing warmup endpoint to reduce perceived latency
+AUD-060,Reports,Receivables analysis,CAP-FIN-002,KEEP,Finance & Collections,Reports / Analysis,aggregate,Acc,P1,Keep aggregate and analytical drilldown only
+AUD-061,Reports,Returned cheque analysis,CAP-FIN-008,KEEP,Finance & Collections,Reports / Analysis,aggregate,Acc + dbo,P1,Keep analytical drilldown without collection workflow
+AUD-062,Reports,Distribution analysis,CAP-DST-001,KEEP,Distribution & Returns,Reports / Analysis,aggregate,SLE + dbo,P1,Keep analytics only
+AUD-063,Reports,Returns analysis,CAP-ANA-002,KEEP,Intelligence & Analysis,Reports / Returns Analysis,aggregate,SLE + dbo,P1,Keep analytical detail
+AUD-064,Reports,Sales analysis,CAP-ANA-001,MISSING,Intelligence & Analysis,Reports / Sales Analysis,aggregate,SLE + dbo,P1,Add validated sales analysis rather than duplicate Home performance cards
+AUD-065,Reports,Target analysis,CAP-ANA-003,MISSING,Intelligence & Analysis,Reports / Analysis,aggregate,Planning + SLE,P0,Add only after semantic validation
+AUD-066,Reports,Inventory analysis,CAP-ANA-004,MISSING,Intelligence & Analysis,Reports / Inventory Analysis,aggregate,inv + FRU + dbo,P1,Add analytical inventory domain
+AUD-067,Reports,Profitability analysis,CAP-ANA-005,MISSING,Intelligence & Analysis,Reports / Profitability,aggregate,ICA + ERP sales,P1,Add using verified last purchase price semantics
+AUD-068,Reports,Negin AI analysis button,CAP-AI-002,MOVE,AI Intelligence,Current module/entity sheet,context,Approved report context,P1,Open contextual copilot in place and keep AI Workspace as optional depth
+AUD-069,Alerts,Alert list and filters,CAP-ALT-001,KEEP,Identity & System,Alert Center,alert,Multi-source + NeginAI state,P1,Keep global event surface
+AUD-070,Alerts,Read and acknowledge lifecycle,CAP-ALT-002,KEEP,Identity & System,Alert Center,alert,NeginAI local state,P1,Keep one global lifecycle
+AUD-071,Alerts,Combined source label,CAP-ALT-001,MERGE,Identity & System,Alert Center,alert,Exact event source,P0,Stop collapsing NGT and Varanegar into one provenance label and preserve exact source
+AUD-072,AI,Deep AI Workspace,CAP-AI-005,KEEP,AI Intelligence,AI Workspace,deep-link,Chat + approved tools,P1,Keep deep reasoning surface outside business ownership
+AUD-073,AI,Contextual Copilot in current module,CAP-AI-002,MISSING,AI Intelligence,Current module/entity sheet,context,Approved read models,P0,Implement in-place copilot instead of forcing navigation away
+AUD-074,AI,Ambient AI,CAP-AI-001,MISSING,AI Intelligence,Contextual background layer,signal,Approved read models,P1,Add evidence-backed ambient signals only
+AUD-075,AI,Next Best Action read model,CAP-AI-003,MISSING,AI Intelligence,Today / Mission Control,signal,Validated multi-domain evidence,P0,Create backend Commercial Intelligence read model
+AUD-076,AI,Agent action layer,CAP-AI-004,MISSING,AI Intelligence,Contextual action sheet,deep-link,Canonical capability APIs,P1,Agent must invoke canonical owner APIs and inherit authorization
+AUD-077,AI,Backend integrity explanation card,CAP-AI-005,MOVE,AI Intelligence,AI Workspace,context,NeginAI backend,P2,Move developer-oriented reassurance to diagnostics or compact service status
+AUD-078,System,Offline snapshot state,CAP-SYS-001,KEEP,Identity & System,System / Sync status,badge,NeginAI IndexedDB,P1,Expose compact sync state globally and avoid separate page duplicates
+AUD-079,System,Push and notification permission,CAP-SYS-002,MISSING,Identity & System,Profile / Notifications,context,NeginAI Backend + browser push,P2,Add real permission and delivery state only after verification
