@@ -351,7 +351,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
             </motion.button>
           ) : null}
 
-          <section className="mt-auto grid shrink-0 grid-cols-2 gap-x-4 border-t border-[var(--ng-border-subtle)] pt-2">
+          <section className="mt-2 grid shrink-0 grid-cols-2 gap-x-4 border-t border-[var(--ng-border-subtle)] pt-2">
             {(riskLoading || returnedChequeCount > 0) ? (
               <motion.button
                 type="button"
