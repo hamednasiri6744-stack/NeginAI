@@ -37,6 +37,7 @@ import {
   UserGroupIcon,
 } from './Icons'
 import { VisitorProductCube } from './VisitorProductCube'
+import { VisitorPicker } from './VisitorPicker'
 
 type Props = {
   onNavigate: (path: string) => void
@@ -666,9 +667,27 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
                 )}
 
                 <section className="vo-order-options">
-                  <label><span>نوع سفارش NGT</span><select value={orderTypeRef ?? ''} onChange={(event) => setOrderTypeRef(Number(event.target.value) || null)}>{context.order_types.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
-                  <label><span>شرایط پرداخت NGT</span><select value={paymentRef} onChange={(event) => setPaymentRef(event.target.value)}>{context.payment_types.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
-                  {context.warehouses.length ? <label><span>انبار</span><select value={warehouseRef ?? ''} disabled={!context.warehouse_selection.enabled} onChange={(event) => setWarehouseRef(Number(event.target.value) || null)}>{context.warehouses.map((item) => <option key={item.ref} value={item.ref}>{item.name}</option>)}</select></label> : null}
+                  <VisitorPicker
+                    label="نوع سفارش NGT"
+                    value={orderTypeRef === null ? '' : String(orderTypeRef)}
+                    options={context.order_types.map((item) => ({ value: String(item.id), label: item.name }))}
+                    onChange={(next) => setOrderTypeRef(Number(next) || null)}
+                  />
+                  <VisitorPicker
+                    label="شرایط پرداخت NGT"
+                    value={paymentRef}
+                    options={context.payment_types.map((item) => ({ value: item.id, label: item.name }))}
+                    onChange={setPaymentRef}
+                  />
+                  {context.warehouses.length ? (
+                    <VisitorPicker
+                      label="انبار"
+                      value={warehouseRef === null ? '' : String(warehouseRef)}
+                      disabled={!context.warehouse_selection.enabled}
+                      options={context.warehouses.map((item) => ({ value: String(item.ref), label: item.name }))}
+                      onChange={(next) => setWarehouseRef(Number(next) || null)}
+                    />
+                  ) : null}
                 </section>
 
                 <section className="vo-totals">
@@ -778,7 +797,7 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
             <section className="vo-sheet vo-route-sheet" role="dialog" aria-modal="true" aria-label="انتخاب مسیر مرور" onClick={(event) => event.stopPropagation()}>
               <div className="vo-sheet-handle" />
               <div className="vo-sheet-title">
-                <div><small>Route Browser</small><h2>انتخاب مسیر مرور</h2><span>{routes.length.toLocaleString('fa-IR')} مسیر تخصیص‌یافته</span></div>
+                <div><small>مسیرهای تخصیص‌یافته</small><h2>انتخاب مسیر مرور</h2><span>{routes.length.toLocaleString('fa-IR')} مسیر تخصیص‌یافته</span></div>
                 <button type="button" className="vo-icon-button" onClick={() => setRoutePickerOpen(false)} aria-label="بستن">×</button>
               </div>
               <label className="vo-sheet-search"><SearchIcon /><input value={routePickerQuery} onChange={(event) => setRoutePickerQuery(event.target.value)} placeholder="جست‌وجوی مسیر…" /></label>

@@ -154,7 +154,6 @@ export function VisitorCustomersScreen({ onNavigate }: Props) {
 
         <section className="vc-heading">
           <div><span>{offDay ? 'مرور مشتریان تخصیص‌یافته' : (activeRouteTitle || 'مسیر روز NGT')}</span><h1>مشتریان</h1></div>
-          <button type="button" disabled title="ثبت مشتری جدید هنوز Endpoint تأییدشده ندارد"><PlusIcon /> مشتری جدید</button>
         </section>
 
         {error && !offDay ? (

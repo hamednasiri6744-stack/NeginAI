@@ -20,6 +20,7 @@ import {
   UserGroupIcon,
   WalletIcon,
 } from './Icons'
+import { VisitorPicker } from './VisitorPicker'
 import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
 import { useVisitorWorkflow } from '../state/VisitorWorkflowContext'
 import '../design-system/living/index.css'
@@ -320,20 +321,18 @@ export function VisitorCustomer360Screen({ customerId = '', onNavigate, onBack }
                           const wide = WIDE_EDIT_FIELDS.has(field)
                           if (lookupKind) {
                             return (
-                              <label className={`c360-edit-field ${wide ? 'wide' : ''}`} key={field}>
-                                <span>{EDIT_FIELD_LABELS[field]}</span>
-                                <select value={displayValue} onChange={(event) => setDraftField(field, event.target.value)}>
-                                  <option value="">انتخاب نشده</option>
-                                  {options.map((item) => (
-                                    <option
-                                      key={`${field}-${item.id}-${item.ref ?? ''}`}
-                                      value={field === 'owner_type_ref' ? String(item.ref ?? '') : item.id}
-                                    >
-                                      {item.title}
-                                    </option>
-                                  ))}
-                                </select>
-                              </label>
+                              <VisitorPicker
+                                key={field}
+                                className={`c360-edit-field ${wide ? 'wide' : ''}`}
+                                label={EDIT_FIELD_LABELS[field]}
+                                value={displayValue}
+                                placeholder="انتخاب نشده"
+                                options={options.map((item) => ({
+                                  value: field === 'owner_type_ref' ? String(item.ref ?? '') : item.id,
+                                  label: item.title,
+                                }))}
+                                onChange={(next) => setDraftField(field, next)}
+                              />
                             )
                           }
                           if (field === 'address') {

@@ -4,13 +4,10 @@ import { useVisitorLiveData } from '../state/VisitorLiveDataContext'
 import { useVisitorWorkflow } from '../state/VisitorWorkflowContext'
 import {
   AiSparkIcon,
-  CameraIcon,
   CartIcon,
   ChevronLeftIcon,
   HomeIcon,
   MapIcon,
-  MicIcon,
-  PaperclipIcon,
   SendIcon,
   StoreIcon,
 } from './Icons'
@@ -46,7 +43,6 @@ export function VisitorAiScreen({ context = 'home', customerId, visitId, draftId
   const [messages, setMessages] = useState<LocalMessage[]>([])
   const [conversationId, setConversationId] = useState<string | undefined>(undefined)
   const [sending, setSending] = useState(false)
-  const [notice, setNotice] = useState<string | null>(null)
   const { routeSummary, activeVisit } = useVisitorWorkflow()
   const { activeRouteId, activeRouteTitle, customerById } = useVisitorLiveData()
   const effectiveCustomerId = customerId ?? activeVisit?.customerId
@@ -72,11 +68,6 @@ export function VisitorAiScreen({ context = 'home', customerId, visitId, draftId
         : context === 'report'
           ? ['عملکرد امروز را خلاصه کن', 'مهم‌ترین فرصت رشد چیست؟', 'هشدارهای عملکرد را بگو']
           : ['کارهای مهم امروز را بگو', 'بهترین فرصت فروش امروز', 'هشدارهای مهم مسیر']
-
-  function flash(message: string) {
-    setNotice(message)
-    window.setTimeout(() => setNotice(null), 2400)
-  }
 
   function uiContextAttachment() {
     const lines = [
@@ -163,11 +154,6 @@ export function VisitorAiScreen({ context = 'home', customerId, visitId, draftId
         </section>
 
         <form className="vai-composer" onSubmit={submit}>
-          <div className="vai-tools">
-            <button type="button" onClick={() => flash('پیوست در این Slice هنوز به Attachment API متصل نشده است')} aria-label="پیوست"><PaperclipIcon /></button>
-            <button type="button" onClick={() => flash('دوربین در این Slice هنوز به Attachment API متصل نشده است')} aria-label="دوربین"><CameraIcon /></button>
-            <button type="button" onClick={() => flash('ورودی صوتی در این Slice هنوز به Audio API متصل نشده است')} aria-label="صدا"><MicIcon /></button>
-          </div>
           <label><textarea value={text} onChange={(event) => setText(event.target.value)} rows={1} placeholder="پیام به Negin AI..." disabled={sending} /></label>
           <button type="submit" className="vai-send" disabled={!text.trim() || sending} aria-label="ارسال"><SendIcon /></button>
         </form>
@@ -176,7 +162,6 @@ export function VisitorAiScreen({ context = 'home', customerId, visitId, draftId
           {effectiveCustomerId ? <button className="vai-link-button" type="button" onClick={() => onNavigate(`/visitor/customers/${effectiveCustomerId}`)}><StoreIcon /><span>مشتری</span></button> : null}
           <button className="vai-link-button home" type="button" onClick={() => onNavigate('/visitor/home')}><HomeIcon /><span>خانه</span></button>
         </div>
-        {notice ? <div className="vh-toast" role="status">{notice}</div> : null}
       </div>
     </main>
   )

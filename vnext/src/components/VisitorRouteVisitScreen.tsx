@@ -17,6 +17,7 @@ import {
 } from './Icons'
 import { completeServerVisit, getVisitPolicy, getVisitWorkspace, startServerVisit, type SellerVisitPolicyResponse, type SellerVisitWorkspaceResponse } from '../api/neginApi'
 import { VisitorNeshanMap } from './VisitorNeshanMap'
+import { VisitorPicker } from './VisitorPicker'
 import { useVisitorWorkflow } from '../state/VisitorWorkflowContext'
 import { useVisitorAuth } from '../state/VisitorAuthContext'
 import { useVisitorLiveData } from '../state/VisitorLiveDataContext'
@@ -443,21 +444,15 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
                 <button type="button" className={outcome === 'no-visit' ? 'active danger' : 'danger'} onClick={() => { setOutcome('no-visit'); setSelectedReasonId('') }}><PhoneIcon /><span>عدم ویزیت</span></button>
               </div>
               {outcomeKey ? (
-
-                <label className="vr-reason">
-
-                  <span>دلیل ثبت در NGT</span>
-
-                  <select value={selectedReasonId} disabled={actionBusy === 'complete'} onChange={(event) => setSelectedReasonId(event.target.value)}>
-
-                    <option value="">انتخاب دلیل</option>
-
-                    {outcomeReasons.map((reason) => <option key={reason.id} value={reason.id}>{reason.title}</option>)}
-
-                  </select>
-
-                </label>
-
+                <VisitorPicker
+                  className="vr-reason"
+                  label="دلیل ثبت در NGT"
+                  value={selectedReasonId}
+                  placeholder="انتخاب دلیل"
+                  disabled={actionBusy === 'complete'}
+                  options={outcomeReasons.map((reason) => ({ value: reason.id, label: reason.title }))}
+                  onChange={setSelectedReasonId}
+                />
               ) : null}
 
               <button

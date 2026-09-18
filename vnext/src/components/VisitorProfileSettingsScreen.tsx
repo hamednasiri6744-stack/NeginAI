@@ -3,7 +3,6 @@ import {
   BellIcon,
   ChartIcon,
   ChevronLeftIcon,
-  DeviceIcon,
   HelpIcon,
   HomeIcon,
   InfoIcon,
@@ -27,12 +26,10 @@ type Props = {
   onClose: () => void
 }
 
-type ToggleKey = 'notifications' | 'offline' | 'autosync'
+type ToggleKey = 'notifications'
 
 const settingsKeys: Record<ToggleKey, string> = {
   notifications: 'neginai.settings.notifications',
-  offline: 'neginai.settings.offline',
-  autosync: 'neginai.settings.autosync',
 }
 
 function initialToggle(key: ToggleKey, fallback = true) {
@@ -45,8 +42,6 @@ export function VisitorProfileSettingsScreen({ onNavigate, onLogout, onClose }: 
   const { profile, changePassword } = useVisitorAuth()
   const { activeRouteTitle, loading, reload } = useVisitorLiveData()
   const [notifications, setNotifications] = useState(() => initialToggle('notifications'))
-  const [offline, setOffline] = useState(() => initialToggle('offline'))
-  const [autosync, setAutosync] = useState(() => initialToggle('autosync'))
   const [notice, setNotice] = useState<string | null>(null)
   const [logoutOpen, setLogoutOpen] = useState(false)
   const [passwordOpen, setPasswordOpen] = useState(false)
@@ -64,8 +59,6 @@ export function VisitorProfileSettingsScreen({ onNavigate, onLogout, onClose }: 
   function updateToggle(key: ToggleKey, value: boolean) {
     localStorage.setItem(settingsKeys[key], String(value))
     if (key === 'notifications') setNotifications(value)
-    if (key === 'offline') setOffline(value)
-    if (key === 'autosync') setAutosync(value)
   }
 
   async function refreshLiveData() {
@@ -148,8 +141,6 @@ export function VisitorProfileSettingsScreen({ onNavigate, onLogout, onClose }: 
             <span><strong>{loading ? 'در حال بازخوانی…' : 'بازخوانی داده زنده'}</strong><small>Route و Customer از Seller Workspace</small></span>
             <ChevronLeftIcon />
           </button>
-          <ToggleRow icon={<DeviceIcon />} title="ترجیح ذخیره آفلاین" description="فقط ترجیح UI؛ Cache/Queue عملیاتی هنوز فعال نشده" checked={offline} onChange={(value) => updateToggle('offline', value)} />
-          <ToggleRow icon={<SyncIcon />} title="ترجیح همگام‌سازی خودکار" description="فقط ترجیح UI؛ Sync Queue در Slice بعدی متصل می‌شود" checked={autosync} onChange={(value) => updateToggle('autosync', value)} />
         </section>
 
         <section className="vp-section">
@@ -167,12 +158,12 @@ export function VisitorProfileSettingsScreen({ onNavigate, onLogout, onClose }: 
             <span><strong>تغییر رمز عبور</strong><small>متصل به Auth Service واقعی</small></span>
             <ChevronLeftIcon />
           </button>
-          <button className="vp-action-row" type="button" onClick={() => flash('Endpoint ثبت تیکت پشتیبانی هنوز در Backend تعریف نشده است')}>
+          <div className="vp-action-row vp-action-static" aria-label="پشتیبانی سازمانی">
             <span className="vp-row-icon"><HelpIcon /></span>
-            <span><strong>پشتیبانی</strong><small>در این نسخه فقط وضعیت اتصال مشخص است</small></span>
-            <ChevronLeftIcon />
-          </button>
-          <div className="vp-info-row"><InfoIcon /><span>نسخه Visitor</span><strong>۰.۱۷.۰</strong></div>
+            <span><strong>پشتیبانی سازمانی</strong><small>برای ثبت درخواست با مدیر سیستم تماس بگیرید</small></span>
+            <span className="vp-static-state">بدون تیکت آنلاین</span>
+          </div>
+          <div className="vp-info-row"><InfoIcon /><span>نسخه رابط</span><strong>vNext</strong></div>
         </section>
 
         <button className="vp-logout" type="button" onClick={() => setLogoutOpen(true)}><LogoutIcon /><span>خروج از حساب</span></button>

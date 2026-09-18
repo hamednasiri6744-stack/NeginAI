@@ -203,7 +203,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
           {message ? <div className="login-message" role="status">{message}</div> : null}
         </section>
 
-        <footer className="login-footer">Negin AI · Enterprise Access</footer>
+        <footer className="login-footer">Negin AI · دسترسی سازمانی</footer>
       </section>
     </main>
   )

@@ -126,7 +126,7 @@ export function VisitorOrderArchiveScreen({ onNavigate }: Props) {
 
         <section className="voa-heading">
           <div>
-            <span>Saved Requests</span>
+            <span>آرشیو سفارش</span>
             <h1>درخواست‌های ذخیره‌شده واقعی</h1>
             <p>{activeRouteTitle ? `مسیر ${activeRouteTitle}` : 'مسیر فعالی ثبت نشده است'}</p>
           </div>
@@ -144,11 +144,13 @@ export function VisitorOrderArchiveScreen({ onNavigate }: Props) {
           <section className="vh-live-state"><strong>مسیر فعالی برای نمایش آرشیو امروز وجود ندارد.</strong></section>
         ) : null}
 
-        <section className="voa-summary">
-          <article><span>درخواست‌های امروز</span><strong>{requests.length.toLocaleString('fa-IR')}</strong><small>ثبت‌شده در Backend</small></article>
-          <article><span>ردیف کالا</span><strong>{totalLines.toLocaleString('fa-IR')}</strong><small>در درخواست‌های امروز</small></article>
-          <article><span>مبلغ ثبت‌شده</span><strong>{number(totalAmount)}</strong><small>جمع درخواست‌های ذخیره‌شده</small></article>
-        </section>
+        {activeRouteId || requests.length ? (
+          <section className="voa-summary ng-living-surface" aria-label="خلاصه درخواست‌ها">
+            <article><span>درخواست</span><strong>{requests.length.toLocaleString('fa-IR')}</strong><small>ثبت‌شده</small></article>
+            <article><span>ردیف کالا</span><strong>{totalLines.toLocaleString('fa-IR')}</strong><small>امروز</small></article>
+            <article><span>مبلغ</span><strong>{number(totalAmount)}</strong><small>جمع ثبت‌شده</small></article>
+          </section>
+        ) : null}
 
         <section className="voa-history">
           <label className="voa-search">
