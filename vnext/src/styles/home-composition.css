@@ -228,7 +228,7 @@ button.vhome-context-item {
 .vhome-focus-action {
   width: min(100%, 180px);
   min-height: 42px;
-  justify-self: end;
+  justify-self: center;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -275,32 +275,40 @@ button.vhome-context-item {
   white-space: nowrap;
 }
 .vhome-focus-footer {
-  margin-top: auto;
+  flex: 1 1 auto;
+  min-height: 180px;
+  margin-top: 4px;
   display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
   gap: 8px;
 }
 
 .vhome-actions {
+  position: relative;
   width: 100%;
-  min-height: 50px;
-  padding: 4px;
+  min-height: 0;
+  overflow: visible;
+  display: block;
+  padding: 0;
   border-color: transparent;
-  background: rgba(4,15,25,.34);
+  background: transparent;
   box-shadow: none;
 }
 
 .vhome-action {
-  flex: 0 1 148px;
-  min-width: 118px;
+  position: absolute;
+  width: min(148px, 42vw);
+  min-width: 0;
   min-height: 42px;
-  padding: 4px 6px;
+  padding: 5px 7px;
   display: grid;
   grid-template-columns: 26px minmax(0, 1fr);
   gap: 6px;
   align-items: center;
-  border-color: transparent;
-  background: transparent;
+  border-color: rgba(170,199,221,.07);
+  background: rgba(4,15,25,.28);
   box-shadow: none;
+  backdrop-filter: blur(10px);
   text-align: right;
 }
 
@@ -343,6 +351,34 @@ button.vhome-context-item {
 .vhome-action.is-danger > span:first-child,
 .vhome-action.is-danger strong {
   color: var(--ng-danger);
+}
+
+.vhome-action-risk {
+  inset-inline-start: 2%;
+  top: 12%;
+}
+
+.vhome-action-alert {
+  inset-inline-end: 8%;
+  top: 42%;
+}
+
+.vhome-action-ai {
+  inset-inline-end: 3%;
+  bottom: 10%;
+}
+
+.vhome-actions::before {
+  content: '';
+  position: absolute;
+  inset: 12% 14% 14%;
+  pointer-events: none;
+  opacity: .62;
+  background:
+    linear-gradient(128deg, transparent 0 31%, rgba(242,203,104,.09) 31.4%, transparent 32% 64%, rgba(84,239,189,.065) 64.4%, transparent 65%),
+    radial-gradient(circle at 10% 15%, rgba(242,203,104,.18) 0 2px, transparent 3px),
+    radial-gradient(circle at 78% 48%, rgba(84,239,189,.14) 0 2px, transparent 3px),
+    radial-gradient(circle at 92% 84%, rgba(119,185,232,.12) 0 2px, transparent 3px);
 }
 .vhome-live .vhome-live-badge i {
   animation: vhome-live-dot 2.8s ease-out infinite;

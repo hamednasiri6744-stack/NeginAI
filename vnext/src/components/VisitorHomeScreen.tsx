@@ -321,7 +321,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
               <ActionRail className="vhome-actions" aria-label="اقدام‌های زمینه‌ای">
                 {(riskLoading || riskError || returnedChequeCount > 0) ? (
                   <Pressable
-                    className={'vhome-action' + (returnedChequeCount ? ' is-danger' : '')}
+                    className={'vhome-action vhome-action-risk' + (returnedChequeCount ? ' is-danger' : '')}
                     onClick={() => onNavigate('/visitor/reports')}
                   >
                     <span><ChequeIcon /></span>
@@ -340,7 +340,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
 
                 {attentionCount ? (
                   <Pressable
-                    className="vhome-action"
+                    className="vhome-action vhome-action-alert"
                     onClick={() => onNavigate('/visitor/notifications')}
                   >
                     <span><BellIcon /></span>
@@ -352,7 +352,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
                 ) : null}
 
                 <Pressable
-                  className="vhome-action"
+                  className="vhome-action vhome-action-ai"
                   onClick={() => onNavigate('/visitor/ai?context=home')}
                 >
                   <span><AiSparkIcon /></span>
