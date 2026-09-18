@@ -312,7 +312,7 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
 
   if (!activeStop) {
     return (
-      <main className="vh-page vh-live-ui ng-living-root vr-app-page" dir="rtl" data-live-ui="unified">
+      <main className="vh-page vh-live-ui ng-living-root vr-app-page vr-depth-page" dir="rtl" data-live-ui="unified" data-living-ui="on">
         <div className="vh-shell vr-shell">
           <header className="vh-header">
             <button className="vh-profile" type="button" onClick={() => onNavigate('/visitor/profile')}>
@@ -325,11 +325,39 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
           </header>
 
           {offDay ? (
-            <section className="vr-offday-card ng-living-surface" data-living-state="ambient">
-              <div className="vr-offday-icon"><ClockIcon /></div>
-              <div className="vr-offday-copy"><span>تقویم رسمی NGT</span><h1>امروز روز کاری نیست</h1><p>{workCalendar?.date ? `${workCalendar.date} · ` : ''}برای امروز DayPath یا Tour فعالی تعریف نشده و این وضعیت خطا محسوب نمی‌شود.</p></div>
-              <div className="vr-offday-rail"><span><small>مسیرهای تخصیص‌یافته</small><strong>{routes.length.toLocaleString('fa-IR')}</strong></span><span><small>روز کاری سپری‌شده</small><strong>{Number(workCalendar?.elapsed_working_days ?? 0).toLocaleString('fa-IR')}</strong></span><span><small>روز کاری باقی‌مانده</small><strong>{Number(workCalendar?.remaining_working_days ?? 0).toLocaleString('fa-IR')}</strong></span></div>
-              <div className="vr-offday-actions"><button type="button" className="primary" onClick={() => onNavigate('/visitor/customers')}>مرور مشتریان</button><button type="button" onClick={() => onNavigate('/visitor/home')}>بازگشت به خانه</button></div>
+            <section className="vr-offday-stage ng-depth-stage" data-depth="0">
+              <div className="vr-offday-command ng-layer-surface">
+                <span className="vr-offday-icon"><ClockIcon /></span>
+                <span className="vr-offday-copy">
+                  <small>تقویم رسمی NGT</small>
+                  <strong>امروز روز کاری نیست</strong>
+                  <em>{workCalendar?.date ? `${workCalendar.date} · ` : ''}عملیات فروش روزانه غیرفعال است؛ مرور و تحلیل همچنان در دسترس است.</em>
+                </span>
+                <span className="vr-offday-days">
+                  <b>{Number(workCalendar?.elapsed_working_days ?? 0).toLocaleString('fa-IR')}</b>
+                  <small>روز سپری‌شده</small>
+                </span>
+              </div>
+
+              <div className="vr-offday-portals">
+                <button type="button" className="vr-offday-portal ng-portal-surface ng-living-interactive" data-tone="blue" onClick={() => onNavigate('/visitor/customers')}>
+                  <span className="vr-offday-portal-icon ng-portal-accent"><UserGroupIcon /></span>
+                  <span><small>مشتریان</small><strong>{routes.length.toLocaleString('fa-IR')} مسیر تخصیص‌یافته</strong><em>مرور مشتریان و Customer 360</em></span>
+                  <ChevronLeftIcon />
+                </button>
+
+                <button type="button" className="vr-offday-portal ng-portal-surface ng-living-interactive" data-tone="gold" onClick={() => onNavigate('/visitor/orders')}>
+                  <span className="vr-offday-portal-icon ng-portal-accent"><CartIcon /></span>
+                  <span><small>کاتالوگ</small><strong>مرور محصولات NGT</strong><em>قیمت، موجودی و اطلاعات محصول</em></span>
+                  <ChevronLeftIcon />
+                </button>
+
+                <button type="button" className="vr-offday-portal ng-portal-surface ng-living-interactive" data-tone="mint" onClick={() => onNavigate('/visitor/reports')}>
+                  <span className="vr-offday-portal-icon ng-portal-accent"><ChartIcon /></span>
+                  <span><small>عملکرد</small><strong>{Number(workCalendar?.remaining_working_days ?? 0).toLocaleString('fa-IR')} روز کاری باقی‌مانده</strong><em>تحلیل فروش و وضعیت ماه</em></span>
+                  <ChevronLeftIcon />
+                </button>
+              </div>
             </section>
           ) : (
             <section className={error ? 'vh-live-state error' : 'vh-live-state'} role={error ? 'alert' : 'status'}>
@@ -351,7 +379,7 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
   }
 
   return (
-    <main className="vh-page vh-live-ui ng-living-root vr-app-page" dir="rtl" data-live-ui="unified">
+    <main className="vh-page vh-live-ui ng-living-root vr-app-page vr-depth-page" dir="rtl" data-live-ui="unified" data-living-ui="on">
       <div className="vh-shell vr-shell">
         <header className="vh-header">
           <button className="vh-profile" type="button" onClick={() => onNavigate('/visitor/profile')}>
@@ -414,7 +442,7 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
           ) : null}
         </section>
 
-        <section className={`vr-stops ng-living-surface ${showStops ? 'expanded' : 'collapsed'}`}>
+        <section className={`vr-stops ng-layer-surface ${showStops ? 'expanded' : 'collapsed'}`} data-depth={showStops ? '1' : '0'}>
           <button type="button" className="vr-stops-toggle" aria-expanded={showStops} onClick={() => setShowStops((value) => !value)}>
             <span><strong>ایستگاه‌های مسیر</strong><small>{sortedRouteStops.length.toLocaleString('fa-IR')} مشتری · {routeSummary.remaining.toLocaleString('fa-IR')} باقی‌مانده</small></span>
             <b>{showStops ? 'بستن' : 'نمایش همه'}</b>
