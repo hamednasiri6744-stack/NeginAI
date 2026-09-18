@@ -27,7 +27,15 @@ type TargetCardProps = {
   reducedMotion: boolean | null
 }
 
-type GlassCardProps = {
+type HomeCardStyle = 'glass-neu'
+
+const HOME_CARD_STYLE: HomeCardStyle = 'glass-neu'
+
+const HOME_CARD_SKINS: Record<HomeCardStyle, string> = {
+  'glass-neu': 'border-[rgba(156,194,220,.13)] bg-[linear-gradient(145deg,rgba(14,36,52,.72),rgba(3,13,22,.70))] shadow-[10px_12px_28px_rgba(0,0,0,.48),-7px_-7px_20px_rgba(39,83,110,.10),inset_1px_1px_0_rgba(255,255,255,.055),inset_-1px_-1px_0_rgba(0,0,0,.38)] backdrop-blur-[18px]',
+}
+
+type HomeCardProps = {
   children: ReactNode
   ariaLabel: string
   depthKey: string
@@ -36,15 +44,15 @@ type GlassCardProps = {
   interactive?: boolean
 }
 
-function GlassCard({
+function HomeCard({
   children,
   ariaLabel,
   depthKey,
   reducedMotion,
   className = '',
   interactive = true,
-}: GlassCardProps) {
-  const cardClass = `group relative block w-full overflow-hidden rounded-[24px] border border-[rgba(156,194,220,.13)] bg-[linear-gradient(145deg,rgba(14,36,52,.72),rgba(3,13,22,.70))] p-3 text-start shadow-[10px_12px_28px_rgba(0,0,0,.48),-7px_-7px_20px_rgba(39,83,110,.10),inset_1px_1px_0_rgba(255,255,255,.055),inset_-1px_-1px_0_rgba(0,0,0,.38)] backdrop-blur-[18px] ${interactive ? 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(242,203,104,.34)]' : ''} ${className}`
+}: HomeCardProps) {
+  const cardClass = `group relative block w-full overflow-hidden rounded-[24px] border p-3 text-start ${HOME_CARD_SKINS[HOME_CARD_STYLE]} ${interactive ? 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(242,203,104,.34)]' : ''} ${className}`
 
   const content = (
     <>
@@ -62,7 +70,7 @@ function GlassCard({
 
   if (!interactive) {
     return (
-      <motion.div data-depth-target={depthKey} className={cardClass}>
+      <motion.div data-depth-target={depthKey} data-card-style={HOME_CARD_STYLE} className={cardClass}>
         {content}
       </motion.div>
     )
@@ -73,6 +81,7 @@ function GlassCard({
       type="button"
       aria-label={ariaLabel}
       data-depth-target={depthKey}
+      data-card-style={HOME_CARD_STYLE}
       onClick={() => undefined}
       className={cardClass}
       {...(reducedMotion ? {} : { whileTap: { scale: 0.985, y: 1.5 } })}
@@ -110,7 +119,7 @@ function TargetCard({
     : `conic-gradient(var(--ng-gold-2) ${progress}%, rgba(255,255,255,.06) 0)`
 
   return (
-    <GlassCard
+    <HomeCard
       ariaLabel={`جزئیات هدف فروش ${title}`}
       depthKey={title === 'ماه جاری' ? 'target-month' : 'target-today'}
       reducedMotion={reducedMotion}
@@ -151,7 +160,7 @@ function TargetCard({
           <dd className="mt-0.5 truncate text-[15px] font-extrabold text-ng-text">{formatRial(remaining)}</dd>
         </div>
       </dl>
-    </GlassCard>
+    </HomeCard>
   )
 }
 
@@ -239,7 +248,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
     <main
       className="relative h-dvh min-h-dvh overflow-hidden bg-ng-bg text-ng-text"
       dir="rtl"
-      data-home-ui="glass-neu-card-test-v1"
+      data-home-ui="home-card-style-lab-v1" data-home-card-style={HOME_CARD_STYLE}
     >
       <div
         aria-hidden="true"
@@ -273,7 +282,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
           )}
         />
 
-        <GlassCard
+        <HomeCard
           ariaLabel="جزئیات زمان و تقویم کاری"
           depthKey="calendar"
           reducedMotion={reducedMotion}
@@ -307,7 +316,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
               <strong className="mt-1 block text-[17px] font-black text-ng-gold-soft">{workCalendar ? remainingWorkingDays.toLocaleString('fa-IR') : '—'}</strong>
             </div>
           </div>
-        </GlassCard>
+        </HomeCard>
 
         <div className="mt-2 grid grid-cols-2 gap-2">
           <TargetCard
@@ -328,7 +337,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
           />
         </div>
 
-        <GlassCard
+        <HomeCard
           ariaLabel="جزئیات فروش موردنیاز تا پایان ماه"
           depthKey="required-sales"
           reducedMotion={reducedMotion}
@@ -359,7 +368,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
             <span>{remainingWorkingDays.toLocaleString('fa-IR')} روز کاری باقی مانده</span>
             <span>{targetStateLabel}</span>
           </div>
-        </GlassCard>
+        </HomeCard>
 
         {error ? (
           <motion.button
