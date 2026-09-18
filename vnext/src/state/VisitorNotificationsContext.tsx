@@ -1,5 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { neginApi, type AutomationNotification, type NotificationSeverity } from '../api/neginApi'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { NeginApiError, neginApi, type AutomationNotification, type NotificationSeverity } from '../api/neginApi'
 import { useVisitorAuth } from './VisitorAuthContext'
 
 export type VisitorNotificationItem = AutomationNotification
@@ -27,6 +27,7 @@ export function VisitorNotificationsProvider({ children }: { children: ReactNode
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [liveConnected, setLiveConnected] = useState(false)
+  const reloadPromiseRef = useRef<Promise<void> | null>(null)
 
   const reload = useCallback(async () => {
     if (!authenticated) {
@@ -34,16 +35,33 @@ export function VisitorNotificationsProvider({ children }: { children: ReactNode
       setError(null)
       return
     }
-    setLoading(true)
-    setError(null)
+    if (reloadPromiseRef.current) return reloadPromiseRef.current
+
+    const task = (async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        let response
+        try {
+          response = await neginApi.automationNotifications()
+        } catch (caught) {
+          if (!(caught instanceof NeginApiError) || caught.status !== 0) throw caught
+          await new Promise((resolve) => window.setTimeout(resolve, 450))
+          response = await neginApi.automationNotifications()
+        }
+        setItems(response.notifications ?? [])
+      } catch (caught) {
+        setError(caught instanceof Error ? caught.message : 'Unable to load notifications')
+      } finally {
+        setLoading(false)
+      }
+    })()
+
+    reloadPromiseRef.current = task
     try {
-      const response = await neginApi.automationNotifications()
-      setItems(response.notifications ?? [])
-    } catch (caught) {
-      setItems([])
-      setError(caught instanceof Error ? caught.message : 'Unable to load notifications')
+      await task
     } finally {
-      setLoading(false)
+      if (reloadPromiseRef.current === task) reloadPromiseRef.current = null
     }
   }, [authenticated])
 

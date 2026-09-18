@@ -131,7 +131,7 @@ export function VisitorNotificationsScreen({ onNavigate, onClose }: Props) {
           <section className="vh-live-state error" role="alert">
             <div>
               <strong>{'\u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627 \u0628\u0627\u0631\u06af\u0630\u0627\u0631\u06cc \u0646\u0634\u062f\u0646\u062f'}</strong>
-              <span>{error}</span>
+              <span>{liveConnected ? 'اتصال زنده برقرار است؛ همگام‌سازی فهرست اعلان‌ها دوباره تلاش می‌شود.' : error}</span>
             </div>
             <button type="button" onClick={() => void reload()}>{'\u062a\u0644\u0627\u0634 \u062f\u0648\u0628\u0627\u0631\u0647'}</button>
           </section>
@@ -193,7 +193,7 @@ export function VisitorNotificationsScreen({ onNavigate, onClose }: Props) {
                 <div className="vn-card-foot critical-ack"><span>این هشدار نیازمند تأیید است</span><button type="button" onClick={() => markAcknowledged(item.id)}>تأیید اطلاع</button></div>
               ) : null}
             </article>
-          )) : (
+          )) : error ? null : (
             <div className="vn-empty">
               <BellIcon />
               <strong>{'\u0627\u0639\u0644\u0627\u0646\u06cc \u0628\u0631\u0627\u06cc \u0646\u0645\u0627\u06cc\u0634 \u0646\u06cc\u0633\u062a'}</strong>

@@ -199,3 +199,14 @@
     animation: none;
   }
 }
+
+.vh-page[data-design-system='atlas-v1'][data-screen='notifications'] .vn-empty {
+  min-height: 150px;
+  padding: 18px 14px;
+}
+.vh-page[data-design-system='atlas-v1'][data-screen='notifications'] .vn-list:empty {
+  margin-top: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
