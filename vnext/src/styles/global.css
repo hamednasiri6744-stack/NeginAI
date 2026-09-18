@@ -4200,3 +4200,58 @@ button:focus-visible,a:focus-visible { outline:2px solid rgba(240,193,82,.72); o
 @media(prefers-reduced-motion:reduce){
   .vo-stock-signals>button.active::after{animation:none}
 }
+/* === Alert Center semantic category layer === */
+.vn-meta{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:5px 6px;
+}
+.vn-category{
+  display:inline-flex;
+  align-items:center;
+  min-height:22px;
+  padding:0 7px;
+  border-radius:8px;
+  border:1px solid rgba(151,181,205,.09);
+  color:#8295a6;
+  background:rgba(255,255,255,.018);
+  font-size:10px;
+  font-weight:800;
+  font-style:normal;
+  white-space:nowrap;
+}
+.vn-category[data-category='pricing']{
+  color:#e7bb55;
+  border-color:rgba(226,169,53,.14);
+  background:rgba(226,169,53,.045);
+}
+.vn-category[data-category='promotion']{
+  color:#ddbd72;
+  border-color:rgba(226,169,53,.12);
+  background:rgba(226,169,53,.035);
+}
+.vn-category[data-category='finance'],
+.vn-category[data-category='credit'],
+.vn-category[data-category='return']{
+  color:#ef969d;
+  border-color:rgba(255,103,116,.13);
+  background:rgba(120,36,48,.05);
+}
+.vn-category[data-category='route'],
+.vn-category[data-category='customer']{
+  color:#7eafd0;
+  border-color:rgba(109,169,209,.13);
+  background:rgba(71,126,166,.045);
+}
+.vn-category[data-category='distribution']{
+  color:#65d5ae;
+  border-color:rgba(82,210,169,.12);
+  background:rgba(43,154,120,.04);
+}
+.vn-card.unread .vn-category{
+  box-shadow:inset 0 1px rgba(255,255,255,.025);
+}
+@media(max-width:390px){
+  .vn-category{font-size:9.5px;padding-inline:6px}
+}

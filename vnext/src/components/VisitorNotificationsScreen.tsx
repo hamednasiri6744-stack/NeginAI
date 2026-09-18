@@ -35,6 +35,22 @@ const severityLabel: Record<NotificationSeverity, string> = {
   info: 'اطلاع',
 }
 
+const categoryLabel: Record<string, string> = {
+  pricing: 'قیمت فروش',
+  promotion: 'تخفیف / جایزه',
+  finance: 'ریسک مالی',
+  credit: 'کنترل اعتبار',
+  route: 'مسیر',
+  customer: 'مشتری',
+  distribution: 'توزیع',
+  return: 'برگشت',
+  general: 'عملیاتی',
+}
+
+function notificationCategory(value: string) {
+  return categoryLabel[value] || value || 'عملیاتی'
+}
+
 export function VisitorNotificationsScreen({ onNavigate, onClose }: Props) {
   const { profile } = useVisitorAuth()
   const {
@@ -73,10 +89,10 @@ export function VisitorNotificationsScreen({ onNavigate, onClose }: Props) {
       <div className="vh-shell vn-shell">
         <header className="vh-header">
           <button className="vh-profile ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/profile')}>
-            <span className="vh-avatar">{profile?.full_name?.charAt(0) || profile?.username?.charAt(0) || 'ظˆ'}</span>
+            <span className="vh-avatar">{profile?.full_name?.charAt(0) || profile?.username?.charAt(0) || 'و'}</span>
             <span className="vh-profile-copy">
-              <strong>{profile?.full_name || profile?.username || '\u06a9\u0627\u0631\u0628\u0631'}</strong>
-              <small><PinIcon /> {profile?.branch || profile?.sales_line || '\u0646\u0634\u0627\u0646 \u062d\u0627\u0636\u0631'}</small>
+              <strong>{profile?.full_name || profile?.username || 'کاربر'}</strong>
+              <small><PinIcon /> {profile?.branch || profile?.sales_line || 'حساب سازمانی'}</small>
             </span>
             <ChevronLeftIcon />
           </button>
@@ -161,7 +177,7 @@ export function VisitorNotificationsScreen({ onNavigate, onClose }: Props) {
               <button className="vn-card-main ng-living-interactive" type="button" onClick={() => { markRead(item.id); if (item.action_path) onNavigate(item.action_path) }}>
                 <span className="vn-icon"><BellIcon /></span>
                 <span className="vn-copy">
-                  <span className="vn-meta"><b className={`vn-severity ${item.severity}`}>{severityLabel[item.severity]}</b><time>{notificationTime(item.occurred_at || item.created_at)}</time></span>
+                  <span className="vn-meta"><b className={`vn-severity ${item.severity}`}>{severityLabel[item.severity]}</b><i className="vn-category" data-category={item.category}>{notificationCategory(item.category)}</i><time>{notificationTime(item.occurred_at || item.created_at)}</time></span>
                   <strong>{item.title}</strong>
                   <small>{item.body}</small>
                   <em>{item.source === 'NGT' || item.source === 'varanegar' ? 'منبع: ورانگر / NGT' : item.source}</em>
