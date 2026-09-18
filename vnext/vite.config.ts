@@ -18,9 +18,14 @@ export default defineConfig({
       filename: 'sw.js',
       manifest: false,
       workbox: {
-        cleanupOutdatedCaches: true,
+        // Activate the freshly built worker immediately, but do not claim an already-open
+        // document. Existing tabs keep their current controller until the next navigation,
+        // so a deployment cannot swap lazy chunks underneath a running screen.
+        // Keep prior precaches available for those older controlled tabs; chunk recovery
+        // remains a second line of defence in App.tsx.
+        cleanupOutdatedCaches: false,
         clientsClaim: false,
-        skipWaiting: false,
+        skipWaiting: true,
         navigateFallback: '/index.html',
         globPatterns: ['**/*.{js,css,html,png,jpg,jpeg,svg,webp,woff,woff2}'],
         runtimeCaching: [
