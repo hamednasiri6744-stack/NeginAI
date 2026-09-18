@@ -330,3 +330,44 @@
   background: transparent !important;
   box-shadow: none !important;
 }
+/* === Home parity v4: exact Home darkness on every screen === */
+html,
+body,
+#root {
+  background-color: var(--ng-bg) !important;
+}
+
+#root :where(.vh-page,.vai-page),
+#root .login-page {
+  background-color: var(--ng-bg) !important;
+  background-image:
+    radial-gradient(circle at 50% -10%,rgba(38,91,126,.20),transparent 34%) !important;
+}
+
+#root :where(
+  .vh-shell,.vc-shell,.c360-shell,.vr-shell,.vo-shell,.voa-shell,
+  .vn-shell,.vp-shell,.vrep-shell,.vai-shell
+) {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+#root :where(
+  .vc-depth-stage,.vrep-depth-stage,.vr-offday-stage,
+  .vc-depth-root,.vrep-depth-root,.vr-offday-overview,
+  .vc-depth-layer,.vrep-depth-layer,.vr-offday-layer
+) {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+#root :where(.vh-page,.vai-page) :where(
+  .ng-layer-surface,.ng-portal-surface,.ng-detail-surface,.ng-living-surface
+) {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+#root .login-page::before {
+  background:
+    linear-gradient(115deg,transparent 18%,rgba(255,255,255,.014) 45%,transparent 68%) !important;
+}
