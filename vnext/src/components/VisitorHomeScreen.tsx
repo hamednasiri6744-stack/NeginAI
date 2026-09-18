@@ -33,6 +33,7 @@ type GlassCardProps = {
   depthKey: string
   reducedMotion: boolean | null
   className?: string
+  interactive?: boolean
 }
 
 function GlassCard({
@@ -41,17 +42,12 @@ function GlassCard({
   depthKey,
   reducedMotion,
   className = '',
+  interactive = true,
 }: GlassCardProps) {
-  return (
-    <motion.button
-      type="button"
-      aria-label={ariaLabel}
-      data-depth-target={depthKey}
-      onClick={() => undefined}
-      className={`group relative block w-full overflow-hidden rounded-[24px] border border-[rgba(156,194,220,.13)] bg-[linear-gradient(145deg,rgba(14,36,52,.72),rgba(3,13,22,.70))] p-3 text-start shadow-[10px_12px_28px_rgba(0,0,0,.48),-7px_-7px_20px_rgba(39,83,110,.10),inset_1px_1px_0_rgba(255,255,255,.055),inset_-1px_-1px_0_rgba(0,0,0,.38)] backdrop-blur-[18px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(242,203,104,.34)] ${className}`}
-      {...(reducedMotion ? {} : { whileTap: { scale: 0.985, y: 1.5 } })}
-      transition={{ type: 'spring', stiffness: 520, damping: 34, mass: 0.45 }}
-    >
+  const cardClass = `group relative block w-full overflow-hidden rounded-[24px] border border-[rgba(156,194,220,.13)] bg-[linear-gradient(145deg,rgba(14,36,52,.72),rgba(3,13,22,.70))] p-3 text-start shadow-[10px_12px_28px_rgba(0,0,0,.48),-7px_-7px_20px_rgba(39,83,110,.10),inset_1px_1px_0_rgba(255,255,255,.055),inset_-1px_-1px_0_rgba(0,0,0,.38)] backdrop-blur-[18px] ${interactive ? 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(242,203,104,.34)]' : ''} ${className}`
+
+  const content = (
+    <>
       <span
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"
@@ -60,13 +56,29 @@ function GlassCard({
         aria-hidden="true"
         className="pointer-events-none absolute -end-10 -top-12 size-32 rounded-full bg-[radial-gradient(circle,rgba(93,166,205,.09),transparent_68%)]"
       />
-      <span
-        aria-hidden="true"
-        className="absolute start-2 top-2 z-[2] grid size-7 place-items-center rounded-full border border-white/[.045] bg-black/10 text-ng-muted opacity-55 shadow-[inset_1px_1px_0_rgba(255,255,255,.035)] [&>svg]:size-3.5"
-      >
-        <ChevronLeftIcon />
-      </span>
       <span className="relative z-[1] block">{children}</span>
+    </>
+  )
+
+  if (!interactive) {
+    return (
+      <motion.div data-depth-target={depthKey} className={cardClass}>
+        {content}
+      </motion.div>
+    )
+  }
+
+  return (
+    <motion.button
+      type="button"
+      aria-label={ariaLabel}
+      data-depth-target={depthKey}
+      onClick={() => undefined}
+      className={cardClass}
+      {...(reducedMotion ? {} : { whileTap: { scale: 0.985, y: 1.5 } })}
+      transition={{ type: 'spring', stiffness: 520, damping: 34, mass: 0.45 }}
+    >
+      {content}
     </motion.button>
   )
 }
@@ -265,6 +277,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
           ariaLabel="جزئیات زمان و تقویم کاری"
           depthKey="calendar"
           reducedMotion={reducedMotion}
+          interactive={false}
           className="mt-2 shrink-0"
         >
           <div className="grid grid-cols-3">
