@@ -175,6 +175,58 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
   const remainingWorkingDays = Number(workCalendar?.remaining_working_days ?? 0)
   const returnedChequeCount = Number(returnedCheques?.cheque_count ?? 0)
 
+  const routeWorkspaceItems = routeStops
+    .filter((stop) => ['active', 'pending', 'unlocated'].includes(stop.status))
+    .slice(0, 3)
+    .map((stop) => ({
+      key: 'route-' + stop.customerId,
+      title: stop.name,
+      subtitle: [
+        stop.area,
+        stop.eta,
+        stop.distance,
+        stop.priorityKnown ? 'اولویت ' + stop.priority : null,
+      ].filter(Boolean).join(' · '),
+      path: '/visitor/route',
+      icon: <RouteArrowIcon />,
+      tone: stop.debtWarning ? 'danger' as const : 'route' as const,
+    }))
+
+  const preparationWorkspaceItems = [
+    {
+      key: 'customers',
+      title: 'مشتریان و سابقه ویزیت',
+      subtitle: 'مرور مشتریان برای برنامه‌ریزی روز کاری بعد',
+      path: '/visitor/customers',
+      icon: <UserGroupIcon />,
+      tone: 'route' as const,
+    },
+    {
+      key: 'reports',
+      title: returnedChequeCount > 0 ? 'ریسک مالی' : 'گزارش‌ها و عملکرد',
+      subtitle: riskLoading
+        ? 'در حال دریافت وضعیت مالی…'
+        : returnedChequeCount > 0
+          ? returnedChequeCount.toLocaleString('fa-IR') + ' چک برگشتی'
+          : 'مرور گزارش‌های فروش و عملیات',
+      path: '/visitor/reports',
+      icon: <ChequeIcon />,
+      tone: returnedChequeCount > 0 ? 'danger' as const : 'route' as const,
+    },
+    {
+      key: 'ai',
+      title: 'تحلیل زمینه با Negin AI',
+      subtitle: 'تحلیل زمینه امروز و آمادگی روز کاری بعد',
+      path: '/visitor/ai?context=home',
+      icon: <AiSparkIcon />,
+      tone: 'gold' as const,
+    },
+  ]
+
+  const workspaceItems = !offDay && liveAssignment && routeWorkspaceItems.length
+    ? routeWorkspaceItems
+    : preparationWorkspaceItems
+
   const retryLiveData = () => {
     void reload()
     setRiskRevision((value) => value + 1)
@@ -351,62 +403,55 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
             </motion.button>
           ) : null}
 
-          <section className="mt-2 grid shrink-0 grid-cols-2 gap-x-4 border-t border-[var(--ng-border-subtle)] pt-2">
-            {(riskLoading || returnedChequeCount > 0) ? (
-              <motion.button
-                type="button"
-                onClick={() => onNavigate('/visitor/reports')}
-                className="grid min-h-14 w-full grid-cols-[34px_minmax(0,1fr)] items-center gap-2 px-1 text-start"
-                {...(reducedMotion || !livingUiEnabled ? {} : { whileTap: { scale: 0.99 } })}
-                transition={{ type: 'spring', stiffness: 520, damping: 34, mass: 0.45 }}
-              >
-                <span className={riskLoading
-                  ? "grid size-9 place-items-center rounded-xl bg-[rgba(119,185,232,.05)] text-ng-info [&>svg]:size-4"
-                  : "grid size-9 place-items-center rounded-xl bg-[rgba(255,109,120,.06)] text-ng-danger [&>svg]:size-4"
-                }><ChequeIcon /></span>
-                <span className="min-w-0">
-                  <strong className={riskLoading ? "block text-xs text-ng-text" : "block text-xs text-ng-danger"}>ریسک مالی</strong>
-                  <small className="mt-0.5 block truncate text-[9px] text-ng-muted">
-                    {riskLoading ? 'در حال دریافت…' : returnedChequeCount.toLocaleString('fa-IR') + ' چک برگشتی'}
-                  </small>
-                </span>
-              </motion.button>
-            ) : null}
-
-            {attentionCount > 0 ? (
-              <motion.button
-                type="button"
-                onClick={() => onNavigate('/visitor/notifications')}
-                className="grid min-h-14 w-full grid-cols-[34px_minmax(0,1fr)] items-center gap-2 px-1 text-start"
-                {...(reducedMotion || !livingUiEnabled ? {} : { whileTap: { scale: 0.99 } })}
-                transition={{ type: 'spring', stiffness: 520, damping: 34, mass: 0.45 }}
-              >
-                <span className="grid size-9 place-items-center rounded-xl bg-[rgba(242,184,79,.05)] text-ng-warning [&>svg]:size-4"><BellIcon /></span>
-                <span className="min-w-0">
-                  <strong className="block text-xs text-ng-text">هشدارها</strong>
-                  <small className="mt-0.5 block truncate text-[9px] text-ng-muted">
-                    {attentionCount.toLocaleString('fa-IR')} مورد نیازمند توجه
-                  </small>
-                </span>
-              </motion.button>
-            ) : null}
-
-            <motion.button
-              type="button"
-              onClick={() => onNavigate('/visitor/ai?context=home')}
-              className={(returnedChequeCount > 0 || attentionCount > 0)
-                ? "grid min-h-14 w-full grid-cols-[34px_minmax(0,1fr)] items-center gap-2 px-1 text-start"
-                : "col-span-2 grid min-h-14 w-full grid-cols-[34px_minmax(0,1fr)] items-center gap-2 px-1 text-start"
-              }
-              {...(reducedMotion || !livingUiEnabled ? {} : { whileTap: { scale: 0.99 } })}
-              transition={{ type: 'spring', stiffness: 520, damping: 34, mass: 0.45 }}
-            >
-              <span className="grid size-9 place-items-center rounded-xl bg-[rgba(242,203,104,.045)] text-ng-gold-soft [&>svg]:size-4"><AiSparkIcon /></span>
+          <section className="mt-2 flex min-h-[220px] flex-1 flex-col border-t border-[var(--ng-border-subtle)] pt-2">
+            <div className="flex items-center justify-between gap-3 px-1 pb-1.5">
               <span className="min-w-0">
-                <strong className="block text-xs text-ng-text">Negin AI</strong>
-                <small className="mt-0.5 block truncate text-[9px] text-ng-muted">تحلیل زمینه امروز</small>
+                <strong className="block text-[11px] font-extrabold text-ng-text">
+                  {offDay ? 'آماده‌سازی فردا' : liveAssignment ? 'صف بعدی مسیر' : 'زمینه بعدی'}
+                </strong>
+                <small className="mt-0.5 block truncate text-[9px] text-ng-muted">
+                  {!offDay && liveAssignment && routeWorkspaceItems.length
+                    ? routeSummary.remaining.toLocaleString('fa-IR') + ' توقف باقی‌مانده'
+                    : 'بر اساس وضعیت فعلی امروز'}
+                </small>
               </span>
-            </motion.button>
+              <span className="text-[9px] text-ng-muted">
+                {workspaceItems.length.toLocaleString('fa-IR')} مورد
+              </span>
+            </div>
+
+            <div className="grid min-h-0 flex-1 auto-rows-fr divide-y divide-[var(--ng-border-subtle)]">
+              {workspaceItems.map((item) => (
+                <motion.button
+                  key={item.key}
+                  type="button"
+                  onClick={() => onNavigate(item.path)}
+                  className="grid min-h-16 w-full grid-cols-[40px_minmax(0,1fr)_14px] items-center gap-3 px-1 text-start"
+                  {...(reducedMotion || !livingUiEnabled ? {} : { whileTap: { scale: 0.99 } })}
+                  transition={{ type: 'spring', stiffness: 520, damping: 34, mass: 0.45 }}
+                >
+                  <span className={
+                    item.tone === 'danger'
+                      ? "grid size-10 place-items-center rounded-xl bg-[rgba(255,109,120,.06)] text-ng-danger [&>svg]:size-4"
+                      : item.tone === 'gold'
+                        ? "grid size-10 place-items-center rounded-xl bg-[rgba(242,203,104,.045)] text-ng-gold-soft [&>svg]:size-4"
+                        : "grid size-10 place-items-center rounded-xl bg-[rgba(119,185,232,.045)] text-ng-info [&>svg]:size-4"
+                  }>
+                    {item.icon}
+                  </span>
+                  <span className="min-w-0">
+                    <strong className={item.tone === 'danger'
+                      ? "block truncate text-xs text-ng-danger"
+                      : "block truncate text-xs text-ng-text"
+                    }>
+                      {item.title}
+                    </strong>
+                    <small className="mt-1 block truncate text-[9px] text-ng-muted">{item.subtitle}</small>
+                  </span>
+                  <span className="[&>svg]:size-3 [&>svg]:rotate-180 text-ng-muted"><ChevronLeftIcon /></span>
+                </motion.button>
+              ))}
+            </div>
           </section>
         </div>
 
