@@ -220,7 +220,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
 
         <section
           aria-label="خلاصه وضعیت روز"
-          className="mt-2 grid shrink-0 grid-cols-4 divide-x divide-[var(--ng-border-subtle)] rounded-[var(--ng-radius-stage)] border border-[var(--ng-border-subtle)] bg-[rgba(4,15,25,.56)] p-1 backdrop-blur-[var(--ng-blur)]"
+          className="mt-2 grid shrink-0 grid-cols-4 divide-x divide-[var(--ng-border-subtle)] border-y border-[var(--ng-border-subtle)] bg-transparent py-1"
         >
           <div className="flex min-h-14 min-w-0 flex-col items-center justify-center gap-0.5 px-1 text-center">
             <span className="[&>svg]:size-4 text-ng-gold-soft"><ClockIcon /></span>
@@ -271,11 +271,11 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
           </motion.button>
         </section>
 
-        <div className="mt-2 min-h-0 flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <section className="relative overflow-hidden rounded-[var(--ng-radius-stage)] border border-[var(--ng-border-subtle)] bg-[linear-gradient(155deg,rgba(255,255,255,.035),rgba(255,255,255,.004)_46%),var(--ng-surface-stage)] p-4 shadow-[var(--ng-shadow-contact)]">
+        <div className="mt-2 flex min-h-0 flex-1 flex-col overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <section className="relative shrink-0 overflow-hidden border-b border-[var(--ng-border-subtle)] bg-transparent px-1 py-4">
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_84%_12%,rgba(242,203,104,.09),transparent_34%)]"
+              className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_84%_12%,rgba(242,203,104,.07),transparent_32%)]"
             />
 
             <div className="relative flex items-center justify-between gap-3">
@@ -351,12 +351,12 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
             </motion.button>
           ) : null}
 
-          <section className="mt-2 divide-y divide-[var(--ng-border-subtle)] border-y border-[var(--ng-border-subtle)]">
+          <section className="mt-auto grid shrink-0 grid-cols-2 gap-x-4 border-t border-[var(--ng-border-subtle)] pt-2">
             {(riskLoading || returnedChequeCount > 0) ? (
               <motion.button
                 type="button"
                 onClick={() => onNavigate('/visitor/reports')}
-                className="grid min-h-14 w-full grid-cols-[38px_minmax(0,1fr)_14px] items-center gap-3 px-2 text-start"
+                className="grid min-h-14 w-full grid-cols-[34px_minmax(0,1fr)] items-center gap-2 px-1 text-start"
                 {...(reducedMotion || !livingUiEnabled ? {} : { whileTap: { scale: 0.99 } })}
                 transition={{ type: 'spring', stiffness: 520, damping: 34, mass: 0.45 }}
               >
@@ -370,7 +370,6 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
                     {riskLoading ? 'در حال دریافت…' : returnedChequeCount.toLocaleString('fa-IR') + ' چک برگشتی'}
                   </small>
                 </span>
-                <span className="[&>svg]:size-3 [&>svg]:rotate-180 text-ng-muted"><ChevronLeftIcon /></span>
               </motion.button>
             ) : null}
 
@@ -378,7 +377,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
               <motion.button
                 type="button"
                 onClick={() => onNavigate('/visitor/notifications')}
-                className="grid min-h-14 w-full grid-cols-[38px_minmax(0,1fr)_14px] items-center gap-3 px-2 text-start"
+                className="grid min-h-14 w-full grid-cols-[34px_minmax(0,1fr)] items-center gap-2 px-1 text-start"
                 {...(reducedMotion || !livingUiEnabled ? {} : { whileTap: { scale: 0.99 } })}
                 transition={{ type: 'spring', stiffness: 520, damping: 34, mass: 0.45 }}
               >
@@ -389,14 +388,16 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
                     {attentionCount.toLocaleString('fa-IR')} مورد نیازمند توجه
                   </small>
                 </span>
-                <span className="[&>svg]:size-3 [&>svg]:rotate-180 text-ng-muted"><ChevronLeftIcon /></span>
               </motion.button>
             ) : null}
 
             <motion.button
               type="button"
               onClick={() => onNavigate('/visitor/ai?context=home')}
-              className="grid min-h-14 w-full grid-cols-[38px_minmax(0,1fr)_14px] items-center gap-3 px-2 text-start"
+              className={(returnedChequeCount > 0 || attentionCount > 0)
+                ? "grid min-h-14 w-full grid-cols-[34px_minmax(0,1fr)] items-center gap-2 px-1 text-start"
+                : "col-span-2 grid min-h-14 w-full grid-cols-[34px_minmax(0,1fr)] items-center gap-2 px-1 text-start"
+              }
               {...(reducedMotion || !livingUiEnabled ? {} : { whileTap: { scale: 0.99 } })}
               transition={{ type: 'spring', stiffness: 520, damping: 34, mass: 0.45 }}
             >
@@ -405,7 +406,6 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
                 <strong className="block text-xs text-ng-text">Negin AI</strong>
                 <small className="mt-0.5 block truncate text-[9px] text-ng-muted">تحلیل زمینه امروز</small>
               </span>
-              <span className="[&>svg]:size-3 [&>svg]:rotate-180 text-ng-muted"><ChevronLeftIcon /></span>
             </motion.button>
           </section>
         </div>
