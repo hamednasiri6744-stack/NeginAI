@@ -177,7 +177,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
     : performanceLoading ? 'در حال دریافت عملکرد…' : 'عملکرد در دسترس نیست'
   const performanceMeta = targetSemanticReady && targetPulse?.configured && targetAchievement != null
     ? `${targetAchievement.toLocaleString('fa-IR', { maximumFractionDigits: 1 })}٪ تحقق هدف`
-    : 'KPI هدف در اعتبارسنجی'
+    : 'هدف هنوز تأیید نشده'
   const riskSummary = performance.openInvoices
     ? `${compactRial(performance.openInvoices.open_invoice_remaining)} مانده باز`
     : performanceLoading ? 'در حال دریافت وضعیت مالی…' : 'وضعیت مالی در دسترس نیست'
@@ -188,8 +188,8 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
     ? `${attentionCount.toLocaleString('fa-IR')} هشدار فعال`
     : 'بدون هشدار بحرانی'
   const intelligenceMeta = attentionCount
-    ? (highestSeverity === 'critical' ? 'حداقل یک مورد بحرانی' : 'Alert Center نیازمند بررسی')
-    : 'Negin AI آماده تحلیل'
+    ? (highestSeverity === 'critical' ? 'حداقل یک مورد بحرانی' : 'نیازمند بررسی')
+    : 'AI آماده تحلیل'
 
   function openLayer(next: HomeLayer) {
     window.history.pushState({ neginHomeDepth: 1 }, '', window.location.href)
@@ -493,7 +493,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
                 <div>
                   <span className="vhd-live"><i /> وضعیت جامع · زنده</span>
                   <h1>سلام{profile?.full_name ? `، ${profile.full_name}` : ''}</h1>
-                  <p>از هر بخش وارد لایه بعدی شو؛ جزئیات در سطح اول نمایش داده نمی‌شوند.</p>
+
                 </div>
                 <div className="vhd-date">
                   <strong>{currentTime}</strong>
@@ -528,7 +528,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
 
                 <button className="vhd-portal ng-portal-surface ng-living-interactive" data-tone="blue" type="button" onClick={() => openLayer('today')}>
                   <span className="vhd-portal-icon ng-portal-accent"><ClockIcon /></span>
-                  <span className="vhd-portal-copy"><small>عملیات امروز</small><strong>{offDay ? 'امروز روز غیرکاری است' : routeSummaryLabel}</strong><em>{offDay ? 'مرور مسیرهای تخصیص‌یافته' : nextStop ? `بعدی: ${nextStop.name}` : 'Route و توزیع'}</em></span>
+                  <span className="vhd-portal-copy"><small>عملیات امروز</small><strong>{offDay ? 'امروز روز غیرکاری است' : routeSummaryLabel}</strong><em>{offDay ? 'مرور مسیرها' : nextStop ? `بعدی: ${nextStop.name}` : 'مسیر و توزیع'}</em></span>
                   <ChevronLeftIcon />
                 </button>
 

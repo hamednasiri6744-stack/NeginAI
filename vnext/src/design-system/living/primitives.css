@@ -130,3 +130,11 @@
 :where(.ng-living-root) [data-tone='mint'] { --ng-portal-accent: #63d3ad; }
 :where(.ng-living-root) [data-tone='blue'] { --ng-portal-accent: #80abc7; }
 :where(.ng-living-root) [data-tone='danger'] { --ng-portal-accent: #e98992; }
+/* Portal depth cue: canonical stacked lip, not decorative glow */
+:where(.ng-living-root) .ng-portal-surface {
+  box-shadow:
+    0 5px 0 -2px rgba(3,13,22,.92),
+    0 7px 0 -3px rgba(170,199,221,.075),
+    var(--ng-live-depth-rest),
+    inset 0 1px rgba(255,255,255,.035);
+}

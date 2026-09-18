@@ -3092,3 +3092,112 @@ button:focus-visible,a:focus-visible { outline:2px solid rgba(240,193,82,.72); o
 .vh-depth-page .vhd-detail-card{
   border-radius:20px;
 }
+/* === Home Final Pass — portal composition / depth / readability === */
+.vh-depth-page .vhd-overview{
+  min-height:96px;
+  padding:13px 14px;
+}
+.vh-depth-page .vhd-overview h1{
+  margin:5px 0 0;
+}
+.vh-depth-page .vhd-portals{
+  gap:10px;
+}
+.vh-depth-page .vhd-portal{
+  padding:12px;
+  grid-template-columns:minmax(0,1fr) 44px;
+  grid-template-rows:44px minmax(0,1fr);
+  grid-template-areas:
+    "chevron icon"
+    "copy copy";
+  gap:8px 10px;
+  align-items:start;
+  box-shadow:
+    0 5px 0 -2px rgba(3,13,22,.92),
+    0 7px 0 -3px rgba(170,199,221,.075),
+    var(--ng-live-depth-rest),
+    inset 0 1px rgba(255,255,255,.04);
+}
+.vh-depth-page .vhd-portal-icon{
+  grid-area:icon;
+  width:44px;
+  height:44px;
+  justify-self:end;
+}
+.vh-depth-page .vhd-portal>svg{
+  grid-area:chevron;
+  align-self:center;
+  justify-self:start;
+}
+.vh-depth-page .vhd-portal-copy{
+  grid-area:copy;
+  align-self:end;
+  gap:4px;
+}
+.vh-depth-page .vhd-portal-copy small{
+  font-size:13px;
+  color:#8b9baa;
+}
+.vh-depth-page .vhd-portal-copy strong{
+  font-size:16px;
+  line-height:1.45;
+}
+.vh-depth-page .vhd-portal-copy em{
+  font-size:13px;
+  line-height:1.45;
+  color:#7b8e9f;
+  -webkit-line-clamp:1;
+}
+.vh-depth-page .vhd-layer-items{
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  justify-content:flex-start;
+  gap:10px;
+}
+.vh-depth-page .vhd-layer-item{
+  flex:0 0 112px;
+  min-height:112px;
+  padding:12px 14px;
+  box-shadow:
+    0 4px 0 -2px rgba(3,13,22,.90),
+    0 6px 0 -3px rgba(170,199,221,.065),
+    var(--ng-live-depth-rest),
+    inset 0 1px rgba(255,255,255,.035);
+}
+.vh-depth-page .vhd-layer-item-copy small{
+  font-size:13px;
+  color:#8b9baa;
+}
+.vh-depth-page .vhd-layer-item-copy strong{
+  font-size:21px;
+}
+.vh-depth-page .vhd-layer-item-copy em{
+  font-size:13px;
+  color:#7b8e9f;
+}
+.vh-depth-page .vhd-layer-section{
+  position:relative;
+}
+.vh-depth-page .vhd-layer-section::after{
+  content:'';
+  position:absolute;
+  left:24px;
+  right:24px;
+  bottom:16px;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(226,169,53,.16),transparent);
+  opacity:.55;
+  pointer-events:none;
+}
+@media(max-width:390px){
+  .vh-depth-page .vhd-portal{
+    padding:11px;
+    grid-template-columns:minmax(0,1fr) 40px;
+    grid-template-rows:40px minmax(0,1fr);
+  }
+  .vh-depth-page .vhd-portal-icon{width:40px;height:40px}
+  .vh-depth-page .vhd-portal-copy strong{font-size:15px}
+  .vh-depth-page .vhd-portal-copy em{font-size:12.5px}
+  .vh-depth-page .vhd-layer-item{flex-basis:108px;min-height:108px}
+}
