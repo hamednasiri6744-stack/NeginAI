@@ -21,3 +21,112 @@
   position: relative;
   isolation: isolate;
 }
+/* Canonical depth-first application primitives */
+:where(.ng-living-root) .ng-depth-stage {
+  position: relative;
+  perspective: 1200px;
+  transform-style: preserve-3d;
+  isolation: isolate;
+}
+
+:where(.ng-living-root) .ng-depth-backplane {
+  position: absolute;
+  inset: 10px 7px 5px;
+  pointer-events: none;
+  border: 1px solid var(--ng-border-subtle);
+  border-radius: var(--ng-radius-stage);
+  background: var(--ng-surface-panel);
+  box-shadow: var(--ng-depth-plane-1);
+  opacity: 0;
+  transition:
+    transform var(--ng-motion-state) var(--ng-ease-state),
+    opacity var(--ng-motion-state) ease,
+    border-color var(--ng-motion-state) ease;
+}
+
+:where(.ng-living-root) .ng-depth-backplane[data-plane='1'] {
+  transform: translateY(8px) scale(.975) translateZ(-38px);
+}
+
+:where(.ng-living-root) .ng-depth-backplane[data-plane='2'] {
+  transform: translateY(15px) scale(.945) translateZ(-76px);
+}
+
+:where(.ng-living-root) .ng-depth-stage[data-depth='1'] .ng-depth-backplane[data-plane='1'],
+:where(.ng-living-root) .ng-depth-stage[data-depth='2'] .ng-depth-backplane[data-plane='1'] {
+  opacity: .78;
+}
+
+:where(.ng-living-root) .ng-depth-stage[data-depth='2'] .ng-depth-backplane[data-plane='2'] {
+  opacity: .52;
+}
+
+:where(.ng-living-root) .ng-layer-surface {
+  border: 1px solid var(--ng-border-strong);
+  border-radius: var(--ng-radius-stage);
+  background: var(--ng-surface-stage);
+  box-shadow: var(--ng-live-depth-raised);
+  backdrop-filter: blur(18px) saturate(1.04);
+}
+
+:where(.ng-living-root) .ng-portal-surface {
+  --ng-portal-accent: var(--ng-text-accent);
+  border: 1px solid var(--ng-border-subtle);
+  border-radius: var(--ng-radius-surface);
+  background: var(--ng-surface-panel);
+  box-shadow: var(--ng-live-depth-rest), inset 0 1px rgba(255,255,255,.03);
+  color: var(--ng-text-primary);
+}
+
+:where(.ng-living-root) .ng-portal-surface[data-tone='gold'] { --ng-portal-accent: #e4b64f; }
+:where(.ng-living-root) .ng-portal-surface[data-tone='mint'] { --ng-portal-accent: #63d3ad; }
+:where(.ng-living-root) .ng-portal-surface[data-tone='blue'] { --ng-portal-accent: #80abc7; }
+:where(.ng-living-root) .ng-portal-surface[data-tone='danger'] { --ng-portal-accent: #e98992; }
+
+:where(.ng-living-root) .ng-portal-surface .ng-portal-accent {
+  color: var(--ng-portal-accent);
+  border-color: color-mix(in srgb, var(--ng-portal-accent) 22%, transparent);
+  background: color-mix(in srgb, var(--ng-portal-accent) 6%, transparent);
+}
+
+:where(.ng-living-root) .ng-detail-surface {
+  border: 1px solid var(--ng-border-subtle);
+  border-radius: var(--ng-radius-surface);
+  background: var(--ng-surface-detail);
+  box-shadow: inset 0 1px rgba(255,255,255,.025);
+}
+
+:where(.ng-living-root) .ng-ds-label {
+  color: var(--ng-text-secondary);
+  font-size: var(--ng-type-label);
+  font-weight: 800;
+}
+
+:where(.ng-living-root) .ng-ds-body {
+  color: var(--ng-text-secondary);
+  font-size: var(--ng-type-body);
+  line-height: 1.6;
+}
+
+:where(.ng-living-root) .ng-ds-title {
+  color: var(--ng-text-primary);
+  font-size: var(--ng-type-title);
+  font-weight: 850;
+}
+
+:where(.ng-living-root) .ng-ds-value {
+  color: var(--ng-text-primary);
+  font-size: var(--ng-type-value);
+  font-weight: 900;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(.ng-living-root) .ng-depth-backplane {
+    transition: none !important;
+  }
+}
+/* Semantic accent inheritance for any canonical surface */
+:where(.ng-living-root) [data-tone='gold'] { --ng-portal-accent: #e4b64f; }
+:where(.ng-living-root) [data-tone='mint'] { --ng-portal-accent: #63d3ad; }
+:where(.ng-living-root) [data-tone='blue'] { --ng-portal-accent: #80abc7; }
+:where(.ng-living-root) [data-tone='danger'] { --ng-portal-accent: #e98992; }

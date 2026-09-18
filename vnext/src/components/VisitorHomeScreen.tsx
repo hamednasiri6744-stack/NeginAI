@@ -483,13 +483,13 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
           </div>
         </header>
 
-        <section className="vhd-stage" data-depth={depth}>
-          <span className="vhd-backplane vhd-backplane-one" aria-hidden="true" />
-          <span className="vhd-backplane vhd-backplane-two" aria-hidden="true" />
+        <section className="vhd-stage ng-depth-stage" data-depth={depth}>
+          <span className="vhd-backplane vhd-backplane-one ng-depth-backplane" data-plane="1" aria-hidden="true" />
+          <span className="vhd-backplane vhd-backplane-two ng-depth-backplane" data-plane="2" aria-hidden="true" />
 
           {depth === 0 ? (
             <div className="vhd-layer vhd-layer-root">
-              <section className="vhd-overview ng-living-surface">
+              <section className="vhd-overview ng-layer-surface ng-living-surface">
                 <div>
                   <span className="vhd-live"><i /> وضعیت جامع · زنده</span>
                   <h1>سلام{profile?.full_name ? `، ${profile.full_name}` : ''}</h1>
@@ -514,26 +514,26 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
               ) : null}
 
               <div className="vhd-portals" aria-label="دسته‌های اصلی خانه">
-                <button className="vhd-portal tone-gold ng-living-interactive" type="button" onClick={() => openLayer('performance')}>
-                  <span className="vhd-portal-icon"><ChartIcon /></span>
+                <button className="vhd-portal ng-portal-surface ng-living-interactive" data-tone="gold" type="button" onClick={() => openLayer('performance')}>
+                  <span className="vhd-portal-icon ng-portal-accent"><ChartIcon /></span>
                   <span className="vhd-portal-copy"><small>عملکرد</small><strong>{performanceSummary}</strong><em>{performanceMeta}</em></span>
                   <ChevronLeftIcon />
                 </button>
 
-                <button className="vhd-portal tone-danger ng-living-interactive" type="button" onClick={() => openLayer('risk')}>
-                  <span className="vhd-portal-icon"><ChequeIcon /></span>
+                <button className="vhd-portal ng-portal-surface ng-living-interactive" data-tone="danger" type="button" onClick={() => openLayer('risk')}>
+                  <span className="vhd-portal-icon ng-portal-accent"><ChequeIcon /></span>
                   <span className="vhd-portal-copy"><small>ریسک مالی</small><strong>{riskSummary}</strong><em>{riskMeta}</em></span>
                   <ChevronLeftIcon />
                 </button>
 
-                <button className="vhd-portal tone-blue ng-living-interactive" type="button" onClick={() => openLayer('today')}>
-                  <span className="vhd-portal-icon"><ClockIcon /></span>
+                <button className="vhd-portal ng-portal-surface ng-living-interactive" data-tone="blue" type="button" onClick={() => openLayer('today')}>
+                  <span className="vhd-portal-icon ng-portal-accent"><ClockIcon /></span>
                   <span className="vhd-portal-copy"><small>عملیات امروز</small><strong>{offDay ? 'امروز روز غیرکاری است' : routeSummaryLabel}</strong><em>{offDay ? 'مرور مسیرهای تخصیص‌یافته' : nextStop ? `بعدی: ${nextStop.name}` : 'Route و توزیع'}</em></span>
                   <ChevronLeftIcon />
                 </button>
 
-                <button className="vhd-portal tone-mint ng-living-interactive" type="button" onClick={() => openLayer('intelligence')}>
-                  <span className="vhd-portal-icon"><AiSparkIcon /></span>
+                <button className="vhd-portal ng-portal-surface ng-living-interactive" data-tone="mint" type="button" onClick={() => openLayer('intelligence')}>
+                  <span className="vhd-portal-icon ng-portal-accent"><AiSparkIcon /></span>
                   <span className="vhd-portal-copy"><small>هوش و هشدار</small><strong>{intelligenceSummary}</strong><em>{intelligenceMeta}</em></span>
                   <ChevronLeftIcon />
                 </button>
@@ -542,7 +542,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
           ) : null}
 
           {depth === 1 && layer ? (
-            <div className="vhd-layer vhd-layer-section">
+            <div className="vhd-layer vhd-layer-section ng-layer-surface">
               <header className="vhd-layer-head">
                 <button type="button" className="vhd-back ng-living-interactive" onClick={goBack} aria-label="بازگشت"><ChevronLeftIcon /></button>
                 <span className="vhd-layer-head-icon">{layerMeta[layer].icon}</span>
@@ -554,10 +554,10 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
                   <button
                     type="button"
                     key={item.key}
-                    className={`vhd-layer-item tone-${item.tone ?? 'blue'} ng-living-interactive`}
+                    className="vhd-layer-item ng-portal-surface ng-living-interactive" data-tone={item.tone ?? 'blue'}
                     onClick={() => openDetail(item.key)}
                   >
-                    <span className="vhd-layer-item-icon">{item.icon}</span>
+                    <span className="vhd-layer-item-icon ng-portal-accent">{item.icon}</span>
                     <span className="vhd-layer-item-copy"><small>{item.label}</small><strong>{performanceLoading ? '…' : item.value}</strong><em>{item.meta}</em></span>
                     <ChevronLeftIcon />
                   </button>
@@ -567,15 +567,15 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
           ) : null}
 
           {depth === 2 && currentDetail ? (
-            <div className={`vhd-layer vhd-layer-detail tone-${currentDetail.tone}`}>
+            <div className="vhd-layer vhd-layer-detail ng-layer-surface" data-tone={currentDetail.tone}>
               <header className="vhd-layer-head">
                 <button type="button" className="vhd-back ng-living-interactive" onClick={goBack} aria-label="بازگشت"><ChevronLeftIcon /></button>
                 <span className="vhd-layer-head-icon">{currentDetail.icon}</span>
                 <span><small>{layer ? `${layerMeta[layer].title} · جزئیات` : 'جزئیات'}</small><strong>{currentDetail.title}</strong><em>نمای متمرکز این شاخص</em></span>
               </header>
 
-              <section className="vhd-detail-card ng-living-surface">
-                <span className="vhd-detail-icon">{currentDetail.icon}</span>
+              <section className="vhd-detail-card ng-detail-surface ng-living-surface">
+                <span className="vhd-detail-icon ng-portal-accent">{currentDetail.icon}</span>
                 <small>{currentDetail.title}</small>
                 <strong>{currentDetail.value}</strong>
                 <p>{currentDetail.description}</p>

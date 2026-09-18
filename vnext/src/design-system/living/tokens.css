@@ -21,3 +21,38 @@
   --ng-live-depth-raised: 0 18px 36px rgba(0,0,0,.34);
   --ng-live-focus-ring: 0 0 0 3px rgba(238,187,74,.10);
 }
+/* NeginAI canonical surface / type / depth tokens */
+:root {
+  --ng-radius-stage: 28px;
+  --ng-radius-surface: 20px;
+  --ng-radius-control: 14px;
+
+  --ng-surface-stage:
+    radial-gradient(circle at 88% 0, rgba(226,169,53,.045), transparent 28%),
+    linear-gradient(155deg, rgba(255,255,255,.032), rgba(255,255,255,.005) 44%),
+    rgba(5,18,30,.94);
+  --ng-surface-panel:
+    linear-gradient(155deg, rgba(255,255,255,.034), rgba(255,255,255,.006)),
+    rgba(6,20,32,.84);
+  --ng-surface-detail:
+    radial-gradient(circle at 50% 8%, rgba(226,169,53,.045), transparent 34%),
+    linear-gradient(155deg, rgba(255,255,255,.028), rgba(255,255,255,.004)),
+    rgba(5,18,29,.76);
+
+  --ng-border-subtle: rgba(151,181,205,.09);
+  --ng-border-strong: rgba(151,181,205,.13);
+  --ng-border-accent: rgba(226,169,53,.16);
+
+  --ng-text-primary: #e9eef2;
+  --ng-text-secondary: #8b9aa8;
+  --ng-text-muted: #6d8294;
+  --ng-text-accent: #e4b64f;
+
+  --ng-type-label: 12px;
+  --ng-type-body: 14px;
+  --ng-type-title: 20px;
+  --ng-type-value: 22px;
+
+  --ng-depth-plane-1: 0 18px 38px rgba(0,0,0,.24);
+  --ng-depth-plane-2: 0 26px 52px rgba(0,0,0,.30);
+}

@@ -2968,3 +2968,55 @@ button:focus-visible,a:focus-visible { outline:2px solid rgba(240,193,82,.72); o
   .vhd-portal-copy strong{font-size:14.5px}
   .vhd-portal-copy em{font-size:12px}
 }
+/* === Home uses canonical Living Design System surfaces; local CSS owns layout only === */
+.vh-depth-page .vhd-overview.ng-layer-surface,
+.vh-depth-page .vhd-layer-section.ng-layer-surface,
+.vh-depth-page .vhd-layer-detail.ng-layer-surface{
+  border:1px solid var(--ng-border-strong);
+  border-radius:var(--ng-radius-stage);
+  background:var(--ng-surface-stage);
+  box-shadow:var(--ng-live-depth-raised);
+}
+.vh-depth-page .vhd-portal.ng-portal-surface,
+.vh-depth-page .vhd-layer-item.ng-portal-surface{
+  border:1px solid var(--ng-border-subtle);
+  border-radius:var(--ng-radius-surface);
+  background:var(--ng-surface-panel);
+  box-shadow:var(--ng-live-depth-rest),inset 0 1px rgba(255,255,255,.03);
+  color:var(--ng-text-primary);
+}
+.vh-depth-page .vhd-detail-card.ng-detail-surface{
+  border:1px solid var(--ng-border-subtle);
+  border-radius:var(--ng-radius-surface);
+  background:var(--ng-surface-detail);
+  box-shadow:inset 0 1px rgba(255,255,255,.025);
+}
+.vh-depth-page .ng-portal-accent{
+  color:var(--ng-portal-accent);
+  border-color:color-mix(in srgb,var(--ng-portal-accent) 22%,transparent);
+  background:color-mix(in srgb,var(--ng-portal-accent) 6%,transparent);
+}
+.vh-depth-page .vhd-portal-copy small,
+.vh-depth-page .vhd-layer-item-copy small,
+.vh-depth-page .vhd-layer-head small{
+  color:var(--ng-text-secondary);
+  font-size:var(--ng-type-label);
+}
+.vh-depth-page .vhd-portal-copy strong{
+  color:var(--ng-text-primary);
+  font-size:var(--ng-type-body);
+}
+.vh-depth-page .vhd-layer-item-copy strong{
+  color:var(--ng-text-primary);
+  font-size:var(--ng-type-value);
+}
+.vh-depth-page .vhd-layer-head strong{
+  color:var(--ng-text-primary);
+  font-size:var(--ng-type-title);
+}
+.vh-depth-page .vhd-portal-copy em,
+.vh-depth-page .vhd-layer-item-copy em,
+.vh-depth-page .vhd-layer-head em{
+  color:var(--ng-text-muted);
+  font-size:var(--ng-type-label);
+}
