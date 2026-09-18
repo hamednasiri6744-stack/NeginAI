@@ -56,3 +56,38 @@
   --ng-depth-plane-1: 0 18px 38px rgba(0,0,0,.24);
   --ng-depth-plane-2: 0 26px 52px rgba(0,0,0,.30);
 }
+/* DS v2 visual normalization — derived from Customer Workspace material */
+:root {
+  --ng-radius-stage: 22px;
+  --ng-radius-surface: 18px;
+  --ng-radius-control: 13px;
+
+  --ng-surface-stage:
+    linear-gradient(155deg, rgba(255,255,255,.05), rgba(255,255,255,.012) 34%, rgba(1,8,14,.10) 82%),
+    rgba(7,22,35,.84);
+  --ng-surface-panel:
+    linear-gradient(155deg, rgba(255,255,255,.045), rgba(255,255,255,.010) 36%, rgba(1,8,14,.08) 82%),
+    rgba(7,22,35,.80);
+  --ng-surface-detail:
+    linear-gradient(155deg, rgba(255,255,255,.04), rgba(255,255,255,.008) 38%, rgba(1,8,14,.08) 84%),
+    rgba(7,22,35,.78);
+
+  --ng-border-subtle: rgba(170,199,221,.10);
+  --ng-border-strong: rgba(170,199,221,.13);
+  --ng-border-accent: rgba(226,169,53,.14);
+
+  --ng-text-primary: #edf2f6;
+  --ng-text-secondary: #8496a7;
+  --ng-text-muted: #667a8d;
+  --ng-text-accent: #efc45d;
+
+  --ng-type-label: 12.5px;
+  --ng-type-body: 14px;
+  --ng-type-title: 20px;
+  --ng-type-value: 22px;
+
+  --ng-live-depth-rest: 0 16px 34px rgba(0,0,0,.28);
+  --ng-live-depth-raised: 0 17px 36px rgba(0,0,0,.30);
+  --ng-depth-plane-1: 0 16px 34px rgba(0,0,0,.22);
+  --ng-depth-plane-2: 0 22px 44px rgba(0,0,0,.26);
+}

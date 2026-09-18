@@ -3020,3 +3020,75 @@ button:focus-visible,a:focus-visible { outline:2px solid rgba(240,193,82,.72); o
   color:var(--ng-text-muted);
   font-size:var(--ng-type-label);
 }
+/* === Home visual alignment to NeginAI DS v2 / Customer Workspace === */
+.vh-depth-page .vhd-portal::after{content:none}
+.vh-depth-page .vhd-portal,
+.vh-depth-page .vhd-layer-item{
+  overflow:hidden;
+}
+.vh-depth-page .vhd-portal-icon,
+.vh-depth-page .vhd-layer-item-icon,
+.vh-depth-page .vhd-layer-head-icon,
+.vh-depth-page .vhd-detail-icon{
+  border-radius:16px;
+  box-shadow:none;
+}
+.vh-depth-page .vhd-portal-icon,
+.vh-depth-page .vhd-layer-item-icon{
+  background:rgba(255,255,255,.022);
+}
+.vh-depth-page .vhd-layer-head-icon{
+  color:var(--ng-text-accent);
+  border-color:rgba(229,177,63,.18);
+  background:radial-gradient(circle at 50% 20%,rgba(237,190,79,.11),transparent 60%),rgba(255,255,255,.022);
+}
+.vh-depth-page .vhd-overview{
+  border-radius:22px;
+  box-shadow:var(--ng-live-depth-rest),inset 0 1px rgba(255,255,255,.05);
+}
+.vh-depth-page .vhd-date{
+  border-radius:16px;
+  border-color:rgba(229,177,63,.16);
+  background:radial-gradient(circle at 50% 20%,rgba(237,190,79,.08),transparent 70%),rgba(255,255,255,.018);
+}
+.vh-depth-page .vhd-portal,
+.vh-depth-page .vhd-layer-item{
+  border-color:var(--ng-border-strong);
+  box-shadow:var(--ng-live-depth-rest),inset 0 1px rgba(255,255,255,.05);
+  backdrop-filter:blur(18px) saturate(1.05);
+}
+.vh-depth-page .vhd-portal:active,
+.vh-depth-page .vhd-layer-item:active{
+  box-shadow:0 11px 24px rgba(0,0,0,.25),inset 0 1px rgba(255,255,255,.04);
+}
+.vh-depth-page .vhd-stage[data-depth='1'] .vhd-backplane-one,
+.vh-depth-page .vhd-stage[data-depth='2'] .vhd-backplane-one{
+  border-color:rgba(170,199,221,.10);
+  background:var(--ng-surface-panel);
+  box-shadow:var(--ng-depth-plane-1);
+}
+.vh-depth-page .vhd-stage[data-depth='2'] .vhd-backplane-two{
+  border-color:rgba(170,199,221,.075);
+  background:var(--ng-surface-detail);
+  box-shadow:var(--ng-depth-plane-2);
+}
+.vh-depth-page .vhd-portal-copy small,
+.vh-depth-page .vhd-layer-item-copy small{
+  color:#8092a4;
+}
+.vh-depth-page .vhd-portal-copy strong,
+.vh-depth-page .vhd-layer-item-copy strong{
+  color:#f3f6f9;
+}
+.vh-depth-page .vhd-portal-copy em,
+.vh-depth-page .vhd-layer-item-copy em{
+  color:#667b8e;
+}
+.vh-depth-page .vhd-layer-section,
+.vh-depth-page .vhd-layer-detail{
+  border-radius:22px;
+  box-shadow:var(--ng-live-depth-raised),inset 0 1px rgba(255,255,255,.05);
+}
+.vh-depth-page .vhd-detail-card{
+  border-radius:20px;
+}
