@@ -24,6 +24,7 @@ import {
 } from '../api/neginApi'
 import { useVisitorAuth } from '../state/VisitorAuthContext'
 import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
+import { AppHeader, BottomDock } from '../design-system/components'
 import '../design-system/living/index.css'
 
 type Props = { onNavigate: (path: string) => void }
@@ -151,30 +152,26 @@ export function VisitorReportsScreen({ onNavigate }: Props) {
   return (
     <main className="vh-page vh-live-ui ng-living-root vrep-depth-page" dir="rtl" data-live-ui="unified" data-living-ui="on">
       <div className="vh-shell vrep-shell">
-        <header className="vh-header">
-          <button className="vh-profile ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/profile')}>
-            <span className="vh-avatar">{profile?.full_name?.charAt(0) || profile?.username?.charAt(0) || 'و'}</span>
-            <span className="vh-profile-copy">
-              <strong>{profile?.full_name || profile?.username || 'کاربر'}</strong>
-              <small><PinIcon /> {profile?.branch || profile?.sales_line || '—'}</small>
-            </span>
-            <ChevronLeftIcon />
-          </button>
-          <button
-            className={`vh-bell ng-living-interactive ${highestSeverity ? `severity-${highestSeverity}` : ''}`}
-            data-severity={highestSeverity ?? 'none'}
-            type="button"
-            aria-label="اعلان‌ها"
-            onClick={() => onNavigate('/visitor/notifications')}
-          >
-            <BellIcon />
-            {attentionCount ? <b className="ng-living-reactive">{attentionCount}</b> : null}
-          </button>
-          <div className="vh-brand" dir="ltr">
-            <img src="/assets/neginai-logo-transparent.png" alt="Negin AI" />
-            <div><strong>Negin <span>AI</span></strong><small>VISITOR</small></div>
-          </div>
-        </header>
+        <AppHeader
+          avatarText={profile?.full_name?.charAt(0) || profile?.username?.charAt(0) || 'و'}
+          title={profile?.full_name || profile?.username || 'کاربر'}
+          subtitle={profile?.branch || profile?.sales_line || '—'}
+          subtitleIcon={<PinIcon />}
+          profileTrailing={<ChevronLeftIcon />}
+          onProfileClick={() => onNavigate('/visitor/profile')}
+          action={(
+            <button
+              className={`vh-bell ng-living-interactive ${highestSeverity ? `severity-${highestSeverity}` : ''}`}
+              data-severity={highestSeverity ?? 'none'}
+              type="button"
+              aria-label="اعلان‌ها"
+              onClick={() => onNavigate('/visitor/notifications')}
+            >
+              <BellIcon />
+              {attentionCount ? <b className="ng-living-reactive">{attentionCount}</b> : null}
+            </button>
+          )}
+        />
 
         <section className="vrep-depth-stage ng-depth-stage" data-depth={focus ? 1 : 0}>
           <span className="ng-depth-backplane" data-plane="1" aria-hidden="true" />
@@ -314,13 +311,16 @@ export function VisitorReportsScreen({ onNavigate }: Props) {
           )}
         </section>
 
-        <nav className="vh-nav" aria-label="ناوبری ویزیتور">
-          <button className="vh-nav-item ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/home')}><HomeIcon /><span>خانه</span></button>
-          <button className="vh-nav-item ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/route')}><MapIcon /><span>مسیر</span></button>
-          <button className="vh-order ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/orders')}><PlusIcon /><span>سفارش</span></button>
-          <button className="vh-nav-item ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/customers')}><UserGroupIcon /><span>مشتریان</span></button>
-          <button className="vh-nav-item active ng-living-interactive" type="button" aria-current="page" onClick={() => setFocus(null)}><ChartIcon /><span>گزارش‌ها</span></button>
-        </nav>
+        <BottomDock
+          ariaLabel="ناوبری ویزیتور"
+          items={[
+            { key: 'home', label: 'خانه', icon: <HomeIcon />, onClick: () => onNavigate('/visitor/home') },
+            { key: 'route', label: 'مسیر', icon: <MapIcon />, onClick: () => onNavigate('/visitor/route') },
+            { key: 'customers', label: 'مشتریان', icon: <UserGroupIcon />, onClick: () => onNavigate('/visitor/customers') },
+            { key: 'reports', label: 'گزارش‌ها', icon: <ChartIcon />, active: true, onClick: () => setFocus(null) },
+          ]}
+          primary={{ label: 'سفارش', icon: <PlusIcon />, onClick: () => onNavigate('/visitor/orders') }}
+        />
       </div>
     </main>
   )
