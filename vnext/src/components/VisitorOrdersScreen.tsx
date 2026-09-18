@@ -38,6 +38,8 @@ import {
 } from './Icons'
 import { VisitorProductCube } from './VisitorProductCube'
 import { VisitorPicker } from './VisitorPicker'
+import { QuantityStepper } from '../design-system/components'
+import '../styles/design-system-atlas-orders.css'
 
 type Props = {
   onNavigate: (path: string) => void
@@ -689,11 +691,14 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
                             <small>{official ? `${number(official.unit_price)} × ${number(official.quantity)}` : `${number(indicativePriceFor(product))} × ${number(quantity)} · تقریبی`}</small>
                           </div>
                           <button type="button" className="vo-trash" onClick={() => setQuantity(product, 0)} aria-label={`حذف ${product.name}`}><TrashIcon /></button>
-                          <div className="vo-cart-stepper">
-                            <button type="button" onClick={() => setQuantity(product, quantity - saleFactor)}>−</button>
-                            <strong><b>{number(quantity / saleFactor)}</b><small>{saleUnit.name}</small></strong>
-                            <button type="button" onClick={() => setQuantity(product, quantity + saleFactor)}>+</button>
-                          </div>
+                          <QuantityStepper
+                            className="vo-cart-stepper-ds"
+                            value={number(quantity / saleFactor)}
+                            unit={saleUnit.name}
+                            ariaLabel={`تعداد ${product.name}`}
+                            onDecrease={() => setQuantity(product, quantity - saleFactor)}
+                            onIncrease={() => setQuantity(product, quantity + saleFactor)}
+                          />
                           <strong className="vo-line-total">{official ? number(official.net_amount) : number(indicativePriceFor(product) * quantity)}</strong>
                           {official && official.discount_amount > 0 ? <small className="vo-line-discount">تخفیف رسمی: {number(official.discount_amount)}</small> : null}
                         </article>

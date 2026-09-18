@@ -1,0 +1,13 @@
+/* Orders screen adapter: shared Design System components only. */
+.vo-cart-stepper-ds {
+  grid-column:1 / 3;
+  justify-self:start;
+  width:104px;
+  min-height:36px;
+}
+.vo-cart-stepper-ds.ng-quantity-stepper {
+  grid-template-columns:32px minmax(38px,1fr) 32px;
+}
+.vo-cart-stepper-ds.ng-quantity-stepper > button {
+  min-height:36px;
+}

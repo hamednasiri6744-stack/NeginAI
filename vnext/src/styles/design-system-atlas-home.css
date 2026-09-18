@@ -60,3 +60,14 @@
     transition-duration: .001ms !important;
   }
 }
+
+.vh-page[data-design-system='atlas-v1'] .vhd-next-insight {
+  flex:0 0 104px;
+  min-height:104px;
+}
+@media (max-height:740px) {
+  .vh-page[data-design-system='atlas-v1'] .vhd-next-insight {
+    flex-basis:88px;
+    min-height:88px;
+  }
+}

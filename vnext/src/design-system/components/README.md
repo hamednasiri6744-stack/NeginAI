@@ -32,14 +32,14 @@ Not allowed in screen CSS:
 - StatusChip
 - Metric / ProgressBar
 - BottomSheet
+- EntityHeader
+- QuantityStepper
+- InsightCard / Next Best Action
 
-Current migrated consumers: Notifications, Home shell/navigation, and Customer360 shell/navigation/states.
+Current migrated consumers: Notifications, Home shell/navigation/intelligence, Customer360 shell/navigation/entity states, and Orders quantity control.
 
 ## Next shared components
 
-- EntityHeader
 - CustomerCard / Customer360 primitives
-- QuantityStepper
-- AIInsight / NextBestAction
 
 Any visual change to a shared component should propagate to every consuming screen.

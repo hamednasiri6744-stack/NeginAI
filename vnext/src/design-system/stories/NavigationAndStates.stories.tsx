@@ -5,8 +5,11 @@ import {
   BottomDock,
   BottomSheet,
   Button,
+  EntityHeader,
+  InsightCard,
   Metric,
   ProgressBar,
+  QuantityStepper,
   StatusChip,
   Surface,
 } from '../components'
@@ -51,6 +54,25 @@ function NavigationAndStatesPreview() {
           <ProgressBar value={72} label="پیشرفت مسیر امروز" tone="success" showValue />
         </Surface>
 
+        <EntityHeader
+          icon={<span>◆</span>}
+          title="داروخانه نمونه"
+          subtitle="کد ۱۲۳۴"
+          context="کرج · مسیر امروز"
+          statuses={<><StatusChip tone="success" dot>زنده</StatusChip><StatusChip tone="danger">ریسک</StatusChip></>}
+        />
+
+        <InsightCard
+          icon={<BellIcon />}
+          eyebrow="Next Best Action"
+          title="اعتبار مشتری را بررسی کن"
+          body="پیش از ثبت سفارش بعدی وضعیت اعتبار نیازمند توجه است."
+          tone="warning"
+          actionLabel="بررسی"
+          onAction={() => undefined}
+        />
+
+        <QuantityStepper value="۳" unit="کارتن" onDecrease={() => undefined} onIncrease={() => undefined} />
         <Button variant="secondary" onClick={() => setSheetOpen(true)}>باز کردن Bottom Sheet</Button>
       </div>
 

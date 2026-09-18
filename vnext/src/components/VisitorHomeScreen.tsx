@@ -29,7 +29,7 @@ import {
   UserGroupIcon,
 } from './Icons'
 import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
-import { AppHeader, BottomDock } from '../design-system/components'
+import { AppHeader, BottomDock, InsightCard } from '../design-system/components'
 import '../design-system/living/index.css'
 import '../styles/living-ui-pilot.css'
 import '../styles/design-system-atlas-home.css'
@@ -562,20 +562,16 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
                 </button>
               ) : null}
 
-              <button
-                type="button"
-                className={`vhd-next-action ng-living-interactive ng-living-surface tone-${nextBestAction.tone}`}
-                data-tone={nextBestAction.tone}
-                onClick={() => onNavigate(nextBestAction.path)}
-              >
-                <span className="vhd-next-action-icon">{nextBestAction.icon}</span>
-                <span className="vhd-next-action-copy">
-                  <small>{nextBestAction.eyebrow}</small>
-                  <strong>{nextBestAction.title}</strong>
-                  <em>{nextBestAction.body}</em>
-                </span>
-                <span className="vhd-next-action-cta">{nextBestAction.action}<ChevronLeftIcon /></span>
-              </button>
+              <InsightCard
+                className="vhd-next-insight"
+                icon={nextBestAction.icon}
+                eyebrow={nextBestAction.eyebrow}
+                title={nextBestAction.title}
+                body={nextBestAction.body}
+                actionLabel={nextBestAction.action}
+                tone={nextBestAction.tone === 'mint' ? 'success' : nextBestAction.tone}
+                onAction={() => onNavigate(nextBestAction.path)}
+              />
 
               <section className="vhd-pulse-deck ng-layer-surface" aria-label="پالس تجاری زنده">
                 <div className="vhd-pulse-title"><span><i /> پالس زنده</span><small>ERP · NGT · Alert Center</small></div>

@@ -23,7 +23,7 @@ import {
 import { VisitorPicker } from './VisitorPicker'
 import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
 import { useVisitorWorkflow } from '../state/VisitorWorkflowContext'
-import { AppHeader, BottomDock, FeedbackState, SegmentedControl, StatusChip } from '../design-system/components'
+import { AppHeader, BottomDock, EntityHeader, FeedbackState, SegmentedControl, StatusChip } from '../design-system/components'
 import '../design-system/living/index.css'
 import '../styles/living-ui-pilot.css'
 import '../styles/design-system-atlas-customer360.css'
@@ -253,20 +253,25 @@ export function VisitorCustomer360Screen({ customerId = '', onNavigate, onBack }
 
         {customer ? (
           <>
-            <section className="c360-identity ng-living-surface" data-state={returnedChequeCount ? 'attention' : 'live'}>
-              <div className="c360-store-icon"><StoreIcon /></div>
-              <div className="c360-identity-copy">
-                <div className="c360-title-row">
-                  <h2>{titleOf(customer)}</h2>
+            <EntityHeader
+              className="c360-entity-header"
+              icon={<StoreIcon />}
+              title={titleOf(customer)}
+              subtitle={<>{customer.name || '—'} · کد {customer.code || '—'}</>}
+              context={<><PinIcon /> {customer.address || 'نشانی ثبت نشده'} · {profile?.route.title || 'مسیر روز'}</>}
+              statuses={(
+                <>
                   <StatusChip tone="success" dot>زنده</StatusChip>
                   {returnedChequeCount ? <StatusChip tone="danger" dot>چک برگشتی</StatusChip> : null}
-                </div>
-                <p>{customer.name || '—'} · کد {customer.code || '—'}</p>
-                <span><PinIcon /> {customer.address || 'نشانی ثبت نشده'} · {profile?.route.title || 'مسیر روز'}</span>
-                {profile?.customer.alarm ? <div className="c360-inline-alert"><strong>هشدار NGT</strong><span>{profile.customer.alarm}</span></div> : null}
-              </div>
-              <button type="button" className="c360-identity-back" onClick={onBack} aria-label="Back"><ChevronLeftIcon /></button>
-            </section>
+                </>
+              )}
+              onBack={onBack}
+              backIcon={<ChevronLeftIcon />}
+            >
+              {profile?.customer.alarm ? (
+                <div className="c360-inline-alert"><strong>هشدار NGT</strong><span>{profile.customer.alarm}</span></div>
+              ) : null}
+            </EntityHeader>
 
             <section className={`c360-workflow-card ng-living-surface ${offDay ? 'is-offday' : ''}`} data-visit-state={offDay ? 'offday' : activeVisitHere ? 'active' : 'ready'} aria-label="اقدام بعدی مشتری">
               {offDay ? (

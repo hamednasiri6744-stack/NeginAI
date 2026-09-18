@@ -36,3 +36,17 @@
     top:6px;
   }
 }
+
+.vh-page[data-design-system='atlas-v1'][data-screen='customer360'] .c360-entity-header {
+  margin-top:8px;
+}
+.vh-page[data-design-system='atlas-v1'][data-screen='customer360'] .c360-entity-header .ng-entity-header-context {
+  display:flex;
+  align-items:flex-start;
+  gap:4px;
+}
+.vh-page[data-design-system='atlas-v1'][data-screen='customer360'] .c360-entity-header .ng-entity-header-context svg {
+  width:12px;
+  flex:0 0 12px;
+  color:var(--ng-gold-3);
+}
