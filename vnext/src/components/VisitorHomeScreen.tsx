@@ -48,37 +48,37 @@ function TargetCard({ title, target, actual, percent, remaining }: TargetCardPro
     <section className="min-w-0 border-y border-[var(--ng-border-subtle)] py-3">
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0">
-          <small className="block text-[11px] font-bold text-ng-gold-soft">هدف فروش</small>
-          <h2 className="mt-0.5 truncate text-[15px] font-black text-ng-text">{title}</h2>
+          <small className="block text-[12px] font-bold text-ng-gold-soft">هدف فروش</small>
+          <h2 className="mt-0.5 truncate text-[17px] font-black text-ng-text">{title}</h2>
         </div>
 
         <div
           aria-label={percent == null ? 'درصد تحقق نامشخص' : `درصد تحقق ${formatPercent(percent)}`}
-          className="grid size-[66px] shrink-0 place-items-center rounded-full p-[5px]"
+          className="grid size-[72px] shrink-0 place-items-center rounded-full p-[5px]"
           style={{ background: ringBackground }}
         >
           <div className="grid size-full place-items-center rounded-full bg-ng-bg text-center">
-            <strong className="text-[14px] font-black text-ng-text">{formatPercent(percent)}</strong>
+            <strong className="text-[16px] font-black text-ng-text">{formatPercent(percent)}</strong>
           </div>
         </div>
       </div>
 
       <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2">
         <div className="min-w-0">
-          <dt className="text-[10px] text-ng-muted">تارگت ریالی</dt>
-          <dd className="mt-0.5 truncate text-[13px] font-extrabold text-ng-text">{formatRial(target)}</dd>
+          <dt className="text-[12px] text-ng-muted">تارگت ریالی</dt>
+          <dd className="mt-0.5 truncate text-[15px] font-extrabold text-ng-text">{formatRial(target)}</dd>
         </div>
         <div className="min-w-0">
-          <dt className="text-[10px] text-ng-muted">تحقق ریالی</dt>
-          <dd className="mt-0.5 truncate text-[13px] font-extrabold text-ng-text">{formatRial(actual)}</dd>
+          <dt className="text-[12px] text-ng-muted">تحقق ریالی</dt>
+          <dd className="mt-0.5 truncate text-[15px] font-extrabold text-ng-text">{formatRial(actual)}</dd>
         </div>
         <div className="min-w-0">
-          <dt className="text-[10px] text-ng-muted">تحقق درصدی</dt>
-          <dd className="mt-0.5 truncate text-[13px] font-extrabold text-ng-gold-soft">{formatPercent(percent)}</dd>
+          <dt className="text-[12px] text-ng-muted">تحقق درصدی</dt>
+          <dd className="mt-0.5 truncate text-[15px] font-extrabold text-ng-gold-soft">{formatPercent(percent)}</dd>
         </div>
         <div className="min-w-0">
-          <dt className="text-[10px] text-ng-muted">مانده از تارگت</dt>
-          <dd className="mt-0.5 truncate text-[13px] font-extrabold text-ng-text">{formatRial(remaining)}</dd>
+          <dt className="text-[12px] text-ng-muted">مانده از تارگت</dt>
+          <dd className="mt-0.5 truncate text-[15px] font-extrabold text-ng-text">{formatRial(remaining)}</dd>
         </div>
       </dl>
     </section>
@@ -207,30 +207,30 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
           aria-label="زمان و تقویم کاری"
           className="mt-2 grid shrink-0 grid-cols-3 border-y border-[var(--ng-border-subtle)]"
         >
-          <div className="min-w-0 border-b border-e border-[var(--ng-border-subtle)] px-2 py-2.5 text-center">
-            <small className="block text-[10px] text-ng-muted">تاریخ</small>
-            <strong className="mt-1 block truncate text-[12px] font-extrabold">{persianDate}</strong>
+          <div className="min-w-0 border-b border-e border-[var(--ng-border-subtle)] px-2 py-2 text-center">
+            <small className="block text-[12px] text-ng-muted">تاریخ</small>
+            <strong className="mt-1 block truncate text-[14px] font-extrabold">{persianDate}</strong>
           </div>
-          <div className="min-w-0 border-b border-e border-[var(--ng-border-subtle)] px-2 py-2.5 text-center">
-            <small className="block text-[10px] text-ng-muted">ساعت</small>
-            <strong className="mt-1 block text-[15px] font-black text-ng-gold-soft">{currentTime}</strong>
+          <div className="min-w-0 border-b border-e border-[var(--ng-border-subtle)] px-2 py-2 text-center">
+            <small className="block text-[12px] text-ng-muted">ساعت</small>
+            <strong className="mt-1 block text-[17px] font-black text-ng-gold-soft">{currentTime}</strong>
           </div>
-          <div className="min-w-0 border-b border-[var(--ng-border-subtle)] px-2 py-2.5 text-center">
-            <small className="block text-[10px] text-ng-muted">روز هفته</small>
-            <strong className="mt-1 block truncate text-[12px] font-extrabold">{weekday}</strong>
+          <div className="min-w-0 border-b border-[var(--ng-border-subtle)] px-2 py-2 text-center">
+            <small className="block text-[12px] text-ng-muted">روز هفته</small>
+            <strong className="mt-1 block truncate text-[14px] font-extrabold">{weekday}</strong>
           </div>
 
-          <div className="min-w-0 border-e border-[var(--ng-border-subtle)] px-2 py-2.5 text-center">
-            <small className="block text-[10px] text-ng-muted">روز کاری ماه</small>
-            <strong className="mt-1 block text-[15px] font-black">{workCalendar ? totalWorkingDays.toLocaleString('fa-IR') : '—'}</strong>
+          <div className="min-w-0 border-e border-[var(--ng-border-subtle)] px-2 py-2 text-center">
+            <small className="block text-[12px] text-ng-muted">روز کاری ماه</small>
+            <strong className="mt-1 block text-[17px] font-black">{workCalendar ? totalWorkingDays.toLocaleString('fa-IR') : '—'}</strong>
           </div>
-          <div className="min-w-0 border-e border-[var(--ng-border-subtle)] px-2 py-2.5 text-center">
-            <small className="block text-[10px] text-ng-muted">سپری‌شده</small>
-            <strong className="mt-1 block text-[15px] font-black">{workCalendar ? elapsedWorkingDays.toLocaleString('fa-IR') : '—'}</strong>
+          <div className="min-w-0 border-e border-[var(--ng-border-subtle)] px-2 py-2 text-center">
+            <small className="block text-[12px] text-ng-muted">سپری‌شده</small>
+            <strong className="mt-1 block text-[17px] font-black">{workCalendar ? elapsedWorkingDays.toLocaleString('fa-IR') : '—'}</strong>
           </div>
-          <div className="min-w-0 px-2 py-2.5 text-center">
-            <small className="block text-[10px] text-ng-muted">روز مانده</small>
-            <strong className="mt-1 block text-[15px] font-black text-ng-gold-soft">{workCalendar ? remainingWorkingDays.toLocaleString('fa-IR') : '—'}</strong>
+          <div className="min-w-0 px-2 py-2 text-center">
+            <small className="block text-[12px] text-ng-muted">روز مانده</small>
+            <strong className="mt-1 block text-[17px] font-black text-ng-gold-soft">{workCalendar ? remainingWorkingDays.toLocaleString('fa-IR') : '—'}</strong>
           </div>
         </section>
 
@@ -254,8 +254,8 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
         <section className="mt-2 border-y border-[var(--ng-border-subtle)] py-3">
           <div className="flex items-center justify-between gap-3 px-1">
             <div className="min-w-0">
-              <small className="block text-[11px] font-bold text-ng-gold-soft">برای رسیدن به ۱۰۰٪</small>
-              <h2 className="mt-0.5 text-[15px] font-black">فروش موردنیاز تا پایان ماه</h2>
+              <small className="block text-[12px] font-bold text-ng-gold-soft">برای رسیدن به ۱۰۰٪</small>
+              <h2 className="mt-0.5 text-[17px] font-black">فروش موردنیاز تا پایان ماه</h2>
             </div>
             <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[rgba(242,203,104,.045)] text-ng-gold-soft [&>svg]:size-4">
               <ChartIcon />
@@ -264,16 +264,16 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
 
           <div className="mt-3 grid grid-cols-2 divide-x divide-[var(--ng-border-subtle)]">
             <div className="min-w-0 px-3 text-center">
-              <small className="block text-[10px] leading-5 text-ng-muted">کل فروش موردنیاز در روزهای کاری باقی‌مانده</small>
-              <strong className="mt-1 block truncate text-[14px] font-black text-ng-text">{formatRial(requiredTotal)}</strong>
+              <small className="block text-[11px] leading-5 text-ng-muted">کل فروش موردنیاز در روزهای کاری باقی‌مانده</small>
+              <strong className="mt-1 block truncate text-[16px] font-black text-ng-text">{formatRial(requiredTotal)}</strong>
             </div>
             <div className="min-w-0 px-3 text-center">
-              <small className="block text-[10px] leading-5 text-ng-muted">فروش روزانه موردنیاز تا پایان ماه</small>
-              <strong className="mt-1 block truncate text-[15px] font-black text-ng-gold-soft">{formatRial(requiredDaily)}</strong>
+              <small className="block text-[11px] leading-5 text-ng-muted">فروش روزانه موردنیاز تا پایان ماه</small>
+              <strong className="mt-1 block truncate text-[17px] font-black text-ng-gold-soft">{formatRial(requiredDaily)}</strong>
             </div>
           </div>
 
-          <div className="mt-2 flex items-center justify-between border-t border-[var(--ng-border-subtle)] px-1 pt-2 text-[10px] text-ng-muted">
+          <div className="mt-2 flex items-center justify-between border-t border-[var(--ng-border-subtle)] px-1 pt-2 text-[12px] text-ng-muted">
             <span>{remainingWorkingDays.toLocaleString('fa-IR')} روز کاری باقی مانده</span>
             <span>{targetStateLabel}</span>
           </div>
@@ -287,10 +287,10 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
             {...(reducedMotion ? {} : { whileTap: { scale: 0.99 } })}
           >
             <span className="min-w-0">
-              <strong className="block text-[10px] text-ng-warning">
+              <strong className="block text-[11px] text-ng-warning">
                 {stale ? 'حالت آفلاین · آخرین داده ذخیره‌شده' : 'بخشی از داده زنده در دسترس نیست'}
               </strong>
-              <small className="mt-0.5 block truncate text-[10px] text-ng-muted">
+              <small className="mt-0.5 block truncate text-[12px] text-ng-muted">
                 {stale && lastSyncedAt
                   ? 'آخرین همگام‌سازی ' + new Date(lastSyncedAt).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })
                   : 'برای تلاش دوباره لمس کن'}
