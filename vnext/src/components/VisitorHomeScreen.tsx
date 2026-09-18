@@ -15,6 +15,7 @@ import {
   UserGroupIcon,
 } from './Icons'
 import { AppHeader, BottomDock } from '../design-system/components'
+import '../styles/home-style-lab.css'
 
 type Props = { onNavigate: (path: string) => void }
 
@@ -25,23 +26,35 @@ type TargetCardProps = {
   percent: number | null
   remaining: number | null
   reducedMotion: boolean | null
+  style: HomeCardStyle
 }
 
-type HomeCardStyle = 'glass-neu' | 'pure-glass' | 'frosted-glass'
+type HomeCardStyle =
+  | 'glass-neu' | 'pure-glass' | 'frosted-glass' | 'liquid-glass' | 'layered-glass'
+  | 'acrylic' | 'neumorphism' | 'dark-neumorphism' | 'soft-ui' | 'claymorphism'
+  | 'tactile' | 'skeuomorphic' | 'material' | 'fluent' | 'matte' | 'glossy'
+  | 'metallic' | 'translucent' | 'flat' | 'neo-brutal' | 'organic'
+  | 'tech-minimal' | 'luxury' | 'calm-futurism' | 'cyber'
 
-const HOME_CARD_STYLE: HomeCardStyle = 'frosted-glass'
+const DEFAULT_HOME_CARD_STYLE: HomeCardStyle = 'frosted-glass'
 
-const HOME_CARD_SKINS: Record<HomeCardStyle, string> = {
-  'glass-neu': 'border-[rgba(156,194,220,.13)] bg-[linear-gradient(145deg,rgba(14,36,52,.72),rgba(3,13,22,.70))] shadow-[10px_12px_28px_rgba(0,0,0,.48),-7px_-7px_20px_rgba(39,83,110,.10),inset_1px_1px_0_rgba(255,255,255,.055),inset_-1px_-1px_0_rgba(0,0,0,.38)] backdrop-blur-[18px]',
-  'pure-glass': 'border-[rgba(210,232,244,.16)] bg-[linear-gradient(145deg,rgba(21,49,68,.34),rgba(5,18,30,.22))] shadow-[0_14px_34px_rgba(0,0,0,.28),inset_0_1px_0_rgba(255,255,255,.09),inset_0_-1px_0_rgba(0,0,0,.18)] backdrop-blur-[24px] backdrop-saturate-[135%]',
-  'frosted-glass': 'border-[rgba(222,238,247,.18)] bg-[linear-gradient(145deg,rgba(188,216,231,.10),rgba(20,42,58,.18))] shadow-[0_16px_36px_rgba(0,0,0,.30),inset_0_1px_0_rgba(255,255,255,.11),inset_0_0_28px_rgba(175,211,231,.035)] backdrop-blur-[30px] backdrop-saturate-[110%] backdrop-brightness-[108%]',
-}
+const HOME_CARD_STYLE_OPTIONS: Array<{ id: HomeCardStyle; label: string }> = [
+  ['glass-neu','Glass + Neu'], ['pure-glass','Pure Glass'], ['frosted-glass','Frosted Glass'],
+  ['liquid-glass','Liquid Glass'], ['layered-glass','Layered Glass'], ['acrylic','Acrylic'],
+  ['neumorphism','Neumorphism'], ['dark-neumorphism','Dark Neu'], ['soft-ui','Soft UI'],
+  ['claymorphism','Clay'], ['tactile','Tactile'], ['skeuomorphic','Skeuomorphic'],
+  ['material','Material'], ['fluent','Fluent'], ['matte','Matte'], ['glossy','Glossy'],
+  ['metallic','Metallic'], ['translucent','Translucent'], ['flat','Flat'],
+  ['neo-brutal','Neo Brutal'], ['organic','Organic'], ['tech-minimal','Tech Minimal'],
+  ['luxury','Luxury'], ['calm-futurism','Calm Future'], ['cyber','Cyber'],
+].map(([id,label]) => ({ id: id as HomeCardStyle, label: String(label ?? id) }))
 
 type HomeCardProps = {
   children: ReactNode
   ariaLabel: string
   depthKey: string
   reducedMotion: boolean | null
+  style: HomeCardStyle
   className?: string
   interactive?: boolean
 }
@@ -51,28 +64,21 @@ function HomeCard({
   ariaLabel,
   depthKey,
   reducedMotion,
+  style,
   className = '',
   interactive = true,
 }: HomeCardProps) {
-  const cardClass = `group relative block w-full overflow-hidden rounded-[24px] border p-3 text-start ${HOME_CARD_SKINS[HOME_CARD_STYLE]} ${interactive ? 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(242,203,104,.34)]' : ''} ${className}`
+  const cardClass = `home-style-card group relative block w-full overflow-hidden rounded-[24px] border p-3 text-start ${interactive ? 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(242,203,104,.34)]' : ''} ${className}`
 
   const content = (
     <>
       <span
         aria-hidden="true"
-        className={HOME_CARD_STYLE === 'frosted-glass'
-          ? "pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-white/38 to-transparent"
-          : HOME_CARD_STYLE === 'pure-glass'
-            ? "pointer-events-none absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"
-            : "pointer-events-none absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"}
+        className="home-style-card-highlight pointer-events-none absolute inset-x-4 top-0 h-px"
       />
       <span
         aria-hidden="true"
-        className={HOME_CARD_STYLE === 'frosted-glass'
-          ? "pointer-events-none absolute -end-14 -top-16 size-40 rounded-full bg-[radial-gradient(circle,rgba(220,241,250,.12),rgba(145,196,220,.05)_38%,transparent_72%)]"
-          : HOME_CARD_STYLE === 'pure-glass'
-            ? "pointer-events-none absolute -end-12 -top-14 size-36 rounded-full bg-[radial-gradient(circle,rgba(147,211,242,.14),transparent_70%)]"
-            : "pointer-events-none absolute -end-10 -top-12 size-32 rounded-full bg-[radial-gradient(circle,rgba(93,166,205,.09),transparent_68%)]"}
+        className="home-style-card-glow pointer-events-none absolute -end-12 -top-14 size-36 rounded-full"
       />
       <span className="relative z-[1] block">{children}</span>
     </>
@@ -80,7 +86,7 @@ function HomeCard({
 
   if (!interactive) {
     return (
-      <motion.div data-depth-target={depthKey} data-card-style={HOME_CARD_STYLE} className={cardClass}>
+      <motion.div data-depth-target={depthKey} data-card-style={style} className={cardClass}>
         {content}
       </motion.div>
     )
@@ -91,7 +97,7 @@ function HomeCard({
       type="button"
       aria-label={ariaLabel}
       data-depth-target={depthKey}
-      data-card-style={HOME_CARD_STYLE}
+      data-card-style={style}
       onClick={() => undefined}
       className={cardClass}
       {...(reducedMotion ? {} : { whileTap: { scale: 0.985, y: 1.5 } })}
@@ -122,6 +128,7 @@ function TargetCard({
   percent,
   remaining,
   reducedMotion,
+  style,
 }: TargetCardProps) {
   const progress = Math.max(0, Math.min(100, percent ?? 0))
   const ringBackground = percent == null
@@ -133,6 +140,7 @@ function TargetCard({
       ariaLabel={`جزئیات هدف فروش ${title}`}
       depthKey={title === 'ماه جاری' ? 'target-month' : 'target-today'}
       reducedMotion={reducedMotion}
+      style={style}
       className="h-full"
     >
       <div className="flex items-center justify-between gap-2">
@@ -187,12 +195,21 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
   } = useVisitorLiveData()
 
   const [now, setNow] = useState(() => new Date())
+  const [cardStyle, setCardStyle] = useState<HomeCardStyle>(() => {
+    const saved = typeof window === 'undefined' ? null : window.localStorage.getItem('negin-home-card-style')
+    return HOME_CARD_STYLE_OPTIONS.some((item) => item.id === saved) ? saved as HomeCardStyle : DEFAULT_HOME_CARD_STYLE
+  })
+  const [styleLabOpen, setStyleLabOpen] = useState(false)
   const reducedMotion = useReducedMotion()
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 30_000)
     return () => window.clearInterval(timer)
   }, [])
+
+  useEffect(() => {
+    window.localStorage.setItem('negin-home-card-style', cardStyle)
+  }, [cardStyle])
 
   const weekday = new Intl.DateTimeFormat('fa-IR', {
     weekday: 'long',
@@ -258,7 +275,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
     <main
       className="relative h-dvh min-h-dvh overflow-hidden bg-ng-bg text-ng-text"
       dir="rtl"
-      data-home-ui="home-card-style-lab-v1" data-home-card-style={HOME_CARD_STYLE}
+      data-home-ui="home-card-style-lab-v2" data-home-card-style={cardStyle}
     >
       <div
         aria-hidden="true"
@@ -296,6 +313,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
           ariaLabel="جزئیات زمان و تقویم کاری"
           depthKey="calendar"
           reducedMotion={reducedMotion}
+          style={cardStyle}
           interactive={false}
           className="mt-2 shrink-0"
         >
@@ -336,6 +354,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
             percent={monthlyPercent}
             remaining={monthlyRemaining}
             reducedMotion={reducedMotion}
+            style={cardStyle}
           />
           <TargetCard
             title="تا امروز"
@@ -344,6 +363,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
             percent={todayPercent}
             remaining={todayRemaining}
             reducedMotion={reducedMotion}
+            style={cardStyle}
           />
         </div>
 
@@ -351,6 +371,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
           ariaLabel="جزئیات فروش موردنیاز تا پایان ماه"
           depthKey="required-sales"
           reducedMotion={reducedMotion}
+          style={cardStyle}
           className="mt-2"
         >
           <div className="flex items-center justify-between gap-3 px-1">
@@ -402,6 +423,31 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
         ) : null}
 
         <div className="min-h-0 flex-1" />
+
+        <div className="pointer-events-none absolute inset-x-3 bottom-[calc(102px+env(safe-area-inset-bottom))] z-50 flex justify-start">
+          <div className="pointer-events-auto relative">
+            {styleLabOpen ? (
+              <div className="absolute bottom-12 start-0 w-[min(392px,calc(100vw-24px))] max-h-[44vh] overflow-y-auto rounded-[22px] border border-white/10 bg-[rgba(3,13,22,.96)] p-2 shadow-[0_22px_60px_rgba(0,0,0,.62)] backdrop-blur-[24px]">
+                <div className="mb-2 flex items-center justify-between px-1">
+                  <strong className="text-[13px] text-ng-text">Style Lab</strong>
+                  <small className="text-[11px] text-ng-muted">تعویض آنی · بدون Build</small>
+                </div>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {HOME_CARD_STYLE_OPTIONS.map((item) => (
+                    <button key={item.id} type="button" onClick={() => setCardStyle(item.id)}
+                      className={`min-h-10 rounded-xl border px-2 py-1.5 text-[10px] font-bold ${cardStyle === item.id ? 'border-[rgba(242,203,104,.42)] bg-[rgba(242,203,104,.10)] text-ng-gold-soft' : 'border-white/[.06] bg-white/[.025] text-ng-muted'}`}>
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+            <button type="button" onClick={() => setStyleLabOpen((value) => !value)}
+              className="rounded-full border border-[rgba(242,203,104,.20)] bg-[rgba(4,17,27,.92)] px-3 py-2 text-[11px] font-black text-ng-gold-soft shadow-[0_10px_28px_rgba(0,0,0,.45)] backdrop-blur-xl">
+              Style · {HOME_CARD_STYLE_OPTIONS.find((item) => item.id === cardStyle)?.label}
+            </button>
+          </div>
+        </div>
 
         <BottomDock
           ariaLabel="ناوبری ویزیتور"

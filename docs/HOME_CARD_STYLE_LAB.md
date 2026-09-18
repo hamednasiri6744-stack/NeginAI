@@ -56,3 +56,10 @@ pure-glass = translucent glass surface with stronger blur/refraction and no neum
 Each style gets its own reversible commit/checkpoint. Only surface treatment, depth, border, radius, shadow, blur, highlight, refraction and press feedback may change unless explicitly requested.
 
 
+
+## Live switcher
+- 25 styles are now available from the temporary Style button on Home.
+- Switching is instant in-browser; no rebuild/redeploy is required between styles.
+- The selected style persists in localStorage for comparison across refreshes.
+- This is a temporary test control and can be removed once a final surface style is selected.
+
