@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import type { ReactNode } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { useVisitorAuth } from '../state/VisitorAuthContext'
 import { useVisitorLiveData } from '../state/VisitorLiveDataContext'
@@ -23,6 +24,51 @@ type TargetCardProps = {
   actual: number | null
   percent: number | null
   remaining: number | null
+  reducedMotion: boolean | null
+}
+
+type GlassCardProps = {
+  children: ReactNode
+  ariaLabel: string
+  depthKey: string
+  reducedMotion: boolean | null
+  className?: string
+}
+
+function GlassCard({
+  children,
+  ariaLabel,
+  depthKey,
+  reducedMotion,
+  className = '',
+}: GlassCardProps) {
+  return (
+    <motion.button
+      type="button"
+      aria-label={ariaLabel}
+      data-depth-target={depthKey}
+      onClick={() => undefined}
+      className={`group relative block w-full overflow-hidden rounded-[24px] border border-[rgba(156,194,220,.13)] bg-[linear-gradient(145deg,rgba(14,36,52,.72),rgba(3,13,22,.70))] p-3 text-start shadow-[10px_12px_28px_rgba(0,0,0,.48),-7px_-7px_20px_rgba(39,83,110,.10),inset_1px_1px_0_rgba(255,255,255,.055),inset_-1px_-1px_0_rgba(0,0,0,.38)] backdrop-blur-[18px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(242,203,104,.34)] ${className}`}
+      {...(reducedMotion ? {} : { whileTap: { scale: 0.985, y: 1.5 } })}
+      transition={{ type: 'spring', stiffness: 520, damping: 34, mass: 0.45 }}
+    >
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"
+      />
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute -end-10 -top-12 size-32 rounded-full bg-[radial-gradient(circle,rgba(93,166,205,.09),transparent_68%)]"
+      />
+      <span
+        aria-hidden="true"
+        className="absolute start-2 top-2 z-[2] grid size-7 place-items-center rounded-full border border-white/[.045] bg-black/10 text-ng-muted opacity-55 shadow-[inset_1px_1px_0_rgba(255,255,255,.035)] [&>svg]:size-3.5"
+      >
+        <ChevronLeftIcon />
+      </span>
+      <span className="relative z-[1] block">{children}</span>
+    </motion.button>
+  )
 }
 
 function formatRial(value: number | null) {
@@ -38,26 +84,38 @@ function formatPercent(value: number | null) {
   return `${value.toLocaleString('fa-IR', { maximumFractionDigits: 1 })}٪`
 }
 
-function TargetCard({ title, target, actual, percent, remaining }: TargetCardProps) {
+function TargetCard({
+  title,
+  target,
+  actual,
+  percent,
+  remaining,
+  reducedMotion,
+}: TargetCardProps) {
   const progress = Math.max(0, Math.min(100, percent ?? 0))
   const ringBackground = percent == null
     ? 'conic-gradient(rgba(255,255,255,.06) 0 100%)'
     : `conic-gradient(var(--ng-gold-2) ${progress}%, rgba(255,255,255,.06) 0)`
 
   return (
-    <section className="min-w-0 border-y border-[var(--ng-border-subtle)] py-3">
+    <GlassCard
+      ariaLabel={`جزئیات هدف فروش ${title}`}
+      depthKey={title === 'ماه جاری' ? 'target-month' : 'target-today'}
+      reducedMotion={reducedMotion}
+      className="h-full"
+    >
       <div className="flex items-center justify-between gap-2">
-        <div className="min-w-0">
+        <div className="min-w-0 pe-1">
           <small className="block text-[12px] font-bold text-ng-gold-soft">هدف فروش</small>
           <h2 className="mt-0.5 truncate text-[17px] font-black text-ng-text">{title}</h2>
         </div>
 
         <div
           aria-label={percent == null ? 'درصد تحقق نامشخص' : `درصد تحقق ${formatPercent(percent)}`}
-          className="grid size-[72px] shrink-0 place-items-center rounded-full p-[5px]"
+          className="grid size-[72px] shrink-0 place-items-center rounded-full p-[5px] shadow-[inset_0_0_0_1px_rgba(255,255,255,.025)]"
           style={{ background: ringBackground }}
         >
-          <div className="grid size-full place-items-center rounded-full bg-ng-bg text-center">
+          <div className="grid size-full place-items-center rounded-full bg-[rgba(2,10,18,.92)] text-center shadow-[inset_2px_2px_8px_rgba(0,0,0,.55),inset_-1px_-1px_5px_rgba(45,87,112,.08)]">
             <strong className="text-[16px] font-black text-ng-text">{formatPercent(percent)}</strong>
           </div>
         </div>
@@ -81,7 +139,7 @@ function TargetCard({ title, target, actual, percent, remaining }: TargetCardPro
           <dd className="mt-0.5 truncate text-[15px] font-extrabold text-ng-text">{formatRial(remaining)}</dd>
         </div>
       </dl>
-    </section>
+    </GlassCard>
   )
 }
 
@@ -169,7 +227,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
     <main
       className="relative h-dvh min-h-dvh overflow-hidden bg-ng-bg text-ng-text"
       dir="rtl"
-      data-home-ui="tailwind-v2"
+      data-home-ui="glass-neu-card-test-v1"
     >
       <div
         aria-hidden="true"
@@ -203,44 +261,49 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
           )}
         />
 
-        <section
-          aria-label="زمان و تقویم کاری"
-          className="mt-2 grid shrink-0 grid-cols-3 border-y border-[var(--ng-border-subtle)]"
+        <GlassCard
+          ariaLabel="جزئیات زمان و تقویم کاری"
+          depthKey="calendar"
+          reducedMotion={reducedMotion}
+          className="mt-2 shrink-0"
         >
-          <div className="min-w-0 border-b border-e border-[var(--ng-border-subtle)] px-2 py-2 text-center">
-            <small className="block text-[12px] text-ng-muted">تاریخ</small>
-            <strong className="mt-1 block truncate text-[14px] font-extrabold">{persianDate}</strong>
-          </div>
-          <div className="min-w-0 border-b border-e border-[var(--ng-border-subtle)] px-2 py-2 text-center">
-            <small className="block text-[12px] text-ng-muted">ساعت</small>
-            <strong className="mt-1 block text-[17px] font-black text-ng-gold-soft">{currentTime}</strong>
-          </div>
-          <div className="min-w-0 border-b border-[var(--ng-border-subtle)] px-2 py-2 text-center">
-            <small className="block text-[12px] text-ng-muted">روز هفته</small>
-            <strong className="mt-1 block truncate text-[14px] font-extrabold">{weekday}</strong>
-          </div>
+          <div className="grid grid-cols-3">
+            <div className="min-w-0 border-b border-e border-[var(--ng-border-subtle)] px-2 py-2 text-center">
+              <small className="block text-[12px] text-ng-muted">تاریخ</small>
+              <strong className="mt-1 block truncate text-[14px] font-extrabold">{persianDate}</strong>
+            </div>
+            <div className="min-w-0 border-b border-e border-[var(--ng-border-subtle)] px-2 py-2 text-center">
+              <small className="block text-[12px] text-ng-muted">ساعت</small>
+              <strong className="mt-1 block text-[17px] font-black text-ng-gold-soft">{currentTime}</strong>
+            </div>
+            <div className="min-w-0 border-b border-[var(--ng-border-subtle)] px-2 py-2 text-center">
+              <small className="block text-[12px] text-ng-muted">روز هفته</small>
+              <strong className="mt-1 block truncate text-[14px] font-extrabold">{weekday}</strong>
+            </div>
 
-          <div className="min-w-0 border-e border-[var(--ng-border-subtle)] px-2 py-2 text-center">
-            <small className="block text-[12px] text-ng-muted">روز کاری ماه</small>
-            <strong className="mt-1 block text-[17px] font-black">{workCalendar ? totalWorkingDays.toLocaleString('fa-IR') : '—'}</strong>
+            <div className="min-w-0 border-e border-[var(--ng-border-subtle)] px-2 py-2 text-center">
+              <small className="block text-[12px] text-ng-muted">روز کاری ماه</small>
+              <strong className="mt-1 block text-[17px] font-black">{workCalendar ? totalWorkingDays.toLocaleString('fa-IR') : '—'}</strong>
+            </div>
+            <div className="min-w-0 border-e border-[var(--ng-border-subtle)] px-2 py-2 text-center">
+              <small className="block text-[12px] text-ng-muted">سپری‌شده</small>
+              <strong className="mt-1 block text-[17px] font-black">{workCalendar ? elapsedWorkingDays.toLocaleString('fa-IR') : '—'}</strong>
+            </div>
+            <div className="min-w-0 px-2 py-2 text-center">
+              <small className="block text-[12px] text-ng-muted">روز مانده</small>
+              <strong className="mt-1 block text-[17px] font-black text-ng-gold-soft">{workCalendar ? remainingWorkingDays.toLocaleString('fa-IR') : '—'}</strong>
+            </div>
           </div>
-          <div className="min-w-0 border-e border-[var(--ng-border-subtle)] px-2 py-2 text-center">
-            <small className="block text-[12px] text-ng-muted">سپری‌شده</small>
-            <strong className="mt-1 block text-[17px] font-black">{workCalendar ? elapsedWorkingDays.toLocaleString('fa-IR') : '—'}</strong>
-          </div>
-          <div className="min-w-0 px-2 py-2 text-center">
-            <small className="block text-[12px] text-ng-muted">روز مانده</small>
-            <strong className="mt-1 block text-[17px] font-black text-ng-gold-soft">{workCalendar ? remainingWorkingDays.toLocaleString('fa-IR') : '—'}</strong>
-          </div>
-        </section>
+        </GlassCard>
 
-        <div className="mt-2 grid grid-cols-2 gap-3">
+        <div className="mt-2 grid grid-cols-2 gap-2">
           <TargetCard
             title="ماه جاری"
             target={monthlyTarget}
             actual={monthlyActual}
             percent={monthlyPercent}
             remaining={monthlyRemaining}
+            reducedMotion={reducedMotion}
           />
           <TargetCard
             title="تا امروز"
@@ -248,16 +311,22 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
             actual={todayActual}
             percent={todayPercent}
             remaining={todayRemaining}
+            reducedMotion={reducedMotion}
           />
         </div>
 
-        <section className="mt-2 border-y border-[var(--ng-border-subtle)] py-3">
+        <GlassCard
+          ariaLabel="جزئیات فروش موردنیاز تا پایان ماه"
+          depthKey="required-sales"
+          reducedMotion={reducedMotion}
+          className="mt-2"
+        >
           <div className="flex items-center justify-between gap-3 px-1">
-            <div className="min-w-0">
+            <div className="min-w-0 pe-1">
               <small className="block text-[12px] font-bold text-ng-gold-soft">برای رسیدن به ۱۰۰٪</small>
               <h2 className="mt-0.5 text-[17px] font-black">فروش موردنیاز تا پایان ماه</h2>
             </div>
-            <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[rgba(242,203,104,.045)] text-ng-gold-soft [&>svg]:size-4">
+            <span className="grid size-10 shrink-0 place-items-center rounded-[14px] border border-[rgba(242,203,104,.08)] bg-[rgba(242,203,104,.04)] text-ng-gold-soft shadow-[inset_1px_1px_0_rgba(255,255,255,.035),3px_4px_12px_rgba(0,0,0,.24)] [&>svg]:size-4">
               <ChartIcon />
             </span>
           </div>
@@ -277,13 +346,13 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
             <span>{remainingWorkingDays.toLocaleString('fa-IR')} روز کاری باقی مانده</span>
             <span>{targetStateLabel}</span>
           </div>
-        </section>
+        </GlassCard>
 
         {error ? (
           <motion.button
             type="button"
             onClick={() => void reload()}
-            className="mt-2 flex w-full items-center justify-between gap-3 border-y border-[rgba(242,184,79,.14)] bg-[rgba(242,184,79,.025)] px-2 py-2 text-start"
+            className="mt-2 flex w-full items-center justify-between gap-3 rounded-[18px] border border-[rgba(242,184,79,.12)] bg-[rgba(242,184,79,.025)] px-3 py-2 text-start shadow-[inset_1px_1px_0_rgba(255,255,255,.025),5px_6px_16px_rgba(0,0,0,.22)]"
             {...(reducedMotion ? {} : { whileTap: { scale: 0.99 } })}
           >
             <span className="min-w-0">
