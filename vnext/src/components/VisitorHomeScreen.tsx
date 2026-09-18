@@ -172,15 +172,24 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
     : liveAssignment
       ? `${routeSummary.progress.toLocaleString('fa-IR')}٪ مسیر انجام شده`
       : 'مسیر فعالی برای امروز نیست'
-  const performanceSummary = targetSemanticReady && targetPulse?.configured
-    ? `${targetAchievement?.toLocaleString('fa-IR', { maximumFractionDigits: 1 }) ?? '—'}٪ تحقق هدف · ${targetPulse.actual_invoice_count.toLocaleString('fa-IR')} فاکتور`
-    : `${targetPulse?.actual_invoice_count.toLocaleString('fa-IR') ?? '—'} فاکتور · KPI هدف در اعتبارسنجی`
+  const performanceSummary = targetPulse
+    ? `${targetPulse.actual_invoice_count.toLocaleString('fa-IR')} فاکتور ماه`
+    : performanceLoading ? 'در حال دریافت عملکرد…' : 'عملکرد در دسترس نیست'
+  const performanceMeta = targetSemanticReady && targetPulse?.configured && targetAchievement != null
+    ? `${targetAchievement.toLocaleString('fa-IR', { maximumFractionDigits: 1 })}٪ تحقق هدف`
+    : 'KPI هدف در اعتبارسنجی'
   const riskSummary = performance.openInvoices
-    ? `${compactRial(performance.openInvoices.open_invoice_remaining)} مانده باز · ${performance.returnedCheques?.cheque_count.toLocaleString('fa-IR') ?? '۰'} چک برگشتی`
+    ? `${compactRial(performance.openInvoices.open_invoice_remaining)} مانده باز`
     : performanceLoading ? 'در حال دریافت وضعیت مالی…' : 'وضعیت مالی در دسترس نیست'
+  const riskMeta = performance.returnedCheques
+    ? `${performance.returnedCheques.cheque_count.toLocaleString('fa-IR')} چک برگشتی`
+    : 'ریسک مالی در حال دریافت'
   const intelligenceSummary = attentionCount
-    ? `${attentionCount.toLocaleString('fa-IR')} هشدار عملیاتی${highestSeverity === 'critical' ? ' · مورد بحرانی' : ''}`
-    : 'هشدار بحرانی فعال نیست · AI آماده تحلیل'
+    ? `${attentionCount.toLocaleString('fa-IR')} هشدار فعال`
+    : 'بدون هشدار بحرانی'
+  const intelligenceMeta = attentionCount
+    ? (highestSeverity === 'critical' ? 'حداقل یک مورد بحرانی' : 'Alert Center نیازمند بررسی')
+    : 'Negin AI آماده تحلیل'
 
   function openLayer(next: HomeLayer) {
     window.history.pushState({ neginHomeDepth: 1 }, '', window.location.href)
@@ -507,25 +516,25 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
               <div className="vhd-portals" aria-label="دسته‌های اصلی خانه">
                 <button className="vhd-portal tone-gold ng-living-interactive" type="button" onClick={() => openLayer('performance')}>
                   <span className="vhd-portal-icon"><ChartIcon /></span>
-                  <span className="vhd-portal-copy"><small>عملکرد</small><strong>{performanceSummary}</strong><em>فروش، هدف و خروجی ماه</em></span>
+                  <span className="vhd-portal-copy"><small>عملکرد</small><strong>{performanceSummary}</strong><em>{performanceMeta}</em></span>
                   <ChevronLeftIcon />
                 </button>
 
                 <button className="vhd-portal tone-danger ng-living-interactive" type="button" onClick={() => openLayer('risk')}>
                   <span className="vhd-portal-icon"><ChequeIcon /></span>
-                  <span className="vhd-portal-copy"><small>ریسک مالی</small><strong>{riskSummary}</strong><em>فاکتور باز، چک و برگشت</em></span>
+                  <span className="vhd-portal-copy"><small>ریسک مالی</small><strong>{riskSummary}</strong><em>{riskMeta}</em></span>
                   <ChevronLeftIcon />
                 </button>
 
                 <button className="vhd-portal tone-blue ng-living-interactive" type="button" onClick={() => openLayer('today')}>
                   <span className="vhd-portal-icon"><ClockIcon /></span>
-                  <span className="vhd-portal-copy"><small>عملیات امروز</small><strong>{routeSummaryLabel}</strong><em>{offDay ? 'مرور وضعیت روز' : nextStop ? `اقدام بعدی: ${nextStop.name}` : 'وضعیت Route و توزیع'}</em></span>
+                  <span className="vhd-portal-copy"><small>عملیات امروز</small><strong>{offDay ? 'امروز روز غیرکاری است' : routeSummaryLabel}</strong><em>{offDay ? 'مرور مسیرهای تخصیص‌یافته' : nextStop ? `بعدی: ${nextStop.name}` : 'Route و توزیع'}</em></span>
                   <ChevronLeftIcon />
                 </button>
 
                 <button className="vhd-portal tone-mint ng-living-interactive" type="button" onClick={() => openLayer('intelligence')}>
                   <span className="vhd-portal-icon"><AiSparkIcon /></span>
-                  <span className="vhd-portal-copy"><small>هوش و هشدار</small><strong>{intelligenceSummary}</strong><em>Alert Center و Negin AI</em></span>
+                  <span className="vhd-portal-copy"><small>هوش و هشدار</small><strong>{intelligenceSummary}</strong><em>{intelligenceMeta}</em></span>
                   <ChevronLeftIcon />
                 </button>
               </div>
@@ -537,7 +546,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
               <header className="vhd-layer-head">
                 <button type="button" className="vhd-back ng-living-interactive" onClick={goBack} aria-label="بازگشت"><ChevronLeftIcon /></button>
                 <span className="vhd-layer-head-icon">{layerMeta[layer].icon}</span>
-                <span><small>لایه ۱</small><strong>{layerMeta[layer].title}</strong><em>{layerMeta[layer].subtitle}</em></span>
+                <span><small>خانه · {layerMeta[layer].title}</small><strong>{layerMeta[layer].title}</strong><em>{layerMeta[layer].subtitle}</em></span>
               </header>
 
               <div className="vhd-layer-items">
@@ -562,7 +571,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
               <header className="vhd-layer-head">
                 <button type="button" className="vhd-back ng-living-interactive" onClick={goBack} aria-label="بازگشت"><ChevronLeftIcon /></button>
                 <span className="vhd-layer-head-icon">{currentDetail.icon}</span>
-                <span><small>لایه ۲</small><strong>{currentDetail.title}</strong><em>جزئیات عنصر انتخاب‌شده</em></span>
+                <span><small>{layer ? `${layerMeta[layer].title} · جزئیات` : 'جزئیات'}</small><strong>{currentDetail.title}</strong><em>نمای متمرکز این شاخص</em></span>
               </header>
 
               <section className="vhd-detail-card ng-living-surface">

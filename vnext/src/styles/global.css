@@ -2927,3 +2927,44 @@ button:focus-visible,a:focus-visible { outline:2px solid rgba(240,193,82,.72); o
   .vhd-live i{animation:none}
   .vhd-layer,.vhd-backplane,.vhd-portal,.vhd-layer-item{animation:none!important;transition:none!important}
 }
+/* === Home Depth Visual QA — readability + visible stack === */
+.vhd-portal-copy strong{
+  font-size:15px;
+  line-height:1.45;
+  display:block;
+  white-space:normal;
+  overflow:visible;
+  text-overflow:clip;
+}
+.vhd-portal-copy em{
+  font-size:12.5px;
+  line-height:1.4;
+  white-space:normal;
+  overflow:visible;
+  text-overflow:clip;
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+}
+.vhd-layer-item-copy small{font-size:13px}
+.vhd-layer-item-copy strong{font-size:clamp(19px,5vw,23px)}
+.vhd-layer-item-copy em{font-size:13px}
+.vhd-stage[data-depth='1'] .vhd-backplane-one{
+  opacity:.92;
+  transform:translateY(14px) scale(.965) translateZ(-34px);
+  border-color:rgba(226,169,53,.12);
+  box-shadow:0 18px 38px rgba(0,0,0,.25),0 0 20px rgba(221,166,47,.035);
+}
+.vhd-stage[data-depth='2'] .vhd-backplane-one{
+  opacity:.82;
+  transform:translateY(11px) scale(.972) translateZ(-34px);
+}
+.vhd-stage[data-depth='2'] .vhd-backplane-two{
+  opacity:.60;
+  transform:translateY(20px) scale(.94) translateZ(-72px);
+  border-color:rgba(111,166,203,.10);
+}
+@media(max-width:390px){
+  .vhd-portal-copy strong{font-size:14.5px}
+  .vhd-portal-copy em{font-size:12px}
+}
