@@ -47,6 +47,7 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       '/auth': backendTarget,
+      '/automations': backendTarget,
       '/seller-workspace': backendTarget,
       '/chat': backendTarget,
       '/audio': backendTarget,
@@ -62,6 +63,19 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 4183,
     strictPort: true,
+    proxy: {
+      '/auth': backendTarget,
+      '/automations': backendTarget,
+      '/seller-workspace': backendTarget,
+      '/chat': backendTarget,
+      '/audio': backendTarget,
+      '/attachments': backendTarget,
+      '/neshan-basemap': {
+        target: 'https://api.neshan.org',
+        changeOrigin: true,
+        rewrite: (path) => path.slice('/neshan-basemap'.length),
+      },
+    },
   },
   build: {
     target: 'baseline-widely-available',
