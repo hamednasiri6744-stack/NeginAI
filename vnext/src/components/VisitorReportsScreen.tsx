@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import {
   BellIcon,
   ChartIcon,
-  CheckCircleIcon,
+  ChequeIcon,
   ChevronLeftIcon,
   HomeIcon,
+  InvoiceIcon,
   MapIcon,
   PinIcon,
   PlusIcon,
@@ -23,9 +24,10 @@ import {
 } from '../api/neginApi'
 import { useVisitorAuth } from '../state/VisitorAuthContext'
 import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
-import { useVisitorWorkflow } from '../state/VisitorWorkflowContext'
+import '../design-system/living/index.css'
 
 type Props = { onNavigate: (path: string) => void }
+type ReportFocus = 'receivables' | 'cheques' | 'distribution' | 'returns'
 
 type ReportData = {
   openInvoices: SellerPortfolioOpenInvoicesResponse
@@ -34,8 +36,19 @@ type ReportData = {
   voucherReturn: SellerVoucherReturnReportResponse
 }
 
+type FocusMeta = {
+  title: string
+  subtitle: string
+  icon: ReactNode
+  tone: 'gold' | 'danger' | 'mint' | 'blue'
+}
+
 function number(value: number) {
   return new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 2 }).format(value)
+}
+
+function compactNumber(value: number) {
+  return new Intl.NumberFormat('fa-IR', { notation: 'compact', maximumFractionDigits: 1 }).format(Number(value || 0))
 }
 
 function dateTime(value: string) {
@@ -46,11 +59,11 @@ function dateTime(value: string) {
 
 export function VisitorReportsScreen({ onNavigate }: Props) {
   const { profile } = useVisitorAuth()
-  const { unreadCount } = useVisitorNotifications()
-  const { routeSummary } = useVisitorWorkflow()
+  const { attentionCount, highestSeverity } = useVisitorNotifications()
   const [data, setData] = useState<ReportData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [focus, setFocus] = useState<ReportFocus | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -74,30 +87,72 @@ export function VisitorReportsScreen({ onNavigate }: Props) {
     void load()
   }, [load])
 
+  useEffect(() => {
+    const onPopState = () => setFocus(null)
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [])
+
   const openInvoiceCustomers = useMemo(
     () => [...(data?.openInvoices.customers ?? [])]
-      .sort((a, b) => b.open_invoice_remaining - a.open_invoice_remaining)
-      .slice(0, 5),
+      .sort((a, b) => b.open_invoice_remaining - a.open_invoice_remaining),
     [data],
   )
 
   const recentCheques = useMemo(
     () => [...(data?.returnedCheques.cheques ?? [])]
-      .sort((a, b) => String(b.status_date || b.date).localeCompare(String(a.status_date || a.date)))
-      .slice(0, 5),
+      .sort((a, b) => String(b.status_date || b.date).localeCompare(String(a.status_date || a.date))),
     [data],
   )
 
   const recentDistribution = useMemo(
-    () => (data?.distribution.invoices ?? []).slice(0, 5),
+    () => [...(data?.distribution.invoices ?? [])],
     [data],
   )
 
+  const focusMeta: Record<ReportFocus, FocusMeta> = {
+    receivables: {
+      title: 'مطالبات و فاکتور باز',
+      subtitle: 'چه مقدار مانده باز دارم و روی کدام مشتری‌ها؟',
+      icon: <InvoiceIcon />,
+      tone: 'gold',
+    },
+    cheques: {
+      title: 'چک برگشتی',
+      subtitle: 'ریسک وصول من کجاست و مربوط به چه مشتری‌هایی است؟',
+      icon: <ChequeIcon />,
+      tone: 'danger',
+    },
+    distribution: {
+      title: 'توزیع در جریان',
+      subtitle: 'کدام فاکتورها هنوز در فرآیند توزیع هستند؟',
+      icon: <StoreIcon />,
+      tone: 'blue',
+    },
+    returns: {
+      title: 'حواله و برگشت',
+      subtitle: 'وضعیت حواله، فاکتور و برگشت ماه جاری چیست؟',
+      icon: <ChartIcon />,
+      tone: 'mint',
+    },
+  }
+
+  function openFocus(next: ReportFocus) {
+    window.history.pushState({ neginReportDepth: 1 }, '', window.location.href)
+    setFocus(next)
+  }
+
+  function closeFocus() {
+    window.history.back()
+  }
+
+  const totalRiskSignals = Number(data?.returnedCheques.cheque_count ?? 0) + Number(data?.voucherReturn.full_returned_count ?? 0)
+
   return (
-    <main className="vh-page" dir="rtl">
+    <main className="vh-page vh-live-ui ng-living-root vrep-depth-page" dir="rtl" data-live-ui="unified" data-living-ui="on">
       <div className="vh-shell vrep-shell">
         <header className="vh-header">
-          <button className="vh-profile" type="button" onClick={() => onNavigate('/visitor/profile')}>
+          <button className="vh-profile ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/profile')}>
             <span className="vh-avatar">{profile?.full_name?.charAt(0) || profile?.username?.charAt(0) || 'و'}</span>
             <span className="vh-profile-copy">
               <strong>{profile?.full_name || profile?.username || 'کاربر'}</strong>
@@ -105,9 +160,15 @@ export function VisitorReportsScreen({ onNavigate }: Props) {
             </span>
             <ChevronLeftIcon />
           </button>
-          <button className="vh-bell" type="button" aria-label="اعلان‌ها" onClick={() => onNavigate('/visitor/notifications')}>
+          <button
+            className={`vh-bell ng-living-interactive ${highestSeverity ? `severity-${highestSeverity}` : ''}`}
+            data-severity={highestSeverity ?? 'none'}
+            type="button"
+            aria-label="اعلان‌ها"
+            onClick={() => onNavigate('/visitor/notifications')}
+          >
             <BellIcon />
-            {unreadCount ? <b>{unreadCount}</b> : null}
+            {attentionCount ? <b className="ng-living-reactive">{attentionCount}</b> : null}
           </button>
           <div className="vh-brand" dir="ltr">
             <img src="/assets/neginai-logo-transparent.png" alt="Negin AI" />
@@ -115,169 +176,150 @@ export function VisitorReportsScreen({ onNavigate }: Props) {
           </div>
         </header>
 
-        <section className="vrep-heading">
-          <div>
-            <h1>گزارش‌های واقعی فروشنده</h1>
-            <p>فقط داده‌های ثبت‌شده در ERP، NGT و Seller Workspace نمایش داده می‌شوند.</p>
-          </div>
-          <button type="button" onClick={() => void load()} disabled={loading}>
-            <ChartIcon /> {loading ? 'در حال دریافت' : 'به‌روزرسانی'}
-          </button>
-        </section>
+        <section className="vrep-depth-stage ng-depth-stage" data-depth={focus ? 1 : 0}>
+          <span className="ng-depth-backplane" data-plane="1" aria-hidden="true" />
 
-        {error ? (
-          <section className="vh-live-state error" role="alert">
-            <div><strong>گزارش‌ها بارگذاری نشدند</strong><span>{error}</span></div>
-            <button type="button" onClick={() => void load()}>تلاش دوباره</button>
-          </section>
-        ) : loading ? (
-          <section className="vh-live-state" role="status">
-            <strong>در حال دریافت گزارش‌های واقعی…</strong>
-          </section>
-        ) : null}
+          {!focus ? (
+            <div className="vrep-depth-root">
+              <section className="vrep-command ng-layer-surface">
+                <div>
+                  <span className="vrep-command-live"><i /> گزارش‌های واقعی · ERP / NGT</span>
+                  <h1>کدام بخش نیاز به تحلیل دارد؟</h1>
+                  <p>{loading ? 'در حال دریافت داده واقعی…' : error ? 'بخشی از گزارش‌ها در دسترس نیست.' : totalRiskSignals ? `${totalRiskSignals.toLocaleString('fa-IR')} سیگنال ریسک مالی/برگشت ثبت شده است.` : 'وضعیت فعلی بدون سیگنال بحرانی ثبت شده است.'}</p>
+                </div>
+                <button type="button" className="vrep-refresh ng-living-interactive" onClick={() => void load()} disabled={loading}>
+                  <ChartIcon /><span>{loading ? 'در حال دریافت' : 'به‌روزرسانی'}</span>
+                </button>
+              </section>
 
-        <section className="vrep-primary-kpis" aria-label="شاخص‌های واقعی">
-          <article className="vrep-kpi featured">
-            <span className="vrep-kpi-icon"><ChartIcon /></span>
-            <span>مانده فاکتورهای باز</span>
-            <strong>{number(data?.openInvoices.open_invoice_remaining ?? 0)}</strong>
-            <small>{number(data?.openInvoices.customer_count ?? 0)} مشتری دارای مانده</small>
-          </article>
-          <article className="vrep-kpi">
-            <span className="vrep-kpi-icon"><CheckCircleIcon /></span>
-            <span>چک‌های برگشتی</span>
-            <strong>{number(data?.returnedCheques.cheque_count ?? 0)}</strong>
-            <small>سهم فروشنده: {number(data?.returnedCheques.seller_share ?? 0)}</small>
-          </article>
-          <article className="vrep-kpi">
-            <span className="vrep-kpi-icon"><StoreIcon /></span>
-            <span>توزیع در جریان</span>
-            <strong>{number(data?.distribution.invoice_count ?? 0)}</strong>
-            <small>{data?.distribution.distribution_dates?.join('، ') || 'موردی ثبت نشده'}</small>
-          </article>
-          <article className="vrep-kpi">
-            <span className="vrep-kpi-icon"><CheckCircleIcon /></span>
-            <span>ویزیت‌های امروز</span>
-            <strong>{number(routeSummary.visited)}</strong>
-            <small>{number(routeSummary.total)} ایستگاه در مسیر فعلی</small>
-          </article>
-        </section>
+              {error ? (
+                <button type="button" className="vrep-depth-error ng-living-interactive" onClick={() => void load()}>
+                  <span><strong>بخشی از گزارش‌ها بارگذاری نشد</strong><small>{error}</small></span>
+                  <ChevronLeftIcon />
+                </button>
+              ) : null}
 
-        <section className="vrep-secondary-grid" aria-label="گزارش حواله و برگشت">
-          <article>
-            <span>حواله‌های ماه جاری</span>
-            <strong>{number(data?.voucherReturn.voucher_count ?? 0)}</strong>
-            <small>{data?.voucherReturn.report_month || '—'}</small>
-          </article>
-          <article>
-            <span>فاکتور شده</span>
-            <strong>{number(data?.voucherReturn.invoiced_count ?? 0)}</strong>
-            <small>از حواله‌های ماه جاری</small>
-          </article>
-          <article className="warning">
-            <span>برگشت کامل</span>
-            <strong>{number(data?.voucherReturn.full_returned_count ?? 0)}</strong>
-            <small>{number(data?.voucherReturn.return_percentage ?? 0)}٪ از حواله‌ها</small>
-          </article>
-          <article>
-            <span>توزیع‌نشده</span>
-            <strong>{number(data?.voucherReturn.undistributed_count ?? 0)}</strong>
-            <small>وضعیت فعلی ERP</small>
-          </article>
-        </section>
+              <div className="vrep-depth-portals" aria-label="حوزه‌های تحلیل">
+                <button type="button" className="vrep-depth-portal ng-portal-surface ng-living-interactive" data-tone="gold" onClick={() => openFocus('receivables')}>
+                  <span className="vrep-depth-portal-icon ng-portal-accent"><InvoiceIcon /></span>
+                  <span><small>مطالبات</small><strong>{loading ? '…' : compactNumber(data?.openInvoices.open_invoice_remaining ?? 0)}</strong><em>{number(data?.openInvoices.customer_count ?? 0)} مشتری دارای مانده</em></span>
+                  <ChevronLeftIcon />
+                </button>
 
-        <section className="vrep-top-card">
-          <div className="vrep-section-head">
-            <div><StoreIcon /><strong>بیشترین مانده فاکتور باز</strong></div>
-            <button type="button" onClick={() => onNavigate('/visitor/customers')}>مشتریان</button>
-          </div>
-          <div className="vrep-top-list">
-            {openInvoiceCustomers.length ? openInvoiceCustomers.map((customer, index) => (
-              <button
-                type="button"
-                key={String(customer.id)}
-                onClick={() => onNavigate(`/visitor/customers/${customer.id}`)}
-              >
-                <span className="vrep-rank">{index + 1}</span>
-                <span className="vrep-top-copy">
-                  <strong>{customer.store_name || customer.name || customer.code}</strong>
-                  <small>{customer.open_invoice_count.toLocaleString('fa-IR')} فاکتور باز · قدیمی‌ترین: {dateTime(customer.oldest_open_invoice_date)}</small>
+                <button type="button" className="vrep-depth-portal ng-portal-surface ng-living-interactive" data-tone={Number(data?.returnedCheques.cheque_count ?? 0) ? 'danger' : 'mint'} onClick={() => openFocus('cheques')}>
+                  <span className="vrep-depth-portal-icon ng-portal-accent"><ChequeIcon /></span>
+                  <span><small>چک برگشتی</small><strong>{loading ? '…' : number(data?.returnedCheques.cheque_count ?? 0)}</strong><em>{Number(data?.returnedCheques.cheque_count ?? 0) ? 'نیازمند بررسی وصول' : 'مورد فعالی نیست'}</em></span>
+                  <ChevronLeftIcon />
+                </button>
+
+                <button type="button" className="vrep-depth-portal ng-portal-surface ng-living-interactive" data-tone="blue" onClick={() => openFocus('distribution')}>
+                  <span className="vrep-depth-portal-icon ng-portal-accent"><StoreIcon /></span>
+                  <span><small>توزیع در جریان</small><strong>{loading ? '…' : number(data?.distribution.invoice_count ?? 0)}</strong><em>فاکتور در فرآیند توزیع</em></span>
+                  <ChevronLeftIcon />
+                </button>
+
+                <button type="button" className="vrep-depth-portal ng-portal-surface ng-living-interactive" data-tone={Number(data?.voucherReturn.full_returned_count ?? 0) ? 'danger' : 'mint'} onClick={() => openFocus('returns')}>
+                  <span className="vrep-depth-portal-icon ng-portal-accent"><ChartIcon /></span>
+                  <span><small>حواله و برگشت</small><strong>{loading ? '…' : number(data?.voucherReturn.full_returned_count ?? 0)}</strong><em>برگشت کامل در ماه جاری</em></span>
+                  <ChevronLeftIcon />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="vrep-depth-layer ng-layer-surface">
+              <header className="vrep-depth-head">
+                <button type="button" className="vrep-depth-back ng-living-interactive" onClick={closeFocus} aria-label="بازگشت"><ChevronLeftIcon /></button>
+                <span className="vrep-depth-head-icon ng-portal-accent" data-tone={focusMeta[focus].tone}>{focusMeta[focus].icon}</span>
+                <span>
+                  <small>گزارش‌ها · تحلیل واقعی</small>
+                  <strong>{focusMeta[focus].title}</strong>
+                  <em>{focusMeta[focus].subtitle}</em>
                 </span>
-                <span className="vrep-top-amount">
-                  <strong>{number(customer.open_invoice_remaining)}</strong>
-                  <small>مانده ثبت‌شده</small>
-                </span>
-                <ChevronLeftIcon />
-              </button>
-            )) : <div className="vn-empty"><strong>مانده فاکتور بازی ثبت نشده است.</strong></div>}
-          </div>
-        </section>
+              </header>
 
-        <section className="vrep-top-card">
-          <div className="vrep-section-head">
-            <div><ChartIcon /><strong>آخرین چک‌های برگشتی</strong></div>
-            <span>{number(data?.returnedCheques.cheque_count ?? 0)} مورد</span>
-          </div>
-          <div className="vrep-top-list">
-            {recentCheques.length ? recentCheques.map((cheque) => (
-              <button
-                type="button"
-                key={cheque.id}
-                onClick={() => cheque.customer_id ? onNavigate(`/visitor/customers/${cheque.customer_id}`) : undefined}
-              >
-                <span className="vrep-rank">•</span>
-                <span className="vrep-top-copy">
-                  <strong>{cheque.customer_store || cheque.customer_name || cheque.customer_code}</strong>
-                  <small>{cheque.bank || 'بانک ثبت نشده'} · {cheque.status || 'وضعیت ثبت نشده'} · {dateTime(cheque.status_date || cheque.date)}</small>
-                </span>
-                <span className="vrep-top-amount">
-                  <strong>{number(cheque.seller_share || cheque.amount)}</strong>
-                  <small>سهم/مبلغ ثبت‌شده</small>
-                </span>
-                <ChevronLeftIcon />
-              </button>
-            )) : <div className="vn-empty"><strong>چک برگشتی ثبت نشده است.</strong></div>}
-          </div>
-        </section>
+              <section className="vrep-depth-scroll">
+                {focus === 'receivables' ? (
+                  <>
+                    <div className="vrep-focus-hero ng-detail-surface">
+                      <span><small>مانده فاکتور باز</small><strong>{number(data?.openInvoices.open_invoice_remaining ?? 0)}</strong></span>
+                      <span><small>مشتری دارای مانده</small><strong>{number(data?.openInvoices.customer_count ?? 0)}</strong></span>
+                    </div>
+                    <div className="vrep-focus-list">
+                      {openInvoiceCustomers.length ? openInvoiceCustomers.map((customer, index) => (
+                        <button type="button" key={String(customer.id)} onClick={() => onNavigate(`/visitor/customers/${customer.id}`)}>
+                          <span className="vrep-focus-rank">{index + 1}</span>
+                          <span><strong>{customer.store_name || customer.name || customer.code}</strong><small>{customer.open_invoice_count.toLocaleString('fa-IR')} فاکتور باز · قدیمی‌ترین: {dateTime(customer.oldest_open_invoice_date)}</small></span>
+                          <b>{number(customer.open_invoice_remaining)}</b>
+                          <ChevronLeftIcon />
+                        </button>
+                      )) : <div className="vrep-focus-empty">مانده فاکتور بازی ثبت نشده است.</div>}
+                    </div>
+                  </>
+                ) : null}
 
-        <section className="vrep-top-card">
-          <div className="vrep-section-head">
-            <div><StoreIcon /><strong>توزیع در جریان</strong></div>
-            <span>{number(data?.distribution.invoice_count ?? 0)} فاکتور</span>
-          </div>
-          <div className="vrep-top-list">
-            {recentDistribution.length ? recentDistribution.map((invoice) => (
-              <button type="button" key={invoice.id} onClick={() => onNavigate('/visitor/customers')}>
-                <span className="vrep-rank">•</span>
-                <span className="vrep-top-copy">
-                  <strong>{invoice.customer_store || invoice.customer_name || invoice.customer_code}</strong>
-                  <small>توزیع {invoice.distribution_number || '—'} · {invoice.distribution_date || '—'} · راننده: {invoice.driver_name || '—'}</small>
-                </span>
-                <span className="vrep-top-amount">
-                  <strong>{number(invoice.amount)}</strong>
-                  <small>مبلغ ERP</small>
-                </span>
-                <ChevronLeftIcon />
-              </button>
-            )) : <div className="vn-empty"><strong>توزیع در جریان ثبت نشده است.</strong></div>}
-          </div>
-        </section>
+                {focus === 'cheques' ? (
+                  <>
+                    <div className="vrep-focus-hero ng-detail-surface">
+                      <span><small>چک برگشتی</small><strong>{number(data?.returnedCheques.cheque_count ?? 0)}</strong></span>
+                      <span><small>سهم فروشنده</small><strong>{number(data?.returnedCheques.seller_share ?? 0)}</strong></span>
+                    </div>
+                    <div className="vrep-focus-list">
+                      {recentCheques.length ? recentCheques.map((cheque) => (
+                        <button type="button" key={cheque.id} onClick={() => cheque.customer_id ? onNavigate(`/visitor/customers/${cheque.customer_id}`) : undefined}>
+                          <span className="vrep-focus-rank danger">!</span>
+                          <span><strong>{cheque.customer_store || cheque.customer_name || cheque.customer_code}</strong><small>{cheque.bank || 'بانک ثبت نشده'} · {cheque.status || 'وضعیت ثبت نشده'} · {dateTime(cheque.status_date || cheque.date)}</small></span>
+                          <b>{number(cheque.seller_share || cheque.amount)}</b>
+                          <ChevronLeftIcon />
+                        </button>
+                      )) : <div className="vrep-focus-empty">چک برگشتی ثبت نشده است.</div>}
+                    </div>
+                  </>
+                ) : null}
 
-        <section className="vrep-ai-card">
-          <ChartIcon />
-          <div>
-            <strong>تحلیل Negin AI</strong>
-            <p>تحلیل هوشمند فقط با اتکا به داده‌های واقعی همین گزارش انجام می‌شود.</p>
-          </div>
-          <button type="button" onClick={() => onNavigate('/visitor/ai?context=report&prompt=performance')}>تحلیل گزارش</button>
+                {focus === 'distribution' ? (
+                  <>
+                    <div className="vrep-focus-hero ng-detail-surface">
+                      <span><small>فاکتور در توزیع</small><strong>{number(data?.distribution.invoice_count ?? 0)}</strong></span>
+                      <span><small>تاریخ‌های توزیع</small><strong>{data?.distribution.distribution_dates?.length ?? 0}</strong></span>
+                    </div>
+                    <div className="vrep-focus-list">
+                      {recentDistribution.length ? recentDistribution.map((invoice) => (
+                        <button type="button" key={invoice.id} onClick={() => onNavigate('/visitor/customers')}>
+                          <span className="vrep-focus-rank"><StoreIcon /></span>
+                          <span><strong>{invoice.customer_store || invoice.customer_name || invoice.customer_code}</strong><small>توزیع {invoice.distribution_number || '—'} · {invoice.distribution_date || '—'} · راننده: {invoice.driver_name || '—'}</small></span>
+                          <b>{number(invoice.amount)}</b>
+                          <ChevronLeftIcon />
+                        </button>
+                      )) : <div className="vrep-focus-empty">توزیع در جریان ثبت نشده است.</div>}
+                    </div>
+                  </>
+                ) : null}
+
+                {focus === 'returns' ? (
+                  <>
+                    <div className="vrep-return-grid">
+                      <article><small>حواله ماه</small><strong>{number(data?.voucherReturn.voucher_count ?? 0)}</strong><em>{data?.voucherReturn.report_month || '—'}</em></article>
+                      <article><small>فاکتور شده</small><strong>{number(data?.voucherReturn.invoiced_count ?? 0)}</strong><em>از حواله‌های ماه</em></article>
+                      <article className="danger"><small>برگشت کامل</small><strong>{number(data?.voucherReturn.full_returned_count ?? 0)}</strong><em>{number(data?.voucherReturn.return_percentage ?? 0)}٪ از حواله‌ها</em></article>
+                      <article><small>توزیع‌نشده</small><strong>{number(data?.voucherReturn.undistributed_count ?? 0)}</strong><em>وضعیت ERP</em></article>
+                    </div>
+                  </>
+                ) : null}
+
+                <button type="button" className="vrep-ai-depth ng-living-interactive" onClick={() => onNavigate(`/visitor/ai?context=report&prompt=${focus}`)}>
+                  <ChartIcon /><span><strong>تحلیل Negin AI</strong><small>تحلیل همین حوزه با اتکا به داده واقعی</small></span><ChevronLeftIcon />
+                </button>
+              </section>
+            </div>
+          )}
         </section>
 
         <nav className="vh-nav" aria-label="ناوبری ویزیتور">
-          <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/home')}><HomeIcon /><span>خانه</span></button>
-          <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/route')}><MapIcon /><span>مسیر</span></button>
-          <button className="vh-order" type="button" onClick={() => onNavigate('/visitor/orders')}><PlusIcon /><span>سفارش</span></button>
-          <button className="vh-nav-item" type="button" onClick={() => onNavigate('/visitor/customers')}><UserGroupIcon /><span>مشتریان</span></button>
-          <button className="vh-nav-item active" type="button" aria-current="page" onClick={() => onNavigate('/visitor/reports')}><ChartIcon /><span>گزارش‌ها</span></button>
+          <button className="vh-nav-item ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/home')}><HomeIcon /><span>خانه</span></button>
+          <button className="vh-nav-item ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/route')}><MapIcon /><span>مسیر</span></button>
+          <button className="vh-order ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/orders')}><PlusIcon /><span>سفارش</span></button>
+          <button className="vh-nav-item ng-living-interactive" type="button" onClick={() => onNavigate('/visitor/customers')}><UserGroupIcon /><span>مشتریان</span></button>
+          <button className="vh-nav-item active ng-living-interactive" type="button" aria-current="page" onClick={() => setFocus(null)}><ChartIcon /><span>گزارش‌ها</span></button>
         </nav>
       </div>
     </main>
