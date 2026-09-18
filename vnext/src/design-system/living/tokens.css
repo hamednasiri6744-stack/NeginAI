@@ -91,3 +91,33 @@
   --ng-depth-plane-1: 0 16px 34px rgba(0,0,0,.22);
   --ng-depth-plane-2: 0 22px 44px rgba(0,0,0,.26);
 }
+/* Living Material v2.1 — visible glass + restrained dark neumorphism */
+:root{
+  --ng-surface-stage:
+    radial-gradient(circle at 88% 0,rgba(226,169,53,.065),transparent 29%),
+    linear-gradient(150deg,rgba(255,255,255,.070),rgba(255,255,255,.014) 38%,rgba(1,8,14,.10) 82%),
+    rgba(7,22,35,.78);
+  --ng-surface-panel:
+    linear-gradient(150deg,rgba(255,255,255,.060),rgba(255,255,255,.011) 40%,rgba(1,8,14,.09) 84%),
+    rgba(7,22,35,.76);
+  --ng-surface-detail:
+    linear-gradient(150deg,rgba(255,255,255,.050),rgba(255,255,255,.009) 42%,rgba(1,8,14,.08) 86%),
+    rgba(7,22,35,.72);
+
+  --ng-border-subtle:rgba(180,208,228,.115);
+  --ng-border-strong:rgba(190,216,234,.155);
+  --ng-border-accent:rgba(232,184,77,.19);
+
+  --ng-live-depth-rest:
+    8px 10px 22px rgba(0,0,0,.30),
+    -4px -4px 12px rgba(145,193,224,.020);
+  --ng-live-depth-raised:
+    11px 14px 30px rgba(0,0,0,.34),
+    -5px -5px 15px rgba(145,193,224,.024);
+  --ng-depth-plane-1:
+    10px 13px 28px rgba(0,0,0,.28),
+    -4px -4px 12px rgba(145,193,224,.018);
+  --ng-depth-plane-2:
+    14px 18px 38px rgba(0,0,0,.31),
+    -5px -5px 14px rgba(145,193,224,.018);
+}
