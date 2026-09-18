@@ -392,6 +392,27 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
                       <span><small>روز سپری‌شده</small><strong>{Number(workCalendar?.elapsed_working_days ?? 0).toLocaleString('fa-IR')}</strong></span>
                       <span><small>روز باقی‌مانده</small><strong>{Number(workCalendar?.remaining_working_days ?? 0).toLocaleString('fa-IR')}</strong></span>
                     </div>
+                    <div className="vr-offday-route-preview" aria-label="مسیرهای تخصیص‌یافته">
+                      {routes.slice(0, 4).map((route, index) => (
+                        <button
+                          type="button"
+                          key={route.id}
+                          className="ng-living-interactive"
+                          onClick={() => {
+                            setBrowseRouteId(route.id)
+                            setOffDayLayer('customers')
+                          }}
+                        >
+                          <b>{(index + 1).toLocaleString('fa-IR')}</b>
+                          <span>
+                            <strong>{route.title}</strong>
+                            <small>{Number(route.customer_count ?? 0).toLocaleString('fa-IR')} مشتری · مرور Route</small>
+                          </span>
+                          <ChevronLeftIcon />
+                        </button>
+                      ))}
+                      {!routes.length ? <div className="vr-offday-empty">Route تخصیص‌یافته‌ای ثبت نشده است.</div> : null}
+                    </div>
                   </div>
                 </div>
               ) : null}

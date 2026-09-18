@@ -1,0 +1,483 @@
+/* NeginAI Layout Architecture v1
+   Structural-only migration. Keeps the approved visual language and business behavior,
+   but replaces dashboard-card grids with connected surfaces, rails, stages and depth. */
+
+/* ---------- Shared connected-surface behavior ---------- */
+.vc-depth-portals,
+.vrep-depth-portals {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex !important;
+  flex-direction: column;
+  gap: 0 !important;
+  overflow: hidden;
+  border: 1px solid rgba(157,190,215,.12);
+  border-radius: 24px;
+  background:
+    linear-gradient(155deg,rgba(255,255,255,.035),rgba(255,255,255,.004) 42%),
+    rgba(5,18,30,.78);
+  box-shadow:
+    0 18px 38px rgba(0,0,0,.24),
+    inset 0 1px rgba(255,255,255,.035);
+}
+
+.vc-depth-portal,
+.vrep-depth-portal {
+  flex: 1 1 0;
+  min-height: 64px !important;
+  padding: 10px 12px !important;
+  grid-template-columns: 38px minmax(0,1fr) auto !important;
+  gap: 10px !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(157,190,215,.075) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.vc-depth-portal:last-child,
+.vrep-depth-portal:last-child {
+  border-bottom: 0 !important;
+}
+
+.vc-depth-portal::before,
+.vrep-depth-portal::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  width: 2px;
+  height: 0;
+  background: currentColor;
+  opacity: 0;
+  transition: height 180ms ease, opacity 180ms ease;
+}
+
+.vc-depth-portal:active::before,
+.vrep-depth-portal:active::before {
+  height: 52%;
+  opacity: .55;
+}
+
+.vc-depth-portal-icon,
+.vrep-depth-portal-icon {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 12px !important;
+  border-color: color-mix(in srgb,currentColor 25%,transparent) !important;
+  background: color-mix(in srgb,currentColor 5%,transparent) !important;
+}
+
+.vc-depth-portal strong,
+.vrep-depth-portal strong {
+  font-size: 17px !important;
+  line-height: 1.15 !important;
+}
+
+.vc-depth-portal small,
+.vrep-depth-portal small {
+  font-size: 11.5px !important;
+}
+
+.vc-depth-portal em,
+.vrep-depth-portal em {
+  font-size: 10.5px !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vc-depth-portal > svg,
+.vrep-depth-portal > svg {
+  width: 11px !important;
+  opacity: .7;
+}
+
+/* ---------- Customers: command -> context rail -> customer depth ---------- */
+.vc-command {
+  flex: 0 0 auto !important;
+  min-height: 92px !important;
+  padding: 11px 13px !important;
+  border-radius: 22px 22px 12px 12px !important;
+}
+
+.vc-command h1 {
+  margin-top: 4px !important;
+  font-size: clamp(19px,5vw,24px) !important;
+}
+
+.vc-command p {
+  font-size: 11.5px !important;
+}
+
+.vc-command-progress {
+  width: 64px !important;
+  height: 64px !important;
+}
+
+.vc-depth-route-picker {
+  margin-top: -1px;
+  border-radius: 0 0 14px 14px !important;
+  box-shadow: none !important;
+}
+
+.vc-depth-root {
+  gap: 7px !important;
+}
+
+/* ---------- Reports: analytical rail instead of 2x2 dashboard ---------- */
+.vrep-command {
+  flex: 0 0 auto !important;
+  min-height: 94px !important;
+  padding: 11px 13px !important;
+  border-radius: 22px 22px 12px 12px !important;
+}
+
+.vrep-command h1 {
+  margin: 4px 0 2px !important;
+  font-size: clamp(20px,5.2vw,25px) !important;
+}
+
+.vrep-command p {
+  font-size: 11.5px !important;
+}
+
+.vrep-refresh {
+  min-width: 66px !important;
+  min-height: 40px !important;
+}
+
+.vrep-depth-root {
+  gap: 7px !important;
+}
+
+/* ---------- Home: one connected mission surface, not stacked cards ---------- */
+.vhd-mission-stage .vhd-cockpit-root {
+  gap: 0 !important;
+  overflow: hidden;
+  border: 1px solid rgba(157,190,215,.12);
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 90% 0,rgba(226,169,53,.045),transparent 28%),
+    rgba(5,18,30,.66);
+  box-shadow: 0 20px 42px rgba(0,0,0,.26);
+}
+
+.vhd-mission-stage .vhd-cockpit,
+.vhd-mission-stage .vhd-next-insight,
+.vhd-mission-stage .vhd-pulse-deck,
+.vhd-mission-stage .vhd-ai-entry {
+  margin: 0 !important;
+  border-inline: 0 !important;
+  border-bottom: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+}
+
+.vhd-mission-stage .vhd-cockpit {
+  flex: 0 0 152px !important;
+  min-height: 152px !important;
+  border-top: 0 !important;
+}
+
+.vhd-mission-stage .vhd-next-insight {
+  flex: 0 0 92px !important;
+  min-height: 92px !important;
+  border-top: 1px solid rgba(157,190,215,.075) !important;
+}
+
+.vhd-mission-stage .vhd-pulse-deck {
+  flex: 0 0 92px !important;
+  min-height: 92px !important;
+  padding: 7px 10px 9px !important;
+  border-top: 1px solid rgba(157,190,215,.075) !important;
+}
+
+.vhd-mission-stage .vhd-ai-entry {
+  flex: 0 0 60px !important;
+  min-height: 60px !important;
+  border-top: 1px solid rgba(157,190,215,.075) !important;
+  background:
+    linear-gradient(90deg,rgba(226,169,53,.025),transparent 42%) !important;
+}
+
+.vhd-mission-stage .vhd-ai-entry-icon {
+  width: 34px;
+  height: 34px;
+}
+
+.vhd-mission-stage .vhd-pulse-grid {
+  height: 54px !important;
+  border-radius: 11px !important;
+}
+
+.vhd-mission-stage .vhd-pulse-title {
+  min-height: 22px !important;
+}
+
+/* ---------- Route / off-day: compact real route rail, no giant empty card ---------- */
+.vr-offday-overview {
+  display: flex !important;
+  flex-direction: column;
+  gap: 8px !important;
+}
+
+.vr-offday-command {
+  flex: 0 0 96px !important;
+  min-height: 96px !important;
+  padding: 11px 12px !important;
+}
+
+.vr-offday-route-deck {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  padding: 8px !important;
+  gap: 0 !important;
+  overflow: hidden;
+  border-radius: 22px !important;
+}
+
+.vr-offday-route-entry {
+  flex: 0 0 68px !important;
+  min-height: 68px !important;
+  padding: 9px 10px !important;
+  border-radius: 14px 14px 0 0 !important;
+  border-bottom: 0 !important;
+  box-shadow: none !important;
+}
+
+.vr-offday-route-entry-icon {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 12px !important;
+}
+
+.vr-offday-route-metrics {
+  flex: 0 0 58px !important;
+  min-height: 58px !important;
+  border-radius: 0 !important;
+  border-inline: 1px solid rgba(170,199,221,.075);
+}
+
+.vr-offday-route-preview {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(170,199,221,.075);
+  border-top: 0;
+  border-radius: 0 0 14px 14px;
+  background: rgba(1,9,15,.18);
+  scrollbar-width: none;
+}
+
+.vr-offday-route-preview::-webkit-scrollbar { display:none; }
+
+.vr-offday-route-preview > button {
+  flex: 0 0 58px;
+  min-height: 58px;
+  padding: 8px 10px;
+  display: grid;
+  grid-template-columns: 28px minmax(0,1fr) 12px;
+  gap: 8px;
+  align-items: center;
+  text-align: right;
+  border: 0;
+  border-bottom: 1px solid rgba(170,199,221,.06);
+  color: inherit;
+  background: transparent;
+}
+
+.vr-offday-route-preview > button:last-child { border-bottom:0; }
+.vr-offday-route-preview > button > b {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  color: #7ea9c7;
+  background: rgba(77,139,181,.04);
+  font-size: 10px;
+}
+.vr-offday-route-preview > button > span { min-width:0; display:grid; gap:2px; }
+.vr-offday-route-preview > button strong {
+  color:#e4ebef;
+  font-size:12px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.vr-offday-route-preview > button small { color:#6d8395; font-size:10px; }
+.vr-offday-route-preview > button > svg {
+  width:10px;
+  color:#70889a;
+  transform:rotate(180deg);
+}
+
+/* ---------- Orders: connected selling context + preparation stage ---------- */
+.vo-order-context {
+  padding: 0 !important;
+  overflow: hidden;
+  border-radius: 22px !important;
+}
+
+.vo-order-context-head {
+  min-height: 54px !important;
+  padding: 8px 10px !important;
+}
+
+.vo-order-context .vo-browse-control {
+  margin: 0 !important;
+  padding: 8px 10px !important;
+  border-inline: 0 !important;
+  border-radius: 0 !important;
+  border-bottom: 0 !important;
+  background: rgba(73,125,165,.022) !important;
+}
+
+.vo-order-context .vo-customer {
+  margin: 0 !important;
+  min-height: 58px !important;
+  padding: 8px 10px !important;
+  border-inline: 0 !important;
+  border-bottom: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: rgba(4,16,27,.28) !important;
+}
+
+.vo-prep-stage {
+  margin-top: 8px;
+  min-height: 188px;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 22px;
+  border: 1px solid rgba(157,190,215,.12);
+  background:
+    linear-gradient(155deg,rgba(255,255,255,.03),rgba(255,255,255,.004)),
+    rgba(5,18,30,.72);
+}
+
+.vo-prep-stage-head {
+  min-height: 48px;
+  padding: 8px 11px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  border-bottom:1px solid rgba(157,190,215,.075);
+}
+
+.vo-prep-stage-head > span { min-width:0; display:grid; gap:2px; }
+.vo-prep-stage-head strong { color:#e6edf2; font-size:13px; }
+.vo-prep-stage-head small { color:#6f8497; font-size:10px; }
+.vo-prep-stage-head > b {
+  color:#7eacd0;
+  font:800 9px/1 Inter,Arial;
+  letter-spacing:.08em;
+}
+
+.vo-prep-rail {
+  display:flex;
+  flex-direction:column;
+}
+
+.vo-prep-step {
+  min-height: 46px;
+  padding: 7px 11px;
+  display:grid;
+  grid-template-columns: 24px minmax(0,1fr) auto;
+  gap:8px;
+  align-items:center;
+  border-bottom:1px solid rgba(157,190,215,.06);
+}
+
+.vo-prep-step:last-child { border-bottom:0; }
+
+.vo-prep-step > i {
+  width:24px;
+  height:24px;
+  display:grid;
+  place-items:center;
+  border-radius:8px;
+  color:#62798c;
+  background:rgba(255,255,255,.018);
+  font:850 9px/1 Inter,Arial;
+}
+
+.vo-prep-step.done > i {
+  color:#57d3ab;
+  background:rgba(57,171,134,.055);
+}
+
+.vo-prep-step.active > i {
+  color:#e7ba55;
+  background:rgba(226,169,53,.055);
+  box-shadow:0 0 12px rgba(226,169,53,.06);
+}
+
+.vo-prep-step > span { min-width:0; display:grid; gap:1px; }
+.vo-prep-step strong { color:#dce5eb; font-size:11.5px; }
+.vo-prep-step small {
+  color:#61788b;
+  font-size:9.5px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.vo-prep-step > em {
+  color:#6f8495;
+  font-size:9px;
+  font-style:normal;
+  white-space:nowrap;
+}
+.vo-prep-step.done > em { color:#57cda7; }
+.vo-prep-step.active > em { color:#d9ad4f; }
+
+/* Keep the selling workspace anchored to content rather than leaving a dead canvas. */
+.vo-shell > .vh-live-state {
+  margin-top: 8px;
+}
+
+/* ---------- Mobile density ---------- */
+@media (max-width:390px) {
+  .vc-depth-portal,
+  .vrep-depth-portal {
+    min-height: 58px !important;
+    grid-template-columns: 34px minmax(0,1fr) auto !important;
+    padding: 8px 10px !important;
+  }
+  .vc-depth-portal-icon,
+  .vrep-depth-portal-icon {
+    width: 34px !important;
+    height: 34px !important;
+  }
+  .vc-depth-portal strong,
+  .vrep-depth-portal strong {
+    font-size: 15px !important;
+  }
+  .vhd-mission-stage .vhd-cockpit { flex-basis: 144px !important; min-height:144px !important; }
+  .vhd-mission-stage .vhd-next-insight { flex-basis: 88px !important; min-height:88px !important; }
+  .vhd-mission-stage .vhd-pulse-deck { flex-basis: 88px !important; min-height:88px !important; }
+}
+
+@media (max-height:740px) {
+  .vc-command,
+  .vrep-command { min-height:82px !important; }
+  .vc-depth-portal,
+  .vrep-depth-portal { min-height:54px !important; }
+  .vr-offday-command { flex-basis:82px !important; min-height:82px !important; }
+  .vr-offday-route-entry { flex-basis:60px !important; min-height:60px !important; }
+  .vr-offday-route-preview > button { flex-basis:52px; min-height:52px; }
+  .vhd-mission-stage .vhd-cockpit { flex-basis:132px !important; min-height:132px !important; }
+  .vhd-mission-stage .vhd-next-insight { flex-basis:78px !important; min-height:78px !important; }
+  .vhd-mission-stage .vhd-pulse-deck { flex-basis:78px !important; min-height:78px !important; }
+  .vhd-mission-stage .vhd-ai-entry { flex-basis:52px !important; min-height:52px !important; }
+}
+
+@media (prefers-reduced-motion:reduce) {
+  .vc-depth-portal::before,
+  .vrep-depth-portal::before { transition:none; }
+}

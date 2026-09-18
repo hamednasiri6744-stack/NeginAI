@@ -556,8 +556,33 @@ export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo 
           <section className="vh-live-state error" role="alert">
             <div><strong>{browseMode ? 'اطلاعات مرور NGT دریافت نشد' : 'اطلاعات سفارش NGT دریافت نشد'}</strong><span>{browseError || contextError}</span></div>
           </section>
-        ) : browseLoading || contextLoading ? (
-          <section className="vh-live-state" role="status"><strong>{browseMode ? 'در حال آماده‌سازی کاتالوگ مرور…' : 'در حال دریافت کاتالوگ، موجودی و قرارداد فروش از NGT…'}</strong></section>
+        ) : browseLoading || contextLoading || (!context && Boolean(routeId || effectiveCustomerId)) ? (
+          <section className="vo-prep-stage ng-layer-surface" role="status" aria-label="آماده‌سازی محیط فروش">
+            <header className="vo-prep-stage-head">
+              <span>
+                <strong>آماده‌سازی محیط فروش</strong>
+                <small>{browseMode ? 'مرور غیرکاری · بدون Preview یا ثبت' : 'Context واقعی NGT / Varanegar'}</small>
+              </span>
+              <b>SELLING CONTEXT</b>
+            </header>
+            <div className="vo-prep-rail">
+              <div className={routeId ? 'vo-prep-step done' : 'vo-prep-step'}>
+                <i>۱</i>
+                <span><strong>مسیر</strong><small>{browseRouteTitle || activeRouteTitle || 'در انتظار Route معتبر'}</small></span>
+                <em>{routeId ? 'آماده' : 'انتظار'}</em>
+              </div>
+              <div className={effectiveCustomerId ? 'vo-prep-step done' : 'vo-prep-step'}>
+                <i>۲</i>
+                <span><strong>مشتری</strong><small>{selectedCustomer?.store_name || selectedCustomer?.name || 'مشتری واقعی مسیر انتخاب نشده'}</small></span>
+                <em>{effectiveCustomerId ? 'آماده' : 'انتظار'}</em>
+              </div>
+              <div className={contextLoading || browseLoading ? 'vo-prep-step active' : context ? 'vo-prep-step done' : 'vo-prep-step'}>
+                <i>۳</i>
+                <span><strong>کاتالوگ · موجودی · قرارداد</strong><small>{contextLoading || browseLoading ? 'در حال همگام‌سازی با NGT…' : context ? 'Context فروش دریافت شد' : 'در انتظار Context'}</small></span>
+                <em>{contextLoading || browseLoading ? 'SYNC' : context ? 'آماده' : 'انتظار'}</em>
+              </div>
+            </div>
+          </section>
         ) : null}
 
         {context ? (
