@@ -27,8 +27,8 @@ Active test style:
 pure-glass = translucent glass surface with stronger blur/refraction and no neumorphic dual-shadow depth.
 ## Style test queue
 - [x] Glassmorphism + Neumorphism baseline
-- [x] Pure Glassmorphism — active test
-- [ ] Frosted Glass
+- [x] Pure Glassmorphism
+- [x] Frosted Glass — active test
 - [ ] Liquid Glass
 - [ ] Layered Glass
 - [ ] Acrylic
@@ -54,4 +54,5 @@ pure-glass = translucent glass surface with stronger blur/refraction and no neum
 
 ## Test rule
 Each style gets its own reversible commit/checkpoint. Only surface treatment, depth, border, radius, shadow, blur, highlight, refraction and press feedback may change unless explicitly requested.
+
 
