@@ -191,3 +191,142 @@
 #root .vai-page :where(button,a,[role='button']):active {
   filter: brightness(1.04);
 }
+/* === Home parity v3: remove remaining legacy dashboard shells === */
+#root .vh-page :where(.vc-depth-portals,.vrep-depth-portals) {
+  overflow: visible !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+#root .vh-page :where(.vc-depth-portal,.vrep-depth-portal) {
+  border-inline: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#root .vh-page :where(.vc-depth-portal-icon,.vrep-depth-portal-icon) {
+  border: 0 !important;
+  background: color-mix(in srgb,currentColor 5%,transparent) !important;
+  box-shadow: none !important;
+}
+#root .vh-page .vc-command-progress {
+  width: auto !important;
+  height: auto !important;
+  min-width: 54px;
+  padding: 0 4px;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+#root .vh-page .vc-command-progress strong { font-size: 16px !important; }
+#root .vh-page .vc-command-progress small { font-size: 9px !important; }
+
+#root .vh-page :where(.vr-offday-route-deck,.vr-offday-route-preview) {
+  padding-inline: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+#root .vh-page .vr-offday-route-entry {
+  border: 0 !important;
+  border-radius: 0 !important;
+  border-bottom: 1px solid var(--ng-home-line) !important;
+  background: transparent !important;
+}
+#root .vh-page .vr-offday-route-metrics {
+  border: 0 !important;
+  border-block: 1px solid var(--ng-home-line) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+#root .vh-page .vr-offday-route-preview > button {
+  border-bottom: 1px solid var(--ng-home-line) !important;
+  background: transparent !important;
+}
+
+#root .vh-page .vh-live-state {
+  margin-top: 10px !important;
+  padding: 12px 1px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  border-block: 1px solid var(--ng-home-line) !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+#root .vh-page .vh-live-state.error {
+  border-color: rgba(255,109,120,.12) !important;
+  background: rgba(255,109,120,.018) !important;
+}
+#root .vh-page :where(.vo-order-context,.vo-prep-stage) {
+  overflow: visible !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+#root .vh-page :where(.vo-order-context-head,.vo-prep-stage-head) {
+  border-bottom: 1px solid var(--ng-home-line) !important;
+}
+#root .vh-page .vo-order-context .vo-browse-control,
+#root .vh-page .vo-order-context .vo-customer {
+  border-inline: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+#root .vh-page :where(.c360-entity-header,.c360-primary-actions,.c360-pulse-rail) {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+#root .vh-page :where(.c360-workflow-card,.c360-panel,.c360-location-card,.c360-finance-list,.c360-ai-card) {
+  border-inline: 0 !important;
+  border-radius: 0 !important;
+}
+#root .vh-page :where(.vp-identity,.vp-section,.vp-row,.vp-static-row,.vp-action-row) {
+  border-inline: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#root .vh-page :where(
+  .vc-depth-portal small,.vrep-depth-portal small,
+  .vc-depth-portal em,.vrep-depth-portal em
+) {
+  color: var(--ng-muted) !important;
+}
+#root .vh-page :where(.vc-depth-portal strong,.vrep-depth-portal strong) {
+  color: var(--ng-text) !important;
+}
+/* Login uses the same flat Home material language. */
+#root .login-page .auth-panel {
+  padding-inline: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  border-block: 1px solid var(--ng-home-line) !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+#root .login-page .field {
+  border-color: var(--ng-home-line) !important;
+  background: var(--ng-home-soft) !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+#root .login-page .install-button,
+#root .login-page .login-message {
+  border-color: var(--ng-home-line) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
