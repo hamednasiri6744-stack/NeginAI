@@ -1,122 +1,193 @@
 /*
- * Home Visual Parity v1
- * Canonical visual/material layer for every visitor screen.
- * Layout is deliberately untouched: only color, surface, border, shadow and state treatment.
+ * NeginAI Home Visual Parity v2
+ * Home is the canonical visual reference.
+ * This file changes visual/material treatment only; screen layout stays intact.
  */
 :root {
-  --ng-home-surface: rgba(7,22,35,.74);
-  --ng-home-surface-strong: rgba(7,22,35,.84);
-  --ng-home-surface-soft: rgba(255,255,255,.018);
   --ng-home-line: var(--ng-border-subtle);
-  --ng-home-line-strong: rgba(242,203,104,.16);
-  --ng-home-gold-soft: rgba(242,203,104,.055);
+  --ng-home-line-gold: rgba(242,203,104,.16);
+  --ng-home-soft: rgba(255,255,255,.018);
+  --ng-home-gold-soft: rgba(242,203,104,.05);
 }
 
 #root :where(.vh-page,.vai-page) {
-  color: var(--ng-text);
+  color: var(--ng-text) !important;
   background:
     radial-gradient(circle at 50% -10%,rgba(38,91,126,.20),transparent 34%),
-    linear-gradient(180deg,#061522 0%,var(--ng-bg) 58%,#02070c 100%);
+    linear-gradient(180deg,#061522 0%,var(--ng-bg) 58%,#02070c 100%) !important;
 }
 
-#root :where(.vh-header,.vh-nav,.vh-profile,.vh-bell) {
-  border-color: var(--ng-home-line);
-  background: var(--ng-home-surface);
-  box-shadow: var(--ng-shadow-contact);
-  backdrop-filter: blur(18px);
+#root :where(.vh-page,.vai-page) :where(
+  .ng-layer-surface,.ng-portal-surface,.ng-detail-surface,.ng-living-surface
+) {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
 }
-#root :where(.vh-nav-item,.vh-order) {
-  color: var(--ng-muted);
-  border-color: transparent;
-  background: transparent;
-}
-#root :where(.vh-nav-item.active,.vh-order.active) {
-  color: var(--ng-gold-2);
-  border-color: var(--ng-home-line-strong);
-  background: var(--ng-home-gold-soft);
+#root .vh-page :where(.ng-layer-surface) {
+  border: 0 !important;
+  border-radius: 0 !important;
+  border-bottom: 1px solid var(--ng-home-line) !important;
 }
 
-#root :where(
-  .vc-summary article,.vc-search,.vc-filter-button,.vc-card,.vc-empty,
-  .c360-identity,.c360-kpis article,.c360-panel,.c360-finance-grid article,.c360-actions button,
-  .c360-info-grid>div,.c360-edit-field,.c360-tabs,
-  .vo-customer,.vo-tabs,.vo-search,.vo-search-row>button,.vo-product,.vo-catalog-grid button,
-  .vo-cart-line,.vo-choice-block,.vo-summary,.vo-empty,
-  .voa-summary article,.voa-tabs,.voa-search,.voa-order-card,.voa-draft-card,.voa-empty,
+#root .vh-page :where(.ng-portal-surface,.ng-detail-surface,.ng-living-surface),
+#root .vai-page :where(.ng-layer-surface,.ng-portal-surface,.ng-detail-surface,.ng-living-surface) {
+  border: 0 !important;
+  border-radius: 0 !important;
+  border-bottom: 1px solid var(--ng-home-line) !important;
+}
+
+#root .vh-page :where(.vc-command,.vrep-command,.vr-offday-command) {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  border-bottom: 1px solid var(--ng-home-line) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+#root .vh-page :where(.vc-depth-portals,.vrep-depth-portals) {
+  gap: 0 !important;
+  border-top: 1px solid var(--ng-home-line);
+}
+#root .vh-page :where(.vc-depth-portal,.vrep-depth-portal) {
+  border-bottom: 1px solid var(--ng-home-line) !important;
+}
+#root .vh-page :where(.vc-depth-portal:nth-child(even),.vrep-depth-portal:nth-child(even)) {
+  border-inline-start: 1px solid var(--ng-home-line) !important;
+}
+
+#root .vh-page :where(
+  .vc-depth-customer-list,.vrep-focus-list,.vr-offday-route-list,.vr-offday-customer-list,
+  .vo-product-grid,.vo-cart-lines,.voa-order-list,.voa-draft-list
+) {
+  gap: 0 !important;
+}
+
+#root .vh-page :where(
+  .vc-depth-customer,.vrep-focus-list>button,.vr-offday-route-row,.vr-offday-customer,
+  .vo-cart-line,.voa-order-card,.voa-draft-card
+) {
+  background: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  border-bottom: 1px solid var(--ng-home-line) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+#root .vh-page :where(
+  .vr-offday-route-deck,.vr-offday-route-metrics,.vr-map-card,.vr-active-card,.vr-stops,
+  .vrep-focus-hero,.vrep-return-grid article,.vrep-ai-depth,
+  .vo-commercial-pulse,.vo-customer,.vo-order-context,.vo-prep-stage,.vo-credit-card,
+  .vo-route-check,.vo-catalog-card,.vo-totals,.vo-restrictions,.vo-gifts,.vo-history,
+  .vo-official-details,.voa-summary article,.voa-invoice,.voa-invoice-customer,.voa-invoice-total,
+  .c360-workflow-card,.c360-panel,.c360-location-card,.c360-finance-list,.c360-ai-card,
   .vp-identity,.vp-section,.vp-row,.vp-static-row,.vp-action-row
 ) {
-  border-color: var(--ng-home-line);
-  background: var(--ng-home-surface);
-  box-shadow: none;
-  backdrop-filter: blur(16px);
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
 }
-#root :where(
-  .vc-chips button,.c360-tabs button,.vo-tabs button,.vo-filter-strip button,
-  .voa-tabs button,.voa-chips button,.vn-tabs button,
-  .vp-action-row button,.vp-logout
+
+#root .vh-page :where(
+  .vr-offday-route-deck,.vr-map-card,.vr-active-card,.vr-stops,.vrep-focus-hero,
+  .vo-commercial-pulse,.vo-customer,.vo-order-context,.vo-prep-stage,.vo-credit-card,
+  .vo-route-check,.vo-totals,.vo-restrictions,.vo-gifts,.vo-history,.vo-official-details,
+  .c360-workflow-card,.c360-panel,.c360-location-card,.c360-finance-list,.c360-ai-card,
+  .vp-identity,.vp-section
 ) {
-  color: var(--ng-muted);
-  border-color: var(--ng-home-line);
-  background: var(--ng-home-surface-soft);
+  border: 0 !important;
+  border-radius: 0 !important;
+  border-bottom: 1px solid var(--ng-home-line) !important;
 }
-#root :where(
-  .vc-chips button.active,.c360-tabs button.active,.vo-tabs button.active,
-  .vo-filter-strip button.active,.voa-tabs button.active,.voa-chips button.active,
+#root .vh-page :where(
+  .vc-depth-route-picker,.vc-depth-search,.vrep-refresh,.vr-map-head button,.vr-actions button,
+  .vo-search,.vo-toolbar,.vo-tabs,.vo-icon-button,.vo-filter-row button,
+  .voa-search,.voa-refresh,.vn-tabs,.vp-logout,.vp-action-row button
+) {
+  border-color: var(--ng-home-line) !important;
+  background: var(--ng-home-soft) !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+#root .vh-page :where(
+  .vo-tabs button.active,.vo-filter-row button.active,.voa-tabs button.active,
   .vn-tabs button.active
 ) {
-  color: var(--ng-gold-2);
-  border-color: var(--ng-home-line-strong);
-  background: var(--ng-home-gold-soft);
-  box-shadow: none;
+  color: var(--ng-gold-2) !important;
+  border-color: var(--ng-home-line-gold) !important;
+  background: var(--ng-home-gold-soft) !important;
+  box-shadow: none !important;
 }
 
-#root :where(.vr-map-card,.vr-active-card,.vr-stops) {
-  border-color: var(--ng-home-line);
-  background: var(--ng-home-surface);
-  box-shadow: none;
-  backdrop-filter: blur(16px);
-}
-#root :where(.vr-mode,.vr-actions button,.vr-map-head button) {
-  border-color: var(--ng-home-line);
-  background: var(--ng-home-surface-soft);
-}
-#root :where(
-  .vrep-depth-stage,.vrep-depth-layer,.vrep-focus-hero,.vrep-focus-list>button,
-  .vrep-return-grid article,.vrep-ai-depth,.vrep-kpi,.vrep-score-card,.vrep-chart-card,
-  .vrep-top-card,.vrep-secondary-grid article,
-  .vai-context,.vai-integrity,.vai-message,.vai-composer,
-  .voa-invoice,.voa-invoice-customer,.voa-invoice-total
+#root .vh-page :where(
+  .vc-depth-portal-icon,.vrep-depth-portal-icon,.vc-depth-head-icon,.vrep-depth-head-icon,
+  .vr-offday-route-entry-icon,.vr-offday-depth-icon,.vo-customer-icon,.vo-catalog-icon,
+  .vo-cart-icon,.voa-order-icon,.voa-invoice-mark,.c360-pin,.vp-row-icon
 ) {
-  border-color: var(--ng-home-line);
-  background: var(--ng-home-surface);
-  box-shadow: none;
-  backdrop-filter: blur(16px);
+  box-shadow: none !important;
+}
+#root .vh-page :where(
+  .vc-depth-customer-icon,.vr-offday-route-index,.vrep-focus-rank,
+  .vo-customer-icon,.vo-catalog-icon,.vo-cart-icon,.voa-order-icon,.vp-row-icon
+) {
+  background: var(--ng-home-soft) !important;
 }
 
-#root .vh-page[data-design-system='atlas-v1'][data-screen='notifications'] :where(
-  .vn-heading,.vn-tabs,.vn-list>.ng-feedback,.ng-card,.ng-surface,.ng-button
+#root .vh-page :where(
+  .vc-depth-back,.vrep-depth-back,.vr-offday-back,.vai-back
 ) {
-  border-color: var(--ng-home-line);
-  background-color: var(--ng-home-surface);
-  box-shadow: none;
+  border-color: var(--ng-home-line) !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
-#root :where(
-  .vc-heading h1,.c360-topbar h1,.vo-heading h1,.voa-heading h1,
-  .vrep-command h1,.vai-title h1,.vp-heading h1
-) {
-  color: var(--ng-text);
-}
-#root :where(
-  .vc-heading span,.c360-topbar span,.vo-heading span,.vo-heading p,
-  .voa-heading>div>span,.voa-heading p,.vrep-command p,.vp-heading p
-) {
-  color: var(--ng-muted);
+#root .vh-page :where(
+  .vc-command h1,.vrep-command h1,.vr-offday-copy h1,
+  .vo-heading h1,.voa-heading h1,.vp-heading h1
+),
+#root .vai-page :where(.vai-title h1) {
+  color: var(--ng-text) !important;
 }
 
-#root :where(button,a,[role='button']) {
+#root .vh-page :where(
+  .vc-command p,.vrep-command p,.vr-offday-copy p,
+  .vo-heading p,.voa-heading p,.vp-heading p
+),
+#root .vai-page :where(.vai-title p) {
+  color: var(--ng-muted) !important;
+}
+#root .vh-page :where(.vn-heading,.vn-list),
+#root .vai-page :where(.vai-context,.vai-integrity,.vai-message,.vai-composer,.vai-quick) {
+  background: transparent !important;
+  background-image: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+#root .vh-page .vn-heading,
+#root .vai-page :where(.vai-context,.vai-integrity,.vai-message,.vai-composer) {
+  border: 0 !important;
+  border-bottom: 1px solid var(--ng-home-line) !important;
+}
+
+#root .vh-page :where(.ng-notification-item) {
+  background: transparent !important;
+  background-image: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+#root .vh-page :where(button,a,[role='button']),
+#root .vai-page :where(button,a,[role='button']) {
   -webkit-tap-highlight-color: transparent;
 }
-#root :where(button,a,[role='button']):active {
+#root .vh-page :where(button,a,[role='button']):active,
+#root .vai-page :where(button,a,[role='button']):active {
   filter: brightness(1.04);
 }
