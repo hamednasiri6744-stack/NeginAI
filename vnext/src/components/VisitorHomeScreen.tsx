@@ -220,6 +220,10 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
     return HOME_CARD_STYLE_OPTIONS.some((item) => item.id === saved) ? saved as HomeCardStyle : DEFAULT_HOME_CARD_STYLE
   })
   const [styleLabOpen, setStyleLabOpen] = useState(false)
+  const [styleLabEnabled, setStyleLabEnabled] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.localStorage.getItem('negin-style-lab-enabled') === '1'
+  })
   const [styleIntensity, setStyleIntensity] = useState(() => {
     if (typeof window === 'undefined') return 45
     const saved = Number(window.localStorage.getItem('negin-home-style-intensity') ?? 45)
@@ -239,6 +243,20 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
   useEffect(() => {
     window.localStorage.setItem('negin-home-style-intensity', String(styleIntensity))
   }, [styleIntensity])
+
+  useEffect(() => {
+    const syncStyleLabEnabled = () => {
+      const enabled = window.localStorage.getItem('negin-style-lab-enabled') === '1'
+      setStyleLabEnabled(enabled)
+      if (!enabled) setStyleLabOpen(false)
+    }
+    window.addEventListener('storage', syncStyleLabEnabled)
+    window.addEventListener('negin-style-lab-toggle', syncStyleLabEnabled)
+    return () => {
+      window.removeEventListener('storage', syncStyleLabEnabled)
+      window.removeEventListener('negin-style-lab-toggle', syncStyleLabEnabled)
+    }
+  }, [])
 
   const weekday = new Intl.DateTimeFormat('fa-IR', {
     weekday: 'long',
@@ -460,8 +478,9 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
 
         <div className="min-h-0 flex-1" />
 
-        <div className="pointer-events-none absolute inset-x-3 bottom-[calc(102px+env(safe-area-inset-bottom))] z-50 flex justify-start">
-          <div className="pointer-events-auto relative">
+        {styleLabEnabled ? (
+          <div className="pointer-events-none absolute inset-x-3 bottom-[calc(102px+env(safe-area-inset-bottom))] z-50 flex justify-start">
+            <div className="pointer-events-auto relative">
             {styleLabOpen ? (
               <div className="absolute bottom-12 start-0 w-[min(392px,calc(100vw-24px))] max-h-[44vh] overflow-y-auto rounded-[22px] border border-white/10 bg-[rgba(3,13,22,.96)] p-2 shadow-[0_22px_60px_rgba(0,0,0,.62)] backdrop-blur-[24px]">
                 <div className="mb-2 flex items-center justify-between px-1">
@@ -503,8 +522,9 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
               className="rounded-full border border-[rgba(242,203,104,.20)] bg-[rgba(4,17,27,.92)] px-3 py-2 text-[11px] font-black text-ng-gold-soft shadow-[0_10px_28px_rgba(0,0,0,.45)] backdrop-blur-xl">
               Style · {HOME_CARD_STYLE_OPTIONS.find((item) => item.id === cardStyle)?.label}
             </button>
+            </div>
           </div>
-        </div>
+        ) : null}
 
         <BottomDock
           ariaLabel="ناوبری ویزیتور"

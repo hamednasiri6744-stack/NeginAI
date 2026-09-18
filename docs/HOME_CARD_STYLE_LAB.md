@@ -86,3 +86,10 @@ Each style gets its own reversible commit/checkpoint. Only surface treatment, de
 - [x] Luxury + Cyber (dynamic)
 - [x] Luxury + Glossy
 
+
+## Settings toggle
+- [x] Style Lab visibility is controlled from Profile > تنظیمات برنامه > Style Lab.
+- [x] Default is OFF when no preference exists.
+- [x] When ON, the Style Lab button appears in its existing Home position above the Bottom Dock.
+- [x] Preference persists in localStorage under negin-style-lab-enabled.
+

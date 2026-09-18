@@ -38,10 +38,22 @@ export function VisitorProfileSettingsScreen({ onNavigate, onLogout, onClose }: 
   const [confirmPassword, setConfirmPassword] = useState('')
   const [passwordBusy, setPasswordBusy] = useState(false)
   const [passwordError, setPasswordError] = useState<string | null>(null)
+  const [styleLabEnabled, setStyleLabEnabled] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.localStorage.getItem('negin-style-lab-enabled') === '1'
+  })
 
   function flash(message: string) {
     setNotice(message)
     window.setTimeout(() => setNotice(null), 2200)
+  }
+
+  function toggleStyleLab() {
+    const next = !styleLabEnabled
+    setStyleLabEnabled(next)
+    window.localStorage.setItem('negin-style-lab-enabled', next ? '1' : '0')
+    window.dispatchEvent(new Event('negin-style-lab-toggle'))
+    flash(next ? 'Style Lab فعال شد' : 'Style Lab غیرفعال شد')
   }
 
   async function refreshLiveData() {
@@ -132,6 +144,22 @@ export function VisitorProfileSettingsScreen({ onNavigate, onLogout, onClose }: 
           <div className="vp-static-row"><span>زبان رابط</span><strong>فارسی</strong></div>
           <div className="vp-static-row"><span>نمایش اعداد</span><strong>فارسی</strong></div>
           <div className="vp-static-row"><span>پوسته</span><strong>تیره سازمانی</strong></div>
+          <div className="vp-toggle-row">
+            <span className="vp-row-icon"><SettingsIcon /></span>
+            <span>
+              <strong>Style Lab</strong>
+              <small>نمایش کنترل تست استایل روی صفحه Home</small>
+            </span>
+            <button
+              type="button"
+              className={`vp-switch ${styleLabEnabled ? 'active' : ''}`}
+              aria-pressed={styleLabEnabled}
+              aria-label={styleLabEnabled ? 'غیرفعال کردن Style Lab' : 'فعال کردن Style Lab'}
+              onClick={toggleStyleLab}
+            >
+              <span />
+            </button>
+          </div>
         </section>
 
         <section className="vp-section">
