@@ -4,15 +4,15 @@ Goal: adding features must not silently degrade startup, navigation, animation s
 
 Current measured production baseline (2026-09-19):
 - Initial entry JS: ~351.9 KB raw
-- Initial entry CSS: ~285.7 KB raw
-- Initial HTML-linked assets: ~714.9 KB raw
+- Initial entry CSS: ~267.1 KB raw
+- Initial HTML-linked assets: ~696.3 KB raw
 - Largest current lazy Visitor feature chunk: ~42 KB raw
 - Floating Negin AI chunk: ~10.4 KB raw
 
 Enforced budgets:
 - Initial entry JS <= 370 KB
-- Initial entry CSS <= 295 KB
-- Initial HTML-linked assets <= 725 KB
+- Initial entry CSS <= 275 KB
+- Initial HTML-linked assets <= 705 KB
 - Each lazy Visitor/feature JS chunk <= 70 KB
 
 `npm run build` now runs the performance budget check after the production build. A regression fails the build.
@@ -41,3 +41,10 @@ Phase 3 assistant isolation:
 - Chat panel JS/CSS is now downloaded only after the user opens Negin AI for the first time.
 - While the assistant is closed before first use, it does not subscribe to Route/Customer/Workflow context updates.
 - Conversation state is owned by the launcher, so close/open preserves the current conversation while the panel itself can unmount.
+
+Route-scoped CSS phase 1:
+- Moved final Customers workspace CSS into the lazy Customers route chunk.
+- Moved final Reports analysis CSS into the lazy Reports route chunk.
+- Moved Orders commercial-guidance CSS into the lazy Orders route chunk.
+- Moved notification semantic-category CSS into the lazy Notifications route chunk.
+- Initial CSS dropped from ~285.7 KB to ~267.1 KB raw; initial HTML-linked assets dropped from ~714.9 KB to ~696.3 KB raw.

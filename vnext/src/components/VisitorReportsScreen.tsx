@@ -26,6 +26,7 @@ import { useVisitorAuth } from '../state/VisitorAuthContext'
 import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
 import { AppHeader, BottomDock } from '../design-system/components'
 import '../design-system/living/index.css'
+import '../styles/visitor-reports-depth.css'
 
 type Props = { onNavigate: (path: string) => void }
 type ReportFocus = 'receivables' | 'cheques' | 'distribution' | 'returns'

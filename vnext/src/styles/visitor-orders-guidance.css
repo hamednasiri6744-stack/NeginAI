@@ -1,0 +1,136 @@
+/* === Orders Commercial Guidance Pulse === */
+.vo-commercial-pulse{
+  margin-bottom:9px;
+  padding:10px;
+  border-radius:18px;
+  border:1px solid var(--ng-border-subtle);
+  background:
+    linear-gradient(155deg,rgba(255,255,255,.035),rgba(255,255,255,.006)),
+    rgba(6,20,32,.82);
+  box-shadow:var(--ng-live-depth-rest),inset 0 1px rgba(255,255,255,.03);
+}
+.vo-commercial-pulse-head{
+  min-height:38px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.vo-commercial-pulse-head>span{min-width:0;display:grid;gap:2px}
+.vo-commercial-pulse-head strong{color:#e7edf1;font-size:13px}
+.vo-commercial-pulse-head small{color:var(--ng-muted-dim);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vo-commercial-pulse-head>button{
+  flex:0 0 auto;
+  height:30px;
+  padding:0 9px;
+  border-radius:9px;
+  border:1px solid rgba(151,181,205,.09);
+  color:var(--ng-muted-dim);
+  background:rgba(255,255,255,.018);
+  font-size:10px;
+}
+.vo-commercial-pulse-head>button.active{
+  color:#e7bb54;
+  border-color:rgba(226,169,53,.16);
+  background:rgba(226,169,53,.05);
+}
+.vo-stock-signals{
+  margin-top:7px;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  overflow:hidden;
+  border-radius:14px;
+  border:1px solid rgba(151,181,205,.07);
+  background:rgba(3,14,23,.36);
+}
+.vo-stock-signals>button{
+  position:relative;
+  min-width:0;
+  min-height:68px;
+  padding:8px 6px;
+  display:grid;
+  grid-template-columns:26px auto;
+  grid-template-rows:auto auto;
+  grid-template-areas:
+    "icon value"
+    "label label";
+  gap:3px 6px;
+  align-content:center;
+  justify-content:center;
+  border:0;
+  border-inline-start:1px solid rgba(151,181,205,.06);
+  color:#74889a;
+  background:transparent;
+  transition:background .18s ease,color .18s ease,transform .16s ease;
+}
+.vo-stock-signals>button:first-child{border-inline-start:0}
+.vo-stock-signals>button:active{transform:scale(.98)}
+.vo-stock-signals>button>span{
+  grid-area:icon;
+  width:26px;
+  height:26px;
+  display:grid;
+  place-items:center;
+  border-radius:8px;
+  color:currentColor;
+  background:rgba(255,255,255,.018);
+}
+.vo-stock-signals>button>span svg{width:13px}
+.vo-stock-signals>button>strong{
+  grid-area:value;
+  align-self:center;
+  color:#dfe7ec;
+  font-size:17px;
+  line-height:1;
+}
+.vo-stock-signals>button>small{
+  grid-area:label;
+  color:#728698;
+  font-size:10.5px;
+  text-align:center;
+  white-space:nowrap;
+}
+.vo-stock-signals>button.orderable.active{
+  color:#5fd4ad;
+  background:rgba(48,164,128,.055);
+  box-shadow:inset 0 0 0 1px rgba(83,210,170,.09);
+}
+.vo-stock-signals>button.orderable.active strong,
+.vo-stock-signals>button.orderable.active small{color:#7be0be}
+.vo-stock-signals>button.attention.active{
+  color:#e3b64f;
+  background:rgba(226,169,53,.055);
+  box-shadow:inset 0 0 0 1px rgba(226,169,53,.09);
+}
+.vo-stock-signals>button.attention.active strong,
+.vo-stock-signals>button.attention.active small{color:#eccb75}
+.vo-stock-signals>button.out.active{
+  color:#ea8a93;
+  background:rgba(122,36,48,.055);
+  box-shadow:inset 0 0 0 1px rgba(255,103,116,.09);
+}
+.vo-stock-signals>button.out.active strong,
+.vo-stock-signals>button.out.active small{color:#f3a0a7}
+.vo-stock-signals>button.active::after{
+  content:'';
+  position:absolute;
+  right:14px;
+  left:14px;
+  bottom:0;
+  height:2px;
+  border-radius:999px;
+  background:currentColor;
+  opacity:.65;
+  animation:vo-stock-signal-breathe 2.8s ease-in-out infinite;
+}
+@keyframes vo-stock-signal-breathe{
+  50%{opacity:.25;transform:scaleX(.78)}
+}
+@media(max-width:390px){
+  .vo-stock-signals>button{min-height:64px;padding-inline:4px}
+  .vo-stock-signals>button>strong{font-size:16px}
+  .vo-stock-signals>button>small{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){
+  .vo-stock-signals>button.active::after{animation:none}
+}

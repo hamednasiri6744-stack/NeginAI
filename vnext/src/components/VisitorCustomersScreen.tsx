@@ -23,6 +23,7 @@ import { useVisitorLiveData } from '../state/VisitorLiveDataContext'
 import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
 import { neginApi, type SellerCustomer } from '../api/neginApi'
 import '../design-system/living/index.css'
+import '../styles/visitor-customers-depth.css'
 
 type Props = { onNavigate: (path: string) => void }
 type CustomerFocus = 'pending' | 'risk' | 'completed' | 'all'

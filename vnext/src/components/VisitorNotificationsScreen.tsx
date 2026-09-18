@@ -15,6 +15,7 @@ import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
 import '../design-system/living/index.css'
 import '../styles/living-ui-pilot.css'
 import '../styles/design-system-atlas-notifications.css'
+import '../styles/visitor-notifications-semantic.css'
 import {
   BellIcon,
   ChartIcon,

@@ -40,6 +40,7 @@ import { VisitorProductCube } from './VisitorProductCube'
 import { VisitorPicker } from './VisitorPicker'
 import { AppHeader, BottomDock, QuantityStepper } from '../design-system/components'
 import '../styles/design-system-atlas-orders.css'
+import '../styles/visitor-orders-guidance.css'
 
 type Props = {
   onNavigate: (path: string) => void
