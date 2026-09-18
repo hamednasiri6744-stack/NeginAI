@@ -210,3 +210,60 @@
   background: transparent;
   box-shadow: none;
 }
+
+.vh-page[data-design-system='atlas-v1'][data-screen='notifications'] .vn-loading-list {
+  display:grid;
+  gap:8px;
+  padding:12px;
+}
+.vh-page[data-design-system='atlas-v1'][data-screen='notifications'] .vn-loading-list > small {
+  padding-top:2px;
+  color:var(--ng-muted);
+  text-align:center;
+  font-size:10.5px;
+}
+.vh-page[data-design-system='atlas-v1'][data-screen='notifications'] .vn-skeleton-row {
+  display:grid;
+  grid-template-columns:38px 1fr;
+  gap:10px;
+  align-items:center;
+  min-height:58px;
+  padding:9px 10px;
+  border-radius:var(--ng-radius-surface);
+  border:1px solid rgba(171,201,223,.07);
+  background:rgba(8,27,42,.48);
+}
+.vh-page[data-design-system='atlas-v1'][data-screen='notifications'] .vn-skeleton-row > i {
+  width:38px;
+  height:38px;
+  border-radius:12px;
+  background:linear-gradient(90deg,rgba(255,255,255,.035),rgba(255,255,255,.085),rgba(255,255,255,.035));
+  background-size:220% 100%;
+  animation:ng-notification-shimmer 1.4s linear infinite;
+}
+.vh-page[data-design-system='atlas-v1'][data-screen='notifications'] .vn-skeleton-row > span {
+  display:grid;
+  gap:7px;
+}
+.vh-page[data-design-system='atlas-v1'][data-screen='notifications'] .vn-skeleton-row b,
+.vh-page[data-design-system='atlas-v1'][data-screen='notifications'] .vn-skeleton-row em {
+  display:block;
+  height:8px;
+  border-radius:999px;
+  background:linear-gradient(90deg,rgba(255,255,255,.035),rgba(255,255,255,.085),rgba(255,255,255,.035));
+  background-size:220% 100%;
+  animation:ng-notification-shimmer 1.4s linear infinite;
+}
+.vh-page[data-design-system='atlas-v1'][data-screen='notifications'] .vn-skeleton-row b { width:62%; }
+.vh-page[data-design-system='atlas-v1'][data-screen='notifications'] .vn-skeleton-row em { width:82%; }
+@keyframes ng-notification-shimmer {
+  0% { background-position:200% 0 }
+  100% { background-position:-20% 0 }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vh-page[data-design-system='atlas-v1'][data-screen='notifications'] .vn-skeleton-row > i,
+  .vh-page[data-design-system='atlas-v1'][data-screen='notifications'] .vn-skeleton-row b,
+  .vh-page[data-design-system='atlas-v1'][data-screen='notifications'] .vn-skeleton-row em {
+    animation:none;
+  }
+}

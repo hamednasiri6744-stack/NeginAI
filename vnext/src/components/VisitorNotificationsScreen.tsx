@@ -135,10 +135,6 @@ export function VisitorNotificationsScreen({ onNavigate, onClose }: Props) {
             </div>
             <button type="button" onClick={() => void reload()}>{'\u062a\u0644\u0627\u0634 \u062f\u0648\u0628\u0627\u0631\u0647'}</button>
           </section>
-        ) : loading ? (
-          <section className="vh-live-state" role="status">
-            <strong>{'\u062f\u0631 \u062d\u0627\u0644 \u0628\u0627\u0631\u06af\u0630\u0627\u0631\u06cc \u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627\u2026'}</strong>
-          </section>
         ) : null}
 
         <section className="vn-tabs" role="tablist" aria-label="\u0641\u06cc\u0644\u062a\u0631 \u0627\u0639\u0644\u0627\u0646\u200c\u0647\u0627">
@@ -193,7 +189,14 @@ export function VisitorNotificationsScreen({ onNavigate, onClose }: Props) {
                 <div className="vn-card-foot critical-ack"><span>این هشدار نیازمند تأیید است</span><button type="button" onClick={() => markAcknowledged(item.id)}>تأیید اطلاع</button></div>
               ) : null}
             </article>
-          )) : error ? null : (
+          )) : loading ? (
+            <div className="vn-loading-list" role="status" aria-live="polite">
+              <div className="vn-skeleton-row"><i /><span><b /><em /></span></div>
+              <div className="vn-skeleton-row"><i /><span><b /><em /></span></div>
+              <div className="vn-skeleton-row"><i /><span><b /><em /></span></div>
+              <small>در حال همگام‌سازی اعلان‌ها…</small>
+            </div>
+          ) : error ? null : (
             <div className="vn-empty">
               <BellIcon />
               <strong>{'\u0627\u0639\u0644\u0627\u0646\u06cc \u0628\u0631\u0627\u06cc \u0646\u0645\u0627\u06cc\u0634 \u0646\u06cc\u0633\u062a'}</strong>
