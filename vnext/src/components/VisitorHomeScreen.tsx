@@ -27,12 +27,13 @@ type TargetCardProps = {
   reducedMotion: boolean | null
 }
 
-type HomeCardStyle = 'glass-neu'
+type HomeCardStyle = 'glass-neu' | 'pure-glass'
 
-const HOME_CARD_STYLE: HomeCardStyle = 'glass-neu'
+const HOME_CARD_STYLE: HomeCardStyle = 'pure-glass'
 
 const HOME_CARD_SKINS: Record<HomeCardStyle, string> = {
   'glass-neu': 'border-[rgba(156,194,220,.13)] bg-[linear-gradient(145deg,rgba(14,36,52,.72),rgba(3,13,22,.70))] shadow-[10px_12px_28px_rgba(0,0,0,.48),-7px_-7px_20px_rgba(39,83,110,.10),inset_1px_1px_0_rgba(255,255,255,.055),inset_-1px_-1px_0_rgba(0,0,0,.38)] backdrop-blur-[18px]',
+  'pure-glass': 'border-[rgba(210,232,244,.16)] bg-[linear-gradient(145deg,rgba(21,49,68,.34),rgba(5,18,30,.22))] shadow-[0_14px_34px_rgba(0,0,0,.28),inset_0_1px_0_rgba(255,255,255,.09),inset_0_-1px_0_rgba(0,0,0,.18)] backdrop-blur-[24px] backdrop-saturate-[135%]',
 }
 
 type HomeCardProps = {
@@ -58,11 +59,11 @@ function HomeCard({
     <>
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"
+        className={HOME_CARD_STYLE === 'pure-glass' ? "pointer-events-none absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" : "pointer-events-none absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"}
       />
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute -end-10 -top-12 size-32 rounded-full bg-[radial-gradient(circle,rgba(93,166,205,.09),transparent_68%)]"
+        className={HOME_CARD_STYLE === 'pure-glass' ? "pointer-events-none absolute -end-12 -top-14 size-36 rounded-full bg-[radial-gradient(circle,rgba(147,211,242,.14),transparent_70%)]" : "pointer-events-none absolute -end-10 -top-12 size-32 rounded-full bg-[radial-gradient(circle,rgba(93,166,205,.09),transparent_68%)]"}
       />
       <span className="relative z-[1] block">{children}</span>
     </>

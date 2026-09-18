@@ -1,4 +1,4 @@
-# Home Card Style Lab
+﻿# Home Card Style Lab
 
 Purpose: keep the current Home card structure/content fixed and test visual styles on the exact same cards, reversibly.
 
@@ -22,9 +22,12 @@ Baseline checkpoint:
 
 Current baseline style:
 `glass-neu` = dark Glassmorphism + Neumorphism.
+
+Active test style:
+pure-glass = translucent glass surface with stronger blur/refraction and no neumorphic dual-shadow depth.
 ## Style test queue
 - [x] Glassmorphism + Neumorphism baseline
-- [ ] Pure Glassmorphism
+- [x] Pure Glassmorphism — active test
 - [ ] Frosted Glass
 - [ ] Liquid Glass
 - [ ] Layered Glass
@@ -51,3 +54,4 @@ Current baseline style:
 
 ## Test rule
 Each style gets its own reversible commit/checkpoint. Only surface treatment, depth, border, radius, shadow, blur, highlight, refraction and press feedback may change unless explicitly requested.
+
