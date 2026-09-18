@@ -134,9 +134,9 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
   const operationalAction = offDay
     ? {
         eyebrow: 'آماده‌سازی روز کاری بعد',
-        title: 'کاتالوگ و موجودی فروش را مرور کن',
+        title: 'مرور کاتالوگ و موجودی فروش',
         body: 'امروز روز غیرکاری NGT است؛ بدون شروع ویزیت، زمینه فروش روز بعد را آماده کن.',
-        action: 'مرور فروش',
+        action: 'مرور کاتالوگ',
         path: '/visitor/orders',
         tone: 'info' as const,
         icon: <StoreIcon />,
@@ -267,10 +267,6 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
           <FocusSurface className="vhome-focus">
             <div className="vhome-focus-head">
               <span className="vhome-live-badge"><i /> NeginAI LIVE</span>
-              <span className="vhome-day">
-                <strong>{currentTime}</strong>
-                <small>{weekday} · {persianDate}</small>
-              </span>
             </div>
 
             {(error || riskError) ? (
