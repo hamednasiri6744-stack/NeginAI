@@ -13,14 +13,14 @@ export default defineConfig({
     }),
     VitePWA({
       strategies: 'generateSW',
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       injectRegister: false,
       filename: 'sw.js',
       manifest: false,
       workbox: {
         cleanupOutdatedCaches: true,
-        clientsClaim: true,
-        skipWaiting: true,
+        clientsClaim: false,
+        skipWaiting: false,
         navigateFallback: '/index.html',
         globPatterns: ['**/*.{js,css,html,png,jpg,jpeg,svg,webp,woff,woff2}'],
         runtimeCaching: [

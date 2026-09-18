@@ -1,17 +1,73 @@
-﻿import { Suspense, lazy } from 'react'
+﻿import { Suspense, lazy, type ComponentType } from 'react'
 import { Navigate, Outlet, useParams, useSearchParams } from 'react-router'
 import { LoginScreen } from './components/LoginScreen'
 
-const VisitorHomeScreen = lazy(() => import('./components/VisitorHomeScreen').then((module) => ({ default: module.VisitorHomeScreen })))
-const VisitorCustomersScreen = lazy(() => import('./components/VisitorCustomersScreen').then((module) => ({ default: module.VisitorCustomersScreen })))
-const VisitorCustomer360Screen = lazy(() => import('./components/VisitorCustomer360Screen').then((module) => ({ default: module.VisitorCustomer360Screen })))
-const VisitorRouteVisitScreen = lazy(() => import('./components/VisitorRouteVisitScreen').then((module) => ({ default: module.VisitorRouteVisitScreen })))
-const VisitorOrdersScreen = lazy(() => import('./components/VisitorOrdersScreen').then((module) => ({ default: module.VisitorOrdersScreen })))
-const VisitorOrderArchiveScreen = lazy(() => import('./components/VisitorOrderArchiveScreen').then((module) => ({ default: module.VisitorOrderArchiveScreen })))
-const VisitorReportsScreen = lazy(() => import('./components/VisitorReportsScreen').then((module) => ({ default: module.VisitorReportsScreen })))
-const VisitorNotificationsScreen = lazy(() => import('./components/VisitorNotificationsScreen').then((module) => ({ default: module.VisitorNotificationsScreen })))
-const VisitorProfileSettingsScreen = lazy(() => import('./components/VisitorProfileSettingsScreen').then((module) => ({ default: module.VisitorProfileSettingsScreen })))
-const VisitorAiScreen = lazy(() => import('./components/VisitorAiScreen').then((module) => ({ default: module.VisitorAiScreen })))
+const CHUNK_RECOVERY_KEY = 'neginai.chunk-recovery'
+
+function isChunkLoadFailure(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error)
+  return /failed to fetch dynamically imported module|importing a module script failed|failed to fetch/i.test(message)
+}
+
+async function recoverStaleChunk() {
+  try {
+    const keys = await caches.keys()
+    await Promise.all(
+      keys
+        .filter((key) => key.includes('workbox-precache'))
+        .map((key) => caches.delete(key)),
+    )
+  } catch {
+    // Cache cleanup is best-effort only.
+  }
+
+  try {
+    const registrations = await navigator.serviceWorker?.getRegistrations()
+    await Promise.all((registrations ?? []).map((registration) => registration.update()))
+  } catch {
+    // Service-worker update is best-effort only.
+  }
+
+  window.location.reload()
+  return new Promise<never>(() => undefined)
+}
+
+function lazyWithRecovery<T extends ComponentType<any>>(loader: () => Promise<{ default: T }>) {
+  return lazy(async () => {
+    try {
+      const loaded = await loader()
+      try {
+        sessionStorage.removeItem(CHUNK_RECOVERY_KEY)
+      } catch {
+        // Storage is non-critical.
+      }
+      return loaded
+    } catch (error) {
+      if (typeof window === 'undefined' || !isChunkLoadFailure(error)) throw error
+
+      const fingerprint = `${window.location.pathname}${window.location.search}`
+      try {
+        if (sessionStorage.getItem(CHUNK_RECOVERY_KEY) === fingerprint) throw error
+        sessionStorage.setItem(CHUNK_RECOVERY_KEY, fingerprint)
+      } catch (storageError) {
+        if (storageError === error) throw error
+      }
+
+      return recoverStaleChunk()
+    }
+  })
+}
+
+const VisitorHomeScreen = lazyWithRecovery(() => import('./components/VisitorHomeScreen').then((module) => ({ default: module.VisitorHomeScreen })))
+const VisitorCustomersScreen = lazyWithRecovery(() => import('./components/VisitorCustomersScreen').then((module) => ({ default: module.VisitorCustomersScreen })))
+const VisitorCustomer360Screen = lazyWithRecovery(() => import('./components/VisitorCustomer360Screen').then((module) => ({ default: module.VisitorCustomer360Screen })))
+const VisitorRouteVisitScreen = lazyWithRecovery(() => import('./components/VisitorRouteVisitScreen').then((module) => ({ default: module.VisitorRouteVisitScreen })))
+const VisitorOrdersScreen = lazyWithRecovery(() => import('./components/VisitorOrdersScreen').then((module) => ({ default: module.VisitorOrdersScreen })))
+const VisitorOrderArchiveScreen = lazyWithRecovery(() => import('./components/VisitorOrderArchiveScreen').then((module) => ({ default: module.VisitorOrderArchiveScreen })))
+const VisitorReportsScreen = lazyWithRecovery(() => import('./components/VisitorReportsScreen').then((module) => ({ default: module.VisitorReportsScreen })))
+const VisitorNotificationsScreen = lazyWithRecovery(() => import('./components/VisitorNotificationsScreen').then((module) => ({ default: module.VisitorNotificationsScreen })))
+const VisitorProfileSettingsScreen = lazyWithRecovery(() => import('./components/VisitorProfileSettingsScreen').then((module) => ({ default: module.VisitorProfileSettingsScreen })))
+const VisitorAiScreen = lazyWithRecovery(() => import('./components/VisitorAiScreen').then((module) => ({ default: module.VisitorAiScreen })))
 import { ProfileModalA11yBridge } from './components/ProfileModalA11yBridge'
 import { VisitorNavigationProvider, clearVisitorNavigationState, useVisitorNavigation } from './navigation/VisitorNavigationContext'
 import { VisitorWorkflowProvider, useVisitorWorkflow } from './state/VisitorWorkflowContext'
