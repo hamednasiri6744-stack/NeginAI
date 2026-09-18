@@ -36,6 +36,8 @@ type HomeCardStyle =
   | 'metallic' | 'translucent' | 'flat' | 'neo-brutal' | 'organic'
   | 'tech-minimal' | 'luxury' | 'calm-futurism' | 'cyber'
   | 'aurora-glass' | 'living-liquid' | 'breathing-neu' | 'shimmer-metal' | 'reactive-luxury'
+  | 'luxury-glass' | 'luxury-frosted' | 'luxury-liquid' | 'luxury-neu' | 'luxury-metal'
+  | 'luxury-tech' | 'luxury-organic' | 'luxury-cyber' | 'luxury-glossy'
 
 const DEFAULT_HOME_CARD_STYLE: HomeCardStyle = 'frosted-glass'
 
@@ -50,6 +52,9 @@ const HOME_CARD_STYLE_OPTIONS: Array<{ id: HomeCardStyle; label: string }> = [
   ['luxury','Luxury'], ['calm-futurism','Calm Future'], ['cyber','Cyber'],
   ['aurora-glass','✦ Aurora Glass'], ['living-liquid','✦ Living Liquid'],
   ['breathing-neu','✦ Breathing Neu'], ['shimmer-metal','✦ Shimmer Metal'], ['reactive-luxury','✦ Reactive Luxury'],
+  ['luxury-glass','Luxury + Glass'], ['luxury-frosted','Luxury + Frosted'], ['luxury-liquid','✦ Luxury + Liquid'],
+  ['luxury-neu','Luxury + Neu'], ['luxury-metal','✦ Luxury + Metal'], ['luxury-tech','Luxury + Tech'],
+  ['luxury-organic','Luxury + Organic'], ['luxury-cyber','✦ Luxury + Cyber'], ['luxury-glossy','Luxury + Glossy'],
 ].map(([id,label]) => ({ id: id as HomeCardStyle, label: String(label ?? id) }))
 
 const HOME_DYNAMIC_STYLES = new Set<HomeCardStyle>([
@@ -58,6 +63,9 @@ const HOME_DYNAMIC_STYLES = new Set<HomeCardStyle>([
   'breathing-neu',
   'shimmer-metal',
   'reactive-luxury',
+  'luxury-liquid',
+  'luxury-metal',
+  'luxury-cyber',
 ])
 
 

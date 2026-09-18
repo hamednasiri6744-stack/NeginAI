@@ -74,3 +74,15 @@ Each style gets its own reversible commit/checkpoint. Only surface treatment, de
 - [x] Intensity persisted in localStorage
 - [x] Reduced-motion safety disables animation
 
+
+## Luxury hybrid family
+- [x] Luxury + Glass
+- [x] Luxury + Frosted
+- [x] Luxury + Liquid (dynamic)
+- [x] Luxury + Neumorphism
+- [x] Luxury + Metal (dynamic)
+- [x] Luxury + Tech
+- [x] Luxury + Organic
+- [x] Luxury + Cyber (dynamic)
+- [x] Luxury + Glossy
+
