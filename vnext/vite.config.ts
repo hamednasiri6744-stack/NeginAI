@@ -1,5 +1,6 @@
 import babel from '@rolldown/plugin-babel'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
@@ -8,6 +9,7 @@ const backendTarget = process.env.NEGINAI_BACKEND_TARGET?.trim() || 'http://127.
 export default defineConfig({
   plugins: [
     react(),
+    tailwindcss(),
     babel({
       presets: [reactCompilerPreset()],
     }),

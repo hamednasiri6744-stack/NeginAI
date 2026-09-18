@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-ng-bg: var(--ng-bg);
+  --color-ng-text: var(--ng-text);
+  --color-ng-muted: var(--ng-muted);
+  --color-ng-gold: var(--ng-gold-2);
+  --color-ng-gold-soft: var(--ng-gold-3);
+  --color-ng-mint: var(--ng-mint);
+  --color-ng-danger: var(--ng-danger);
+  --color-ng-warning: var(--ng-warning);
+  --color-ng-info: var(--ng-info);
+  --radius-ng-control: var(--ng-radius-control);
+  --radius-ng-surface: var(--ng-radius-surface);
+  --radius-ng-stage: var(--ng-radius-stage);
+  --shadow-ng-contact: var(--ng-shadow-contact);
+  --shadow-ng-raised: var(--ng-shadow-raised);
+  --shadow-ng-floating: var(--ng-shadow-floating);
+}
+
+@utility ng-focus-ring {
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(242,203,104,.14), var(--ng-shadow-contact);
+}

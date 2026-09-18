@@ -22,10 +22,10 @@ import {
   StoreIcon,
   UserGroupIcon,
 } from './Icons'
-import { AppHeader, BottomDock, InsightCard } from '../design-system/components'
+import { AppHeader, BottomDock } from '../design-system/components'
+import { ActionRail, AppScene, ContextStrip, FocusSurface, Pressable } from '../design-system/composition'
 import '../design-system/living/index.css'
-import '../styles/living-ui-pilot.css'
-import '../styles/design-system-atlas-home.css'
+import '../styles/home-composition.css'
 
 type Props = { onNavigate: (path: string) => void }
 
@@ -183,14 +183,13 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
 
   return (
     <main
-      className={`vh-page vh-depth-page ng-living-root${livingUiEnabled ? ' vh-live-ui' : ''}`}
+      className={'vh-page vhome-page ng-living-root' + (livingUiEnabled ? ' vhome-live' : '')}
       dir="rtl"
-      data-live-ui={livingUiEnabled ? 'pilot' : 'off'}
       data-living-ui={livingUiEnabled ? 'on' : 'off'}
       data-design-system="atlas-v1"
-      data-home-depth="0"
+      data-home-composition="v1"
     >
-      <div className="vh-shell">
+      <div className="vh-shell vhome-shell">
         <AppHeader
           avatarText={profile?.full_name?.charAt(0) || profile?.username?.charAt(0) || 'و'}
           title={profile?.full_name || profile?.username || 'ویزیتور'}
@@ -200,7 +199,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
           onProfileClick={() => onNavigate('/visitor/profile')}
           action={(
             <button
-              className={`vh-bell ng-living-interactive ${highestSeverity ? `severity-${highestSeverity}` : ''}`}
+              className={'vh-bell ng-living-interactive' + (highestSeverity ? ' severity-' + highestSeverity : '')}
               data-severity={highestSeverity ?? 'none'}
               type="button"
               aria-label="اعلان‌ها"
@@ -208,10 +207,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
             >
               <BellIcon />
               {attentionCount ? (
-                <b
-                  key={`${attentionCount}-${highestSeverity ?? 'none'}`}
-                  className="ng-living-reactive"
-                >
+                <b key={attentionCount + '-' + (highestSeverity ?? 'none')}>
                   {attentionCount}
                 </b>
               ) : null}
@@ -219,77 +215,68 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
           )}
         />
 
-        <section className="vhd-stage vhd-mission-stage" data-depth="0">
-          <div className="vhd-layer vhd-layer-root vhd-cockpit-root">
-            <section className="vhd-cockpit ng-layer-surface ng-living-surface" data-tone="gold">
-              <span className="vhd-cockpit-ambient" aria-hidden="true" />
+        <AppScene className="vhome-scene">
+          <ContextStrip className="vhome-context" aria-label="خلاصه وضعیت روز">
+            <div className="vhome-context-item">
+              <ClockIcon />
+              <strong>{currentTime}</strong>
+              <small>{weekday}</small>
+              <em>{persianDate}</em>
+            </div>
 
-              <div className="vhd-cockpit-head">
-                <div>
-                  <span className="vhd-live"><i /> NeginAI LIVE</span>
-                  <h1>سلام{profile?.full_name ? `، ${profile.full_name}` : ''}</h1>
-                  <p>
-                    {offDay
-                      ? 'امروز روز غیرکاری است؛ اپ در حالت آماده‌سازی فروش قرار دارد.'
-                      : liveAssignment
-                        ? `${routeSummary.remaining.toLocaleString('fa-IR')} اقدام مسیر هنوز باز است.`
-                        : 'Route فعالی برای امروز ثبت نشده است.'}
-                  </p>
-                </div>
+            <div className="vhome-context-item">
+              <RouteArrowIcon />
+              <strong>
+                {workCalendar
+                  ? elapsedWorkingDays.toLocaleString('fa-IR') + ' / ' + totalWorkingDays.toLocaleString('fa-IR')
+                  : '…'}
+              </strong>
+              <small>روز کاری</small>
+              <em>
+                {workCalendar
+                  ? remainingWorkingDays.toLocaleString('fa-IR') + ' روز مانده'
+                  : 'تقویم NGT'}
+              </em>
+            </div>
 
-                <div className="vhd-date vhd-date-live">
-                  <strong>{currentTime}</strong>
-                  <span>{weekday}</span>
-                  <small>{persianDate}</small>
-                </div>
-              </div>
+            <Pressable
+              emphasis="quiet"
+              className="vhome-context-item"
+              onClick={() => onNavigate('/visitor/reports')}
+              aria-label="وضعیت هدف فروش"
+            >
+              <ChartIcon />
+              <strong>{targetValue}</strong>
+              <small>{targetLabel}</small>
+              <em>{targetSemanticReady ? 'Analysis' : 'KPI gated'}</em>
+            </Pressable>
 
-              <div className="vhd-mission-meta" aria-label="وضعیت روز کاری و هدف">
-                <span className="vhd-mission-chip">
-                  <ClockIcon />
-                  <span>
-                    <small>روز کاری</small>
-                    <strong>
-                      {workCalendar
-                        ? `${elapsedWorkingDays.toLocaleString('fa-IR')} / ${totalWorkingDays.toLocaleString('fa-IR')}`
-                        : 'در حال دریافت'}
-                    </strong>
-                    <em>{workCalendar ? `${remainingWorkingDays.toLocaleString('fa-IR')} روز باقی‌مانده` : 'NGT Calendar'}</em>
-                  </span>
-                </span>
+            <Pressable
+              emphasis="quiet"
+              className={'vhome-context-item' + (attentionCount ? ' is-alert' : '')}
+              onClick={() => onNavigate('/visitor/notifications')}
+              aria-label="هشدارهای فعال"
+            >
+              <BellIcon />
+              <strong>{attentionCount.toLocaleString('fa-IR')}</strong>
+              <small>هشدار فعال</small>
+              <em>{highestSeverity ? 'نیازمند توجه' : 'Alert Center'}</em>
+            </Pressable>
+          </ContextStrip>
 
-                <button
-                  type="button"
-                  className={`vhd-mission-chip vhd-target-chip ng-living-interactive${targetSemanticReady ? '' : ' is-gated'}`}
-                  onClick={() => onNavigate('/visitor/reports')}
-                >
-                  <ChartIcon />
-                  <span>
-                    <small>{targetLabel}</small>
-                    <strong>{targetValue}</strong>
-                    <em>{targetSemanticReady ? 'جزئیات در Analysis' : 'تا تأیید Semantic KPI منتشر نمی‌شود'}</em>
-                  </span>
-                </button>
-              </div>
-
-              <div className="vhd-route-energy" aria-label="پیشرفت عملیات امروز">
-                <span>
-                  <b style={{ width: `${Math.max(4, Math.min(100, offDay ? 4 : routeSummary.progress))}%` }} />
-                </span>
-                <small>
-                  {offDay
-                    ? 'Route امروز غیرفعال'
-                    : liveAssignment
-                      ? `${routeSummary.progress.toLocaleString('fa-IR')}٪ مسیر تکمیل شده`
-                      : 'بدون Route فعال'}
-                </small>
-              </div>
-            </section>
+          <FocusSurface className="vhome-focus">
+            <div className="vhome-focus-head">
+              <span className="vhome-live-badge"><i /> NeginAI LIVE</span>
+              <span className="vhome-day">
+                <strong>{currentTime}</strong>
+                <small>{weekday} · {persianDate}</small>
+              </span>
+            </div>
 
             {(error || riskError) ? (
-              <button
-                type="button"
-                className="vhd-inline-alert ng-living-interactive"
+              <Pressable
+                emphasis="standard"
+                className="vhome-sync-alert"
                 onClick={retryLiveData}
               >
                 <span>
@@ -300,89 +287,103 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
                   </strong>
                   <small>
                     {stale && lastSyncedAt
-                      ? `آخرین همگام‌سازی ${new Date(lastSyncedAt).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })} · برای تلاش دوباره لمس کن`
+                      ? 'آخرین همگام‌سازی ' + new Date(lastSyncedAt).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }) + ' · لمس برای تلاش دوباره'
                       : 'برای تلاش دوباره لمس کن'}
                   </small>
                 </span>
                 <ChevronLeftIcon />
-              </button>
+              </Pressable>
             ) : null}
 
-            <InsightCard
-              className="vhd-next-insight"
-              icon={operationalAction.icon}
-              eyebrow={operationalAction.eyebrow}
-              title={operationalAction.title}
-              body={operationalAction.body}
-              actionLabel={operationalAction.action}
-              tone={operationalAction.tone}
-              onAction={() => onNavigate(operationalAction.path)}
-            />
-
-            <section className="vhd-pulse-deck ng-layer-surface" aria-label="سیگنال‌های امروز">
-              <div className="vhd-pulse-title">
-                <span><i /> سیگنال‌های امروز</span>
-                <small>NGT · Varanegar · Alert Center</small>
+            <div className="vhome-focus-body">
+              <span className="vhome-focus-icon">{operationalAction.icon}</span>
+              <div className="vhome-focus-copy min-w-0">
+                <small>{operationalAction.eyebrow}</small>
+                <h1>{operationalAction.title}</h1>
+                <p>{operationalAction.body}</p>
               </div>
+            </div>
 
-              <div className="vhd-pulse-grid">
-                <button
-                  type="button"
-                  className="vhd-pulse-cell ng-living-interactive"
-                  onClick={() => onNavigate('/visitor/route')}
-                >
-                  <span><MapIcon /></span>
-                  <strong>{offDay ? '—' : routeSummary.remaining.toLocaleString('fa-IR')}</strong>
-                  <small>ایستگاه باز</small>
-                </button>
+            <div className="vhome-progress" aria-label="پیشرفت عملیات امروز">
+              <span className="vhome-progress-track">
+                <i
+                  style={{
+                    width: Math.max(4, Math.min(100, offDay ? 4 : routeSummary.progress)) + '%',
+                  }}
+                />
+              </span>
+              <small>
+                {offDay
+                  ? 'Route امروز غیرفعال'
+                  : liveAssignment
+                    ? routeSummary.progress.toLocaleString('fa-IR') + '٪ مسیر تعیین‌تکلیف شده'
+                    : 'Route فعالی برای امروز ثبت نشده است'}
+              </small>
+            </div>
 
-                <button
-                  type="button"
-                  className={`vhd-pulse-cell ng-living-interactive${targetSemanticReady ? '' : ' gated'}`}
-                  onClick={() => onNavigate('/visitor/reports')}
-                >
-                  <span><ChartIcon /></span>
-                  <strong>{targetValue}</strong>
-                  <small>هدف ماه</small>
-                </button>
+            <Pressable
+              emphasis="primary"
+              className="vhome-focus-action"
+              onClick={() => onNavigate(operationalAction.path)}
+            >
+              <span>{operationalAction.action}</span>
+              <ChevronLeftIcon />
+            </Pressable>
+          </FocusSurface>
+          <ActionRail className="vhome-actions" aria-label="اقدام‌های زمینه‌ای">
+            <Pressable
+              className={'vhome-action' + (returnedChequeCount ? ' is-danger' : '')}
+              onClick={() => onNavigate('/visitor/reports')}
+            >
+              <span><ChequeIcon /></span>
+              <span>
+                <strong>ریسک مالی</strong>
+                <small>
+                  {riskLoading
+                    ? 'در حال دریافت…'
+                    : returnedChequeCount
+                      ? returnedChequeCount.toLocaleString('fa-IR') + ' چک برگشتی'
+                      : 'مورد فعال ندارد'}
+                </small>
+              </span>
+            </Pressable>
 
-                <button
-                  type="button"
-                  className={`vhd-pulse-cell ng-living-interactive ${attentionCount ? 'attention' : ''}`}
-                  onClick={() => onNavigate('/visitor/notifications')}
-                >
-                  <span><BellIcon /></span>
-                  <strong>{attentionCount.toLocaleString('fa-IR')}</strong>
-                  <small>هشدار فعال</small>
-                </button>
+            {attentionCount ? (
+              <Pressable
+                className="vhome-action"
+                onClick={() => onNavigate('/visitor/notifications')}
+              >
+                <span><BellIcon /></span>
+                <span>
+                  <strong>هشدارها</strong>
+                  <small>{attentionCount.toLocaleString('fa-IR')} مورد نیازمند توجه</small>
+                </span>
+              </Pressable>
+            ) : (
+              <Pressable
+                className="vhome-action"
+                onClick={() => onNavigate('/visitor/customers')}
+              >
+                <span><UserGroupIcon /></span>
+                <span>
+                  <strong>مشتریان</strong>
+                  <small>Customer 360 و سابقه ویزیت</small>
+                </span>
+              </Pressable>
+            )}
 
-                <button
-                  type="button"
-                  className={`vhd-pulse-cell ng-living-interactive ${returnedChequeCount ? 'danger' : ''}`}
-                  onClick={() => onNavigate('/visitor/reports')}
-                >
-                  <span><ChequeIcon /></span>
-                  <strong>{riskLoading ? '…' : returnedChequeCount.toLocaleString('fa-IR')}</strong>
-                  <small>چک برگشتی</small>
-                </button>
-              </div>
-            </section>
-
-            <button
-              type="button"
-              className="vhd-ai-entry ng-layer-surface ng-living-interactive"
+            <Pressable
+              className="vhome-action"
               onClick={() => onNavigate('/visitor/ai?context=home')}
             >
-              <span className="vhd-ai-entry-icon"><AiSparkIcon /></span>
+              <span><AiSparkIcon /></span>
               <span>
-                <small>Negin AI</small>
-                <strong>تحلیل زمینه امروز</strong>
-                <em>Workspace عمیق AI · بدون ایجاد Workflow موازی</em>
+                <strong>Negin AI</strong>
+                <small>تحلیل زمینه امروز</small>
               </span>
-              <ChevronLeftIcon />
-            </button>
-          </div>
-        </section>
+            </Pressable>
+          </ActionRail>
+        </AppScene>
 
         <BottomDock
           ariaLabel="ناوبری ویزیتور"
@@ -401,4 +402,5 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
       </div>
     </main>
   )
+
 }
