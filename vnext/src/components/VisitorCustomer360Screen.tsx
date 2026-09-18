@@ -398,12 +398,6 @@ export function VisitorCustomer360Screen({ customerId = '', onNavigate, onBack }
                   <div className="c360-panel-head"><strong>موقعیت مشتری</strong><span className={hasLocation ? 'good' : ''}>{hasLocation ? <><CheckCircleIcon /> ثبت‌شده</> : 'ثبت نشده'}</span></div>
                   <div className="c360-location-body"><div className="c360-pin"><PinIcon /></div><div><strong>{locationLabel}</strong><span>{customer.location_source || 'NGT / ERP'}</span></div></div>
                 </article>
-
-                <article className="c360-panel c360-ai-card">
-                  <div className="c360-panel-head"><strong>Negin AI</strong><span className="ai-dot">✦</span></div>
-                  <p>برای تحلیل این مشتری، گفتگو را با زمینه همین Customer 360 باز کن. پاسخ از سرویس واقعی NeginAI دریافت می‌شود.</p>
-                  <button type="button" className="c360-ai-open" onClick={() => onNavigate(`/visitor/ai?context=customer&customer=${customer.id}`)}>گفتگو با Negin AI <ChevronLeftIcon /></button>
-                </article>
               </section>
             ) : null}
 

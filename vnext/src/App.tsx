@@ -1,4 +1,4 @@
-﻿import { Suspense, lazy, type ComponentType } from 'react'
+import { Suspense, lazy, type ComponentType } from 'react'
 import { Navigate, Outlet, useParams, useSearchParams } from 'react-router'
 import { LoginScreen } from './components/LoginScreen'
 
@@ -67,7 +67,7 @@ const VisitorOrderArchiveScreen = lazyWithRecovery(() => import('./components/Vi
 const VisitorReportsScreen = lazyWithRecovery(() => import('./components/VisitorReportsScreen').then((module) => ({ default: module.VisitorReportsScreen })))
 const VisitorNotificationsScreen = lazyWithRecovery(() => import('./components/VisitorNotificationsScreen').then((module) => ({ default: module.VisitorNotificationsScreen })))
 const VisitorProfileSettingsScreen = lazyWithRecovery(() => import('./components/VisitorProfileSettingsScreen').then((module) => ({ default: module.VisitorProfileSettingsScreen })))
-const VisitorAiScreen = lazyWithRecovery(() => import('./components/VisitorAiScreen').then((module) => ({ default: module.VisitorAiScreen })))
+const FloatingNeginAi = lazyWithRecovery(() => import('./components/FloatingNeginAi').then((module) => ({ default: module.FloatingNeginAi })))
 import { ProfileModalA11yBridge } from './components/ProfileModalA11yBridge'
 import { VisitorNavigationProvider, clearVisitorNavigationState, useVisitorNavigation } from './navigation/VisitorNavigationContext'
 import { VisitorWorkflowProvider, useVisitorWorkflow } from './state/VisitorWorkflowContext'
@@ -115,6 +115,7 @@ export function AppShellRoute() {
               <Suspense fallback={<RouteLoadingFallback />}>
                 <Outlet />
               </Suspense>
+              <Suspense fallback={null}><FloatingNeginAi /></Suspense>
             </VisitorNotificationsProvider>
           </VisitorLiveDataProvider>
         </VisitorWorkflowProvider>
@@ -153,22 +154,6 @@ export function VisitorHomeRoute() {
   const { go } = useVisitorNavigation()
   const { authenticated, restoringSession } = useVisitorAuth()
   return protectedView(authenticated, restoringSession, <VisitorHomeScreen onNavigate={(path) => go(path)} />)
-}
-
-export function VisitorAiRoute() {
-  const { go, back } = useVisitorNavigation()
-  const { authenticated, restoringSession } = useVisitorAuth()
-  const [searchParams] = useSearchParams()
-  return protectedView(authenticated, restoringSession, <VisitorAiScreen
-      context={searchParams.get('context') ?? 'home'}
-      customerId={searchParams.get('customer') ?? undefined}
-      visitId={searchParams.get('visit') ?? undefined}
-      draftId={searchParams.get('draft') ?? undefined}
-      prompt={searchParams.get('prompt') ?? undefined}
-      onNavigate={(path) => go(path)}
-      onBack={() => back('/visitor/home')}
-    />,
-  )
 }
 
 export function VisitorRouteVisitRoute() {

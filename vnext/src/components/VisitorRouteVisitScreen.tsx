@@ -519,7 +519,7 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
 
         <section className="vr-route-bar ng-living-surface">
           <div><span>مسیر فعال · {activeRouteTitle || 'NGT'}</span><strong>{routeSummary.resolved} تعیین‌تکلیف · {routeSummary.remaining} باقی‌مانده</strong></div>
-          <div className="vr-route-bar-actions"><button type="button" className="vr-ai-open" onClick={() => onNavigate(`/visitor/ai?context=route&customer=${activeStop.customerId}${activeVisit ? `&visit=${activeVisit.id}` : ``}`)}>Negin AI</button><div className="vr-progress"><strong>{routeSummary.progress}٪</strong><small>پیشرفت</small></div></div>
+          <div className="vr-route-bar-actions"><div className="vr-progress"><strong>{routeSummary.progress}٪</strong><small>پیشرفت</small></div></div>
         </section>
 
         <section className="vr-map-card vr-map-first ng-living-surface" aria-label="نقشه مسیر امروز">

@@ -6,7 +6,6 @@ import {
   VisitorCustomer360Route,
   VisitorCustomersRoute,
   VisitorHomeRoute,
-  VisitorAiRoute,
   VisitorOrdersRoute,
   VisitorOrderArchiveRoute,
   VisitorReportsRoute,
@@ -21,7 +20,6 @@ export const router = createBrowserRouter([
     children: [
       { path: '/', Component: LoginRoute },
       { path: '/visitor/home', Component: VisitorHomeRoute },
-      { path: '/visitor/ai', Component: VisitorAiRoute },
       { path: '/visitor/route', Component: VisitorRouteVisitRoute },
       { path: '/visitor/orders', Component: VisitorOrdersRoute },
       { path: '/visitor/orders/history', Component: VisitorOrderArchiveRoute },

@@ -1,0 +1,48 @@
+.fai-root{position:fixed;inset:0;z-index:1200;pointer-events:none}
+.fai-trigger{pointer-events:auto;position:absolute;right:max(14px,env(safe-area-inset-right));bottom:calc(88px + env(safe-area-inset-bottom));width:58px;height:58px;border:1px solid rgba(242,203,104,.26);border-radius:20px;background:linear-gradient(145deg,rgba(16,38,52,.96),rgba(3,13,22,.98));color:var(--ng-gold-soft);display:grid;place-items:center;box-shadow:0 18px 40px rgba(0,0,0,.55),0 0 24px rgba(242,203,104,.055),inset 0 1px 0 rgba(255,245,210,.08);backdrop-filter:blur(18px);overflow:visible}
+.fai-trigger>span{position:relative;z-index:2;display:grid;place-items:center;width:25px;height:25px}
+.fai-trigger svg{width:25px;height:25px}
+.fai-orbit{position:absolute;inset:-7px;border:1px solid rgba(242,203,104,.12);border-radius:24px;animation:fai-orbit-pulse 3.8s ease-in-out infinite}
+.fai-root[data-open='true'] .fai-orbit{animation:none;opacity:.35}
+.fai-panel{pointer-events:auto;position:absolute;right:max(12px,env(safe-area-inset-right));bottom:calc(154px + env(safe-area-inset-bottom));width:min(404px,calc(100vw - 24px));height:min(620px,calc(100dvh - 178px));display:flex;flex-direction:column;overflow:hidden;border:1px solid rgba(169,209,229,.16);border-radius:28px;background:linear-gradient(160deg,rgba(14,35,49,.96),rgba(3,12,20,.98));box-shadow:0 30px 80px rgba(0,0,0,.66),0 0 34px rgba(67,159,205,.045),inset 0 1px 0 rgba(255,255,255,.06);backdrop-filter:blur(28px) saturate(135%);transform-origin:bottom right}
+.fai-panel::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 88% 0%,rgba(242,203,104,.07),transparent 26%),radial-gradient(circle at 12% 16%,rgba(74,160,208,.08),transparent 30%)}
+.fai-header{position:relative;z-index:1;display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:10px;padding:13px 14px;border-bottom:1px solid rgba(159,193,211,.08)}
+.fai-avatar{display:grid;place-items:center;width:42px;height:42px;border-radius:15px;color:var(--ng-gold-soft);background:linear-gradient(145deg,rgba(242,203,104,.10),rgba(45,91,118,.14));border:1px solid rgba(242,203,104,.13);box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.fai-avatar svg{width:21px}
+.fai-header>div{min-width:0;display:grid;gap:2px}
+.fai-header strong{font-size:15px;color:var(--ng-text)}
+.fai-header small{font-size:11px;color:var(--ng-muted)}
+.fai-live{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-weight:900;color:#6dd9b0;letter-spacing:.6px}
+.fai-live i{width:7px;height:7px;border-radius:50%;background:#58d6a6;box-shadow:0 0 10px rgba(88,214,166,.55)}
+.fai-context{position:relative;z-index:1;display:grid;gap:3px;margin:10px 12px 0;padding:10px 12px;border:1px solid rgba(145,185,205,.09);border-radius:17px;background:rgba(255,255,255,.018)}
+.fai-context span{font-size:10px;color:var(--ng-gold-soft);font-weight:800}
+.fai-context strong{font-size:12px;color:var(--ng-text-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fai-welcome{position:relative;z-index:1;flex:1;min-height:0;display:grid;place-content:center;justify-items:center;text-align:center;padding:22px;color:var(--ng-muted)}
+.fai-welcome>svg{width:34px;margin-bottom:10px;color:var(--ng-gold-soft);filter:drop-shadow(0 0 14px rgba(242,203,104,.12))}
+.fai-welcome strong{font-size:16px;color:var(--ng-text);margin-bottom:5px}
+.fai-welcome span{max-width:260px;font-size:11.5px;line-height:1.75}
+.fai-thread{position:relative;z-index:1;flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:12px}
+.fai-message{max-width:86%;padding:9px 11px;border-radius:17px;border:1px solid rgba(153,191,211,.08);background:rgba(255,255,255,.025);box-shadow:0 7px 16px rgba(0,0,0,.16)}
+.fai-message.user{align-self:flex-start;background:linear-gradient(145deg,rgba(242,203,104,.09),rgba(92,68,25,.08));border-color:rgba(242,203,104,.14)}
+.fai-message.assistant{align-self:flex-end;background:linear-gradient(145deg,rgba(36,86,111,.17),rgba(10,32,46,.22))}
+.fai-message.system{align-self:center;max-width:94%;border-color:rgba(238,117,117,.13);background:rgba(158,50,50,.06)}
+.fai-message small{display:block;margin-bottom:3px;font-size:9px;color:var(--ng-muted)}
+.fai-message p{margin:0;font-size:12px;line-height:1.8;color:var(--ng-text-soft);white-space:pre-wrap}
+.fai-message.pending p{display:flex;gap:4px;align-items:center;height:14px}
+.fai-message.pending p i{width:5px;height:5px;border-radius:50%;background:var(--ng-gold-soft);animation:fai-dot 1s ease-in-out infinite}
+.fai-message.pending p i:nth-child(2){animation-delay:.14s}.fai-message.pending p i:nth-child(3){animation-delay:.28s}
+.fai-quick{position:relative;z-index:1;display:flex;gap:6px;overflow-x:auto;padding:5px 12px 8px;scrollbar-width:none}
+.fai-quick::-webkit-scrollbar{display:none}
+.fai-quick button{flex:0 0 auto;border:1px solid rgba(159,194,212,.09);border-radius:999px;background:rgba(255,255,255,.022);color:var(--ng-muted);padding:7px 9px;font-size:10px;white-space:nowrap}
+.fai-quick button:active{border-color:rgba(242,203,104,.20);color:var(--ng-gold-soft)}
+.fai-composer{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1fr) 43px;gap:8px;padding:9px 11px calc(10px + env(safe-area-inset-bottom)*.1);border-top:1px solid rgba(154,187,205,.08);background:rgba(1,8,14,.48);backdrop-filter:blur(16px)}
+.fai-composer textarea{width:100%;min-height:42px;max-height:96px;resize:none;border:1px solid rgba(151,187,208,.10);border-radius:15px;background:rgba(255,255,255,.025);color:var(--ng-text);padding:10px 11px;font:inherit;font-size:12px;outline:none}
+.fai-composer textarea:focus{border-color:rgba(242,203,104,.22);box-shadow:0 0 0 2px rgba(242,203,104,.025)}
+.fai-composer textarea::placeholder{color:#617789}
+.fai-composer button{display:grid;place-items:center;border:1px solid rgba(242,203,104,.18);border-radius:14px;background:linear-gradient(145deg,rgba(242,203,104,.16),rgba(131,91,24,.10));color:var(--ng-gold-soft)}
+.fai-composer button:disabled{opacity:.34}
+.fai-composer button svg{width:19px}
+@keyframes fai-orbit-pulse{0%,100%{transform:scale(.92);opacity:.28}50%{transform:scale(1.08);opacity:.72}}
+@keyframes fai-dot{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-3px);opacity:1}}
+@media (max-width:480px){.fai-panel{left:12px;right:12px;width:auto;height:min(610px,calc(100dvh - 176px))}.fai-trigger{right:14px}}
+@media (prefers-reduced-motion:reduce){.fai-orbit,.fai-message.pending p i{animation:none!important}}

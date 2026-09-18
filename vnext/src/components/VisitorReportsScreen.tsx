@@ -302,10 +302,6 @@ export function VisitorReportsScreen({ onNavigate }: Props) {
                     </div>
                   </>
                 ) : null}
-
-                <button type="button" className="vrep-ai-depth ng-living-interactive" onClick={() => onNavigate(`/visitor/ai?context=report&prompt=${focus}`)}>
-                  <ChartIcon /><span><strong>تحلیل Negin AI</strong><small>تحلیل همین حوزه با اتکا به داده واقعی</small></span><ChevronLeftIcon />
-                </button>
               </section>
             </div>
           )}

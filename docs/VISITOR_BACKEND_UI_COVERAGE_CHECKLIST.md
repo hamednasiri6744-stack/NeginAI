@@ -1,4 +1,4 @@
-﻿# NeginAI Visitor â€” Backend/UI Coverage Checklist
+# NeginAI Visitor â€” Backend/UI Coverage Checklist
 
 Canonical tracking file for what the current Visitor app actually uses from Backend/NGT/Varanegar inventory.
 
@@ -214,4 +214,3 @@ Current snapshot: 131/180 tracked rows checked; 49 remaining. Exact Seller API c
 
 ## Maintenance rule
 Whenever a backend capability is connected to a real screen/interaction, change its checkbox to [x] in this file in the same commit. Never tick an item only because an endpoint exists. For KPI/financial/Varanegar items, keep semantic validation status separate from UI wiring.
-
