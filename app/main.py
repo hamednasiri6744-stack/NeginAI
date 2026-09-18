@@ -21,7 +21,7 @@ from app.login_rate_limit import LocalLoginRateLimiter, RedisLoginRateLimiter
 from app.observability import configure_observability, monotonic_seconds, record_http
 from app.varanegar_command_worker import process_one as process_one_varanegar_command
 from app.entity_service import sync_entities
-from app.routes import android_app, attachments, automations, audio, auth, chat, context, control, dashboard, definitions, entities, health, oauth, organization_structure, planning, push, schema, seller_workspace, sql, warehouse_assistant, warehouse_supplier_portal
+from app.routes import android_app, attachments, automations, audio, auth, chat, context, control, dashboard, definitions, entities, health, live_events, oauth, organization_structure, planning, push, schema, seller_workspace, sql, warehouse_assistant, warehouse_supplier_portal
 from app.organization_structure_service import seed_confirmed_rules
 from app.config import RESOURCE_DIR
 from app.push_service import ensure_vapid_private_key
@@ -247,6 +247,7 @@ app.include_router(warehouse_supplier_portal.staff_router)
 app.include_router(warehouse_supplier_portal.public_router)
 app.include_router(warehouse_supplier_portal.page_router)
 app.include_router(seller_workspace.router)
+app.include_router(live_events.router)
 app.include_router(audio.router)
 app.include_router(attachments.router)
 app.include_router(auth.router)

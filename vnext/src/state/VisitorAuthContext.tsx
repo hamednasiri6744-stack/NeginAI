@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { neginApi, type AuthProfile } from '../api/neginApi'
+import { clearVisitorOfflineSnapshot } from './visitorOfflineSnapshotStore'
 
 type VisitorAuthValue = {
   authenticated: boolean
@@ -83,22 +84,26 @@ export function VisitorAuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signOut = useCallback(async () => {
+    const username = profile?.username ?? ''
     localStorage.setItem(SIGNED_OUT_KEY, '1')
     localStorage.removeItem(LAST_ACTIVITY_KEY)
     setProfile(null)
+    if (username) void clearVisitorOfflineSnapshot(username).catch(() => undefined)
     void neginApi.logout().catch(() => undefined)
-  }, [])
+  }, [profile?.username])
 
   useEffect(() => {
     const handleAuthExpired = () => {
+      const username = profile?.username ?? ''
       localStorage.setItem(SIGNED_OUT_KEY, '1')
       localStorage.removeItem(LAST_ACTIVITY_KEY)
       setProfile(null)
+      if (username) void clearVisitorOfflineSnapshot(username).catch(() => undefined)
       window.location.replace('/?expired=1')
     }
     window.addEventListener('neginai:auth-expired', handleAuthExpired)
     return () => window.removeEventListener('neginai:auth-expired', handleAuthExpired)
-  }, [])
+  }, [profile?.username])
 
   useEffect(() => {
     const handleStorage = (event: StorageEvent) => {

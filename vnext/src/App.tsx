@@ -1,15 +1,17 @@
-﻿import { Navigate, Outlet, useParams, useSearchParams } from 'react-router'
+﻿import { Suspense, lazy } from 'react'
+import { Navigate, Outlet, useParams, useSearchParams } from 'react-router'
 import { LoginScreen } from './components/LoginScreen'
-import { VisitorHomeScreen } from './components/VisitorHomeScreen'
-import { VisitorCustomersScreen } from './components/VisitorCustomersScreen'
-import { VisitorCustomer360Screen } from './components/VisitorCustomer360Screen'
-import { VisitorRouteVisitScreen } from './components/VisitorRouteVisitScreen'
-import { VisitorOrdersScreen } from './components/VisitorOrdersScreen'
-import { VisitorOrderArchiveScreen } from './components/VisitorOrderArchiveScreen'
-import { VisitorReportsScreen } from './components/VisitorReportsScreen'
-import { VisitorNotificationsScreen } from './components/VisitorNotificationsScreen'
-import { VisitorProfileSettingsScreen } from './components/VisitorProfileSettingsScreen'
-import { VisitorAiScreen } from './components/VisitorAiScreen'
+
+const VisitorHomeScreen = lazy(() => import('./components/VisitorHomeScreen').then((module) => ({ default: module.VisitorHomeScreen })))
+const VisitorCustomersScreen = lazy(() => import('./components/VisitorCustomersScreen').then((module) => ({ default: module.VisitorCustomersScreen })))
+const VisitorCustomer360Screen = lazy(() => import('./components/VisitorCustomer360Screen').then((module) => ({ default: module.VisitorCustomer360Screen })))
+const VisitorRouteVisitScreen = lazy(() => import('./components/VisitorRouteVisitScreen').then((module) => ({ default: module.VisitorRouteVisitScreen })))
+const VisitorOrdersScreen = lazy(() => import('./components/VisitorOrdersScreen').then((module) => ({ default: module.VisitorOrdersScreen })))
+const VisitorOrderArchiveScreen = lazy(() => import('./components/VisitorOrderArchiveScreen').then((module) => ({ default: module.VisitorOrderArchiveScreen })))
+const VisitorReportsScreen = lazy(() => import('./components/VisitorReportsScreen').then((module) => ({ default: module.VisitorReportsScreen })))
+const VisitorNotificationsScreen = lazy(() => import('./components/VisitorNotificationsScreen').then((module) => ({ default: module.VisitorNotificationsScreen })))
+const VisitorProfileSettingsScreen = lazy(() => import('./components/VisitorProfileSettingsScreen').then((module) => ({ default: module.VisitorProfileSettingsScreen })))
+const VisitorAiScreen = lazy(() => import('./components/VisitorAiScreen').then((module) => ({ default: module.VisitorAiScreen })))
 import { ProfileModalA11yBridge } from './components/ProfileModalA11yBridge'
 import { VisitorNavigationProvider, clearVisitorNavigationState, useVisitorNavigation } from './navigation/VisitorNavigationContext'
 import { VisitorWorkflowProvider, useVisitorWorkflow } from './state/VisitorWorkflowContext'
@@ -35,6 +37,17 @@ function protectedView(authenticated: boolean, restoringSession: boolean, node: 
   return authenticated ? node : <Navigate to={'/'} replace />
 }
 
+function RouteLoadingFallback() {
+  return (
+    <main className="ng-stage" style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', borderRadius: 0 }}>
+      <div className="ng-surface" role="status" aria-live="polite" style={{ padding: '18px 22px', minWidth: 220, textAlign: 'center' }}>
+        <strong style={{ display: 'block', marginBottom: 6 }}>در حال آماده‌سازی صفحه…</strong>
+        <small style={{ color: 'var(--ng-muted)' }}>NeginAI · Lazy Route</small>
+      </div>
+    </main>
+  )
+}
+
 export function AppShellRoute() {
   return (
     <VisitorAuthProvider>
@@ -43,7 +56,9 @@ export function AppShellRoute() {
           <VisitorLiveDataProvider>
             <VisitorNotificationsProvider>
               <ProfileModalA11yBridge />
-              <Outlet />
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <Outlet />
+              </Suspense>
             </VisitorNotificationsProvider>
           </VisitorLiveDataProvider>
         </VisitorWorkflowProvider>

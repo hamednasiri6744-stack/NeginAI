@@ -28481,6 +28481,126 @@ export function useGetMyRouteMapLegSellerWorkspaceRoutesPathIdMapLegGet<TData = 
 
 
 
+export type streamSellerLiveEventsResponse200 = {
+  data: unknown
+  status: 200
+}
+
+export type streamSellerLiveEventsResponse422 = {
+  data: HTTPValidationError
+  status: 422
+}
+
+export type streamSellerLiveEventsResponseSuccess = (streamSellerLiveEventsResponse200) & {
+  headers: Headers;
+};
+export type streamSellerLiveEventsResponseError = (streamSellerLiveEventsResponse422) & {
+  headers: Headers;
+};
+
+export type streamSellerLiveEventsResponse = (streamSellerLiveEventsResponseSuccess | streamSellerLiveEventsResponseError)
+
+export const getStreamSellerLiveEventsUrl = () => {
+
+
+
+
+  return `/seller-workspace/live-events`
+}
+
+/**
+ * @summary Stream Live Events
+ */
+export const streamSellerLiveEvents = async ( options?: Parameters<typeof neginFetch>[1]): Promise<streamSellerLiveEventsResponse> => {
+
+  return neginFetch<streamSellerLiveEventsResponse>(getStreamSellerLiveEventsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getStreamSellerLiveEventsQueryKey = () => {
+    return [
+    `/seller-workspace/live-events`
+    ] as const;
+    }
+
+
+export const getStreamSellerLiveEventsQueryOptions = <TData = Awaited<ReturnType<typeof streamSellerLiveEvents>>, TError = HTTPValidationError>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof streamSellerLiveEvents>>, TError, TData>>, request?: SecondParameter<typeof neginFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getStreamSellerLiveEventsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof streamSellerLiveEvents>>> = ({ signal }) => streamSellerLiveEvents({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof streamSellerLiveEvents>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type StreamSellerLiveEventsQueryResult = NonNullable<Awaited<ReturnType<typeof streamSellerLiveEvents>>>
+export type StreamSellerLiveEventsQueryError = HTTPValidationError
+
+
+export function useStreamSellerLiveEvents<TData = Awaited<ReturnType<typeof streamSellerLiveEvents>>, TError = HTTPValidationError>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof streamSellerLiveEvents>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof streamSellerLiveEvents>>,
+          TError,
+          Awaited<ReturnType<typeof streamSellerLiveEvents>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof neginFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useStreamSellerLiveEvents<TData = Awaited<ReturnType<typeof streamSellerLiveEvents>>, TError = HTTPValidationError>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof streamSellerLiveEvents>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof streamSellerLiveEvents>>,
+          TError,
+          Awaited<ReturnType<typeof streamSellerLiveEvents>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof neginFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useStreamSellerLiveEvents<TData = Awaited<ReturnType<typeof streamSellerLiveEvents>>, TError = HTTPValidationError>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof streamSellerLiveEvents>>, TError, TData>>, request?: SecondParameter<typeof neginFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Stream Live Events
+ */
+
+export function useStreamSellerLiveEvents<TData = Awaited<ReturnType<typeof streamSellerLiveEvents>>, TError = HTTPValidationError>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof streamSellerLiveEvents>>, TError, TData>>, request?: SecondParameter<typeof neginFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getStreamSellerLiveEventsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
 export type recordVoiceClientEventResponse200 = {
   data: RecordVoiceClientEvent200
   status: 200

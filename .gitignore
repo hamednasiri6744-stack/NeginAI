@@ -83,3 +83,7 @@ vnext/*.tsbuildinfo
 
 # Generated Storybook build output
 vnext/storybook-static/
+
+# Local verification/runtime scratch
+.runtime/
+.chatgpt-neginai-*.b64

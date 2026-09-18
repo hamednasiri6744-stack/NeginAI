@@ -11,7 +11,7 @@ OUTPUT = ROOT / "vnext" / "neginai.openapi.json"
 
 def main() -> None:
     spec = app.openapi()
-    OUTPUT.write_text(json.dumps(spec, ensure_ascii=False, indent=2), encoding="utf-8")
+    OUTPUT.write_text(json.dumps(spec, ensure_ascii=False, indent=4), encoding="utf-8")
     print(f"OPENAPI_OK paths={len(spec.get('paths', {}))} output={OUTPUT}")
 
 if __name__ == "__main__":

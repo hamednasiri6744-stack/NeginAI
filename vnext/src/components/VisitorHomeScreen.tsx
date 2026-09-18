@@ -73,7 +73,7 @@ function compactRial(value: number | null | undefined) {
 export function VisitorHomeScreen({ onNavigate }: Props) {
   const { items: notificationItems, attentionCount, highestSeverity } = useVisitorNotifications()
   const { profile } = useVisitorAuth()
-  const { error, liveAssignment, workCalendar, targetPulse, offDay, reload } = useVisitorLiveData()
+  const { error, liveAssignment, workCalendar, targetPulse, offDay, stale, lastSyncedAt, reload } = useVisitorLiveData()
   const { routeStops, routeSummary } = useVisitorWorkflow()
   const [now, setNow] = useState(() => new Date())
   const [layer, setLayer] = useState<HomeLayer | null>(null)
@@ -559,7 +559,10 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
                   className="vhd-inline-alert ng-living-interactive"
                   onClick={() => { void reload(); setPerformanceRevision((value) => value + 1) }}
                 >
-                  <span><strong>بخشی از داده زنده در دسترس نیست</strong><small>برای تلاش دوباره لمس کن</small></span>
+                  <span>
+                    <strong>{stale ? 'حالت آفلاین · آخرین داده ذخیره‌شده' : 'بخشی از داده زنده در دسترس نیست'}</strong>
+                    <small>{stale && lastSyncedAt ? `آخرین همگام‌سازی ${new Date(lastSyncedAt).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })} · برای تلاش دوباره لمس کن` : 'برای تلاش دوباره لمس کن'}</small>
+                  </span>
                   <ChevronLeftIcon />
                 </button>
               ) : null}

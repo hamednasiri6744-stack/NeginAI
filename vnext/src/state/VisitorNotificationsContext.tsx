@@ -11,6 +11,7 @@ type VisitorNotificationsValue = {
   highestSeverity: NotificationSeverity | null
   loading: boolean
   error: string | null
+  liveConnected: boolean
   reload: () => Promise<void>
   markRead: (id: number) => void
   markAcknowledged: (id: number) => void
@@ -25,6 +26,7 @@ export function VisitorNotificationsProvider({ children }: { children: ReactNode
   const [items, setItems] = useState<VisitorNotificationItem[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [liveConnected, setLiveConnected] = useState(false)
 
   const reload = useCallback(async () => {
     if (!authenticated) {
@@ -70,6 +72,28 @@ export function VisitorNotificationsProvider({ children }: { children: ReactNode
     }
   }, [authenticated, reload, restoringSession])
 
+  useEffect(() => {
+    if (restoringSession || !authenticated || typeof EventSource === 'undefined') {
+      setLiveConnected(false)
+      return
+    }
+    const stream = new EventSource('/seller-workspace/live-events')
+    const connected = () => setLiveConnected(true)
+    const notificationsChanged = () => {
+      setLiveConnected(true)
+      if (document.visibilityState === 'visible') void reload()
+    }
+    stream.addEventListener('connected', connected)
+    stream.addEventListener('notifications', notificationsChanged)
+    stream.onerror = () => setLiveConnected(false)
+    return () => {
+      stream.removeEventListener('connected', connected)
+      stream.removeEventListener('notifications', notificationsChanged)
+      stream.close()
+      setLiveConnected(false)
+    }
+  }, [authenticated, reload, restoringSession])
+
   const markRead = useCallback((id: number) => {
     const target = items.find((item) => item.id === id)
     if (!target || target.read) return
@@ -109,8 +133,8 @@ export function VisitorNotificationsProvider({ children }: { children: ReactNode
     return null
   }, [items])
   const value = useMemo<VisitorNotificationsValue>(() => ({
-    items, unreadCount, attentionCount, highestSeverity, loading, error, reload, markRead, markAcknowledged, markAllRead, resetNotifications,
-  }), [items, unreadCount, attentionCount, highestSeverity, loading, error, reload, markRead, markAcknowledged, markAllRead, resetNotifications])
+    items, unreadCount, attentionCount, highestSeverity, loading, error, liveConnected, reload, markRead, markAcknowledged, markAllRead, resetNotifications,
+  }), [items, unreadCount, attentionCount, highestSeverity, loading, error, liveConnected, reload, markRead, markAcknowledged, markAllRead, resetNotifications])
 
   return <VisitorNotificationsContext.Provider value={value}>{children}</VisitorNotificationsContext.Provider>
 }
