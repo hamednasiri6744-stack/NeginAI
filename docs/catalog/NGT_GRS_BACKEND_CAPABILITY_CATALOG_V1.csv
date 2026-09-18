@@ -1,0 +1,70 @@
+catalog_id,system,domain,capability,source_contract,backend_boundary,current_state,ui_state,canonical_owner,notes
+NGT-001,NGT,Identity,Seller identity,NGT.Personnels + NGT.Users,/auth/me + seller profile,ACTIVE,ACTIVE,Identity & System,Personnel identity and seller context
+NGT-002,NGT,Identity,Device-user binding,NGT.DeviceUsers,Seller policy context,ACTIVE,PARTIAL,Identity & System,Device association
+NGT-003,NGT,Policy,Device/app policy,NGT.DeviceSettings + NGT.AppSettings,Previsit/route policy,ACTIVE,PARTIAL,Identity & System,GPS distance customer edit visibility policies
+NGT-004,NGT,Field Operations,Working calendar,CalendarTemplates + Holidays,Seller route/calendar context,ACTIVE,ACTIVE,Field Operations,Working and off day semantics
+NGT-005,NGT,Field Operations,Assigned/effective route,VisitTemplates + VisitTemplatePaths,/seller-workspace/routes,ACTIVE,ACTIVE,Field Operations,NGT is route authority
+NGT-006,NGT,Field Operations,Route customer membership,VisitTemplatePathCustomers,/seller-workspace/routes/{path_id}/customers,ACTIVE,ACTIVE,Field Operations,Primary membership
+NGT-007,NGT,Field Operations,Secondary route customers,VisitTemplatePathSecondaryCustomers,Seller route context,ACTIVE,PARTIAL,Field Operations,Secondary membership
+NGT-008,NGT,Field Operations,Visit plan and overrides,VisitPlans + VisitPlanVacations + DayPaths,Seller route/calendar context,ACTIVE,ACTIVE,Field Operations,Effective daily plan
+NGT-009,NGT,Field Operations,Tour context,NGT.Tours,Previsit visit workflow,ACTIVE,ACTIVE,Field Operations,Tour execution context
+NGT-010,NGT,Customer,Customer field-sales master,NGT.Customers,Customer profile read model,ACTIVE,ACTIVE,Customer Intelligence,Field-sales customer projection
+NGT-011,NGT,Customer,Customer classification,Categories + Levels + MainSubTypes + OwnerTypes + Activities,Customer profile read model,ACTIVE,ACTIVE,Customer Intelligence,Segmentation and classification
+NGT-012,NGT,Customer,No-sale reasons,NGT.NoSaleReasons,Visit outcome policy,ACTIVE,ACTIVE,Field Operations,Canonical no-sale reason set
+NGT-013,NGT,Customer,Call/order interaction history,CustomerCalls + CustomerCallOrders + CustomerCallOrderLines,Underused read model,PARTIAL,GAP,Customer Intelligence,Should feed Customer360 history
+NGT-014,NGT,Catalog,Product template,ProductTemplates + ProductTemplateDetails,Previsit context/browse,ACTIVE,ACTIVE,Commercial & Orders,Seller sellable structure
+NGT-015,NGT,Catalog,Seller catalog,Catalogs + CatalogProducts,Previsit context/browse,ACTIVE,ACTIVE,Commercial & Orders,Sellable product scope
+NGT-016,NGT,Catalog,Product units,ProductUnits + Units,Previsit context,ACTIVE,ACTIVE,Commercial & Orders,Unit semantics
+NGT-017,NGT,Catalog,Product images,ImageInfoes,/seller-workspace/previsit/catalog-images/*,ACTIVE,GAP_PARTIAL,Commercial & Orders,Backend endpoint exists
+NGT-018,NGT,Commercial,Seller brand scope,NGT-backed seller scope,/seller-workspace/brands,ACTIVE,GAP,Commercial & Orders,No direct UI usage found
+NGT-019,NGT,Commercial,Stock context,NGT.Stocks,Previsit context + validation,ACTIVE,ACTIVE,Commercial & Orders,Do not recalculate in UI
+NGT-020,NGT,Commercial,Contract/base price,NGT.ContractPrices,Previsit context,ACTIVE,PARTIAL,Commercial & Orders,Distinct from official final quote
+NGT-021,NGT,Commercial,Order type policy,DeviceOrderTypes + OrderTypes,Previsit policy/context,ACTIVE,ACTIVE,Commercial & Orders,Policy-driven options
+NGT-022,NGT,Commercial,Payment type policy,PaymentTypes + PaymentTypeOrders + DealerPaymentTypes,Previsit policy/context,ACTIVE,ACTIVE,Commercial & Orders,Compatibility source
+NGT-023,NGT,Commercial,Official commercial preview,NGT EVC REST,/seller-workspace/previsit/preview,GATED,PARTIAL,Commercial & Orders,Runtime NGT REST not verified
+NGT-024,NGT,Integration,Tour/mobile save,POST /api/v2/ngt/tour/sync/savedata,Backend-mediated sync,GATED,NO_DIRECT_UI,Field Operations,SyncGetTourViewModel
+NGT-025,NGT,Integration,Customer profile update,CustomerUpdates[] via savedata,Future audited payload builder,GATED,LOCAL_DRAFT_ONLY,Customer Intelligence,Uses BackOffice adapter
+NGT-026,NGT,Integration,Customer location update,CustomerLocations[] via savedata,Future audited payload builder,GATED,LOCAL_DRAFT_ONLY,Field Operations,Location separate from profile
+NGT-027,NGT,Integration,New customer registration,CustomerCalls[].SyncCustomer via savedata,Future audited payload builder,GATED,NOT_ACTIVE,Customer Intelligence,NGT + BackOffice adapter
+NGT-028,NGT,Integration,Presale replication,GET /api/v2/ngt/tour/PreSale/Replicate/{tourId},Backend-controlled bridge,GATED,NOT_ACTIVE,Commercial & Orders,Must not be called directly from mobile
+GRS-001,GRS,Field Telemetry,Personnel reference,CompanyPersonnels,No bounded Seller read model,GAP,NOT_SURFACED,Field Operations,Reference identity for telemetry
+GRS-002,GRS,Field Telemetry,Personnel route assignment,CompanyPersonnelRoutes,No bounded Seller read model,GAP,NOT_SURFACED,Field Operations,Actual field relation context
+GRS-003,GRS,Field Telemetry,Daily activity events,PersonnelDailyActivityEvents,Future telemetry read model,GAP,NOT_SURFACED,Field Operations,Event evidence
+GRS-004,GRS,Field Telemetry,GPS/activity points,PersonnelDailyActivityPoints,Future telemetry read model,GAP,NOT_SURFACED,Field Operations,Movement evidence
+GRS-005,GRS,Field Telemetry,Activity history,History tables related to daily activity,Future telemetry read model,GAP,NOT_SURFACED,Field Operations,Historical execution
+GRS-006,GRS,Territory,Regions and area points,RegionAreas + RegionAreaPoints,Future telemetry read model,GAP,NOT_SURFACED,Field Operations,Territory evidence
+GRS-007,GRS,Device,Device state,Devices + identity/permission tables,Future telemetry read model,GAP,NOT_SURFACED,Identity & System,Device evidence
+GRS-008,GRS,Reference,Customer/product/brand reference,Customers + Products + Brands,Future bounded joins,GAP,NOT_SURFACED,Field Operations,Do not make GRS ERP truth
+GRS-009,GRS,Tracking,Tracking product/context,TrackingProducts,Future telemetry read model,GAP,NOT_SURFACED,Field Operations,Tracking metadata
+BACK-001,NeginAI Backend,Auth,Authentication/session,/auth/*,Auth service,ACTIVE,ACTIVE,Identity & System,5 operations
+BACK-002,NeginAI Backend,Seller Workspace,Routes and customers,/seller-workspace/routes*,Seller Workspace services,ACTIVE,ACTIVE,Field Operations,Canonical seller route API
+BACK-003,NeginAI Backend,Seller Workspace,Customer360 composition,/seller-workspace/*customers*profile,Seller Workspace composed read model,ACTIVE,ACTIVE,Customer Intelligence,Composes NGT ERP finance context
+BACK-004,NeginAI Backend,Seller Workspace,Visit workflow,/seller-workspace/previsit/visits*,Visit workflow,ACTIVE,ACTIVE,Field Operations,Local workflow with NGT policy
+BACK-005,NeginAI Backend,Maps,Map configuration and route legs,/seller-workspace/map-config + map-plan + map-leg,Neshan/NGT composition,ACTIVE,ACTIVE,Field Operations,Provider not route authority
+BACK-006,NeginAI Backend,Commercial,Previsit context/browse,/seller-workspace/previsit/context + browse-context,NGT selling read model,ACTIVE,ACTIVE,Commercial & Orders,Catalog policy stock context
+BACK-007,NeginAI Backend,Commercial,Saved requests,/seller-workspace/previsit/visits/*/saved-requests,Local durable workflow,ACTIVE,ACTIVE,Commercial & Orders,Distinct from final ERP order
+BACK-008,NeginAI Backend,Finance,Open invoices,/seller-workspace/open-invoices*,ERP semantic read model,ACTIVE,PARTIAL,Finance & Collections,Customer-specific endpoint underused
+BACK-009,NeginAI Backend,Finance,Returned cheques,/seller-workspace/returned-cheques,ERP semantic read model,ACTIVE,ACTIVE,Finance & Collections,Canonical returned-cheque semantics
+BACK-010,NeginAI Backend,Distribution,Distribution in progress,/seller-workspace/distribution-in-progress,ERP semantic read model,ACTIVE,ACTIVE,Distribution & Returns,Read-only operational context
+BACK-011,NeginAI Backend,Returns,Voucher/return report,/seller-workspace/voucher-return-report,ERP semantic read model,ACTIVE,ACTIVE,Distribution & Returns,Read-only
+BACK-012,NeginAI Backend,Performance,Target pulse,/seller-workspace/target-pulse,Target semantic gate,GATED,PARTIAL,Intelligence & Analysis,Do not claim canonical until validated
+BACK-013,NeginAI Backend,Alerts,Operational notifications,/automations/notifications + observers,Operational notification service,ACTIVE,ACTIVE,Identity & System,Exact provenance must be preserved
+BACK-014,NeginAI Backend,AI,Chat and conversations,/chat/*,AI gateway + conversation service,ACTIVE,ACTIVE,AI Intelligence,11 operations
+BACK-015,NeginAI Backend,AI,Context fusion,/context + reasoning_context,Context services,PARTIAL,PARTIAL,AI Intelligence,Feeds contextual AI
+BACK-016,NeginAI Backend,AI,Next Best Action,Future evidence-backed intelligence read model,Intelligence kernel,PARTIAL,GAP_PARTIAL,AI Intelligence,Must not be frontend-authored
+BACK-017,NeginAI Backend,Platform,Guarded SQL,/sql/query,SQL Guard,ACTIVE,NO_SELLER_UI,Platform & Knowledge,Read-only boundary
+BACK-018,NeginAI Backend,Platform,Schema catalog,/schema/*,Schema service,ACTIVE,ADMIN_ONLY,Platform & Knowledge,8 operations
+BACK-019,NeginAI Backend,Platform,Definitions registry,/definitions*,Definition service,PARTIAL,ADMIN_ONLY,Platform & Knowledge,5 operations
+BACK-020,NeginAI Backend,Platform,Entity resolution,/entities/*,Entity service,PARTIAL,ADMIN_ONLY,Platform & Knowledge,3 operations
+BACK-021,NeginAI Backend,Admin,Planning,/planning/*,Planning service,ACTIVE,ROLE_BOUNDED,Admin & Planning,8 operations
+BACK-022,NeginAI Backend,Admin,Organization structure,/organization-structure*,Organization service,ACTIVE,ROLE_BOUNDED,Admin & Planning,4 operations
+BACK-023,NeginAI Backend,Admin,Control and permissions,/control/*,Control service,ACTIVE,ROLE_BOUNDED,Admin & Planning,4 operations
+BACK-024,NeginAI Backend,Platform,Automations,/automations/*,Automation service,DISABLED,MINIMAL,Platform & Knowledge,Runtime disabled
+BACK-025,NeginAI Backend,Platform,Push,/push/*,Push service,PARTIAL,PARTIAL,Identity & System,4 operations
+BACK-026,NeginAI Backend,Enterprise,Warehouse Assistant,/warehouse-assistant/*,Warehouse services,ACTIVE,SEPARATE_DOMAIN,Warehouse Operations,141 operations
+BACK-027,NeginAI Backend,Enterprise,Supplier Portal,/supplier-portal/*,Supplier portal backend,ACTIVE,SEPARATE_DOMAIN,Warehouse Operations,9 operations
+BACK-028,NeginAI Backend,Media,Audio,/audio/*,Audio services,ACTIVE,CONTEXTUAL,Platform & Knowledge,3 operations
+BACK-029,NeginAI Backend,Media,Attachments,/attachments/*,Attachment service,ACTIVE,CONTEXTUAL,Platform & Knowledge,1 operation
+BACK-030,NeginAI Backend,Observability,Health,/health/*,Health services,ACTIVE,DIAGNOSTIC,Platform & Knowledge,3 operations
+BACK-031,NeginAI Backend,Integration,NGT EVC preview bridge,NGT REST client in ngt_previsit_service,/seller-workspace/previsit/preview,GATED,PARTIAL,Commercial & Orders,Implementation exists config not verified
+BACK-032,NeginAI Backend,Integration,Final Varanegar order bridge,Controlled order bridge + NeginAI.usp_SubmitValidatedOrder,Transactional bridge,DISABLED,NOT_CLAIMED,Commercial & Orders,Commit and numbering unverified
