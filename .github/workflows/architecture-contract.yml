@@ -1,0 +1,30 @@
+name: architecture-contract
+
+on:
+  pull_request:
+    paths:
+      - 'docs/architecture/**'
+      - 'docs/NEGINAI_PRODUCT_ARCHITECTURE_V1.md'
+      - 'scripts/architecture/**'
+      - '.github/workflows/architecture-contract.yml'
+  push:
+    branches:
+      - main
+      - dev/hamed
+      - 'feature/**'
+    paths:
+      - 'docs/architecture/**'
+      - 'docs/NEGINAI_PRODUCT_ARCHITECTURE_V1.md'
+      - 'scripts/architecture/**'
+      - '.github/workflows/architecture-contract.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate-capability-registry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate canonical capability registry
+        run: python3 scripts/architecture/validate_capability_registry.py

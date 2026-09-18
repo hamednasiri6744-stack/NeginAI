@@ -1,5 +1,7 @@
 # NeginAI Product Architecture v1 — Inventory-Driven Draft
 
+> **SUPERSEDED:** use `docs/NEGINAI_PRODUCT_ARCHITECTURE_V1.md` plus the canonical architecture contract and capability registry.
+> Historical draft retained for traceability.
 > Derived from NEGINAI_SYSTEM_INVENTORY_2026-09-18.md.
 > This is a product/domain architecture, not a visual redesign.
 
