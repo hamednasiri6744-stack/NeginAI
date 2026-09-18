@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { useVisitorAuth } from '../state/VisitorAuthContext'
 import { useVisitorLiveData } from '../state/VisitorLiveDataContext'
@@ -35,6 +35,7 @@ type HomeCardStyle =
   | 'tactile' | 'skeuomorphic' | 'material' | 'fluent' | 'matte' | 'glossy'
   | 'metallic' | 'translucent' | 'flat' | 'neo-brutal' | 'organic'
   | 'tech-minimal' | 'luxury' | 'calm-futurism' | 'cyber'
+  | 'aurora-glass' | 'living-liquid' | 'breathing-neu' | 'shimmer-metal' | 'reactive-luxury'
 
 const DEFAULT_HOME_CARD_STYLE: HomeCardStyle = 'frosted-glass'
 
@@ -47,7 +48,18 @@ const HOME_CARD_STYLE_OPTIONS: Array<{ id: HomeCardStyle; label: string }> = [
   ['metallic','Metallic'], ['translucent','Translucent'], ['flat','Flat'],
   ['neo-brutal','Neo Brutal'], ['organic','Organic'], ['tech-minimal','Tech Minimal'],
   ['luxury','Luxury'], ['calm-futurism','Calm Future'], ['cyber','Cyber'],
+  ['aurora-glass','✦ Aurora Glass'], ['living-liquid','✦ Living Liquid'],
+  ['breathing-neu','✦ Breathing Neu'], ['shimmer-metal','✦ Shimmer Metal'], ['reactive-luxury','✦ Reactive Luxury'],
 ].map(([id,label]) => ({ id: id as HomeCardStyle, label: String(label ?? id) }))
+
+const HOME_DYNAMIC_STYLES = new Set<HomeCardStyle>([
+  'aurora-glass',
+  'living-liquid',
+  'breathing-neu',
+  'shimmer-metal',
+  'reactive-luxury',
+])
+
 
 type HomeCardProps = {
   children: ReactNode
@@ -200,6 +212,11 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
     return HOME_CARD_STYLE_OPTIONS.some((item) => item.id === saved) ? saved as HomeCardStyle : DEFAULT_HOME_CARD_STYLE
   })
   const [styleLabOpen, setStyleLabOpen] = useState(false)
+  const [styleIntensity, setStyleIntensity] = useState(() => {
+    if (typeof window === 'undefined') return 45
+    const saved = Number(window.localStorage.getItem('negin-home-style-intensity') ?? 45)
+    return Number.isFinite(saved) ? Math.max(0, Math.min(100, saved)) : 45
+  })
   const reducedMotion = useReducedMotion()
 
   useEffect(() => {
@@ -210,6 +227,10 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
   useEffect(() => {
     window.localStorage.setItem('negin-home-card-style', cardStyle)
   }, [cardStyle])
+
+  useEffect(() => {
+    window.localStorage.setItem('negin-home-style-intensity', String(styleIntensity))
+  }, [styleIntensity])
 
   const weekday = new Intl.DateTimeFormat('fa-IR', {
     weekday: 'long',
@@ -275,7 +296,14 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
     <main
       className="relative h-dvh min-h-dvh overflow-hidden bg-ng-bg text-ng-text"
       dir="rtl"
-      data-home-ui="home-card-style-lab-v2" data-home-card-style={cardStyle}
+      data-home-ui="home-card-style-lab-v3"
+      data-home-card-style={cardStyle}
+      data-home-motion={HOME_DYNAMIC_STYLES.has(cardStyle) ? 'dynamic' : 'static'}
+      data-home-motion-enabled={styleIntensity > 0 && !reducedMotion ? 'true' : 'false'}
+      style={{
+        '--home-style-intensity': styleIntensity / 100,
+        '--home-style-speed': `${Math.max(7, 24 - styleIntensity * 0.15)}s`,
+      } as CSSProperties}
     >
       <div
         aria-hidden="true"
@@ -439,6 +467,27 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
                       {item.label}
                     </button>
                   ))}
+                </div>
+                <div className="mt-3 border-t border-white/[.06] px-1 pt-3">
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <span className="text-[11px] font-bold text-ng-text">Dynamic intensity</span>
+                    <strong className="text-[12px] text-ng-gold-soft">{styleIntensity}%</strong>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="5"
+                    value={styleIntensity}
+                    onChange={(event) => setStyleIntensity(Number(event.target.value))}
+                    aria-label="شدت افکت پویا"
+                    className="home-style-intensity-slider w-full"
+                  />
+                  <div className="mt-1 flex items-center justify-between text-[10px] text-ng-muted">
+                    <span>کم</span>
+                    <span>{HOME_DYNAMIC_STYLES.has(cardStyle) ? 'Dynamic' : 'برای سبک‌های ✦'}</span>
+                    <span>زیاد</span>
+                  </div>
                 </div>
               </div>
             ) : null}

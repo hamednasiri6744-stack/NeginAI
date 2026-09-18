@@ -30,3 +30,58 @@
 .home-style-card[data-card-style='luxury'] .home-style-card-highlight{background:linear-gradient(90deg,transparent,rgba(242,203,104,.28),transparent)}
 .home-style-card[data-card-style='cyber'] .home-style-card-highlight{background:linear-gradient(90deg,transparent,rgba(74,213,244,.42),transparent)}
 .home-style-card[data-card-style='frosted-glass'] .home-style-card-highlight,.home-style-card[data-card-style='liquid-glass'] .home-style-card-highlight,.home-style-card[data-card-style='pure-glass'] .home-style-card-highlight{background:linear-gradient(90deg,transparent,rgba(255,255,255,.34),transparent)}
+
+/* Dynamic Style Lab */
+.home-style-intensity-slider{accent-color:#e8b94d}
+.home-style-card[data-card-style='aurora-glass']{
+  background:linear-gradient(115deg,rgba(51,121,156,.30),rgba(54,84,154,.20),rgba(101,60,143,.16),rgba(17,75,99,.28));
+  background-size:240% 240%;border-color:rgba(161,220,243,.18);
+  box-shadow:0 16px 38px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.10);
+  backdrop-filter:blur(24px) saturate(145%);
+  animation:ng-home-gradient-flow var(--home-style-speed,16s) ease-in-out infinite alternate;
+}
+.home-style-card[data-card-style='living-liquid']{
+  background:linear-gradient(130deg,rgba(72,154,192,.18),rgba(12,39,58,.54),rgba(98,76,166,.12),rgba(7,29,44,.62));
+  background-size:220% 220%;border-color:rgba(181,229,247,.20);
+  box-shadow:0 18px 42px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.12),inset 10px -12px 30px rgba(79,169,211,.06);
+  backdrop-filter:blur(22px) saturate(155%);
+  animation:ng-home-liquid-flow var(--home-style-speed,14s) cubic-bezier(.45,.05,.55,.95) infinite alternate;
+}
+.home-style-card[data-card-style='breathing-neu']{
+  background:linear-gradient(145deg,#081c2a,#04121d);border-color:rgba(136,191,219,.07);
+  box-shadow:10px 10px 26px rgba(0,0,0,.58),-7px -7px 22px rgba(37,84,109,.14),inset 1px 1px 0 rgba(255,255,255,.03);
+  animation:ng-home-breathe var(--home-style-speed,16s) ease-in-out infinite;
+}
+
+.home-style-card[data-card-style='shimmer-metal']{
+  background:linear-gradient(115deg,#0a171f 0%,#263842 22%,#0b1820 40%,#41515a 51%,#0a171f 66%,#1d303a 100%);
+  background-size:260% 100%;border-color:rgba(199,213,220,.18);
+  box-shadow:0 16px 38px rgba(0,0,0,.50),inset 0 1px 0 rgba(255,255,255,.09);
+  animation:ng-home-shimmer var(--home-style-speed,12s) linear infinite;
+}
+.home-style-card[data-card-style='reactive-luxury']{
+  background:radial-gradient(circle at 15% 20%,rgba(242,203,104,.08),transparent 28%),linear-gradient(145deg,#0b1821,#02090f);
+  background-size:180% 180%;border-color:rgba(242,203,104,.22);
+  box-shadow:0 18px 40px rgba(0,0,0,.54),0 0 30px rgba(242,203,104,.04),inset 0 1px 0 rgba(255,236,181,.08);
+  animation:ng-home-luxury-drift var(--home-style-speed,18s) ease-in-out infinite alternate;
+}
+[data-home-motion='dynamic'] .home-style-card-glow{
+  opacity:calc(.12 + var(--home-style-intensity,.45) * .88);
+  animation:ng-home-glow-orbit var(--home-style-speed,16s) ease-in-out infinite alternate;
+}
+[data-home-motion='dynamic'] .home-style-card-highlight{
+  opacity:calc(.20 + var(--home-style-intensity,.45) * .80);
+  animation:ng-home-highlight-sweep var(--home-style-speed,16s) ease-in-out infinite alternate;
+}
+[data-home-motion-enabled='false'] .home-style-card,
+[data-home-motion-enabled='false'] .home-style-card-glow,
+[data-home-motion-enabled='false'] .home-style-card-highlight{animation:none!important}
+
+@keyframes ng-home-gradient-flow{0%{background-position:0% 35%}50%{background-position:52% 70%}100%{background-position:100% 40%}}
+@keyframes ng-home-liquid-flow{0%{background-position:0% 20%;filter:brightness(1)}100%{background-position:100% 80%;filter:brightness(1.06)}}
+@keyframes ng-home-breathe{0%,100%{box-shadow:9px 9px 24px rgba(0,0,0,.55),-6px -6px 18px rgba(37,84,109,.10),inset 1px 1px 0 rgba(255,255,255,.025)}50%{box-shadow:12px 12px 30px rgba(0,0,0,.64),-9px -9px 26px rgba(52,111,143,.20),inset 1px 1px 0 rgba(255,255,255,.045)}}
+@keyframes ng-home-shimmer{0%{background-position:0% 50%}100%{background-position:220% 50%}}
+@keyframes ng-home-luxury-drift{0%{background-position:0% 0%}100%{background-position:100% 80%}}
+@keyframes ng-home-glow-orbit{0%{transform:translate3d(-8px,-4px,0) scale(.92)}100%{transform:translate3d(12px,10px,0) scale(1.10)}}
+@keyframes ng-home-highlight-sweep{0%{transform:translateX(-18%);opacity:calc(.16 + var(--home-style-intensity,.45) * .45)}100%{transform:translateX(18%);opacity:calc(.28 + var(--home-style-intensity,.45) * .65)}}
+@media (prefers-reduced-motion:reduce){.home-style-card,.home-style-card-glow,.home-style-card-highlight{animation:none!important}}

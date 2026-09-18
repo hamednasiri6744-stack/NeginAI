@@ -63,3 +63,14 @@ Each style gets its own reversible commit/checkpoint. Only surface treatment, de
 - The selected style persists in localStorage for comparison across refreshes.
 - This is a temporary test control and can be removed once a final surface style is selected.
 
+
+## Dynamic styles
+- [x] Aurora Glass
+- [x] Living Liquid
+- [x] Breathing Neumorphism
+- [x] Shimmer Metal
+- [x] Reactive Luxury
+- [x] Live intensity control 0-100
+- [x] Intensity persisted in localStorage
+- [x] Reduced-motion safety disables animation
+
