@@ -1,0 +1,122 @@
+/*
+ * Home Visual Parity v1
+ * Canonical visual/material layer for every visitor screen.
+ * Layout is deliberately untouched: only color, surface, border, shadow and state treatment.
+ */
+:root {
+  --ng-home-surface: rgba(7,22,35,.74);
+  --ng-home-surface-strong: rgba(7,22,35,.84);
+  --ng-home-surface-soft: rgba(255,255,255,.018);
+  --ng-home-line: var(--ng-border-subtle);
+  --ng-home-line-strong: rgba(242,203,104,.16);
+  --ng-home-gold-soft: rgba(242,203,104,.055);
+}
+
+#root :where(.vh-page,.vai-page) {
+  color: var(--ng-text);
+  background:
+    radial-gradient(circle at 50% -10%,rgba(38,91,126,.20),transparent 34%),
+    linear-gradient(180deg,#061522 0%,var(--ng-bg) 58%,#02070c 100%);
+}
+
+#root :where(.vh-header,.vh-nav,.vh-profile,.vh-bell) {
+  border-color: var(--ng-home-line);
+  background: var(--ng-home-surface);
+  box-shadow: var(--ng-shadow-contact);
+  backdrop-filter: blur(18px);
+}
+#root :where(.vh-nav-item,.vh-order) {
+  color: var(--ng-muted);
+  border-color: transparent;
+  background: transparent;
+}
+#root :where(.vh-nav-item.active,.vh-order.active) {
+  color: var(--ng-gold-2);
+  border-color: var(--ng-home-line-strong);
+  background: var(--ng-home-gold-soft);
+}
+
+#root :where(
+  .vc-summary article,.vc-search,.vc-filter-button,.vc-card,.vc-empty,
+  .c360-identity,.c360-kpis article,.c360-panel,.c360-finance-grid article,.c360-actions button,
+  .c360-info-grid>div,.c360-edit-field,.c360-tabs,
+  .vo-customer,.vo-tabs,.vo-search,.vo-search-row>button,.vo-product,.vo-catalog-grid button,
+  .vo-cart-line,.vo-choice-block,.vo-summary,.vo-empty,
+  .voa-summary article,.voa-tabs,.voa-search,.voa-order-card,.voa-draft-card,.voa-empty,
+  .vp-identity,.vp-section,.vp-row,.vp-static-row,.vp-action-row
+) {
+  border-color: var(--ng-home-line);
+  background: var(--ng-home-surface);
+  box-shadow: none;
+  backdrop-filter: blur(16px);
+}
+#root :where(
+  .vc-chips button,.c360-tabs button,.vo-tabs button,.vo-filter-strip button,
+  .voa-tabs button,.voa-chips button,.vn-tabs button,
+  .vp-action-row button,.vp-logout
+) {
+  color: var(--ng-muted);
+  border-color: var(--ng-home-line);
+  background: var(--ng-home-surface-soft);
+}
+#root :where(
+  .vc-chips button.active,.c360-tabs button.active,.vo-tabs button.active,
+  .vo-filter-strip button.active,.voa-tabs button.active,.voa-chips button.active,
+  .vn-tabs button.active
+) {
+  color: var(--ng-gold-2);
+  border-color: var(--ng-home-line-strong);
+  background: var(--ng-home-gold-soft);
+  box-shadow: none;
+}
+
+#root :where(.vr-map-card,.vr-active-card,.vr-stops) {
+  border-color: var(--ng-home-line);
+  background: var(--ng-home-surface);
+  box-shadow: none;
+  backdrop-filter: blur(16px);
+}
+#root :where(.vr-mode,.vr-actions button,.vr-map-head button) {
+  border-color: var(--ng-home-line);
+  background: var(--ng-home-surface-soft);
+}
+#root :where(
+  .vrep-depth-stage,.vrep-depth-layer,.vrep-focus-hero,.vrep-focus-list>button,
+  .vrep-return-grid article,.vrep-ai-depth,.vrep-kpi,.vrep-score-card,.vrep-chart-card,
+  .vrep-top-card,.vrep-secondary-grid article,
+  .vai-context,.vai-integrity,.vai-message,.vai-composer,
+  .voa-invoice,.voa-invoice-customer,.voa-invoice-total
+) {
+  border-color: var(--ng-home-line);
+  background: var(--ng-home-surface);
+  box-shadow: none;
+  backdrop-filter: blur(16px);
+}
+
+#root .vh-page[data-design-system='atlas-v1'][data-screen='notifications'] :where(
+  .vn-heading,.vn-tabs,.vn-list>.ng-feedback,.ng-card,.ng-surface,.ng-button
+) {
+  border-color: var(--ng-home-line);
+  background-color: var(--ng-home-surface);
+  box-shadow: none;
+}
+
+#root :where(
+  .vc-heading h1,.c360-topbar h1,.vo-heading h1,.voa-heading h1,
+  .vrep-command h1,.vai-title h1,.vp-heading h1
+) {
+  color: var(--ng-text);
+}
+#root :where(
+  .vc-heading span,.c360-topbar span,.vo-heading span,.vo-heading p,
+  .voa-heading>div>span,.voa-heading p,.vrep-command p,.vp-heading p
+) {
+  color: var(--ng-muted);
+}
+
+#root :where(button,a,[role='button']) {
+  -webkit-tap-highlight-color: transparent;
+}
+#root :where(button,a,[role='button']):active {
+  filter: brightness(1.04);
+}

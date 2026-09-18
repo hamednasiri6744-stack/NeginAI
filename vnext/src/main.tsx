@@ -1,4 +1,4 @@
-import { StrictMode } from 'react'
+﻿import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from 'react-router'
@@ -11,6 +11,7 @@ import './design-system/components/components.css'
 import './styles/global.css'
 import './styles/layout-architecture-v1.css'
 import './design-system/theme/visual-baseline.css'
+import './styles/home-visual-parity.css'
 
 const root = document.getElementById('root')
 
@@ -47,3 +48,4 @@ if ('serviceWorker' in navigator) {
     })
   })
 }
+
