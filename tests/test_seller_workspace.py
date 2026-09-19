@@ -529,7 +529,7 @@ def test_sales_priority_route_keeps_high_and_medium_probability_customers_first(
     monkeypatch.setattr("app.seller_workspace_service.seller_route_customers_basic", lambda *_: {
         "route": {"id": "route"}, "customers": customers, "customer_count": 3,
     })
-    monkeypatch.setattr("app.seller_workspace_service.seller_route_day_analytics", lambda *_: {"customers": [
+    monkeypatch.setattr("app.seller_workspace_service._seller_route_visit_scores_fast", lambda *_: {"customers": [
         {"id": "low", "visit_score": 1}, {"id": "high", "visit_score": 10}, {"id": "medium", "visit_score": 5},
     ]})
     monkeypatch.setattr("app.seller_workspace_service._neshan_get", lambda *args: (
@@ -562,7 +562,7 @@ def test_route_map_plan_keeps_customers_when_optional_analytics_times_out(settin
         analytics_timeouts.append(analytics_settings.sql_query_timeout)
         raise TimeoutError("analytics query timed out")
 
-    monkeypatch.setattr("app.seller_workspace_service.seller_route_day_analytics", timed_out_analytics)
+    monkeypatch.setattr("app.seller_workspace_service._seller_route_visit_scores_fast", timed_out_analytics)
     monkeypatch.setattr("app.seller_workspace_service._neshan_get", lambda *args: (
         {"points": [{"index": 0}, {"index": 1}, {"index": 2}]} if "trip" in args[0]
         else {"routes": [{"overview_polyline": {"points": ""}, "legs": []}]}

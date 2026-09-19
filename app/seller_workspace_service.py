@@ -1376,7 +1376,7 @@ def seller_route_map_plan(
     analytics_available = True
     analytics_settings = replace(settings, sql_query_timeout=min(int(settings.sql_query_timeout), 5))
     try:
-        analytics = seller_route_day_analytics(analytics_settings, username, path_id)
+        analytics = _seller_route_visit_scores_fast(analytics_settings, username, path_id)
     except (TimeoutError, OSError):
         # Route customers and navigation are operational data; purchase
         # analytics only enriches their priority and must never block the day.
@@ -1535,6 +1535,187 @@ def seller_route_map_leg(
     return _neshan_direction(
         settings, origin_latitude, origin_longitude, destination_latitude, destination_longitude
     )
+
+
+def _sales_month_serial(value: Any) -> int | None:
+    parts = str(value or "").replace("-", "/").split("/")
+    if len(parts) < 2 or not parts[0].isdigit() or not parts[1].isdigit():
+        return None
+    return int(parts[0]) * 12 + int(parts[1])
+
+
+def _visit_score_components(
+    months: list[int],
+    *,
+    all_brand_purchase_score: int,
+    line_brand_purchase_score: int,
+    line_brand_count: int,
+    active_line_brand_count: int,
+    current_month: int,
+) -> tuple[int, dict[str, int]]:
+    invoice_time_score = sum(
+        9 if current_month - month <= 2 else 6 if 4 <= current_month - month <= 6 else 1
+        for month in months
+    )
+    regularity_score = min(len(set(months)), 6)
+    cross_sell_score = (
+        min(max(active_line_brand_count - line_brand_count, 0), 5)
+        if line_brand_count
+        else 0
+    )
+    newly_active_score = 3 if months and min(months) >= current_month - 2 else 0
+    recent_months = sum(1 for month in months if current_month - month <= 2)
+    previous_months = sum(1 for month in months if 3 <= current_month - month <= 4)
+    reengagement_score = 3 if previous_months > recent_months else 0
+    breakdown = {
+        "invoice_time": invoice_time_score,
+        "all_brand_purchases": int(all_brand_purchase_score),
+        "line_brand_purchase_bonus": int(line_brand_purchase_score),
+        "line_brand_breadth": int(line_brand_count),
+        "purchase_regularity": regularity_score,
+        "cross_sell_opportunity": cross_sell_score,
+        "newly_active": newly_active_score,
+        "reengagement_opportunity": reengagement_score,
+    }
+    return sum(breakdown.values()), breakdown
+
+
+def _seller_route_visit_scores_fast(
+    settings: Any,
+    username: str,
+    path_id: str,
+) -> dict[str, Any]:
+    """Return score-only route analytics for map ordering.
+
+    The full visit workspace still uses seller_route_day_analytics. This path
+    intentionally omits brand/line detail that the map never renders.
+    """
+    profile = _seller_profile(settings, username)
+    personnel_id = int(profile["personnel_id"])
+    try:
+        clean_path_id = str(UUID(str(path_id)))
+    except (ValueError, TypeError, AttributeError) as exc:
+        raise SellerRouteNotFound("Current seller route was not found") from exc
+
+    route_cte = f"""
+WITH RouteCustomers AS (
+  SELECT DISTINCT TRY_CONVERT(int, customer.BackOfficeId) AS CustomerId
+  FROM NGT.Personnels AS personnel
+  INNER JOIN NGT.VisitTemplates AS template ON template.Id = personnel.VisitTemplateUniqueId
+  INNER JOIN NGT.VisitTemplatePaths AS path ON path.VisitTemplateUniqueId = template.Id
+  INNER JOIN (
+    SELECT VisitTemplatePathUniqueId, CustomerUniqueId
+    FROM NGT.VisitTemplatePathCustomers WHERE ISNULL(IsRemoved, 0) = 0
+    UNION
+    SELECT VisitTemplatePathUniqueId, CustomerUniqueId
+    FROM NGT.VisitTemplatePathSecondaryCustomers WHERE ISNULL(IsRemoved, 0) = 0
+  ) AS assigned ON assigned.VisitTemplatePathUniqueId = path.Id
+  INNER JOIN NGT.Customers AS customer ON customer.Id = assigned.CustomerUniqueId
+  WHERE personnel.BackOfficeId = N'{personnel_id}'
+    AND path.Id = CAST(N'{clean_path_id}' AS uniqueidentifier)
+    AND ISNULL(personnel.IsRemoved, 0) = 0
+    AND ISNULL(personnel.PersonnelIsActive, 1) = 1
+    AND ISNULL(template.IsRemoved, 0) = 0
+    AND ISNULL(path.IsRemoved, 0) = 0
+    AND ISNULL(customer.IsRemoved, 0) = 0
+    AND ISNULL(customer.IsActive, 1) = 1
+)
+""".strip()
+
+    brand_sql = route_cte + f""",
+SellerBrands AS (
+  SELECT DISTINCT goods.BrandRef
+  FROM NGT.Personnels AS personnel
+  LEFT JOIN NGT.VisitTemplates AS visit_template
+    ON visit_template.Id = personnel.VisitTemplateUniqueId
+   AND ISNULL(visit_template.IsRemoved, 0) = 0
+  INNER JOIN NGT.ProductTemplates AS product_template
+    ON product_template.Id = COALESCE(
+      personnel.ProductTemplateUniqueId,
+      visit_template.ProductTemplateUniqueId
+    )
+  INNER JOIN NGT.ProductTemplateDetails AS detail
+    ON detail.ProductTemplateUniqueId = product_template.Id
+  INNER JOIN GNR.tblGoods AS goods ON goods.UniqueId = detail.ProductUniqueId
+  WHERE personnel.BackOfficeId = N'{personnel_id}'
+    AND ISNULL(personnel.IsRemoved, 0) = 0
+    AND ISNULL(personnel.PersonnelIsActive, 1) = 1
+    AND ISNULL(product_template.IsRemoved, 0) = 0
+    AND ISNULL(detail.IsRemoved, 0) = 0
+),
+SaleBrandInvoice AS (
+  SELECT sale.CustomerId, goods.BrandRef, sale.SellId,
+         MAX(CASE WHEN seller_brand.BrandRef IS NULL THEN 0 ELSE 1 END)
+           AS IsSellerLineBrand
+  FROM dbo.SalesReviewFast AS sale
+  INNER JOIN RouteCustomers AS route ON route.CustomerId = sale.CustomerId
+  INNER JOIN GNR.tblGoods AS goods ON goods.id = sale.GoodsId
+  LEFT JOIN SellerBrands AS seller_brand ON seller_brand.BrandRef = goods.BrandRef
+  WHERE sale.ReportDate >= FORMAT(
+    DATEADD(YEAR, -1, GETDATE()), 'yyyy/MM/dd', 'fa-IR'
+  )
+  GROUP BY sale.CustomerId, goods.BrandRef, sale.SellId
+),
+BrandRollup AS (
+  SELECT CustomerId, BrandRef,
+         MAX(IsSellerLineBrand) AS IsSellerLineBrand,
+         COUNT(*) AS InvoiceCount
+  FROM SaleBrandInvoice
+  GROUP BY CustomerId, BrandRef
+)
+SELECT CustomerId,
+       SUM(InvoiceCount) AS AllBrandPurchaseScore,
+       SUM(CASE WHEN IsSellerLineBrand = 1 THEN InvoiceCount ELSE 0 END)
+         AS LineBrandPurchaseScore,
+       SUM(CASE WHEN IsSellerLineBrand = 1 THEN 1 ELSE 0 END) AS LineBrandCount,
+       (SELECT COUNT(*) FROM SellerBrands) AS ActiveLineBrandCount
+FROM BrandRollup
+GROUP BY CustomerId
+""".strip()
+
+    invoice_sql = route_cte + "\n" + """
+SELECT sale.CustomerId, sale.SellId, MAX(sale.ReportDate) AS ReportDate
+FROM dbo.SalesReviewFast AS sale
+INNER JOIN RouteCustomers AS route ON route.CustomerId = sale.CustomerId
+WHERE sale.ReportDate >= FORMAT(
+  DATEADD(YEAR, -1, GETDATE()), 'yyyy/MM/dd', 'fa-IR'
+)
+GROUP BY sale.CustomerId, sale.SellId
+""".strip()
+
+    brand_rows = _query_rows(settings, brand_sql)
+    invoice_rows = _query_rows(settings, invoice_sql)
+    brand_by_customer = {str(row["CustomerId"] or ""): row for row in brand_rows}
+    invoice_months: dict[str, list[int]] = {}
+    for row in invoice_rows:
+        month = _sales_month_serial(row.get("ReportDate"))
+        if month is not None:
+            invoice_months.setdefault(str(row["CustomerId"] or ""), []).append(month)
+    current_month = max(
+        (month for months in invoice_months.values() for month in months),
+        default=0,
+    )
+    customers: list[dict[str, Any]] = []
+    for customer_id in set(brand_by_customer) | set(invoice_months):
+        brand = brand_by_customer.get(customer_id, {})
+        score, breakdown = _visit_score_components(
+            invoice_months.get(customer_id, []),
+            all_brand_purchase_score=int(brand.get("AllBrandPurchaseScore") or 0),
+            line_brand_purchase_score=int(brand.get("LineBrandPurchaseScore") or 0),
+            line_brand_count=int(brand.get("LineBrandCount") or 0),
+            active_line_brand_count=int(brand.get("ActiveLineBrandCount") or 0),
+            current_month=current_month,
+        )
+        customers.append({
+            "id": int(customer_id) if customer_id.isdigit() else customer_id,
+            "visit_score": score,
+            "score_breakdown": breakdown,
+        })
+    return {
+        "customers": customers,
+        "source": "dbo.SalesReviewFast lightweight route scoring",
+        "live_assignment": True,
+    }
 
 
 def seller_route_day_analytics(settings: Any, username: str, path_id: str) -> dict[str, Any]:
@@ -1788,15 +1969,9 @@ GROUP BY sale.CustomerId, sale.SellId
 """.strip()
     invoice_rows = _query_rows(settings, invoice_timing_sql)
 
-    def _month_serial(value: Any) -> int | None:
-        parts = str(value or "").replace("-", "/").split("/")
-        if len(parts) < 2 or not parts[0].isdigit() or not parts[1].isdigit():
-            return None
-        return int(parts[0]) * 12 + int(parts[1])
-
     invoice_months: dict[str, list[int]] = {}
     for row in invoice_rows:
-        month = _month_serial(row["ReportDate"])
+        month = _sales_month_serial(row["ReportDate"])
         if month is not None:
             invoice_months.setdefault(str(row["CustomerId"] or ""), []).append(month)
     current_month = max((month for months in invoice_months.values() for month in months), default=0)
@@ -1811,24 +1986,15 @@ GROUP BY sale.CustomerId, sale.SellId
         purchased_brands = customer_brand_presence.get(customer_id, [])
         line_purchased_brands = customer_line_brand_presence.get(customer_id, [])
         months = invoice_months.get(customer_id, [])
-        invoice_time_score = sum(
-            9 if current_month - month <= 2 else 6 if 4 <= current_month - month <= 6 else 1
-            for month in months
-        )
         all_brand_purchase_score = sum(brand["invoice_count"] for brand in purchased_brands)
         line_brand_purchase_score = sum(brand["invoice_count"] for brand in line_purchased_brands)
-        line_brand_breadth_score = len(line_purchased_brands)
-        months_with_purchase = len(set(months))
-        regularity_score = min(months_with_purchase, 6)
-        cross_sell_score = min(max(active_line_brand_count - len(line_purchased_brands), 0), 5) if line_purchased_brands else 0
-        newly_active_score = 3 if months and min(months) >= current_month - 2 else 0
-        recent_months = sum(1 for month in months if current_month - month <= 2)
-        previous_months = sum(1 for month in months if 3 <= current_month - month <= 4)
-        reengagement_score = 3 if previous_months > recent_months else 0
-        visit_score = (
-            invoice_time_score + all_brand_purchase_score + line_brand_purchase_score
-            + line_brand_breadth_score + regularity_score + cross_sell_score
-            + newly_active_score + reengagement_score
+        visit_score, score_breakdown = _visit_score_components(
+            months,
+            all_brand_purchase_score=all_brand_purchase_score,
+            line_brand_purchase_score=line_brand_purchase_score,
+            line_brand_count=len(line_purchased_brands),
+            active_line_brand_count=active_line_brand_count,
+            current_month=current_month,
         )
         customers.append({
             "id": int(customer_id) if customer_id.isdigit() else customer_id,
@@ -1846,16 +2012,7 @@ GROUP BY sale.CustomerId, sale.SellId
             "line_brand_count": len(line_purchased_brands),
             "purchased_brand_count": len(purchased_brands),
             "visit_score": visit_score,
-            "score_breakdown": {
-                "invoice_time": invoice_time_score,
-                "all_brand_purchases": all_brand_purchase_score,
-                "line_brand_purchase_bonus": line_brand_purchase_score,
-                "line_brand_breadth": line_brand_breadth_score,
-                "purchase_regularity": regularity_score,
-                "cross_sell_opportunity": cross_sell_score,
-                "newly_active": newly_active_score,
-                "reengagement_opportunity": reengagement_score,
-            },
+            "score_breakdown": score_breakdown,
         })
     def priority_key(customer: dict[str, Any]) -> tuple[int, int, int]:
         compact_date = customer["last_invoice_date"].replace("/", "").replace("-", "")
