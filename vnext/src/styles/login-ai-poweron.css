@@ -6,125 +6,112 @@
 
 .login-core-stage {
   position: relative;
-  width: clamp(116px, 31vw, 146px);
-  aspect-ratio: 1;
+  width: clamp(132px, 35vw, 166px);
+  aspect-ratio: 1.14 / 1;
   display: grid;
   place-items: center;
   margin-inline: auto;
-  perspective: 700px;
+  perspective: 760px;
   transform: translateZ(0);
+  isolation: isolate;
 }
 
 .login-core-stage::before {
   content: '';
   position: absolute;
-  inset: 8%;
-  border-radius: 43% 57% 52% 48% / 48% 44% 56% 52%;
-  border: 1px solid rgba(219, 232, 244, .09);
+  inset: 1% -8% -2% -9%;
+  pointer-events: none;
+  clip-path: polygon(6% 33%, 17% 8%, 48% 0%, 79% 7%, 98% 34%, 92% 67%, 67% 96%, 32% 100%, 8% 81%, 0 54%);
   background:
-    radial-gradient(circle at 35% 26%, rgba(255,255,255,.075), transparent 34%),
-    radial-gradient(circle at 68% 72%, rgba(223,164,52,.12), transparent 36%),
-    rgba(7, 22, 35, .23);
+    radial-gradient(ellipse at 27% 18%, rgba(255,255,255,.10), transparent 29%),
+    radial-gradient(ellipse at 72% 76%, rgba(218,166,66,.10), transparent 35%),
+    linear-gradient(138deg, rgba(196,222,240,.07), rgba(9,25,39,.22) 42%, rgba(2,10,18,.10) 72%);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.08),
-    0 18px 42px rgba(0,0,0,.22);  backdrop-filter: blur(18px) saturate(1.22);
-  -webkit-backdrop-filter: blur(18px) saturate(1.22);
-  animation: login-liquid-drift 9.5s ease-in-out infinite alternate;
+    inset 0 1px 0 rgba(255,255,255,.09),
+    0 22px 48px rgba(0,0,0,.17);
+  backdrop-filter: blur(22px) saturate(1.28);
+  -webkit-backdrop-filter: blur(22px) saturate(1.28);
+  filter: drop-shadow(0 13px 25px rgba(0,0,0,.18));
+  animation: login-liquid-sheet 10.5s ease-in-out infinite alternate;
 }
-
 .login-core-stage::after {
   content: '';
   position: absolute;
-  inset: 18% 16%;
-  border-radius: 50%;
+  z-index: -1;
+  inset: 19% -1% 8% 14%;
+  pointer-events: none;
+  clip-path: polygon(4% 45%, 23% 11%, 58% 3%, 96% 24%, 82% 64%, 52% 94%, 13% 81%);
   background:
-    radial-gradient(circle at 50% 48%, rgba(255,202,82,.12), transparent 44%),
-    conic-gradient(from 205deg, transparent 0 32%, rgba(255,212,108,.15) 38%, transparent 45% 100%);
-  filter: blur(10px);
-  opacity: .7;
-  animation: login-core-caustic 11s ease-in-out infinite;
+    linear-gradient(126deg, transparent 7%, rgba(255,195,64,.08) 28%, rgba(239,171,45,.20) 50%, rgba(255,220,126,.07) 72%, transparent 91%);
+  filter: blur(7px);
+  opacity: .62;
+  transform: translate3d(7px, 8px, 0) rotate(-5deg);
+  animation: login-gold-underflow 12s ease-in-out infinite alternate;
 }
 
 .login-core-liquid {
   position: absolute;
-  inset: -6%;
-  border-radius: 50%;
+  inset: -12% -15%;
+  z-index: -2;
   pointer-events: none;
+  clip-path: polygon(0 35%, 15% 12%, 47% 2%, 83% 14%, 100% 42%, 88% 76%, 59% 98%, 19% 87%, 5% 62%);
   background:
-    radial-gradient(ellipse at 50% 48%, rgba(44,102,139,.10), transparent 48%),
-    radial-gradient(ellipse at 58% 62%, rgba(226,168,59,.09), transparent 42%);
-  filter: blur(16px);
-  opacity: .85;
-  animation: login-liquid-breathe 8s ease-in-out infinite;
+    radial-gradient(ellipse at 39% 46%, rgba(35,103,143,.11), transparent 40%),
+    radial-gradient(ellipse at 63% 55%, rgba(222,168,59,.08), transparent 38%);
+  filter: blur(17px);
+  opacity: .75;
+  animation: login-liquid-aura 9s ease-in-out infinite alternate;
 }
 
 .login-core-grid {
   position: absolute;
-  inset: -22%;
-  border-radius: 50%;  pointer-events: none;
-  opacity: .22;
+  inset: -18% -24%;
+  z-index: -1;
+  pointer-events: none;
+  opacity: .16;
+  clip-path: polygon(3% 38%, 20% 9%, 53% 0, 88% 15%, 100% 46%, 83% 82%, 49% 100%, 14% 80%, 0 58%);
   background:
-    repeating-linear-gradient(90deg, transparent 0 16px, rgba(231,185,79,.12) 17px, transparent 18px 34px),
-    repeating-linear-gradient(0deg, transparent 0 16px, rgba(126,174,211,.07) 17px, transparent 18px 34px);
-  -webkit-mask-image: radial-gradient(circle, #000 0 36%, transparent 67%);
-  mask-image: radial-gradient(circle, #000 0 36%, transparent 67%);
-  transform: rotate(0deg) scale(.96);
-  animation: login-grid-orbit 26s linear infinite;
+    repeating-linear-gradient(112deg, transparent 0 18px, rgba(233,186,76,.16) 19px, transparent 20px 38px),
+    repeating-linear-gradient(22deg, transparent 0 28px, rgba(121,174,210,.08) 29px, transparent 30px 58px);
+  -webkit-mask-image: linear-gradient(90deg, transparent 3%, #000 23%, #000 73%, transparent 97%);
+  mask-image: linear-gradient(90deg, transparent 3%, #000 23%, #000 73%, transparent 97%);
+  animation: login-data-drift 18s ease-in-out infinite alternate;
 }
-
 .login-core-stage .brand-logo {
   position: relative;
   z-index: 3;
-  width: 84%;
-  height: 84%;
+  width: 79%;
+  height: 86%;
   margin: 0;
   object-fit: contain;
-  transform: translateZ(18px);
+  transform: translateZ(22px);
   filter:
-    drop-shadow(0 10px 24px rgba(0,0,0,.26))
-    drop-shadow(0 0 15px rgba(229,171,58,.14));
-  animation: login-core-breathe 7.2s ease-in-out infinite;
+    drop-shadow(0 11px 24px rgba(0,0,0,.27))
+    drop-shadow(0 0 14px rgba(229,171,58,.13));
+  animation: login-core-breathe 7.4s ease-in-out infinite;
 }
 
-@keyframes login-liquid-drift {
+@keyframes login-liquid-sheet {
   0% {
-    transform: translate3d(-2px, 1px, 0) rotate(-1.2deg) scale(.985);
-    border-radius: 43% 57% 52% 48% / 48% 44% 56% 52%;
+    transform: translate3d(-4px, 2px, 0) rotate(-2.2deg) skewX(-1.2deg) scale(.985);
+    clip-path: polygon(6% 33%, 17% 8%, 48% 0%, 79% 7%, 98% 34%, 92% 67%, 67% 96%, 32% 100%, 8% 81%, 0 54%);
   }
-  100% {    transform: translate3d(3px, -2px, 0) rotate(1.4deg) scale(1.025);
-    border-radius: 52% 48% 43% 57% / 55% 47% 53% 45%;
+  100% {
+    transform: translate3d(5px, -3px, 0) rotate(2deg) skewX(1deg) scale(1.018);
+    clip-path: polygon(2% 40%, 22% 5%, 55% 2%, 86% 13%, 100% 45%, 84% 74%, 62% 100%, 25% 94%, 4% 72%, 7% 48%);
   }
 }
 
-@keyframes login-liquid-breathe {
-  0%, 100% { transform: scale(.94); opacity: .58; }
-  50% { transform: scale(1.08); opacity: .92; }
+@keyframes login-gold-underflow {
+  0% { transform: translate3d(3px, 10px, 0) rotate(-7deg) scale(.95); opacity: .36; }
+  55% { opacity: .68; }
+  100% { transform: translate3d(12px, 3px, 0) rotate(5deg) scale(1.04); opacity: .50; }
 }
 
-@keyframes login-grid-orbit {
-  to { transform: rotate(360deg) scale(.96); }
-}
-
-@keyframes login-core-caustic {
-  0%, 100% { transform: translate3d(-4px, 3px, 0) rotate(-8deg); opacity: .42; }
-  50% { transform: translate3d(5px, -4px, 0) rotate(10deg); opacity: .78; }
-}
-
-@keyframes login-core-breathe {
-  0%, 100% { transform: translateZ(18px) scale(.985); }
-  50% { transform: translateZ(18px) scale(1.018); }
-}
-
-@media (max-height: 700px) and (max-width: 719px) {
-  .login-core-stage { width: 96px; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .login-core-stage::before,
-  .login-core-stage::after,
-  .login-core-liquid,
-  .login-core-grid,
-  .login-core-stage .brand-logo {
-    animation: none !important;
-  }
+/* v2 organic override: remove circular halo */
+.login-core-stage {
+  width: clamp(132px, 35vw, 166px);
+  aspect-ratio: 1.14 / 1;
+  perspective: 760px;
+  isolation: isolate;
 }
