@@ -1,7 +1,8 @@
 param(
   [string]$Repo = 'D:\Projects\NeginAI',
-  [int]$StableSeconds = 10,
-  [int]$IdleSeconds = 5,
+  [int]$StableSeconds = 60,
+  [int]$IdleSeconds = 30,
+  [int]$MinSyncIntervalSeconds = 3600,
   [switch]$Once,
   [switch]$DryRun
 )
@@ -10,6 +11,7 @@ $ErrorActionPreference = 'Stop'
 $LogDir = Join-Path $env:LOCALAPPDATA 'NeginAI'
 $LogFile = Join-Path $LogDir 'git-autosync.log'
 New-Item -ItemType Directory -Path $LogDir -Force | Out-Null
+$lastSyncAt = [datetime]::MinValue
 
 function Write-Log([string]$Message) {
   $line = '{0} {1}' -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $Message
@@ -68,6 +70,18 @@ try {
         if ($Once) { break }
         Start-Sleep -Seconds $IdleSeconds
         continue
+      }
+
+      if ($lastSyncAt -ne [datetime]::MinValue) {
+        $elapsedSeconds = ((Get-Date) - $lastSyncAt).TotalSeconds
+        if ($elapsedSeconds -lt $MinSyncIntervalSeconds) {
+          if ($Once) {
+            Write-Log "Autosync cooldown active; no sync performed."
+            break
+          }
+          Start-Sleep -Seconds $IdleSeconds
+          continue
+        }
       }
 
       $signature = $dirty -join "`n"
@@ -142,6 +156,7 @@ try {
       & git push -u origin "HEAD:$branch"
       if ($LASTEXITCODE -eq 0) {
         $head = ((& git rev-parse --short HEAD) | Out-String).Trim()
+        $lastSyncAt = Get-Date
         Write-Log "Synced branch=$branch head=$head files=$($staged.Count)"
       } else {
         Write-Log "Push failed on branch=$branch; will retry."
