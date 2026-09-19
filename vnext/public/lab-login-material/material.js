@@ -68,18 +68,18 @@ void main(){
   float c3 = sin((q.x+q.y)*10.0 + fine*3.2 + t*2.7);
   float caustic = smoothstep(1.7,2.35,c1+c2+c3+fine*.5);
 
-  vec3 navy = vec3(.010,.036,.064);
-  vec3 blue = vec3(.042,.185,.285);
+  vec3 navy = vec3(.008,.035,.060);
+  vec3 blue = vec3(.024,.105,.158);
   vec3 gold = vec3(.95,.58,.12);
   vec3 warm = vec3(1.0,.82,.43);
 
-  vec3 color = mix(navy,blue,depth*.42);
-  color += gold * caustic * .20;
-  color += warm * pow(max(depth-.62,0.0),2.0) * .14;
+  vec3 color = mix(navy,blue,depth*.27);
+  color += gold * caustic * .14;
+  color += warm * pow(max(depth-.64,0.0),2.0) * .08;
 
   float radius = length(p*vec2(.78,1.06));
   float vignette = 1.0 - smoothstep(.22,.82,radius);
-  float alpha = (.12 + depth*.12 + caustic*.095) * vignette;
+  float alpha = (.075 + depth*.075 + caustic*.065) * vignette;
   gl_FragColor = vec4(color,alpha);
 }
 `

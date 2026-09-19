@@ -1,6 +1,6 @@
 :root { color-scheme: dark; }
 * { box-sizing: border-box; }
-html, body { margin: 0; min-height: 100%; background: #020911; }
+html, body { margin: 0; min-height: 100%; background: #020a12; }
 body { min-width: 320px; overflow: hidden; font-family: Inter, system-ui, sans-serif; }
 
 .lab {
@@ -9,9 +9,9 @@ body { min-width: 320px; overflow: hidden; font-family: Inter, system-ui, sans-s
   overflow: hidden;
   color: #eef3f7;
   background:
-    radial-gradient(circle at 50% -12%, rgba(25,77,112,.20), transparent 38%),
-    radial-gradient(circle at 85% 72%, rgba(182,121,27,.045), transparent 36%),
-    linear-gradient(180deg,#04111d 0%,#020911 56%,#010508 100%);
+    radial-gradient(circle at 50% -10%, rgba(38,91,126,.10), transparent 34%),
+    radial-gradient(circle at 82% 72%, rgba(182,121,27,.022), transparent 34%),
+    linear-gradient(180deg,#020a12 0%,#020a12 58%,#01060b 100%);
 }
 
 #material {
@@ -21,16 +21,16 @@ body { min-width: 320px; overflow: hidden; font-family: Inter, system-ui, sans-s
   height: 116%;
   display: block;
   pointer-events: none;
-  opacity: .98;
-  filter: saturate(1.04) contrast(1.03);
+  opacity: .76;
+  filter: saturate(.92) contrast(1.06) brightness(.78);
 }
 .veil {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse at 50% 40%, transparent 0 22%, rgba(1,6,11,.08) 58%, rgba(1,5,8,.62) 100%),
-    linear-gradient(90deg, rgba(1,6,10,.34), transparent 26% 74%, rgba(1,6,10,.34));
+    radial-gradient(ellipse at 50% 40%, transparent 0 18%, rgba(1,6,11,.16) 52%, rgba(1,5,8,.78) 100%),
+    linear-gradient(90deg, rgba(1,6,10,.46), transparent 24% 76%, rgba(1,6,10,.46));
   mix-blend-mode: multiply;
 }
 
