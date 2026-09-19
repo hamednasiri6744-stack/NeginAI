@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { DownloadIcon, EyeIcon, EyeOffIcon, LockIcon, UserIcon } from './Icons'
-import '../styles/login-atmosphere-v1.css'
 
 type LoginScreenProps = {
   onLogin: (username: string, password: string) => Promise<void>
