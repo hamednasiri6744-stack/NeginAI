@@ -1,4 +1,4 @@
-﻿.env
+.env
 .venv/
 __pycache__/
 *.py[cod]
@@ -87,3 +87,7 @@ vnext/storybook-static/
 # Local verification/runtime scratch
 .runtime/
 .chatgpt-neginai-*.b64
+
+# Root-only disposable engineering/output scratch
+/.tmp/
+/reports/
