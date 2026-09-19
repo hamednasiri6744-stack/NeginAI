@@ -51,35 +51,62 @@ float fbm(vec2 p){
   return v;
 }
 
+vec3 environment(vec2 p){
+  vec3 base = vec3(.006,.025,.043);
+  float upper = exp(-4.6*length(p-vec2(-.04,-.18)));
+  float lower = exp(-5.8*length(p-vec2(.20,.24)));
+  base += vec3(.025,.075,.105) * upper;
+  base += vec3(.16,.085,.018) * lower;
+  return base;
+}
+
 void main(){
   vec2 p = v_uv - 0.5;
   p.x *= u_resolution.x / max(u_resolution.y,1.0);
-  float t = u_time * 0.052;
-  vec2 drift = vec2(t*.42,-t*.29);
-  vec2 tilt = u_tilt * .13;  float n1 = fbm(p*2.25 + drift + tilt);
-  float n2 = fbm(p*3.05 - drift*1.35 + vec2(n1*.72));
-  vec2 warp = vec2(n1-.5,n2-.5) * .18;
+
+  float t = u_time * 0.060;
+  vec2 tilt = u_tilt * .16;
+  vec2 flow = vec2(t*.26,-t*.18);
+
+  float nA = fbm(p*2.1 + flow + tilt);
+  float nB = fbm(p*3.4 - flow*1.25 + vec2(nA*.85));
+  vec2 warp = vec2(nA-.5,nB-.5) * .23;
+
   vec2 q = p + warp;
-  float depth = fbm(q*1.62 + vec2(-t,t*.68));
-  float fine = fbm(q*5.1 - vec2(t*.8,0.0));
+  float sheet = fbm(q*1.72 + vec2(-t*.55,t*.42));
+  float sheet2 = fbm((q+vec2(sheet*.24))*2.55 - vec2(t*.35,0.0));
+  float field = sheet*.66 + sheet2*.34;
 
-  float c1 = sin(q.x*13.0 + n2*4.4 + t*5.0);
-  float c2 = sin(q.y*17.0 - n1*5.0 - t*4.0);
-  float c3 = sin((q.x+q.y)*10.0 + fine*3.2 + t*2.7);
-  float caustic = smoothstep(1.7,2.35,c1+c2+c3+fine*.5);
+  float eps = .010;
+  float fx = fbm((q+vec2(eps,0.0))*1.72 + vec2(-t*.55,t*.42));
+  float fy = fbm((q+vec2(0.0,eps))*1.72 + vec2(-t*.55,t*.42));
+  vec2 normal = normalize(vec2(fx-sheet,fy-sheet)+vec2(.0001));
 
-  vec3 navy = vec3(.008,.035,.060);
-  vec3 blue = vec3(.024,.105,.158);
-  vec3 gold = vec3(.95,.58,.12);
-  vec3 warm = vec3(1.0,.82,.43);
+  float ribbonA = .5 + .5*sin(q.x*8.8 + q.y*3.2 + nB*5.0 + t*2.1);
+  float ribbonB = .5 + .5*sin(q.y*10.5 - q.x*2.7 - nA*4.6 - t*1.65);
+  float liquid = smoothstep(.48,.66,field + (ribbonA+ribbonB-.95)*.10);
 
-  vec3 color = mix(navy,blue,depth*.27);
-  color += gold * caustic * .14;
-  color += warm * pow(max(depth-.64,0.0),2.0) * .08;
+  float edge = smoothstep(.015,.11,length(vec2(fx-sheet,fy-sheet)));
+  float fresnel = pow(1.0-max(dot(normalize(vec3(normal,.55)),vec3(.0,.0,1.0)),0.0),2.2);
 
-  float radius = length(p*vec2(.78,1.06));
-  float vignette = 1.0 - smoothstep(.22,.82,radius);
-  float alpha = (.075 + depth*.075 + caustic*.065) * vignette;
+  vec2 refractedUv = p + normal*(.045 + liquid*.055) + tilt*.025;
+  vec3 color = environment(refractedUv);
+
+  float c1 = sin((q.x+normal.x*.08)*18.0 + t*3.7 + nB*4.2);
+  float c2 = sin((q.y-normal.y*.08)*21.0 - t*3.1 - nA*4.5);
+  float caustic = smoothstep(1.10,1.82,c1+c2+field*.95);
+
+  vec3 glassBlue = vec3(.055,.18,.24);
+  vec3 gold = vec3(.98,.64,.18);
+  vec3 pale = vec3(.72,.86,.93);
+
+  color = mix(color,color + glassBlue*.28,liquid*.72);
+  color += pale * edge * (.055 + fresnel*.10) * liquid;
+  color += gold * caustic * (.11 + liquid*.20);
+
+  float center = 1.0-smoothstep(.20,.76,length(p*vec2(.78,1.0)));
+  float alpha = center * (.12 + liquid*.34 + edge*.11 + caustic*.10);
+
   gl_FragColor = vec4(color,alpha);
 }
 `
