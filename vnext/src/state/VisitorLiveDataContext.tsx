@@ -48,19 +48,24 @@ export function VisitorLiveDataProvider({ children }: { children: ReactNode }) {
       const customers = bootstrap.route_customers
       setRoutesData(routes)
 
+      if (customers) {
+        hydrateLiveRoute(customers.route.id, customers.customers)
+        // Start expensive map + first-visit prefetch as soon as the route is
+        // known. Target pulse is independent and must not delay tour warmup.
+        void prefetchVisitorTour(
+          customers.route.id,
+          customers.customers[0]?.id != null ? String(customers.customers[0].id) : undefined,
+        ).catch(() => undefined)
+      } else {
+        hydrateLiveRoute('', [])
+      }
+
       const liveTarget = await targetPromise
       const syncedAt = new Date().toISOString()
       setCustomersData(customers)
       setTargetPulse(liveTarget)
       setStale(false)
       setLastSyncedAt(syncedAt)
-
-      if (customers) {
-        hydrateLiveRoute(customers.route.id, customers.customers)
-        void prefetchVisitorTour(customers.route.id).catch(() => undefined)
-      } else {
-        hydrateLiveRoute('', [])
-      }
 
       if (username) {
         void saveVisitorOfflineSnapshot({
@@ -132,6 +137,13 @@ export function VisitorLiveDataProvider({ children }: { children: ReactNode }) {
           setError(null)
           const snapshotRouteId = snapshot.customersData?.route.id ?? snapshot.routesData.day_route?.id ?? ''
           hydrateLiveRoute(snapshotRouteId, snapshot.customersData?.customers ?? [])
+          if (snapshotRouteId) {
+            const snapshotCustomerId = snapshot.customersData?.customers[0]?.id
+            void prefetchVisitorTour(
+              snapshotRouteId,
+              snapshotCustomerId != null ? String(snapshotCustomerId) : undefined,
+            ).catch(() => undefined)
+          }
         }
       }
       if (!cancelled) void load()

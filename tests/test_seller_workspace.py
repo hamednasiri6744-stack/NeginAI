@@ -526,7 +526,7 @@ def test_sales_priority_route_keeps_high_and_medium_probability_customers_first(
         {"id": "high", "name": "High", "store_name": "High", "latitude": 35.70, "longitude": 51.40},
         {"id": "medium", "name": "Medium", "store_name": "Medium", "latitude": 35.65, "longitude": 51.35},
     ]
-    monkeypatch.setattr("app.seller_workspace_service.seller_route_customers", lambda *_: {
+    monkeypatch.setattr("app.seller_workspace_service.seller_route_customers_basic", lambda *_: {
         "route": {"id": "route"}, "customers": customers, "customer_count": 3,
     })
     monkeypatch.setattr("app.seller_workspace_service.seller_route_day_analytics", lambda *_: {"customers": [
@@ -552,7 +552,7 @@ def test_route_map_plan_keeps_customers_when_optional_analytics_times_out(settin
         {"id": "one", "name": "One", "store_name": "One", "latitude": 35.70, "longitude": 51.40},
         {"id": "two", "name": "Two", "store_name": "Two", "latitude": 35.65, "longitude": 51.35},
     ]
-    monkeypatch.setattr("app.seller_workspace_service.seller_route_customers", lambda *_: {
+    monkeypatch.setattr("app.seller_workspace_service.seller_route_customers_basic", lambda *_: {
         "route": {"id": "route"}, "customers": customers, "customer_count": 2,
         "visit_location_policy": {"distance_control_enabled": True},
     })

@@ -43,6 +43,12 @@ router = APIRouter(
     dependencies=[Depends(require_user_or_local)],
 )
 
+_ROUTE_CACHE_TTL_SECONDS = 30
+_ROUTE_CUSTOMERS_CACHE_TTL_SECONDS = 20
+_MAP_PLAN_CACHE_TTL_NO_ORIGIN_SECONDS = 45
+_MAP_PLAN_CACHE_TTL_WITH_ORIGIN_SECONDS = 15
+_VISIT_WORKSPACE_CACHE_TTL_SECONDS = 30
+
 
 def _username(request: Request) -> str:
     return str(request.state.username)
@@ -195,7 +201,7 @@ def get_my_routes(request: Request, response: Response):
         return cached
     try:
         result = seller_routes(request.app.state.settings, username)
-        set_cached(cache_key, result, 15, redis_client)
+        set_cached(cache_key, result, _ROUTE_CACHE_TTL_SECONDS, redis_client)
         response.headers["X-Negin-Cache"] = "MISS"
         return result
     except SellerWorkspaceError as exc:
@@ -213,7 +219,7 @@ def get_my_tour_bootstrap(request: Request, response: Response):
     route_cache = "HIT"
     if routes_payload is None:
         routes_payload = seller_routes(request.app.state.settings, username)
-        set_cached(routes_key, routes_payload, 15, redis_client)
+        set_cached(routes_key, routes_payload, _ROUTE_CACHE_TTL_SECONDS, redis_client)
         route_cache = "MISS"
 
     selected_route = None
@@ -242,7 +248,7 @@ def get_my_tour_bootstrap(request: Request, response: Response):
                 username,
                 route_id,
             )
-            set_cached(customers_key, customers_payload, 8, redis_client)
+            set_cached(customers_key, customers_payload, _ROUTE_CUSTOMERS_CACHE_TTL_SECONDS, redis_client)
             customer_cache = "MISS"
 
     response.headers["X-Negin-Cache"] = f"routes={route_cache};customers={customer_cache}"
@@ -340,7 +346,7 @@ def get_my_route_customers(
             response.headers["X-Negin-Cache"] = "BYPASS"
             return seller_route_customers(request.app.state.settings, username, path_id)
         result = seller_route_customers_basic(request.app.state.settings, username, path_id)
-        set_cached(cache_key, result, 8, redis_client)
+        set_cached(cache_key, result, _ROUTE_CUSTOMERS_CACHE_TTL_SECONDS, redis_client)
         response.headers["X-Negin-Cache"] = "MISS"
         return result
     except SellerRouteNotFound as exc:
@@ -389,14 +395,33 @@ def get_my_route_customer_profile(path_id: str, customer_id: str, request: Reque
 
 
 @router.get("/routes/{path_id}/customers/{customer_id}/visit-workspace")
-def get_my_customer_visit_workspace(path_id: str, customer_id: str, request: Request):
+def get_my_customer_visit_workspace(
+    path_id: str,
+    customer_id: str,
+    request: Request,
+    response: Response,
+):
+    username = _username(request)
+    redis_client = getattr(request.app.state, "redis_client", None)
+    cache_key = (
+        f"visit-workspace:{username.casefold()}:{path_id.casefold()}:"
+        f"{str(customer_id).casefold()}"
+    )
+    cached = get_cached(cache_key, redis_client)
+    response.headers["Cache-Control"] = "private, no-store"
+    if cached is not None:
+        response.headers["X-Negin-Cache"] = "HIT"
+        return cached
     try:
-        return seller_customer_visit_workspace(
+        result = seller_customer_visit_workspace(
             request.app.state.settings,
-            _username(request),
+            username,
             path_id,
             customer_id,
         )
+        set_cached(cache_key, result, _VISIT_WORKSPACE_CACHE_TTL_SECONDS, redis_client)
+        response.headers["X-Negin-Cache"] = "MISS"
+        return result
     except SellerRouteNotFound as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except TimeoutError as exc:
@@ -745,21 +770,51 @@ def get_neshan_map_config(request: Request):
 def get_my_route_map_plan(
     path_id: str,
     request: Request,
+    response: Response,
     origin_latitude: float | None = Query(default=None),
     origin_longitude: float | None = Query(default=None),
     route_mode: str = Query(default="sales_priority"),
     start_day_route: bool = Query(default=False),
 ):
+    username = _username(request)
+    redis_client = getattr(request.app.state, "redis_client", None)
+    requested_mode = route_mode.strip() or "sales_priority"
+    selected_mode = (
+        requested_mode if requested_mode in {"sales_priority", "shortest"} else "sales_priority"
+    )
+    has_origin = origin_latitude is not None and origin_longitude is not None
+    origin_key = (
+        f"{float(origin_latitude):.5f},{float(origin_longitude):.5f}"
+        if has_origin
+        else "none"
+    )
+    cache_key = (
+        f"map-plan:{username.casefold()}:{path_id.casefold()}:"
+        f"{selected_mode.casefold()}:{int(start_day_route)}:{origin_key}"
+    )
+    cached = get_cached(cache_key, redis_client)
+    response.headers["Cache-Control"] = "private, no-store"
+    if cached is not None:
+        response.headers["X-Negin-Cache"] = "HIT"
+        return cached
     try:
-        return seller_route_map_plan(
+        result = seller_route_map_plan(
             request.app.state.settings,
-            _username(request),
+            username,
             path_id,
             origin_latitude,
             origin_longitude,
-            route_mode.strip() or "sales_priority",
+            selected_mode,
             require_day_route=start_day_route,
         )
+        ttl = (
+            _MAP_PLAN_CACHE_TTL_WITH_ORIGIN_SECONDS
+            if has_origin
+            else _MAP_PLAN_CACHE_TTL_NO_ORIGIN_SECONDS
+        )
+        set_cached(cache_key, result, ttl, redis_client)
+        response.headers["X-Negin-Cache"] = "MISS"
+        return result
     except SellerRouteNotFound as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except SellerDayRouteMismatch as exc:

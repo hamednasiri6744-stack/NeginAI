@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
 from datetime import datetime, timezone
 from typing import Any
@@ -1368,7 +1369,10 @@ def seller_route_map_plan(
         require_seller_day_route(settings, username, path_id)
     if not settings.neshan_service_api_key:
         raise SellerWorkspaceError("Neshan route service is not configured")
-    route = seller_route_customers(settings, username, path_id)
+    # Navigation only needs route identity, customer coordinates and visit state.
+    # Avoid the full financial customer payload here; visit intelligence is loaded
+    # separately when the seller opens a customer.
+    route = seller_route_customers_basic(settings, username, path_id)
     analytics_available = True
     analytics_settings = replace(settings, sql_query_timeout=min(int(settings.sql_query_timeout), 5))
     try:
@@ -2124,7 +2128,22 @@ def seller_customer_visit_workspace(
     """Build the read-only customer intelligence used inside one seller visit."""
     profile = seller_route_customer_profile(settings, username, path_id, customer_id)
     resolved_customer_id = str(profile["customer"]["id"])
-    route_analytics = seller_route_day_analytics(settings, username, path_id)
+    # These three read-only datasets are independent once the customer has
+    # been resolved. Running them concurrently removes avoidable serial SQL
+    # latency from the first visit workspace load.
+    with ThreadPoolExecutor(max_workers=3, thread_name_prefix="seller-visit") as executor:
+        analytics_future = executor.submit(
+            seller_route_day_analytics, settings, username, path_id
+        )
+        invoices_future = executor.submit(
+            seller_customer_open_invoices, settings, username, resolved_customer_id
+        )
+        cheques_future = executor.submit(
+            _customer_cheque_intelligence, settings, resolved_customer_id
+        )
+        route_analytics = analytics_future.result()
+        open_invoices = invoices_future.result()
+        cheque_intelligence = cheques_future.result()
     customer_analytics = next(
         (
             item
@@ -2133,12 +2152,6 @@ def seller_customer_visit_workspace(
         ),
         {},
     )
-    open_invoices = seller_customer_open_invoices(
-        settings,
-        username,
-        resolved_customer_id,
-    )
-    cheque_intelligence = _customer_cheque_intelligence(settings, resolved_customer_id)
     return {
         "route": profile["route"],
         "customer": profile["customer"],

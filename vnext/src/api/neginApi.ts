@@ -700,17 +700,31 @@ export async function getRouteMapPlan(routeId: string, routeMode: 'sales_priorit
   })
 }
 
-export async function prefetchVisitorTour(routeId: string) {
+export async function prefetchVisitorTour(routeId: string, bootstrapCustomerId?: string) {
   if (!routeId) return
+
+  // The bootstrap already knows the route's first customer. Warm that visit
+  // workspace immediately while map optimization runs in parallel instead of
+  // serializing ~2s of visit intelligence behind ~3s of map planning.
+  const bootstrapVisitWarmup = bootstrapCustomerId
+    ? Promise.allSettled([
+        getVisitPolicy(routeId, bootstrapCustomerId),
+        getVisitWorkspace(routeId, bootstrapCustomerId),
+      ])
+    : Promise.resolve([])
+
   const [, plan] = await Promise.all([
     getNeshanMapConfig().catch(() => null),
     getRouteMapPlan(routeId, 'sales_priority', null),
+    bootstrapVisitWarmup,
   ])
   const firstCustomer = plan.ordered_customers.find((customer) => (
     customer.latitude != null && customer.longitude != null
   )) ?? plan.ordered_customers[0]
   if (!firstCustomer) return
+
   const customerId = String(firstCustomer.id)
+  if (customerId === bootstrapCustomerId) return
   await Promise.allSettled([
     getVisitPolicy(routeId, customerId),
     getVisitWorkspace(routeId, customerId),
