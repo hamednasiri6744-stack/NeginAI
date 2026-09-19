@@ -366,6 +366,19 @@
   backdrop-filter: blur(12px) !important;
   -webkit-backdrop-filter: blur(12px) !important;
 }
+#root .login-page .field-action {
+  width: 28px !important;
+  height: 28px !important;
+  margin-left: 0 !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+#root .login-page .field-action svg {
+  width: 19px !important;
+  height: 19px !important;
+}
 @media (max-width: 380px) {
   #root .login-page .auth-panel {
     width: min(100%, 332px) !important;
