@@ -15,7 +15,7 @@ import {
   StoreIcon,
   UserGroupIcon,
 } from './Icons'
-import { completeServerVisit, getVisitPolicy, getVisitWorkspace, neginApi, startServerVisit, type SellerCustomer, type SellerVisitPolicyResponse, type SellerVisitWorkspaceResponse } from '../api/neginApi'
+import { completeServerVisit, getVisitPolicy, neginApi, startServerVisit, type SellerCustomer, type SellerVisitPolicyResponse } from '../api/neginApi'
 import { VisitorNeshanMap } from './VisitorNeshanMap'
 import { VisitorPicker } from './VisitorPicker'
 import { AppHeader, BottomDock } from '../design-system/components'
@@ -77,7 +77,6 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
   const [outcome, setOutcome] = useState<'sale' | 'no-order' | 'no-visit'>('sale')
   const [notice, setNotice] = useState<string | null>(null)
   const [policy, setPolicy] = useState<SellerVisitPolicyResponse | null>(null)
-  const [workspace, setWorkspace] = useState<SellerVisitWorkspaceResponse | null>(null)
   const [selectedReasonId, setSelectedReasonId] = useState('')
   const [actionBusy, setActionBusy] = useState<'start' | 'complete' | ''>('')
   const [mapRecenterNonce, setMapRecenterNonce] = useState(0)
@@ -135,12 +134,13 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
 
   const outcomeKey = outcome === 'no-order' ? 'no_order' : outcome === 'no-visit' ? 'no_visit' : null
   const outcomeReasons = outcomeKey ? policy?.reasons?.[outcomeKey] ?? [] : []
-  const displayedScore = Number(workspace?.analytics.visit_score ?? activeStop?.score ?? 0)
+  // Route map scoring is parity-validated against the full workspace analytics
+  // and avoids loading the heavy intelligence payload just to render one score.
+  const displayedScore = Number(activeStop?.score ?? 0)
 
   useEffect(() => {
     if (!activeRouteId || !activeStop?.customerId) {
       setPolicy(null)
-      setWorkspace(null)
       return
     }
 
@@ -156,14 +156,6 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
           setPolicy(null)
           setNotice(caught instanceof Error ? caught.message : 'دریافت سیاست ویزیت ناموفق بود.')
         }
-      })
-
-    void getVisitWorkspace(activeRouteId, activeStop.customerId)
-      .then((nextWorkspace) => {
-        if (!cancelled) setWorkspace(nextWorkspace)
-      })
-      .catch(() => {
-        if (!cancelled) setWorkspace(null)
       })
 
     return () => {
@@ -313,7 +305,6 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
       adoptServerVisit(draft)
       setVisitState('active')
       flash('ویزیت با تأیید Backend شروع شد.')
-      void getVisitWorkspace(activeRouteId, activeStop.customerId).then(setWorkspace).catch(() => undefined)
     } catch (caught) {
       flash(caught instanceof Error ? caught.message : 'شروع ویزیت ناموفق بود.')
     } finally {

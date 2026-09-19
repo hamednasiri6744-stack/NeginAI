@@ -703,20 +703,17 @@ export async function getRouteMapPlan(routeId: string, routeMode: 'sales_priorit
 export async function prefetchVisitorTour(routeId: string, bootstrapCustomerId?: string) {
   if (!routeId) return
 
-  // The bootstrap already knows the route's first customer. Warm that visit
-  // workspace immediately while map optimization runs in parallel instead of
-  // serializing ~2s of visit intelligence behind ~3s of map planning.
-  const bootstrapVisitWarmup = bootstrapCustomerId
-    ? Promise.allSettled([
-        getVisitPolicy(routeId, bootstrapCustomerId),
-        getVisitWorkspace(routeId, bootstrapCustomerId),
-      ])
-    : Promise.resolve([])
+  // Warm only data needed by the initial tour screen. The full visit workspace
+  // contains invoices, cheque intelligence and detailed purchase analytics that
+  // the current screen does not render, so prefetching it only adds SQL load.
+  const bootstrapPolicyWarmup = bootstrapCustomerId
+    ? getVisitPolicy(routeId, bootstrapCustomerId).catch(() => null)
+    : Promise.resolve(null)
 
   const [, plan] = await Promise.all([
     getNeshanMapConfig().catch(() => null),
     getRouteMapPlan(routeId, 'sales_priority', null),
-    bootstrapVisitWarmup,
+    bootstrapPolicyWarmup,
   ])
   const firstCustomer = plan.ordered_customers.find((customer) => (
     customer.latitude != null && customer.longitude != null
@@ -725,10 +722,7 @@ export async function prefetchVisitorTour(routeId: string, bootstrapCustomerId?:
 
   const customerId = String(firstCustomer.id)
   if (customerId === bootstrapCustomerId) return
-  await Promise.allSettled([
-    getVisitPolicy(routeId, customerId),
-    getVisitWorkspace(routeId, customerId),
-  ])
+  await getVisitPolicy(routeId, customerId).catch(() => null)
 }
 export async function getRouteMapLeg(routeId: string, customerId: string, origin: { latitude: number; longitude: number }) {
   const params = new URLSearchParams({ destination_id: customerId, origin_latitude: String(origin.latitude), origin_longitude: String(origin.longitude) })
