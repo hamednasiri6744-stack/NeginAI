@@ -3,16 +3,16 @@
 Goal: adding features must not silently degrade startup, navigation, animation smoothness, or background network load.
 
 Current measured production baseline (2026-09-19):
-- Initial entry JS: ~351.9 KB raw
+- Initial entry JS: ~338.4 KB raw
 - Initial entry CSS: ~222.1 KB raw
-- Initial HTML-linked assets: ~651.3 KB raw
+- Initial HTML-linked assets: ~627.1 KB raw
 - Largest current lazy Visitor feature chunk: ~42 KB raw
 - Floating Negin AI chunk: ~10.4 KB raw
 
 Enforced budgets:
-- Initial entry JS <= 370 KB
+- Initial entry JS <= 350 KB
 - Initial entry CSS <= 235 KB
-- Initial HTML-linked assets <= 665 KB
+- Initial HTML-linked assets <= 640 KB
 - Each lazy Visitor/feature JS chunk <= 70 KB
 
 `npm run build` now runs the performance budget check after the production build. A regression fails the build.
@@ -55,3 +55,8 @@ Route-scoped CSS phase 2:
 - Moved shared depth keyframes into the lazy Living design-system CSS used by Route/Customers/Reports.
 - Initial CSS dropped from ~267.1 KB to ~222.1 KB raw; initial HTML-linked assets dropped from ~696.3 KB to ~651.3 KB raw.
 - The performance budget was ratcheted down so this reduction cannot silently regress.
+
+Unused query runtime removed:
+- Removed the app-shell QueryClientProvider because no runtime screen imports or uses TanStack Query hooks today.
+- The generated API client may still use TanStack Query in the future, but it remains outside the production graph until actually imported.
+- Initial JS dropped from ~362.6 KB to ~338.4 KB raw; initial HTML-linked assets dropped from ~651.3 KB to ~627.1 KB raw.

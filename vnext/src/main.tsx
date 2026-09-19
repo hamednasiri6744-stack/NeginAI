@@ -1,8 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from 'react-router'
-import { queryClient } from './queryClient'
 import { router } from './router'
 import { PersianDigitsLayer } from './components/PersianDigitsLayer'
 import './design-system/core/index.css'
@@ -21,10 +19,8 @@ if (!root) {
 
 createRoot(root).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <PersianDigitsLayer />
-      <RouterProvider router={router} />
-    </QueryClientProvider>
+    <PersianDigitsLayer />
+    <RouterProvider router={router} />
   </StrictMode>,
 )
 
