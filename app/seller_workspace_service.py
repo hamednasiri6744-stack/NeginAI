@@ -1851,7 +1851,7 @@ WITH RouteCustomers AS (
     AND path.Id = CAST(N'{clean_path_id}' AS uniqueidentifier)
     AND ISNULL(personnel.IsRemoved, 0) = 0 AND ISNULL(personnel.PersonnelIsActive, 1) = 1
     AND ISNULL(template.IsRemoved, 0) = 0 AND ISNULL(path.IsRemoved, 0) = 0
-    AND ISNULL(customer.IsRemoved, 0) = 0 AND ISNULL(customer.IsActive, 1) = 1
+    AND ISNULL(customer.IsRemoved, 0) = 0 AND ISNULL(customer.IsActive, 1) = 1{customer_filter_sql}
 ), SellerBrands AS (
   SELECT DISTINCT goods.BrandRef
   FROM NGT.Personnels AS personnel
@@ -1980,7 +1980,7 @@ WITH RouteCustomers AS (
     AND path.Id = CAST(N'{clean_path_id}' AS uniqueidentifier)
     AND ISNULL(personnel.IsRemoved, 0) = 0 AND ISNULL(personnel.PersonnelIsActive, 1) = 1
     AND ISNULL(template.IsRemoved, 0) = 0 AND ISNULL(path.IsRemoved, 0) = 0
-    AND ISNULL(customer.IsRemoved, 0) = 0 AND ISNULL(customer.IsActive, 1) = 1
+    AND ISNULL(customer.IsRemoved, 0) = 0 AND ISNULL(customer.IsActive, 1) = 1{customer_filter_sql}
 )
 SELECT sale.CustomerId, sale.SellId, MAX(sale.ReportDate) AS ReportDate
 FROM dbo.SalesReviewFast AS sale
@@ -2311,7 +2311,11 @@ def seller_customer_visit_workspace(
     # latency from the first visit workspace load.
     with ThreadPoolExecutor(max_workers=3, thread_name_prefix="seller-visit") as executor:
         analytics_future = executor.submit(
-            seller_route_day_analytics, settings, username, path_id
+            seller_route_day_analytics,
+            settings,
+            username,
+            path_id,
+            resolved_customer_id,
         )
         invoices_future = executor.submit(
             seller_customer_open_invoices, settings, username, resolved_customer_id
