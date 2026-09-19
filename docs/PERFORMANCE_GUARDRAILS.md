@@ -92,3 +92,10 @@ Metadata lock isolation:
 - Existing schema metadata is reused and the next full scan is deferred until SCHEMA_SYNC_INTERVAL; empty/first-run installs still scan immediately.
 - This prevents the large schema cache rewrite from monopolizing SQLite's writer lock during operational startup.
 - Verified after restart: operational BEGIN IMMEDIATE remained available after background services started, while the previous startup path reproduced database-is-locked failures.
+
+Public tunnel transport cleanup (2026-09-19):
+- Found duplicate neginai-vnext Cloudflare connectors and removed the stale duplicate, preventing traffic from being load-balanced across two independently launched tunnel processes.
+- Cloudflare connectivity pre-checks confirmed UDP/QUIC to the tunnel edge is unavailable from the current network, while TCP/HTTP2 passes. The vNext tunnel therefore stays explicitly on HTTP2 to avoid QUIC retry delays.
+- Upgraded the active vNext connector from cloudflared 2026.8.3 to 2026.9.1 using a user-local pinned binary.
+- Warm authenticated public tour-bootstrap latency from the current remote test host improved from roughly 1.0-1.4 s per request on the old single connector to roughly 0.40-0.59 s on the new single connector. Local warm backend time remains in the low-millisecond range, so public tunnel/network transit is now the dominant cost.
+- The runtime supervisor now owns the canonical backend on port 8011 and the primary vNext tunnel. A delayed Startup fallback launches the tunnel only if the supervisor did not, preventing duplicate connectors while retaining failover.
