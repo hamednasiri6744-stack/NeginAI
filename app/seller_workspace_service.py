@@ -829,7 +829,7 @@ WHERE personnel.BackOfficeId = N'{personnel_id}'
   AND ISNULL(template.IsRemoved, 0) = 0
   AND ISNULL(path.IsRemoved, 0) = 0
   AND ISNULL(customer.IsRemoved, 0) = 0
-  AND ISNULL(customer.IsActive, 1) = 1
+  AND ISNULL(customer.IsActive, 1) = 1{customer_filter_sql}
 ORDER BY assigned.RowIndex, customer.StoreName, customer.CustomerName
 """.strip()
     assigned = _query_rows(settings, customers_sql)
