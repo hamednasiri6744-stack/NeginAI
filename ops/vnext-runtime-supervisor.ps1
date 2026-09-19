@@ -61,7 +61,7 @@ function StartGarnet{
     $existing | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
     Start-Sleep 1
   }
-  Start-Process $garnet -ArgumentList '--bind','127.0.0.1','--port',"$garnetPort" -WindowStyle Hidden -RedirectStandardOutput (Join-Path $log 'garnet.out.log') -RedirectStandardError (Join-Path $log 'garnet.err.log')
+  Start-Process $garnet -ArgumentList '--bind','127.0.0.1','--port',"$garnetPort",'--lua','--lua-transaction-mode' -WindowStyle Hidden -RedirectStandardOutput (Join-Path $log 'garnet.out.log') -RedirectStandardError (Join-Path $log 'garnet.err.log')
   for($i=0; $i -lt 10 -and !(Listening $garnetPort); $i++){ Start-Sleep -Milliseconds 500 }
 }
 function StartFrontend{
