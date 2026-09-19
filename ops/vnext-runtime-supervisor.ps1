@@ -8,6 +8,8 @@ $node='C:\Program Files\nodejs\node.exe'
 $vite=Join-Path $front 'node_modules\vite\bin\vite.js'
 $backendPort=8011
 $garnetPort=6379
+$supervisorIntervalSeconds=5
+$backendFailureThreshold=2
 $garnet='D:\NeginAI-Runtime\Garnet\v2.1.8\net8.0\GarnetServer.exe'
 $tunnelConfig='C:\Users\Sys\.cloudflared\neginai-vnext.yml'
 $cloudflared=Join-Path $env:LOCALAPPDATA 'NeginAI\cloudflared\cloudflared.exe'
@@ -86,7 +88,7 @@ while($true){
     $backendFailures=0
   } else {
     $backendFailures++
-    if($backendFailures -ge 3){
+    if($backendFailures -ge $backendFailureThreshold){
       @(BackendProcesses) | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
       $backendFailures=0
       Start-Sleep 1
@@ -95,5 +97,5 @@ while($true){
   }
 
   StartFrontend
-  Start-Sleep 20
+  Start-Sleep $supervisorIntervalSeconds
 }
