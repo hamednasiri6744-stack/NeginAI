@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { DownloadIcon, EyeIcon, EyeOffIcon, LockIcon, UserIcon } from './Icons'
+import '../styles/login-ai-poweron.css'
 
 type LoginScreenProps = {
   onLogin: (username: string, password: string) => Promise<void>
@@ -123,7 +124,11 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
     <main className="login-page" dir="rtl">
       <section className="login-shell" aria-label="ورود به Negin AI">
 <header className="login-brand">
-          <img className="brand-logo" src="/assets/neginai-logo-transparent.png" alt="Negin AI" />
+          <div className="login-core-stage">
+            <span className="login-core-liquid" aria-hidden="true" />
+            <span className="login-core-grid" aria-hidden="true" />
+            <img className="brand-logo" src="/assets/neginai-logo-transparent.png" alt="Negin AI" />
+          </div>
           <div className="brand-wordmark" dir="ltr">Negin <span>AI</span></div>
           <p>سامانه هوشمند نگین پخش</p>
         </header>
