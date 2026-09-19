@@ -9,9 +9,7 @@ body { min-width: 320px; overflow: hidden; font-family: Inter, system-ui, sans-s
   overflow: hidden;
   color: #eef3f7;
   background:
-    radial-gradient(circle at 50% -10%, rgba(38,91,126,.10), transparent 34%),
-    radial-gradient(circle at 82% 72%, rgba(182,121,27,.022), transparent 34%),
-    linear-gradient(180deg,#020a12 0%,#020a12 58%,#01060b 100%);
+    linear-gradient(180deg,#01060b 0%,#020a12 48%,#010508 100%);
 }
 
 #material {
@@ -21,16 +19,16 @@ body { min-width: 320px; overflow: hidden; font-family: Inter, system-ui, sans-s
   height: 116%;
   display: block;
   pointer-events: none;
-  opacity: .76;
-  filter: saturate(.92) contrast(1.06) brightness(.78);
+  opacity: .52;
+  filter: saturate(.82) contrast(1.12) brightness(.64);
 }
 .veil {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse at 50% 40%, transparent 0 18%, rgba(1,6,11,.16) 52%, rgba(1,5,8,.78) 100%),
-    linear-gradient(90deg, rgba(1,6,10,.46), transparent 24% 76%, rgba(1,6,10,.46));
+    radial-gradient(ellipse at 50% 38%, transparent 0 14%, rgba(1,6,11,.28) 46%, rgba(1,4,7,.90) 100%),
+    linear-gradient(90deg, rgba(0,4,7,.62), transparent 22% 78%, rgba(0,4,7,.62));
   mix-blend-mode: multiply;
 }
 
