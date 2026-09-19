@@ -3,7 +3,7 @@ import { useMemo, type Dispatch, type FormEvent, type SetStateAction } from 'rea
 import { useLocation } from 'react-router'
 import { neginApi } from '../api/neginApi'
 import { useVisitorLiveData } from '../state/VisitorLiveDataContext'
-import { useVisitorWorkflow } from '../state/VisitorWorkflowContext'
+import { useVisitorWorkflowSummary, useVisitorWorkflowVisit } from '../state/VisitorWorkflowContext'
 import { AiSparkIcon, SendIcon } from './Icons'
 import type { FloatingAiMessage } from './FloatingNeginAi'
 import './FloatingNeginAiPanel.css'
@@ -85,7 +85,8 @@ export function FloatingNeginAiPanel({
 }: Props) {
   const location = useLocation()
   const { activeRouteId, activeRouteTitle, customerById } = useVisitorLiveData()
-  const { activeVisit, routeSummary } = useVisitorWorkflow()
+  const { activeVisit } = useVisitorWorkflowVisit()
+  const { routeSummary } = useVisitorWorkflowSummary()
 
   const context = useMemo(
     () => resolveContext(location.pathname, location.search),

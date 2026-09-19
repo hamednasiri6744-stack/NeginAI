@@ -21,8 +21,8 @@ import {
   WalletIcon,
 } from './Icons'
 import { VisitorPicker } from './VisitorPicker'
-import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
-import { useVisitorWorkflow } from '../state/VisitorWorkflowContext'
+import { useVisitorNotificationBadge } from '../state/VisitorNotificationsContext'
+import { useVisitorWorkflowVisit } from '../state/VisitorWorkflowContext'
 import { AppHeader, BottomDock, EntityHeader, FeedbackState, SegmentedControl, StatusChip } from '../design-system/components'
 import '../design-system/living/index.css'
 import '../styles/living-ui-pilot.css'
@@ -92,10 +92,10 @@ function navigateCustomer(customer: SellerCustomer) {
 }
 
 export function VisitorCustomer360Screen({ customerId = '', onNavigate, onBack }: Props) {
-  const { unreadCount } = useVisitorNotifications()
+  const { unreadCount } = useVisitorNotificationBadge()
   const { profile: userProfile } = useVisitorAuth()
   const { activeRouteId, customerById, offDay, loading: liveDataLoading, workCalendar } = useVisitorLiveData()
-  const { activeVisit } = useVisitorWorkflow()
+  const { activeVisit } = useVisitorWorkflowVisit()
   const [tab, setTab] = useState<Tab>('overview')
   const [profile, setProfile] = useState<CustomerProfileResponse | null>(null)
   const [loading, setLoading] = useState(false)

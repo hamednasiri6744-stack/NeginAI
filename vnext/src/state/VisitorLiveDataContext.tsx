@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { neginApi, type RouteCustomersResponse, type SellerCustomer, type SellerRoute, type SellerRoutesResponse, type SellerTargetPulse, type SellerWorkCalendar } from '../api/neginApi'
 import { useVisitorAuth } from './VisitorAuthContext'
-import { useVisitorWorkflow } from './VisitorWorkflowContext'
+import { useVisitorWorkflowActions } from './VisitorWorkflowContext'
 import { loadVisitorOfflineSnapshot, saveVisitorOfflineSnapshot } from './visitorOfflineSnapshotStore'
 
 type VisitorLiveDataValue = {
@@ -27,7 +27,7 @@ const VisitorLiveDataContext = createContext<VisitorLiveDataValue | null>(null)
 
 export function VisitorLiveDataProvider({ children }: { children: ReactNode }) {
   const { authenticated, restoringSession, profile } = useVisitorAuth()
-  const { hydrateLiveRoute, resetWorkflow } = useVisitorWorkflow()
+  const { hydrateLiveRoute, resetWorkflow } = useVisitorWorkflowActions()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [routesData, setRoutesData] = useState<SellerRoutesResponse | null>(null)

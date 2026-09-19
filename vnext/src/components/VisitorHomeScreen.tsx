@@ -3,7 +3,7 @@ import type { CSSProperties, ReactNode } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { useVisitorAuth } from '../state/VisitorAuthContext'
 import { useVisitorLiveData } from '../state/VisitorLiveDataContext'
-import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
+import { useVisitorNotificationBadge } from '../state/VisitorNotificationsContext'
 import {
   BellIcon,
   ChartIcon,
@@ -203,7 +203,7 @@ function TargetCard({
 }
 
 export function VisitorHomeScreen({ onNavigate }: Props) {
-  const { attentionCount } = useVisitorNotifications()
+  const { attentionCount } = useVisitorNotificationBadge()
   const { profile } = useVisitorAuth()
   const {
     error,

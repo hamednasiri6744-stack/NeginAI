@@ -18,7 +18,7 @@ import {
 } from './Icons'
 import { useVisitorAuth } from '../state/VisitorAuthContext'
 import { useVisitorLiveData } from '../state/VisitorLiveDataContext'
-import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
+import { useVisitorNotificationBadge } from '../state/VisitorNotificationsContext'
 
 type Props = {
   onNavigate: (path: string) => void
@@ -27,7 +27,7 @@ type Props = {
 }
 
 export function VisitorProfileSettingsScreen({ onNavigate, onLogout, onClose }: Props) {
-  const { unreadCount } = useVisitorNotifications()
+  const { unreadCount } = useVisitorNotificationBadge()
   const { profile, changePassword } = useVisitorAuth()
   const { activeRouteTitle, loading, reload } = useVisitorLiveData()
   const [notice, setNotice] = useState<string | null>(null)

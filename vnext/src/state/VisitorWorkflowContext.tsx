@@ -130,7 +130,24 @@ function liveStops(customers: SellerCustomer[]): VisitorRouteStop[] {
   })
 }
 
+type VisitorWorkflowActionsValue = Pick<
+  VisitorWorkflowValue,
+  'hydrateLiveRoute' | 'applyRoutePlan' | 'updateNavigationMetrics' | 'selectCustomer' | 'adoptServerVisit' | 'completeVisit' | 'attachDraft' | 'resetWorkflow'
+>
+
+type VisitorWorkflowVisitValue = Pick<
+  VisitorWorkflowState,
+  'activeCustomerId' | 'activeVisit' | 'activeDraftId'
+>
+
+type VisitorWorkflowSummaryValue = {
+  routeSummary: VisitorWorkflowValue['routeSummary']
+}
+
 const VisitorWorkflowContext = createContext<VisitorWorkflowValue | null>(null)
+const VisitorWorkflowActionsContext = createContext<VisitorWorkflowActionsValue | null>(null)
+const VisitorWorkflowVisitContext = createContext<VisitorWorkflowVisitValue | null>(null)
+const VisitorWorkflowSummaryContext = createContext<VisitorWorkflowSummaryValue | null>(null)
 
 export function VisitorWorkflowProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<VisitorWorkflowState>(readState)
@@ -138,9 +155,14 @@ export function VisitorWorkflowProvider({ children }: { children: ReactNode }) {
   const update = useCallback((recipe: (current: VisitorWorkflowState) => VisitorWorkflowState) => {
     setState((current) => {
       const next = recipe(current)
+      if (next === current) return current
       persistState(next)
       return next
     })
+  }, [])
+
+  const updateTransient = useCallback((recipe: (current: VisitorWorkflowState) => VisitorWorkflowState) => {
+    setState((current) => recipe(current))
   }, [])
 
   const hydrateLiveRoute = useCallback((routeId: string, customers: SellerCustomer[]) => {
@@ -197,11 +219,22 @@ export function VisitorWorkflowProvider({ children }: { children: ReactNode }) {
     const distance = String(leg.distance?.text || '').trim()
     const eta = String(leg.duration?.text || '').trim()
     if (!distance && !eta) return
-    update((current) => ({ ...current, routeStops: current.routeStops.map((stop) => stop.customerId === customerId ? { ...stop, distance: distance || stop.distance, eta: eta || stop.eta } : stop) }))
-  }, [update])
+    updateTransient((current) => {
+      let changed = false
+      const routeStops = current.routeStops.map((stop) => {
+        if (stop.customerId !== customerId) return stop
+        const nextDistance = distance || stop.distance
+        const nextEta = eta || stop.eta
+        if (nextDistance === stop.distance && nextEta === stop.eta) return stop
+        changed = true
+        return { ...stop, distance: nextDistance, eta: nextEta }
+      })
+      return changed ? { ...current, routeStops } : current
+    })
+  }, [updateTransient])
 
   const selectCustomer = useCallback((customerId: string | null) => {
-    update((current) => ({ ...current, activeCustomerId: customerId }))
+    update((current) => current.activeCustomerId === customerId ? current : ({ ...current, activeCustomerId: customerId }))
   }, [update])
 
   const adoptServerVisit = useCallback((draft: PrevisitVisitDraftResponse) => {
@@ -240,7 +273,7 @@ export function VisitorWorkflowProvider({ children }: { children: ReactNode }) {
   }, [update])
 
   const attachDraft = useCallback((draftId: string | null) => {
-    update((current) => ({ ...current, activeDraftId: draftId }))
+    update((current) => current.activeDraftId === draftId ? current : ({ ...current, activeDraftId: draftId }))
   }, [update])
 
   const resetWorkflow = useCallback(() => {
@@ -262,9 +295,7 @@ export function VisitorWorkflowProvider({ children }: { children: ReactNode }) {
     }
   }, [state.routeStops])
 
-  const value = useMemo<VisitorWorkflowValue>(() => ({
-    ...state,
-    routeSummary,
+  const actionsValue = useMemo<VisitorWorkflowActionsValue>(() => ({
     hydrateLiveRoute,
     applyRoutePlan,
     updateNavigationMetrics,
@@ -273,13 +304,50 @@ export function VisitorWorkflowProvider({ children }: { children: ReactNode }) {
     completeVisit,
     attachDraft,
     resetWorkflow,
-  }), [adoptServerVisit, applyRoutePlan, attachDraft, completeVisit, hydrateLiveRoute, resetWorkflow, routeSummary, selectCustomer, state, updateNavigationMetrics])
+  }), [adoptServerVisit, applyRoutePlan, attachDraft, completeVisit, hydrateLiveRoute, resetWorkflow, selectCustomer, updateNavigationMetrics])
+  const visitValue = useMemo<VisitorWorkflowVisitValue>(() => ({
+    activeCustomerId: state.activeCustomerId,
+    activeVisit: state.activeVisit,
+    activeDraftId: state.activeDraftId,
+  }), [state.activeCustomerId, state.activeDraftId, state.activeVisit])
+  const summaryValue = useMemo<VisitorWorkflowSummaryValue>(() => ({ routeSummary }), [routeSummary])
+  const value = useMemo<VisitorWorkflowValue>(() => ({
+    ...state,
+    routeSummary,
+    ...actionsValue,
+  }), [actionsValue, routeSummary, state])
 
-  return <VisitorWorkflowContext.Provider value={value}>{children}</VisitorWorkflowContext.Provider>
+  return (
+    <VisitorWorkflowActionsContext.Provider value={actionsValue}>
+      <VisitorWorkflowVisitContext.Provider value={visitValue}>
+        <VisitorWorkflowSummaryContext.Provider value={summaryValue}>
+          <VisitorWorkflowContext.Provider value={value}>{children}</VisitorWorkflowContext.Provider>
+        </VisitorWorkflowSummaryContext.Provider>
+      </VisitorWorkflowVisitContext.Provider>
+    </VisitorWorkflowActionsContext.Provider>
+  )
 }
 
 export function useVisitorWorkflow() {
   const value = useContext(VisitorWorkflowContext)
   if (!value) throw new Error('useVisitorWorkflow must be used inside VisitorWorkflowProvider')
+  return value
+}
+
+export function useVisitorWorkflowActions() {
+  const value = useContext(VisitorWorkflowActionsContext)
+  if (!value) throw new Error('useVisitorWorkflowActions must be used inside VisitorWorkflowProvider')
+  return value
+}
+
+export function useVisitorWorkflowVisit() {
+  const value = useContext(VisitorWorkflowVisitContext)
+  if (!value) throw new Error('useVisitorWorkflowVisit must be used inside VisitorWorkflowProvider')
+  return value
+}
+
+export function useVisitorWorkflowSummary() {
+  const value = useContext(VisitorWorkflowSummaryContext)
+  if (!value) throw new Error('useVisitorWorkflowSummary must be used inside VisitorWorkflowProvider')
   return value
 }

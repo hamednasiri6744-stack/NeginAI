@@ -16,7 +16,7 @@ import {
 import { getRouteSavedRequests, type RouteSavedRequest } from '../api/neginApi'
 import { useVisitorAuth } from '../state/VisitorAuthContext'
 import { useVisitorLiveData } from '../state/VisitorLiveDataContext'
-import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
+import { useVisitorNotificationBadge } from '../state/VisitorNotificationsContext'
 
 type Props = { onNavigate: (path: string) => void }
 
@@ -42,7 +42,7 @@ function lineNumber(line: Record<string, unknown>, key: string) {
 
 export function VisitorOrderArchiveScreen({ onNavigate }: Props) {
   const { profile } = useVisitorAuth()
-  const { unreadCount } = useVisitorNotifications()
+  const { unreadCount } = useVisitorNotificationBadge()
   const { activeRouteId, activeRouteTitle, customerById } = useVisitorLiveData()
   const [requests, setRequests] = useState<RouteSavedRequest[]>([])
   const [selected, setSelected] = useState<RouteSavedRequest | null>(null)

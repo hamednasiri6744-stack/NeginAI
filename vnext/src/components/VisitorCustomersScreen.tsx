@@ -20,7 +20,7 @@ import { VisitorPicker } from './VisitorPicker'
 import { AppHeader, BottomDock } from '../design-system/components'
 import { useVisitorAuth } from '../state/VisitorAuthContext'
 import { useVisitorLiveData } from '../state/VisitorLiveDataContext'
-import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
+import { useVisitorNotificationBadge } from '../state/VisitorNotificationsContext'
 import { neginApi, type SellerCustomer } from '../api/neginApi'
 import '../design-system/living/index.css'
 import '../styles/visitor-customers-depth.css'
@@ -71,7 +71,7 @@ function hasFinancialRisk(customer: SellerCustomer) {
 }
 
 export function VisitorCustomersScreen({ onNavigate }: Props) {
-  const { attentionCount, highestSeverity } = useVisitorNotifications()
+  const { attentionCount, highestSeverity } = useVisitorNotificationBadge()
   const { profile } = useVisitorAuth()
   const { customers, customerCount, activeRouteId, activeRouteTitle, routes, offDay, loading, error, reload } = useVisitorLiveData()
   const [fullCustomers, setFullCustomers] = useState<SellerCustomer[] | null>(null)

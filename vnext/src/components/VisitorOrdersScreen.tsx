@@ -16,8 +16,8 @@ import {
 } from '../api/neginApi'
 import { useVisitorAuth } from '../state/VisitorAuthContext'
 import { useVisitorLiveData } from '../state/VisitorLiveDataContext'
-import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
-import { useVisitorWorkflow } from '../state/VisitorWorkflowContext'
+import { useVisitorNotificationBadge } from '../state/VisitorNotificationsContext'
+import { useVisitorWorkflowActions, useVisitorWorkflowVisit } from '../state/VisitorWorkflowContext'
 import {
   BellIcon,
   BoxIcon,
@@ -58,9 +58,10 @@ function number(value: number) {
 
 export function VisitorOrdersScreen({ onNavigate, customerId, visitId, returnTo }: Props) {
   const { profile } = useVisitorAuth()
-  const { unreadCount } = useVisitorNotifications()
+  const { unreadCount } = useVisitorNotificationBadge()
   const { activeRouteId, activeRouteTitle, customers, routes, offDay } = useVisitorLiveData()
-  const { activeVisit, completeVisit } = useVisitorWorkflow()
+  const { activeVisit } = useVisitorWorkflowVisit()
+  const { completeVisit } = useVisitorWorkflowActions()
 
   const effectiveVisitId = visitId ?? activeVisit?.id
   const [visitDraft, setVisitDraft] = useState<Awaited<ReturnType<typeof getVisitDraft>> | null>(null)

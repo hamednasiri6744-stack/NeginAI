@@ -23,7 +23,7 @@ import {
   type SellerVoucherReturnReportResponse,
 } from '../api/neginApi'
 import { useVisitorAuth } from '../state/VisitorAuthContext'
-import { useVisitorNotifications } from '../state/VisitorNotificationsContext'
+import { useVisitorNotificationBadge } from '../state/VisitorNotificationsContext'
 import { AppHeader, BottomDock } from '../design-system/components'
 import '../design-system/living/index.css'
 import '../styles/visitor-reports-depth.css'
@@ -61,7 +61,7 @@ function dateTime(value: string) {
 
 export function VisitorReportsScreen({ onNavigate }: Props) {
   const { profile } = useVisitorAuth()
-  const { attentionCount, highestSeverity } = useVisitorNotifications()
+  const { attentionCount, highestSeverity } = useVisitorNotificationBadge()
   const [data, setData] = useState<ReportData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

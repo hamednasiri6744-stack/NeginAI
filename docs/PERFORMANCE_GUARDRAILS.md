@@ -3,9 +3,9 @@
 Goal: adding features must not silently degrade startup, navigation, animation smoothness, or background network load.
 
 Current measured production baseline (2026-09-19):
-- Initial entry JS: ~338.4 KB raw
+- Initial entry JS: ~340.4 KB raw
 - Initial entry CSS: ~222.1 KB raw
-- Initial HTML-linked assets: ~627.1 KB raw
+- Initial HTML-linked assets: ~629.2 KB raw
 - Largest current lazy Visitor feature chunk: ~42 KB raw
 - Floating Negin AI chunk: ~10.4 KB raw
 
@@ -60,3 +60,10 @@ Unused query runtime removed:
 - Removed the app-shell QueryClientProvider because no runtime screen imports or uses TanStack Query hooks today.
 - The generated API client may still use TanStack Query in the future, but it remains outside the production graph until actually imported.
 - Initial JS dropped from ~362.6 KB to ~338.4 KB raw; initial HTML-linked assets dropped from ~651.3 KB to ~627.1 KB raw.
+
+Context render isolation:
+- Split notification badge data from the full notification feed, so Home/Route/Orders/Customers/Reports/Profile do not rerender for notification loading/live-connection state when badge values are unchanged.
+- Split stable workflow actions, active-visit state, and route summary from the full Route workflow context.
+- LiveData, Login and Profile now consume stable workflow actions instead of the full route state.
+- Customer and Orders consume only active-visit state; Floating Negin AI consumes only active-visit + route summary while open.
+- Navigation distance/ETA updates are transient, skip sessionStorage writes, and bail out when the values are unchanged.

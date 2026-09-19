@@ -19,7 +19,19 @@ type VisitorNotificationsValue = {
   resetNotifications: () => void
 }
 
+type VisitorNotificationBadgeValue = {
+  unreadCount: number
+  attentionCount: number
+  highestSeverity: NotificationSeverity | null
+}
+
+type VisitorNotificationsControlValue = {
+  resetNotifications: () => void
+}
+
 const VisitorNotificationsContext = createContext<VisitorNotificationsValue | null>(null)
+const VisitorNotificationBadgeContext = createContext<VisitorNotificationBadgeValue | null>(null)
+const VisitorNotificationsControlContext = createContext<VisitorNotificationsControlValue | null>(null)
 
 export function VisitorNotificationsProvider({ children }: { children: ReactNode }) {
   const { authenticated, restoringSession } = useVisitorAuth()
@@ -153,12 +165,38 @@ export function VisitorNotificationsProvider({ children }: { children: ReactNode
   const value = useMemo<VisitorNotificationsValue>(() => ({
     items, unreadCount, attentionCount, highestSeverity, loading, error, liveConnected, reload, markRead, markAcknowledged, markAllRead, resetNotifications,
   }), [items, unreadCount, attentionCount, highestSeverity, loading, error, liveConnected, reload, markRead, markAcknowledged, markAllRead, resetNotifications])
+  const badgeValue = useMemo<VisitorNotificationBadgeValue>(() => ({
+    unreadCount,
+    attentionCount,
+    highestSeverity,
+  }), [attentionCount, highestSeverity, unreadCount])
+  const controlValue = useMemo<VisitorNotificationsControlValue>(() => ({
+    resetNotifications,
+  }), [resetNotifications])
 
-  return <VisitorNotificationsContext.Provider value={value}>{children}</VisitorNotificationsContext.Provider>
+  return (
+    <VisitorNotificationsControlContext.Provider value={controlValue}>
+      <VisitorNotificationBadgeContext.Provider value={badgeValue}>
+        <VisitorNotificationsContext.Provider value={value}>{children}</VisitorNotificationsContext.Provider>
+      </VisitorNotificationBadgeContext.Provider>
+    </VisitorNotificationsControlContext.Provider>
+  )
 }
 
 export function useVisitorNotifications() {
   const value = useContext(VisitorNotificationsContext)
   if (!value) throw new Error('useVisitorNotifications must be used inside VisitorNotificationsProvider')
+  return value
+}
+
+export function useVisitorNotificationBadge() {
+  const value = useContext(VisitorNotificationBadgeContext)
+  if (!value) throw new Error('useVisitorNotificationBadge must be used inside VisitorNotificationsProvider')
+  return value
+}
+
+export function useVisitorNotificationsControl() {
+  const value = useContext(VisitorNotificationsControlContext)
+  if (!value) throw new Error('useVisitorNotificationsControl must be used inside VisitorNotificationsProvider')
   return value
 }

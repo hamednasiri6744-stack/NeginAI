@@ -70,10 +70,10 @@ const VisitorProfileSettingsScreen = lazyWithRecovery(() => import('./components
 const FloatingNeginAi = lazyWithRecovery(() => import('./components/FloatingNeginAi').then((module) => ({ default: module.FloatingNeginAi })))
 import { ProfileModalA11yBridge } from './components/ProfileModalA11yBridge'
 import { VisitorNavigationProvider, clearVisitorNavigationState, useVisitorNavigation } from './navigation/VisitorNavigationContext'
-import { VisitorWorkflowProvider, useVisitorWorkflow } from './state/VisitorWorkflowContext'
+import { VisitorWorkflowProvider, useVisitorWorkflowActions } from './state/VisitorWorkflowContext'
 import { VisitorLiveDataProvider } from './state/VisitorLiveDataContext'
 import { VisitorAuthProvider, useVisitorAuth } from './state/VisitorAuthContext'
-import { VisitorNotificationsProvider, useVisitorNotifications } from './state/VisitorNotificationsContext'
+import { VisitorNotificationsProvider, useVisitorNotificationsControl } from './state/VisitorNotificationsContext'
 import { clearPrototypeDrafts } from './state/visitorDraftStore'
 import { clearVisitorOrderWorkspace } from './state/visitorOrderWorkspaceStore'
 
@@ -133,8 +133,8 @@ export function AppShellRoute() {
 export function LoginRoute() {
   const { go } = useVisitorNavigation()
   const { authenticated, restoringSession, signIn } = useVisitorAuth()
-  const { resetWorkflow } = useVisitorWorkflow()
-  const { resetNotifications } = useVisitorNotifications()
+  const { resetWorkflow } = useVisitorWorkflowActions()
+  const { resetNotifications } = useVisitorNotificationsControl()
 
   if (restoringSession) return null
   if (authenticated) return <Navigate to="/visitor/home" replace />
@@ -230,8 +230,8 @@ export function VisitorCustomer360Route() {
 export function VisitorProfileSettingsRoute() {
   const { go, back } = useVisitorNavigation()
   const { authenticated, restoringSession, signOut } = useVisitorAuth()
-  const { resetWorkflow } = useVisitorWorkflow()
-  const { resetNotifications } = useVisitorNotifications()
+  const { resetWorkflow } = useVisitorWorkflowActions()
+  const { resetNotifications } = useVisitorNotificationsControl()
   return protectedView(authenticated, restoringSession, <VisitorProfileSettingsScreen
       onNavigate={(path) => go(path)}
       onClose={() => back('/visitor/home')}
