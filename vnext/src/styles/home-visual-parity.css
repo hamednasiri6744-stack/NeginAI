@@ -307,28 +307,70 @@
 #root .vh-page :where(.vc-depth-portal strong,.vrep-depth-portal strong) {
   color: var(--ng-text) !important;
 }
-/* Login uses the same flat Home material language. */
+/* Login test v1: compact premium glass card; keep the locked Negin palette. */
 #root .login-page .auth-panel {
-  padding-inline: 0 !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  border-block: 1px solid var(--ng-home-line) !important;
-  background: transparent !important;
-  background-image: none !important;
-  box-shadow: none !important;
-  backdrop-filter: none !important;
+  width: min(100%, 348px) !important;
+  margin-inline: auto !important;
+  padding: 18px 16px 16px !important;
+  position: relative !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(190, 211, 230, .16) !important;
+  border-radius: 28px !important;
+  background:
+    linear-gradient(155deg, rgba(255,255,255,.075), rgba(255,255,255,.018) 34%, rgba(2,9,16,.24) 82%),
+    rgba(7, 22, 35, .54) !important;
+  background-image:
+    linear-gradient(155deg, rgba(255,255,255,.075), rgba(255,255,255,.018) 34%, rgba(2,9,16,.24) 82%) !important;
+  box-shadow:
+    0 24px 58px rgba(0,0,0,.36),
+    inset 0 1px 0 rgba(255,255,255,.10),
+    inset 0 -1px 0 rgba(255,255,255,.025) !important;
+  backdrop-filter: blur(24px) saturate(1.25) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(1.25) !important;
+}
+#root .login-page .auth-panel::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+  background:
+    linear-gradient(118deg, transparent 10%, rgba(255,255,255,.045) 42%, transparent 68%) !important;
+  opacity: .72 !important;
+}
+#root .login-page .auth-panel > * {
+  position: relative;
+  z-index: 1;
 }
 #root .login-page .field {
-  border-color: var(--ng-home-line) !important;
-  background: var(--ng-home-soft) !important;
-  background-image: none !important;
-  box-shadow: none !important;
+  min-height: 48px !important;
+  border-color: rgba(186, 207, 225, .15) !important;
+  background:
+    linear-gradient(180deg, rgba(10,31,48,.52), rgba(4,18,29,.60)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.035),
+    inset 0 -8px 18px rgba(0,0,0,.12) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+#root .login-page .field:focus-within {
+  border-color: rgba(241, 195, 83, .38) !important;
+  box-shadow:
+    0 0 0 3px rgba(230,174,57,.055),
+    inset 0 1px 0 rgba(255,255,255,.05) !important;
 }
 #root .login-page .install-button,
 #root .login-page .login-message {
-  border-color: var(--ng-home-line) !important;
-  background: transparent !important;
-  box-shadow: none !important;
+  border-color: rgba(174, 199, 220, .13) !important;
+  background: rgba(5, 19, 31, .34) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.025) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+@media (max-width: 380px) {
+  #root .login-page .auth-panel {
+    width: min(100%, 332px) !important;
+    padding-inline: 14px !important;
+  }
 }
 /* === Home parity v4: exact Home darkness on every screen === */
 html,
