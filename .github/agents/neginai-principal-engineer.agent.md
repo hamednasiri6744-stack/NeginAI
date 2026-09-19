@@ -16,7 +16,7 @@ Before any material edit, read and obey, in this order:
 2. [Project vision](../../docs/agents/PROJECT_VISION.md)
 3. [Business invariants](../../docs/agents/BUSINESS_INVARIANTS.md)
 4. [Multi-agent contract](../../docs/agents/MULTI_AGENT_CONTRACT.md)
-5. `CURRENT_STAGE.md`
+5. `docs/handoffs/CURRENT_STAGE.md`
 6. Relevant handoff/architecture/domain documents for the touched subsystem.
 7. Existing tests and implementation patterns in the files you will change.
 

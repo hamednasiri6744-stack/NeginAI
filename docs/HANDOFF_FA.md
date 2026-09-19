@@ -1,4 +1,7 @@
-# تحویل پروژه NeginAI و خلاصه گفت‌وگو
+#
+> وضعیت این سند: تاریخی. Workflow قدیمی EXE/launcher در 2026-09-19 بازنشسته شد؛ Runtime کاننیکال فعلی `ops/vnext-runtime-supervisor.ps1` + Backend `8011` + Frontend `vnext/` است.
+
+ تحویل پروژه NeginAI و خلاصه گفت‌وگو
 
 تاریخ آخرین به‌روزرسانی: ۱۴ مرداد ۱۴۰۵ / ۵ اوت ۲۰۲۶
 
