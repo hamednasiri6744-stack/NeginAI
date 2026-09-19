@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { useVisitorAuth } from '../state/VisitorAuthContext'
@@ -229,7 +229,14 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
     const saved = Number(window.localStorage.getItem('negin-home-style-intensity') ?? 45)
     return Number.isFinite(saved) ? Math.max(0, Math.min(100, saved)) : 45
   })
+  const [styleMotionAwake, setStyleMotionAwake] = useState(true)
+  const motionRestartFrameRef = useRef<number | null>(null)
+  const motionRestartSecondFrameRef = useRef<number | null>(null)
   const reducedMotion = useReducedMotion()
+  const dynamicMotionRequested = styleLabEnabled
+    && HOME_DYNAMIC_STYLES.has(cardStyle)
+    && styleIntensity > 0
+    && !reducedMotion
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 30_000)
@@ -257,6 +264,58 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
       window.removeEventListener('negin-style-lab-toggle', syncStyleLabEnabled)
     }
   }, [])
+
+  useEffect(() => {
+    if (!dynamicMotionRequested) {
+      setStyleMotionAwake(false)
+      return
+    }
+
+    setStyleMotionAwake(true)
+
+    const restartDynamicMotion = () => {
+      if (document.visibilityState === 'hidden') return
+      if (motionRestartFrameRef.current !== null) {
+        window.cancelAnimationFrame(motionRestartFrameRef.current)
+      }
+      if (motionRestartSecondFrameRef.current !== null) {
+        window.cancelAnimationFrame(motionRestartSecondFrameRef.current)
+      }
+
+      setStyleMotionAwake(false)
+      motionRestartFrameRef.current = window.requestAnimationFrame(() => {
+        motionRestartSecondFrameRef.current = window.requestAnimationFrame(() => {
+          setStyleMotionAwake(true)
+          motionRestartFrameRef.current = null
+          motionRestartSecondFrameRef.current = null
+        })
+      })
+    }
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') restartDynamicMotion()
+    }
+    const handlePageShow = () => restartDynamicMotion()
+    const handleFocus = () => restartDynamicMotion()
+
+    document.addEventListener('visibilitychange', handleVisibility)
+    window.addEventListener('pageshow', handlePageShow)
+    window.addEventListener('focus', handleFocus)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility)
+      window.removeEventListener('pageshow', handlePageShow)
+      window.removeEventListener('focus', handleFocus)
+      if (motionRestartFrameRef.current !== null) {
+        window.cancelAnimationFrame(motionRestartFrameRef.current)
+        motionRestartFrameRef.current = null
+      }
+      if (motionRestartSecondFrameRef.current !== null) {
+        window.cancelAnimationFrame(motionRestartSecondFrameRef.current)
+        motionRestartSecondFrameRef.current = null
+      }
+    }
+  }, [dynamicMotionRequested])
 
   const weekday = new Intl.DateTimeFormat('fa-IR', {
     weekday: 'long',
@@ -325,7 +384,7 @@ export function VisitorHomeScreen({ onNavigate }: Props) {
       data-home-ui="home-card-style-lab-v3"
       data-home-card-style={cardStyle}
       data-home-motion={HOME_DYNAMIC_STYLES.has(cardStyle) ? 'dynamic' : 'static'}
-      data-home-motion-enabled={styleLabEnabled && styleIntensity > 0 && !reducedMotion ? 'true' : 'false'}
+      data-home-motion-enabled={dynamicMotionRequested && styleMotionAwake ? 'true' : 'false'}
       style={{
         '--home-style-intensity': styleIntensity / 100,
         '--home-style-speed': `${Math.max(7, 24 - styleIntensity * 0.15)}s`,

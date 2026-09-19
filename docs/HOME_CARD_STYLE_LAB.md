@@ -1,4 +1,4 @@
-﻿# Home Card Style Lab
+# Home Card Style Lab
 
 Purpose: keep the current Home card structure/content fixed and test visual styles on the exact same cards, reversibly.
 
@@ -93,3 +93,7 @@ Each style gets its own reversible commit/checkpoint. Only surface treatment, de
 - [x] When ON, the Style Lab button appears in its existing Home position above the Bottom Dock.
 - [x] Preference persists in localStorage under negin-style-lab-enabled.
 
+
+## Resume after app suspension
+- [x] Dynamic color/motion styles automatically restart after visibility resume, window focus, or pageshow.
+- [x] No manual Style Lab OFF/ON cycle is required after the browser/PWA has been suspended in background.
