@@ -67,3 +67,8 @@ Context render isolation:
 - LiveData, Login and Profile now consume stable workflow actions instead of the full route state.
 - Customer and Orders consume only active-visit state; Floating Negin AI consumes only active-visit + route summary while open.
 - Navigation distance/ETA updates are transient, skip sessionStorage writes, and bail out when the values are unchanged.
+
+Runtime hot-path cleanup:
+- Visit elapsed time no longer drives a React render of the full Route screen every second; the two timer text nodes are updated directly and pause while the document is hidden.
+- Auth activity tracking no longer listens to pointermove, and its localStorage idle check is throttled before storage access instead of after it.
+- Activity still tracks pointerdown, keydown, touchstart and wheel, preserving idle-session semantics without a high-frequency pointer hot path.

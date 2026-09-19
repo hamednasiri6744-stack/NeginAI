@@ -74,7 +74,6 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
   const [browseRouteError, setBrowseRouteError] = useState<string | null>(null)
   const [selectedCustomerId, setSelectedCustomerId] = useState(() => requestedCustomerId ?? activeVisit?.customerId ?? activeCustomerId ?? routeStops[0]?.customerId ?? '1')
   const [visitState, setVisitState] = useState<VisitState>(() => activeVisit ? 'active' : 'idle')
-  const [elapsed, setElapsed] = useState(() => activeVisit ? Math.max(0, Math.floor((Date.now() - activeVisit.startedAt) / 1000)) : 0)
   const [outcome, setOutcome] = useState<'sale' | 'no-order' | 'no-visit'>('sale')
   const [notice, setNotice] = useState<string | null>(null)
   const [policy, setPolicy] = useState<SellerVisitPolicyResponse | null>(null)
@@ -84,6 +83,8 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
   const [mapRecenterNonce, setMapRecenterNonce] = useState(0)
   const [planOrderCustomerIds, setPlanOrderCustomerIds] = useState<string[]>([])
   const outcomeDialogRef = useRef<HTMLElement | null>(null)
+  const visitTimerRef = useRef<HTMLElement | null>(null)
+  const outcomeTimerRef = useRef<HTMLElement | null>(null)
 
   const browseRoute = useMemo(
     () => routes.find((route) => route.id === browseRouteId),
@@ -179,17 +180,39 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
 
   useEffect(() => {
     if (!activeVisit) {
-      if (visitState === 'active') setVisitState('idle')
-      setElapsed(0)
+      setVisitState((current) => current === 'active' ? 'idle' : current)
       return
     }
     setSelectedCustomerId(activeVisit.customerId)
     setVisitState((current) => current === 'outcome' ? current : 'active')
-    const tick = () => setElapsed(Math.max(0, Math.floor((Date.now() - activeVisit.startedAt) / 1000)))
-    tick()
-    const interval = window.setInterval(tick, 1000)
-    return () => window.clearInterval(interval)
-  }, [activeVisit, visitState])
+  }, [activeVisit])
+
+  useEffect(() => {
+    const writeElapsed = () => {
+      if (!activeVisit) {
+        if (visitTimerRef.current) visitTimerRef.current.textContent = '00:00'
+        if (outcomeTimerRef.current) outcomeTimerRef.current.textContent = '00:00'
+        return
+      }
+      if (document.visibilityState !== 'visible') return
+      const elapsed = Math.max(0, Math.floor((Date.now() - activeVisit.startedAt) / 1000))
+      const formatted = formatTimer(elapsed)
+      if (visitTimerRef.current) visitTimerRef.current.textContent = formatted
+      if (outcomeTimerRef.current) outcomeTimerRef.current.textContent = formatted
+    }
+
+    writeElapsed()
+    if (!activeVisit) return
+
+    const interval = window.setInterval(writeElapsed, 1000)
+    document.addEventListener('visibilitychange', writeElapsed)
+    window.addEventListener('focus', writeElapsed)
+    return () => {
+      window.clearInterval(interval)
+      document.removeEventListener('visibilitychange', writeElapsed)
+      window.removeEventListener('focus', writeElapsed)
+    }
+  }, [activeVisit])
 
   useEffect(() => {
     if (visitState !== 'outcome') return
@@ -289,7 +312,6 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
 
       adoptServerVisit(draft)
       setVisitState('active')
-      setElapsed(0)
       flash('ویزیت با تأیید Backend شروع شد.')
       void getVisitWorkspace(activeRouteId, activeStop.customerId).then(setWorkspace).catch(() => undefined)
     } catch (caught) {
@@ -558,7 +580,7 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
 
           {visitState === 'active' ? (
             <div className="vr-visit-running">
-              <div><span>{activeDraftId ? 'بازدید فعال · پیش‌نویس سفارش موجود' : 'بازدید در حال انجام'}</span><strong>{formatTimer(elapsed)}</strong></div>
+              <div><span>{activeDraftId ? 'بازدید فعال · پیش‌نویس سفارش موجود' : 'بازدید در حال انجام'}</span><strong ref={visitTimerRef}>{activeVisit ? formatTimer(Math.max(0, Math.floor((Date.now() - activeVisit.startedAt) / 1000))) : '00:00'}</strong></div>
               {activeDraftId ? (
                 <button type="button" onClick={() => onNavigate(`/visitor/orders?customer=${activeStop.customerId}&visit=${encodeURIComponent(activeVisit?.id ?? '')}&draft=${encodeURIComponent(activeDraftId)}&returnTo=${encodeURIComponent(`/visitor/route?customer=${activeStop.customerId}`)}`)}>ادامه سفارش</button>
               ) : <button type="button" onClick={() => setVisitState('outcome')}>توقف و ثبت نتیجه</button>}
@@ -589,7 +611,7 @@ export function VisitorRouteVisitScreen({ onNavigate, requestedCustomerId, inten
             <section className="vr-outcome-sheet" role="dialog" aria-modal="true" aria-label="ثبت نتیجه بازدید" onClick={(event) => event.stopPropagation()}>
               <div className="vr-sheet-handle" />
               <h2>نتیجه بازدید</h2>
-              <p>{activeStop.name} · زمان {formatTimer(elapsed)}</p>
+              <p>{activeStop.name} · زمان <span ref={outcomeTimerRef}>{activeVisit ? formatTimer(Math.max(0, Math.floor((Date.now() - activeVisit.startedAt) / 1000))) : '00:00'}</span></p>
               <div className="vr-outcomes">
                 <button type="button" className={outcome === 'sale' ? 'active' : ''} onClick={() => { setOutcome('sale'); setSelectedReasonId('') }}><CartIcon /><span>فروش / سفارش</span></button>
                 <button type="button" className={outcome === 'no-order' ? 'active' : ''} onClick={() => { setOutcome('no-order'); setSelectedReasonId('') }}><CheckCircleIcon /><span>بدون سفارش</span></button>

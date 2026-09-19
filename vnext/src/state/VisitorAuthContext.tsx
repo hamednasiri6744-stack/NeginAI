@@ -150,7 +150,7 @@ export function VisitorAuthProvider({ children }: { children: ReactNode }) {
       writeLastActivity(lastWritten)
     }
 
-    const activityEvents = ['pointerdown', 'pointermove', 'keydown', 'scroll'] as const
+    const activityEvents = ['pointerdown', 'keydown', 'touchstart', 'wheel'] as const
     activityEvents.forEach((eventName) => window.addEventListener(eventName, markActivity, { passive: true }))
     document.addEventListener('visibilitychange', handleVisibility)
     const timer = window.setInterval(checkIdle, 30_000)
