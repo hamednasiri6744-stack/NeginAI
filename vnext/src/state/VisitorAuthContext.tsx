@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { neginApi, type AuthProfile } from '../api/neginApi'
+import { clearVisitorPrefetchCache, neginApi, type AuthProfile } from '../api/neginApi'
 import { clearVisitorOfflineSnapshot } from './visitorOfflineSnapshotStore'
 
 type VisitorAuthValue = {
@@ -66,6 +66,7 @@ export function VisitorAuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signIn = useCallback(async (username: string, password: string) => {
+    clearVisitorPrefetchCache()
     setAuthenticating(true)
     try {
       await neginApi.login(username.trim(), password)
@@ -85,6 +86,7 @@ export function VisitorAuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     const username = profile?.username ?? ''
+    clearVisitorPrefetchCache()
     localStorage.setItem(SIGNED_OUT_KEY, '1')
     localStorage.removeItem(LAST_ACTIVITY_KEY)
     setProfile(null)
@@ -95,6 +97,7 @@ export function VisitorAuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const handleAuthExpired = () => {
       const username = profile?.username ?? ''
+      clearVisitorPrefetchCache()
       localStorage.setItem(SIGNED_OUT_KEY, '1')
       localStorage.removeItem(LAST_ACTIVITY_KEY)
       setProfile(null)
@@ -107,7 +110,10 @@ export function VisitorAuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const handleStorage = (event: StorageEvent) => {
-      if (event.key === SIGNED_OUT_KEY && event.newValue === '1') setProfile(null)
+      if (event.key === SIGNED_OUT_KEY && event.newValue === '1') {
+        clearVisitorPrefetchCache()
+        setProfile(null)
+      }
     }
     window.addEventListener('storage', handleStorage)
     return () => window.removeEventListener('storage', handleStorage)

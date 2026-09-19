@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { neginApi, type RouteCustomersResponse, type SellerCustomer, type SellerRoute, type SellerRoutesResponse, type SellerTargetPulse, type SellerWorkCalendar } from '../api/neginApi'
+import { neginApi, prefetchVisitorTour, type RouteCustomersResponse, type SellerCustomer, type SellerRoute, type SellerRoutesResponse, type SellerTargetPulse, type SellerWorkCalendar } from '../api/neginApi'
 import { useVisitorAuth } from './VisitorAuthContext'
 import { useVisitorWorkflowActions } from './VisitorWorkflowContext'
 import { loadVisitorOfflineSnapshot, saveVisitorOfflineSnapshot } from './visitorOfflineSnapshotStore'
@@ -57,6 +57,7 @@ export function VisitorLiveDataProvider({ children }: { children: ReactNode }) {
 
       if (customers) {
         hydrateLiveRoute(customers.route.id, customers.customers)
+        void prefetchVisitorTour(customers.route.id).catch(() => undefined)
       } else {
         hydrateLiveRoute('', [])
       }

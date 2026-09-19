@@ -1,10 +1,14 @@
 $ErrorActionPreference='SilentlyContinue'
+$mutex=New-Object System.Threading.Mutex($false,'Local\NeginAI-vNext-Supervisor')
+if(-not $mutex.WaitOne(0,$false)){ exit 0 }
 $root='D:\Projects\NeginAI'
 $front=Join-Path $root 'vnext'
 $py=Join-Path $root '.venv\Scripts\python.exe'
 $node='C:\Program Files\nodejs\node.exe'
 $vite=Join-Path $front 'node_modules\vite\bin\vite.js'
 $backendPort=8011
+$garnetPort=6379
+$garnet='D:\NeginAI-Runtime\Garnet\v2.1.8\net8.0\GarnetServer.exe'
 $tunnelConfig='C:\Users\Sys\.cloudflared\neginai-vnext.yml'
 $cloudflared=Join-Path $env:LOCALAPPDATA 'NeginAI\cloudflared\cloudflared.exe'
 $tunnelPattern=[regex]::Escape($tunnelConfig)
@@ -19,6 +23,11 @@ function BackendProcesses{
     $_.Name -eq 'python.exe' -and
     $_.CommandLine -match 'uvicorn app\.main:app' -and
     $_.CommandLine -match '--port 8011'
+  })
+}
+function GarnetProcesses{
+  @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object {
+    $_.Name -eq 'GarnetServer.exe' -and $_.CommandLine -match [regex]::Escape($garnet)
   })
 }
 function VnextTunnelProcesses{
@@ -42,6 +51,17 @@ function StartBackend{
   if($existing.Count -gt 0){ return }
   Start-Process $py -WorkingDirectory $root -ArgumentList '-m','uvicorn','app.main:app','--host','127.0.0.1','--port',"$backendPort",'--log-level','warning' -WindowStyle Hidden -RedirectStandardOutput (Join-Path $log 'backend.out.log') -RedirectStandardError (Join-Path $log 'backend.err.log')
 }
+function StartGarnet{
+  if(Listening $garnetPort){ return }
+  if(!(Test-Path $garnet)){ return }
+  $existing=@(GarnetProcesses)
+  if($existing.Count -gt 0){
+    $existing | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+    Start-Sleep 1
+  }
+  Start-Process $garnet -ArgumentList '--bind','127.0.0.1','--port',"$garnetPort" -WindowStyle Hidden -RedirectStandardOutput (Join-Path $log 'garnet.out.log') -RedirectStandardError (Join-Path $log 'garnet.err.log')
+  for($i=0; $i -lt 10 -and !(Listening $garnetPort); $i++){ Start-Sleep -Milliseconds 500 }
+}
 function StartFrontend{
   if(!(Listening 4183) -and (Test-Path (Join-Path $front 'dist\index.html'))){
     Start-Process $node -WorkingDirectory $front -ArgumentList $vite,'preview','--host','0.0.0.0','--port','4183','--strictPort' -WindowStyle Hidden -RedirectStandardOutput (Join-Path $log 'frontend.out.log') -RedirectStandardError (Join-Path $log 'frontend.err.log')
@@ -60,6 +80,7 @@ while($true){
   if($svc -and $svc.Status -ne 'Running'){ Start-Service cloudflared }
 
   StartVnextTunnel
+  StartGarnet
 
   if(BackendHealthy){
     $backendFailures=0

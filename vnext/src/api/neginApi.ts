@@ -595,13 +595,46 @@ export type PrevisitDraftUpdatePayload = {
   warehouse_name: string
 }
 
+type PrefetchEntry<T> = {
+  expiresAt: number
+  promise: Promise<T>
+}
+
+const VISIT_PREFETCH_TTL_MS = 30_000
+const MAP_PREFETCH_TTL_MS = 120_000
+const visitWorkspacePrefetch = new Map<string, PrefetchEntry<SellerVisitWorkspaceResponse>>()
+const visitPolicyPrefetch = new Map<string, PrefetchEntry<SellerVisitPolicyResponse>>()
+
+function cachedPrefetch<T>(
+  cache: Map<string, PrefetchEntry<T>>,
+  key: string,
+  ttlMs: number,
+  loader: () => Promise<T>,
+) {
+  const now = Date.now()
+  const cached = cache.get(key)
+  if (cached && cached.expiresAt > now) return cached.promise
+  const promise = loader().catch((error) => {
+    cache.delete(key)
+    throw error
+  })
+  cache.set(key, { expiresAt: now + ttlMs, promise })
+  return promise
+}
+
 export async function getVisitWorkspace(routeId: string, customerId: string) {
-  return request<SellerVisitWorkspaceResponse>(`/seller-workspace/routes/${encodeURIComponent(routeId)}/customers/${encodeURIComponent(customerId)}/visit-workspace`)
+  const key = `${routeId}:${customerId}`
+  return cachedPrefetch(visitWorkspacePrefetch, key, VISIT_PREFETCH_TTL_MS, () => (
+    request<SellerVisitWorkspaceResponse>(`/seller-workspace/routes/${encodeURIComponent(routeId)}/customers/${encodeURIComponent(customerId)}/visit-workspace`)
+  ))
 }
 
 export async function getVisitPolicy(routeId: string, customerId: string) {
-  const params = new URLSearchParams({ path_id: routeId, customer_id: customerId })
-  return request<SellerVisitPolicyResponse>(`/seller-workspace/previsit/policy?${params}`)
+  const key = `${routeId}:${customerId}`
+  return cachedPrefetch(visitPolicyPrefetch, key, VISIT_PREFETCH_TTL_MS, () => {
+    const params = new URLSearchParams({ path_id: routeId, customer_id: customerId })
+    return request<SellerVisitPolicyResponse>(`/seller-workspace/previsit/policy?${params}`)
+  })
 }
 
 export async function startServerVisit(payload: PrevisitVisitStartPayload) {
@@ -636,11 +669,52 @@ export type NeshanRouteMapCustomer = SellerCustomer & { visit_score: number; ana
 export type NeshanRouteMapPlanResponse = { route: { id: string; title: string }; customers: NeshanRouteMapCustomer[]; missing_location_count: number; ordered_customers: NeshanRouteMapCustomer[]; unlocated_customers: NeshanRouteMapCustomer[]; has_origin?: boolean; polyline: string; legs: NeshanRouteLeg[]; initial_leg: NeshanRouteLeg | null; route_mode: string; visit_location_policy: Record<string, unknown>; analytics_available: boolean }
 export type NeshanRouteMapLegResponse = { polyline: string; leg: NeshanRouteLeg | null }
 
-export async function getNeshanMapConfig() { return request<NeshanMapConfigResponse>('/seller-workspace/map-config') }
+const neshanMapConfigPrefetch = new Map<string, PrefetchEntry<NeshanMapConfigResponse>>()
+const routeMapPlanPrefetch = new Map<string, PrefetchEntry<NeshanRouteMapPlanResponse>>()
+
+export function clearVisitorPrefetchCache() {
+  visitWorkspacePrefetch.clear()
+  visitPolicyPrefetch.clear()
+  neshanMapConfigPrefetch.clear()
+  routeMapPlanPrefetch.clear()
+}
+
+export async function getNeshanMapConfig() {
+  return cachedPrefetch(neshanMapConfigPrefetch, 'default', MAP_PREFETCH_TTL_MS, () => (
+    request<NeshanMapConfigResponse>('/seller-workspace/map-config')
+  ))
+}
+
 export async function getRouteMapPlan(routeId: string, routeMode: 'sales_priority' | 'shortest', origin?: { latitude: number; longitude: number } | null) {
-  const params = new URLSearchParams({ route_mode: routeMode, start_day_route: 'false' })
-  if (origin) { params.set('origin_latitude', String(origin.latitude)); params.set('origin_longitude', String(origin.longitude)) }
-  return request<NeshanRouteMapPlanResponse>(`/seller-workspace/routes/${encodeURIComponent(routeId)}/map-plan?${params}`)
+  const originKey = origin
+    ? `${origin.latitude.toFixed(5)},${origin.longitude.toFixed(5)}`
+    : 'none'
+  const key = `${routeId}:${routeMode}:${originKey}`
+  return cachedPrefetch(routeMapPlanPrefetch, key, MAP_PREFETCH_TTL_MS, () => {
+    const params = new URLSearchParams({ route_mode: routeMode, start_day_route: 'false' })
+    if (origin) {
+      params.set('origin_latitude', String(origin.latitude))
+      params.set('origin_longitude', String(origin.longitude))
+    }
+    return request<NeshanRouteMapPlanResponse>(`/seller-workspace/routes/${encodeURIComponent(routeId)}/map-plan?${params}`)
+  })
+}
+
+export async function prefetchVisitorTour(routeId: string) {
+  if (!routeId) return
+  const [, plan] = await Promise.all([
+    getNeshanMapConfig().catch(() => null),
+    getRouteMapPlan(routeId, 'sales_priority', null),
+  ])
+  const firstCustomer = plan.ordered_customers.find((customer) => (
+    customer.latitude != null && customer.longitude != null
+  )) ?? plan.ordered_customers[0]
+  if (!firstCustomer) return
+  const customerId = String(firstCustomer.id)
+  await Promise.allSettled([
+    getVisitPolicy(routeId, customerId),
+    getVisitWorkspace(routeId, customerId),
+  ])
 }
 export async function getRouteMapLeg(routeId: string, customerId: string, origin: { latitude: number; longitude: number }) {
   const params = new URLSearchParams({ destination_id: customerId, origin_latitude: String(origin.latitude), origin_longitude: String(origin.longitude) })
