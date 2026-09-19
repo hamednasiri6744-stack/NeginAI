@@ -1,0 +1,88 @@
+/* Login Atmosphere v1 — borderless, reversible visual pilot. */
+.login-brand {
+  position: relative;
+  isolation: isolate;
+  overflow: visible;
+}
+
+.login-brand::before {
+  content: '';
+  position: absolute;
+  z-index: -2;
+  inset: -18% -28% -10%;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 28% 44%, rgba(73, 132, 169, .10), transparent 42%),
+    radial-gradient(ellipse at 68% 42%, rgba(255, 198, 77, .055), transparent 34%),
+    radial-gradient(ellipse at 52% 70%, rgba(255,255,255,.025), transparent 48%);
+  filter: blur(28px);
+  opacity: .72;
+  transform: translate3d(0,0,0) scale(1.04);
+  animation: login-atmosphere-drift 14s ease-in-out infinite alternate;
+}
+
+.login-brand::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: -8% -22% 2%;
+  pointer-events: none;
+  background:
+    linear-gradient(112deg,
+      transparent 8%,
+      rgba(255,255,255,.018) 28%,
+      rgba(255,209,108,.05) 46%,
+      rgba(255,255,255,.018) 58%,
+      transparent 78%);
+  filter: blur(18px);
+  opacity: .55;
+  transform: translate3d(-8%, 0, 0) skewX(-8deg);
+  animation: login-caustic-drift 11s cubic-bezier(.45,.05,.55,.95) infinite alternate;
+}
+.login-brand .brand-logo {
+  will-change: transform, filter;
+  animation: login-logo-micropulse 7.8s ease-in-out infinite;
+}
+
+@keyframes login-atmosphere-drift {
+  0% {
+    transform: translate3d(-2%, 1%, 0) scale(1.02);
+    opacity: .58;
+  }
+  100% {
+    transform: translate3d(3%, -2%, 0) scale(1.08);
+    opacity: .78;
+  }
+}
+
+@keyframes login-caustic-drift {
+  0% {
+    transform: translate3d(-12%, 1%, 0) skewX(-8deg);
+    opacity: .28;
+  }
+  100% {
+    transform: translate3d(12%, -2%, 0) skewX(-8deg);
+    opacity: .62;
+  }
+}
+
+@keyframes login-logo-micropulse {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    filter: drop-shadow(0 10px 26px rgba(219,157,44,.18));
+  }
+  50% {
+    transform: translateY(-1px) scale(1.008);
+    filter:
+      drop-shadow(0 11px 28px rgba(219,157,44,.20))
+      drop-shadow(0 0 10px rgba(255,205,94,.055));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-brand::before,
+  .login-brand::after,
+  .login-brand .brand-logo {
+    animation: none !important;
+  }
+}
