@@ -1718,14 +1718,35 @@ GROUP BY sale.CustomerId, sale.SellId
     }
 
 
-def seller_route_day_analytics(settings: Any, username: str, path_id: str) -> dict[str, Any]:
-    """Return fixed, read-only purchase signals for customers in one current seller route."""
+def seller_route_day_analytics(
+    settings: Any,
+    username: str,
+    path_id: str,
+    customer_id: str | int | None = None,
+) -> dict[str, Any]:
+    """Return fixed, read-only purchase signals for customers in one current seller route.
+
+    When customer_id is provided the same analytics contract is evaluated
+    only for that authorized route customer. Route-wide callers remain
+    unchanged.
+    """
     profile = _seller_profile(settings, username)
     personnel_id = int(profile["personnel_id"])
     try:
         clean_path_id = str(UUID(str(path_id)))
     except (ValueError, TypeError, AttributeError) as exc:
         raise SellerRouteNotFound("Current seller route was not found") from exc
+    clean_customer_id: int | None = None
+    if customer_id is not None:
+        try:
+            clean_customer_id = int(customer_id)
+        except (TypeError, ValueError) as exc:
+            raise SellerRouteNotFound("Current seller route customer was not found") from exc
+    customer_filter_sql = (
+        f"\n    AND TRY_CONVERT(int, customer.BackOfficeId) = {clean_customer_id}"
+        if clean_customer_id is not None
+        else ""
+    )
 
     analytics_sql = f"""
 WITH RouteCustomers AS (
@@ -1746,7 +1767,7 @@ WITH RouteCustomers AS (
     AND path.Id = CAST(N'{clean_path_id}' AS uniqueidentifier)
     AND ISNULL(personnel.IsRemoved, 0) = 0 AND ISNULL(personnel.PersonnelIsActive, 1) = 1
     AND ISNULL(template.IsRemoved, 0) = 0 AND ISNULL(path.IsRemoved, 0) = 0
-    AND ISNULL(customer.IsRemoved, 0) = 0 AND ISNULL(customer.IsActive, 1) = 1
+    AND ISNULL(customer.IsRemoved, 0) = 0 AND ISNULL(customer.IsActive, 1) = 1{customer_filter_sql}
 )
 SELECT route.PathId, route.PathTitle, route.BackOfficeId, route.CustomerCode,
        route.CustomerName, route.StoreName,
