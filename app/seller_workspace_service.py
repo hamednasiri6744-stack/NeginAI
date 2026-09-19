@@ -733,13 +733,24 @@ def _route_visit_resolutions(settings: Any, username: str, path_id: str) -> dict
     return resolutions
 
 
-def seller_route_customers(settings: Any, username: str, path_id: str) -> dict[str, Any]:
+def seller_route_customers(
+    settings: Any,
+    username: str,
+    path_id: str,
+    customer_id: str | int | None = None,
+) -> dict[str, Any]:
     profile = _seller_profile(settings, username)
     personnel_id = int(profile["personnel_id"])
     try:
         clean_path_id = str(UUID(str(path_id)))
     except (ValueError, TypeError, AttributeError) as exc:
         raise SellerRouteNotFound("Current seller route was not found") from exc
+    safe_customer_id = _sql_text(customer_id) if customer_id is not None else ""
+    customer_filter_sql = (
+        f"\n  AND customer.BackOfficeId = N'{safe_customer_id}'"
+        if customer_id is not None
+        else ""
+    )
 
     customers_sql = f"""
 SELECT path.Id AS PathId, path.PathTitle, assigned.RowIndex,
@@ -1091,7 +1102,7 @@ def _sql_text(value: Any) -> str:
 
 
 def _assigned_route_customer(settings: Any, username: str, path_id: str, customer_id: str) -> tuple[dict[str, Any], dict[str, Any]]:
-    route = seller_route_customers(settings, username, path_id)
+    route = seller_route_customers(settings, username, path_id, customer_id)
     customer = next((item for item in route["customers"] if str(item["id"]) == str(customer_id)), None)
     if customer is None:
         raise SellerRouteNotFound("Customer is not assigned to this seller route")
