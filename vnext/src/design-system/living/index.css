@@ -2,3 +2,16 @@
 @import './primitives.css';
 @import './states.css';
 @import './reactions.css';
+
+/* Shared depth motion used by lazy Visitor Route / Customers / Reports surfaces. */
+@keyframes vhd-root-in {
+  from { opacity:.6; transform:translateY(8px); }
+  to { opacity:1; transform:none; }
+}
+@keyframes vhd-depth-in {
+  from { opacity:.45; transform:translateY(18px) scale(.965) translateZ(-28px); }
+  to { opacity:1; transform:none; }
+}
+@keyframes vhd-live-pulse {
+  50% { opacity:.45; transform:scale(.82); }
+}

@@ -4,15 +4,15 @@ Goal: adding features must not silently degrade startup, navigation, animation s
 
 Current measured production baseline (2026-09-19):
 - Initial entry JS: ~351.9 KB raw
-- Initial entry CSS: ~267.1 KB raw
-- Initial HTML-linked assets: ~696.3 KB raw
+- Initial entry CSS: ~222.1 KB raw
+- Initial HTML-linked assets: ~651.3 KB raw
 - Largest current lazy Visitor feature chunk: ~42 KB raw
 - Floating Negin AI chunk: ~10.4 KB raw
 
 Enforced budgets:
 - Initial entry JS <= 370 KB
-- Initial entry CSS <= 275 KB
-- Initial HTML-linked assets <= 705 KB
+- Initial entry CSS <= 235 KB
+- Initial HTML-linked assets <= 665 KB
 - Each lazy Visitor/feature JS chunk <= 70 KB
 
 `npm run build` now runs the performance budget check after the production build. A regression fails the build.
@@ -48,3 +48,10 @@ Route-scoped CSS phase 1:
 - Moved Orders commercial-guidance CSS into the lazy Orders route chunk.
 - Moved notification semantic-category CSS into the lazy Notifications route chunk.
 - Initial CSS dropped from ~285.7 KB to ~267.1 KB raw; initial HTML-linked assets dropped from ~714.9 KB to ~696.3 KB raw.
+
+Route-scoped CSS phase 2:
+- Removed the obsolete historical Home IA/Depth/Commercial CSS that no longer matches the current Tailwind Home implementation.
+- Moved Route product/depth/off-day CSS into the lazy Visitor Route chunk.
+- Moved shared depth keyframes into the lazy Living design-system CSS used by Route/Customers/Reports.
+- Initial CSS dropped from ~267.1 KB to ~222.1 KB raw; initial HTML-linked assets dropped from ~696.3 KB to ~651.3 KB raw.
+- The performance budget was ratcheted down so this reduction cannot silently regress.
