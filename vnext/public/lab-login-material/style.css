@@ -107,14 +107,14 @@ body { min-width: 320px; overflow: hidden; font-family: Inter, system-ui, sans-s
 }
 
 .actions button, .actions a {
-  min-height: 42px;
-  border: 1px solid rgba(193,213,229,.10);
-  border-radius: 14px;
-  background: rgba(6,18,29,.34);
-  color: rgba(223,232,239,.62);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  font: 600 11px/1 Inter,system-ui,sans-serif;
+  min-height: 38px;
+  border: 1px solid rgba(193,213,229,.07);
+  border-radius: 13px;
+  background: rgba(5,15,24,.22);
+  color: rgba(223,232,239,.42);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  font: 600 10px/1 Inter,system-ui,sans-serif;
   text-decoration: none;
 }
 .actions button { padding: 0 14px; }

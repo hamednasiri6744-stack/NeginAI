@@ -82,30 +82,32 @@ void main(){
   float fy = fbm((q+vec2(0.0,eps))*1.72 + vec2(-t*.55,t*.42));
   vec2 normal = normalize(vec2(fx-sheet,fy-sheet)+vec2(.0001));
 
-  float ribbonA = .5 + .5*sin(q.x*8.8 + q.y*3.2 + nB*5.0 + t*2.1);
-  float ribbonB = .5 + .5*sin(q.y*10.5 - q.x*2.7 - nA*4.6 - t*1.65);
-  float liquid = smoothstep(.48,.66,field + (ribbonA+ribbonB-.95)*.10);
+  float ribbonA = .5 + .5*sin(q.x*5.8 + q.y*2.2 + nB*3.2 + t*1.35);
+  float ribbonB = .5 + .5*sin(q.y*7.2 - q.x*1.8 - nA*3.0 - t*1.10);
+  float liquid = smoothstep(.53,.71,field + (ribbonA+ribbonB-1.0)*.055);
 
-  float edge = smoothstep(.015,.11,length(vec2(fx-sheet,fy-sheet)));
-  float fresnel = pow(1.0-max(dot(normalize(vec3(normal,.55)),vec3(.0,.0,1.0)),0.0),2.2);
+  float edge = smoothstep(.028,.095,length(vec2(fx-sheet,fy-sheet)));
+  float fresnel = pow(1.0-max(dot(normalize(vec3(normal,.70)),vec3(.0,.0,1.0)),0.0),2.6);
 
   vec2 refractedUv = p + normal*(.045 + liquid*.055) + tilt*.025;
   vec3 color = environment(refractedUv);
 
-  float c1 = sin((q.x+normal.x*.08)*18.0 + t*3.7 + nB*4.2);
-  float c2 = sin((q.y-normal.y*.08)*21.0 - t*3.1 - nA*4.5);
-  float caustic = smoothstep(1.10,1.82,c1+c2+field*.95);
+  float c1 = sin((q.x+normal.x*.05)*14.0 + t*2.1 + nB*3.0);
+  float c2 = sin((q.y-normal.y*.05)*16.0 - t*1.8 - nA*3.1);
+  float caustic = smoothstep(1.32,1.92,c1+c2+field*.72);
 
   vec3 glassBlue = vec3(.055,.18,.24);
   vec3 gold = vec3(.98,.64,.18);
   vec3 pale = vec3(.72,.86,.93);
 
-  color = mix(color,color + glassBlue*.28,liquid*.72);
-  color += pale * edge * (.055 + fresnel*.10) * liquid;
-  color += gold * caustic * (.11 + liquid*.20);
+  color = mix(color,color + glassBlue*.18,liquid*.56);
+  color += pale * edge * (.035 + fresnel*.07) * liquid;
+  color += gold * caustic * (.055 + liquid*.10);
 
-  float center = 1.0-smoothstep(.20,.76,length(p*vec2(.78,1.0)));
-  float alpha = center * (.12 + liquid*.34 + edge*.11 + caustic*.10);
+  vec2 heroP = p - vec2(0.0,.19);
+  float heroMask = 1.0-smoothstep(.18,.50,length(heroP*vec2(.82,1.12)));
+  float feather = smoothstep(.0,.22,heroMask);
+  float alpha = feather * (.045 + liquid*.17 + edge*.055 + caustic*.055);
 
   gl_FragColor = vec4(color,alpha);
 }
