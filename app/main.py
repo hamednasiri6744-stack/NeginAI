@@ -25,7 +25,7 @@ from app.routes import android_app, attachments, automations, audio, auth, chat,
 from app.organization_structure_service import seed_confirmed_rules
 from app.config import RESOURCE_DIR
 from app.push_service import ensure_vapid_private_key
-from app.schema_service import scan_schema
+from app.schema_service import scan_schema, schema_stats
 from app.warehouse_assistant_service import (
     automatic_refresh_due,
     run_automatic_order_cycle,
@@ -84,7 +84,20 @@ async def lifespan(app: FastAPI):
         )
         app.state.observability = observability
     async def metadata_sync_loop():
-        last_schema_sync = 0.0
+        # A full schema scan rewrites a large local metadata cache. Running it
+        # on every API restart can hold SQLite's writer lock long enough to
+        # stall unrelated operational writes (sessions, notifications, visits).
+        # Reuse an existing schema cache and defer the next full scan until its
+        # configured interval; only first-time/empty installs scan immediately.
+        try:
+            cached_schema = await asyncio.to_thread(schema_stats, settings)
+            last_schema_sync = (
+                time.monotonic()
+                if int(cached_schema.get("total_objects") or 0) > 0
+                else 0.0
+            )
+        except Exception:
+            last_schema_sync = 0.0
         while True:
             try:
                 await asyncio.to_thread(sync_entities, settings)

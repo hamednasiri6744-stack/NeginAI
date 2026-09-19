@@ -85,3 +85,10 @@ Backend/tour acceleration (2026-09-19):
 - Measured authenticated local HTTP bootstrap: ~371 ms cold and ~17 ms warm; warm backend application time ~13 ms.
 - Measured authenticated public bootstrap through vnext.hagents.ir: ~1.36 s cold and ~1.13 s warm from the current remote test host. Cloudflare/origin network transit, not SQL execution, is now the dominant remaining public-path cost.
 - Public frontend was verified to serve the build that calls /seller-workspace/tour-bootstrap.
+
+
+Metadata lock isolation:
+- Full schema metadata scans no longer run unconditionally on every API restart when a populated local schema cache already exists.
+- Existing schema metadata is reused and the next full scan is deferred until SCHEMA_SYNC_INTERVAL; empty/first-run installs still scan immediately.
+- This prevents the large schema cache rewrite from monopolizing SQLite's writer lock during operational startup.
+- Verified after restart: operational BEGIN IMMEDIATE remained available after background services started, while the previous startup path reproduced database-is-locked failures.
