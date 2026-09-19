@@ -72,6 +72,11 @@ export type SellerRoutesResponse = {
   detail?: 'basic' | 'full'
 }
 
+export type SellerTourBootstrapResponse = {
+  routes: SellerRoutesResponse
+  route_customers: RouteCustomersResponse | null
+}
+
 export type VisitResolution = {
   status: string
   outcome: string
@@ -406,6 +411,10 @@ export const neginApi = {
 
   async routes() {
     return request<SellerRoutesResponse>('/seller-workspace/routes')
+  },
+
+  async tourBootstrap() {
+    return request<SellerTourBootstrapResponse>('/seller-workspace/tour-bootstrap')
   },
 
   async targetPulse() {

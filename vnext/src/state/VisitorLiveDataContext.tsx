@@ -43,43 +43,24 @@ export function VisitorLiveDataProvider({ children }: { children: ReactNode }) {
     setError(null)
     try {
       const targetPromise = neginApi.targetPulse().catch(() => null)
-      const routes = await neginApi.routes()
+      const bootstrap = await neginApi.tourBootstrap()
+      const routes = bootstrap.routes
+      const customers = bootstrap.route_customers
       setRoutesData(routes)
-      const selectedRoute = routes.day_route?.id
-        ? routes.routes.find((route) => route.id === routes.day_route?.id)
-          ?? routes.routes.find((route) => route.can_start_visit)
-        : routes.routes.find((route) => route.can_start_visit)
 
-      if (!selectedRoute) {
-        const liveTarget = await targetPromise
-        const syncedAt = new Date().toISOString()
-        setCustomersData(null)
-        setTargetPulse(liveTarget)
-        setStale(false)
-        setLastSyncedAt(syncedAt)
-        hydrateLiveRoute('', [])
-        if (username) {
-          void saveVisitorOfflineSnapshot({
-            version: 1,
-            username,
-            savedAt: syncedAt,
-            routesData: routes,
-            customersData: null,
-            targetPulse: liveTarget,
-          }).catch(() => undefined)
-        }
-        setError(routes.work_calendar?.is_working_day === false ? null : 'برای امروز مسیر فعالی در NGT تعیین نشده است.')
-        return
-      }
-
-      const customers = await neginApi.routeCustomers(selectedRoute.id)
       const liveTarget = await targetPromise
       const syncedAt = new Date().toISOString()
       setCustomersData(customers)
       setTargetPulse(liveTarget)
       setStale(false)
       setLastSyncedAt(syncedAt)
-      hydrateLiveRoute(selectedRoute.id, customers.customers)
+
+      if (customers) {
+        hydrateLiveRoute(customers.route.id, customers.customers)
+      } else {
+        hydrateLiveRoute('', [])
+      }
+
       if (username) {
         void saveVisitorOfflineSnapshot({
           version: 1,
@@ -89,6 +70,10 @@ export function VisitorLiveDataProvider({ children }: { children: ReactNode }) {
           customersData: customers,
           targetPulse: liveTarget,
         }).catch(() => undefined)
+      }
+
+      if (!customers) {
+        setError(routes.work_calendar?.is_working_day === false ? null : 'برای امروز مسیر فعالی در NGT تعیین نشده است.')
       }
     } catch (caught) {
       const snapshot = username
@@ -119,6 +104,7 @@ export function VisitorLiveDataProvider({ children }: { children: ReactNode }) {
   }, [authenticated, hydrateLiveRoute, profile?.username])
 
   useEffect(() => {
+    if (restoringSession) return
     if (!authenticated) {
       setRoutesData(null)
       setCustomersData(null)
@@ -130,8 +116,29 @@ export function VisitorLiveDataProvider({ children }: { children: ReactNode }) {
       resetWorkflow()
       return
     }
-    void load()
-  }, [authenticated, load, resetWorkflow, restoringSession])
+
+    let cancelled = false
+    const bootstrap = async () => {
+      const username = profile?.username?.trim() ?? ''
+      if (username) {
+        const snapshot = await loadVisitorOfflineSnapshot(username).catch(() => null)
+        if (!cancelled && snapshot) {
+          setRoutesData(snapshot.routesData)
+          setCustomersData(snapshot.customersData)
+          setTargetPulse(snapshot.targetPulse)
+          setStale(true)
+          setLastSyncedAt(snapshot.savedAt)
+          setError(null)
+          const snapshotRouteId = snapshot.customersData?.route.id ?? snapshot.routesData.day_route?.id ?? ''
+          hydrateLiveRoute(snapshotRouteId, snapshot.customersData?.customers ?? [])
+        }
+      }
+      if (!cancelled) void load()
+    }
+
+    void bootstrap()
+    return () => { cancelled = true }
+  }, [authenticated, hydrateLiveRoute, load, profile?.username, resetWorkflow, restoringSession])
 
   const activeRouteId = customersData?.route.id ?? routesData?.day_route?.id ?? null
   const activeRouteTitle = customersData?.route.title ?? routesData?.day_route?.title ?? ''

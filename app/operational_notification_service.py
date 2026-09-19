@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+from queue import Full, Queue
+from threading import Lock, Thread
 import time
 from datetime import datetime, timezone
 from typing import Any, Literal
@@ -14,6 +16,39 @@ VALID_SEVERITIES = {"critical", "high", "medium", "info"}
 PUSH_SEVERITIES = {"critical", "high"}
 _COMMERCIAL_REFRESH_AT: dict[str, float] = {}
 COMMERCIAL_REFRESH_SECONDS = 300.0
+_PUSH_QUEUE: Queue[tuple[Any, str, str, str, str]] = Queue(maxsize=256)
+_PUSH_WORKERS_STARTED = False
+_PUSH_WORKERS_LOCK = Lock()
+_ROUTE_OBSERVATION_QUEUE: Queue[tuple[Any, str, dict[str, Any]]] = Queue(maxsize=64)
+_ROUTE_OBSERVER_STARTED = False
+_ROUTE_OBSERVER_LOCK = Lock()
+
+
+def _push_worker() -> None:
+    while True:
+        settings, owner, title, body, action_path = _PUSH_QUEUE.get()
+        try:
+            send_user_push(settings, owner, title, body, action_path)
+        except Exception:
+            pass
+        finally:
+            _PUSH_QUEUE.task_done()
+
+
+def _dispatch_push(settings: Any, owner: str, title: str, body: str, action_path: str) -> None:
+    global _PUSH_WORKERS_STARTED
+    if not _PUSH_WORKERS_STARTED:
+        with _PUSH_WORKERS_LOCK:
+            if not _PUSH_WORKERS_STARTED:
+                for index in range(2):
+                    Thread(target=_push_worker, name=f"negin-push-{index+1}", daemon=True).start()
+                _PUSH_WORKERS_STARTED = True
+    try:
+        _PUSH_QUEUE.put_nowait((settings, owner, title, body, action_path))
+    except Full:
+        # Push is best effort. Never let a saturated external channel slow reads.
+        pass
+
 
 
 def _utc_iso(value: datetime | None = None) -> str:
@@ -82,22 +117,48 @@ def emit_operational_notification(
         )
         notification_id = int(cursor.lastrowid)
     if push and level in PUSH_SEVERITIES:
-        try:
-            send_user_push(
-                settings,
-                owner,
-                title.strip(),
-                body.strip(),
-                action_path or "/visitor/notifications",
-            )
-        except Exception:
-            pass
+        # Push delivery is external network I/O and must never block the API response.
+        # A stale/unreachable browser subscription can otherwise hold seller routes
+        # and other operational reads for many seconds per subscription.
+        _dispatch_push(
+            settings,
+            owner,
+            title.strip(),
+            body.strip(),
+            action_path or "/visitor/notifications",
+        )
     return {
         "id": notification_id,
         "created": True,
         "severity": level,
         "requires_ack": ack_required,
     }
+
+
+def _route_observer_worker() -> None:
+    while True:
+        settings, username, payload = _ROUTE_OBSERVATION_QUEUE.get()
+        try:
+            observe_route_assignment(settings, username, payload)
+        except Exception:
+            pass
+        finally:
+            _ROUTE_OBSERVATION_QUEUE.task_done()
+
+
+def enqueue_route_assignment_observation(settings: Any, username: str, route_payload: dict[str, Any]) -> None:
+    # Best-effort route alert observation that never blocks seller route reads.
+    global _ROUTE_OBSERVER_STARTED
+    if not _ROUTE_OBSERVER_STARTED:
+        with _ROUTE_OBSERVER_LOCK:
+            if not _ROUTE_OBSERVER_STARTED:
+                Thread(target=_route_observer_worker, name="negin-route-observer", daemon=True).start()
+                _ROUTE_OBSERVER_STARTED = True
+    try:
+        payload = json.loads(json.dumps(route_payload, ensure_ascii=False, default=str))
+        _ROUTE_OBSERVATION_QUEUE.put_nowait((settings, username, payload))
+    except (Full, TypeError, ValueError):
+        pass
 
 
 def observe_route_assignment(settings: Any, username: str, route_payload: dict[str, Any]) -> None:

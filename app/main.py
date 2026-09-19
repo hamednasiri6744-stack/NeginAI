@@ -9,6 +9,7 @@ from html import escape
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.gzip import GZipMiddleware
 
 from app.config import ensure_action_api_key, get_settings, validate_transport_security
 from app.auth_service import ensure_configured_user
@@ -16,7 +17,6 @@ from app.control_service import ensure_control_defaults
 from app.automation_service import get_notification_report, run_due_automations
 from app.database import init_sqlite
 from app.enterprise_store import EnterpriseStore
-from app.redis_resource_backend import RedisModelResourceBackend
 from app.login_rate_limit import LocalLoginRateLimiter, RedisLoginRateLimiter
 from app.observability import configure_observability, monotonic_seconds, record_http
 from app.varanegar_command_worker import process_one as process_one_varanegar_command
@@ -58,6 +58,7 @@ async def lifespan(app: FastAPI):
         app.state.enterprise_database_ready = True
     if settings.redis_url:
         import redis
+        from app.redis_resource_backend import RedisModelResourceBackend
 
         redis_client = redis.Redis.from_url(
             settings.redis_url,
@@ -197,6 +198,9 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Compress JSON/API payloads before they traverse the public tunnel.
+app.add_middleware(GZipMiddleware, minimum_size=1024, compresslevel=5)
+
 
 @app.middleware("http")
 async def request_observability(request, call_next):
@@ -227,7 +231,9 @@ async def request_observability(request, call_next):
             },
             monotonic_seconds() - started,
         )
+    elapsed_ms = (monotonic_seconds() - started) * 1000
     response.headers["X-Request-ID"] = request_id
+    response.headers["Server-Timing"] = f"app;dur={elapsed_ms:.1f}"
     return response
 app.include_router(health.router)
 app.include_router(schema.router)

@@ -72,3 +72,16 @@ Runtime hot-path cleanup:
 - Visit elapsed time no longer drives a React render of the full Route screen every second; the two timer text nodes are updated directly and pause while the document is hidden.
 - Auth activity tracking no longer listens to pointermove, and its localStorage idle check is throttled before storage access instead of after it.
 - Activity still tracks pointerdown, keydown, touchstart and wheel, preserving idle-session semantics without a high-frequency pointer hot path.
+
+
+Backend/tour acceleration (2026-09-19):
+- Root cause measured: seller route reads were spending ~33 seconds in synchronous operational-notification/SQLite work while the SQL route queries themselves were only a few hundred milliseconds.
+- Route-assignment observation and external push delivery are now removed from the seller read hot path.
+- Added bounded in-process read cache with optional Redis backing for seller routes, active-route customers, and target pulse.
+- Added GET /seller-workspace/tour-bootstrap so Route + active tour customers arrive in one HTTP request instead of a sequential public round trip.
+- Visitor startup is snapshot-first: the last successful route/customer snapshot is restored from IndexedDB immediately, then refreshed from live NGT data.
+- API JSON responses support gzip and expose Server-Timing for latency diagnosis.
+- OpenAI/Agents-heavy automation/chat imports were removed from the normal API startup path and are loaded only when those features are actually used.
+- Measured authenticated local HTTP bootstrap: ~371 ms cold and ~17 ms warm; warm backend application time ~13 ms.
+- Measured authenticated public bootstrap through vnext.hagents.ir: ~1.36 s cold and ~1.13 s warm from the current remote test host. Cloudflare/origin network transit, not SQL execution, is now the dominant remaining public-path cost.
+- Public frontend was verified to serve the build that calls /seller-workspace/tour-bootstrap.

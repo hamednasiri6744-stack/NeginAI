@@ -12,6 +12,7 @@ from app.varanegar_order_bridge import (
 )
 from app.routes.dependencies import require_user_or_local
 from app.target_pulse_service import seller_target_pulse
+from app.seller_workspace_cache import get_cached, set_cached
 from app.seller_workspace_service import (
     SellerDayRouteMismatch,
     SellerRouteNotFound,
@@ -183,17 +184,89 @@ def _canonical_saved_request_payload(
 
 
 @router.get("/routes")
-def get_my_routes(request: Request):
+def get_my_routes(request: Request, response: Response):
+    username = _username(request)
+    redis_client = getattr(request.app.state, "redis_client", None)
+    cache_key = f"routes:{username.casefold()}"
+    cached = get_cached(cache_key, redis_client)
+    response.headers["Cache-Control"] = "private, no-store"
+    if cached is not None:
+        response.headers["X-Negin-Cache"] = "HIT"
+        return cached
     try:
-        return seller_routes(request.app.state.settings, _username(request))
+        result = seller_routes(request.app.state.settings, username)
+        set_cached(cache_key, result, 15, redis_client)
+        response.headers["X-Negin-Cache"] = "MISS"
+        return result
     except SellerWorkspaceError as exc:
         raise HTTPException(status_code=403, detail=str(exc)) from exc
 
 
+@router.get("/tour-bootstrap")
+def get_my_tour_bootstrap(request: Request, response: Response):
+    username = _username(request)
+    redis_client = getattr(request.app.state, "redis_client", None)
+    response.headers["Cache-Control"] = "private, no-store"
+
+    routes_key = f"routes:{username.casefold()}"
+    routes_payload = get_cached(routes_key, redis_client)
+    route_cache = "HIT"
+    if routes_payload is None:
+        routes_payload = seller_routes(request.app.state.settings, username)
+        set_cached(routes_key, routes_payload, 15, redis_client)
+        route_cache = "MISS"
+
+    selected_route = None
+    day_route_id = str((routes_payload.get("day_route") or {}).get("id") or "")
+    if day_route_id:
+        selected_route = next(
+            (item for item in routes_payload.get("routes") or [] if str(item.get("id") or "") == day_route_id),
+            None,
+        )
+    if selected_route is None:
+        selected_route = next(
+            (item for item in routes_payload.get("routes") or [] if item.get("can_start_visit")),
+            None,
+        )
+
+    customers_payload = None
+    customer_cache = "NONE"
+    route_id = str((selected_route or {}).get("id") or "")
+    if route_id:
+        customers_key = f"route-customers:{username.casefold()}:{route_id.casefold()}:basic"
+        customers_payload = get_cached(customers_key, redis_client)
+        customer_cache = "HIT"
+        if customers_payload is None:
+            customers_payload = seller_route_customers_basic(
+                request.app.state.settings,
+                username,
+                route_id,
+            )
+            set_cached(customers_key, customers_payload, 8, redis_client)
+            customer_cache = "MISS"
+
+    response.headers["X-Negin-Cache"] = f"routes={route_cache};customers={customer_cache}"
+    return {
+        "routes": routes_payload,
+        "route_customers": customers_payload,
+    }
+
+
 @router.get("/target-pulse")
-def get_my_target_pulse(request: Request):
+def get_my_target_pulse(request: Request, response: Response):
+    username = _username(request)
+    redis_client = getattr(request.app.state, "redis_client", None)
+    cache_key = f"target-pulse:{username.casefold()}"
+    cached = get_cached(cache_key, redis_client)
+    response.headers["Cache-Control"] = "private, no-store"
+    if cached is not None:
+        response.headers["X-Negin-Cache"] = "HIT"
+        return cached
     try:
-        return seller_target_pulse(request.app.state.settings, _username(request))
+        result = seller_target_pulse(request.app.state.settings, username)
+        set_cached(cache_key, result, 30, redis_client)
+        response.headers["X-Negin-Cache"] = "MISS"
+        return result
     except SellerWorkspaceError as exc:
         raise HTTPException(status_code=403, detail=str(exc)) from exc
 
@@ -250,12 +323,26 @@ def get_my_voucher_return_report(request: Request):
 def get_my_route_customers(
     path_id: str,
     request: Request,
+    response: Response,
     detail: str = Query("basic", pattern="^(basic|full)$"),
 ):
+    username = _username(request)
+    redis_client = getattr(request.app.state, "redis_client", None)
+    response.headers["Cache-Control"] = "private, no-store"
+    cache_key = f"route-customers:{username.casefold()}:{path_id.casefold()}:basic"
+    if detail == "basic":
+        cached = get_cached(cache_key, redis_client)
+        if cached is not None:
+            response.headers["X-Negin-Cache"] = "HIT"
+            return cached
     try:
         if detail == "full":
-            return seller_route_customers(request.app.state.settings, _username(request), path_id)
-        return seller_route_customers_basic(request.app.state.settings, _username(request), path_id)
+            response.headers["X-Negin-Cache"] = "BYPASS"
+            return seller_route_customers(request.app.state.settings, username, path_id)
+        result = seller_route_customers_basic(request.app.state.settings, username, path_id)
+        set_cached(cache_key, result, 8, redis_client)
+        response.headers["X-Negin-Cache"] = "MISS"
+        return result
     except SellerRouteNotFound as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except SellerWorkspaceError as exc:

@@ -7,7 +7,7 @@ Branch: feature/layout-architecture-migration-20260918
 Rule: [x] means the current frontend consumes/displays/uses it. [ ] means backend/inventory capability exists but is not yet surfaced or completed in the Visitor UI.
 Semantic rule: a checked UI item does not make an unvalidated KPI canonical. Semantic status is tracked explicitly.
 
-Current snapshot: 131/180 tracked rows checked; 49 remaining. Exact Seller API coverage: 26/32 endpoints connected; 6 remaining.
+Current snapshot: 133/182 tracked rows checked; 49 remaining. Exact Seller API coverage: 27/33 endpoints connected; 6 remaining.
 
 ## 1) Authentication / account
 - [x] Login â€” POST /auth/login
@@ -53,6 +53,7 @@ Current snapshot: 131/180 tracked rows checked; 49 remaining. Exact Seller API c
 
 ## 4) Routes / map / field execution
 - [x] Assigned routes â€” GET /seller-workspace/routes
+- [x] Fast tour bootstrap — GET /seller-workspace/tour-bootstrap (routes + active route customers in one request)
 - [x] Day-route / live assignment
 - [x] Route customers â€” GET /seller-workspace/routes/{path_id}/customers
 - [x] Basic/full customer detail modes
@@ -202,6 +203,7 @@ Current snapshot: 131/180 tracked rows checked; 49 remaining. Exact Seller API c
 - [ ] POST /seller-workspace/previsit/warmup
 - [x] GET /seller-workspace/returned-cheques
 - [x] GET /seller-workspace/routes
+- [x] GET /seller-workspace/tour-bootstrap
 - [x] GET /seller-workspace/routes/{path_id}/customers
 - [x] GET /seller-workspace/routes/{path_id}/customers/{customer_id}/profile
 - [x] PUT /seller-workspace/routes/{path_id}/customers/{customer_id}/profile-draft

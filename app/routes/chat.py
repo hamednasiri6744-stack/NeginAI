@@ -14,7 +14,6 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 
 from app.access_control import filter_schema_item, policy_for_user, response_scope_matches
-from app.chat_service import chat, latest_response
 from app.conversation_service import (
     conversation_messages,
     delete_conversation,
@@ -358,6 +357,8 @@ def schema_catalog_object(
 
 @router.post("", response_model=ChatResponse, operation_id="chatWithNeginAI")
 async def chat_endpoint(payload: ChatRequest, request: Request) -> dict[str, object]:
+    from app.chat_service import chat
+
     resource_context = model_resource_lease(
         request,
         estimate_model_budget_units(
@@ -407,6 +408,8 @@ async def chat_endpoint(payload: ChatRequest, request: Request) -> dict[str, obj
 
 @router.get("/latest/{conversation_id}", response_model=ChatResponse, operation_id="getLatestChatResponse")
 def latest_chat_response(conversation_id: str, request: Request) -> dict[str, object]:
+    from app.chat_service import latest_response
+
     username = _username(request)
     if username not in {"local", "action-api-key"} and get_conversation(
         request.app.state.settings,
@@ -422,6 +425,8 @@ def latest_chat_response(conversation_id: str, request: Request) -> dict[str, ob
 
 @router.get("/conversations/{conversation_id}/export.xlsx", operation_id="exportChatReportExcel")
 def export_chat_report_excel(conversation_id: str, request: Request) -> StreamingResponse:
+    from app.chat_service import latest_response
+
     username = _username(request)
     conversation = get_conversation(
         request.app.state.settings,

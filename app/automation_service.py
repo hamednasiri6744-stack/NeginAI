@@ -14,8 +14,6 @@ from typing import Any, Callable, Literal
 from uuid import uuid4
 from zoneinfo import ZoneInfo
 
-from agents import Agent, ModelSettings, OpenAIProvider, RunConfig, Runner
-from openai.types.shared import Reasoning
 from pydantic import BaseModel, Field
 
 from app.config import ROOT_DIR, Settings
@@ -457,6 +455,10 @@ def _default_report_runner(settings: Settings, task: dict[str, Any]) -> dict[str
 def _default_condition_evaluator(
     settings: Settings, condition_text: str, response: dict[str, Any]
 ) -> ConditionDecision:
+    # Heavy OpenAI/Agents imports stay off the API startup path.
+    from agents import Agent, ModelSettings, OpenAIProvider, RunConfig, Runner
+    from openai.types.shared import Reasoning
+
     if not settings.openai_automation_api_key:
         raise RuntimeError("OPENAI_AUTOMATION_API_KEY is not configured")
     evidence = {

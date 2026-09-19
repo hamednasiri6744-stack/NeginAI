@@ -685,8 +685,8 @@ ORDER BY vtp.RowIndex, vtp.PathTitle
         "live_assignment": True,
     }
     try:
-        from app.operational_notification_service import observe_route_assignment
-        observe_route_assignment(settings, username, result)
+        from app.operational_notification_service import enqueue_route_assignment_observation
+        enqueue_route_assignment_observation(settings, username, result)
     except Exception:
         # Alerting must never block the seller workspace.
         pass
